@@ -6,23 +6,25 @@ My thanks to the contributors of ReMinecraftPE, without them this project would 
 ## FAQ
 
 **Why PEtoLE?**
+
 Well, this project was born out of curiosity regarding the proximity of the Minecraft Pocket Edition codebase to Java Edition, which ended up giving me the idea of ​​trying to make it accurate with TU0 of [Legacy Edition](https://minecraft.wiki/w/Legacy_Console_Edition), but why not first make it accurate with b1.7.3? Since this would be necessary anyway, this project came about, and with this name (Pocket Edition to Legacy Edition)
 Eventually there will be a branch that lives up to this name, but one step at a time, right?
 
 **Why is the goal b1.7.3 instead of b1.6.6, since TU0 is based on it?**
+
 Well, basically the difference between these two versions is just the scissors, pistons, textures and bug fixes, so since they are minimal, it makes more sense to have the most popular version as the goal.
 
 Currently the platforms originally from the ReMinecraftPE are:
-	* Windows 11 (older versions have not been tested, most of the newer ones should work)
-	* Android (thanks to [Stom](https://github.com/Stommm) for the help)
+* Windows 11 (older versions have not been tested, most of the newer ones should work)
+* Android (thanks to [Stom](https://github.com/Stommm) for the help)
 
 These are the ports that have not been tested, but could certainly work with some fixes:
-	* Linux
-	* WebGL
-	* Mac OS (port by [BrentDaMage](https://github.com/BrentDaMage))
-	* iOS (3.0 and above; port by [BrentDaMage](https://github.com/BrentDaMage))
-	* HaikuOS (thanks to [SanyaSho](https://github.com/SanyaSho))
-	* Xbox 360 (work in progress; port by [BrentDaMage](https://github.com/BrentDaMage))
+* Linux
+* WebGL
+* Mac OS (port by [BrentDaMage](https://github.com/BrentDaMage))
+* iOS (3.0 and above; port by [BrentDaMage](https://github.com/BrentDaMage))
+* HaikuOS (thanks to [SanyaSho](https://github.com/SanyaSho))
+* Xbox 360 (work in progress; port by [BrentDaMage](https://github.com/BrentDaMage))
 
 Note: Just like ReMinecraftPE, it should work on all Android devices, but with worse performance due to some optimizations from Pocket Edition being removed for accuracy.
 
