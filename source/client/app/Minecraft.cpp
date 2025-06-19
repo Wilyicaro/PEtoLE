@@ -1164,19 +1164,8 @@ void Minecraft::leaveGame(bool bCopyMap)
 	delete m_pNetEventCallback;
 #endif
 
-#ifdef ENH_IMPROVED_SAVING
 	m_bIsGamePaused = true;
 	setScreen(new SavingWorldScreen(bCopyMap/*, m_pLocalPlayer*/));
-#else
-	if (m_pLevel)
-	{
-		LevelStorage* pStorage = m_pLevel->getLevelStorage();
-		SAFE_DELETE(pStorage);
-		SAFE_DELETE(m_pLevel);
-
-		m_pLevel = nullptr;
-	}
-#endif
 
 #ifdef ORIGINAL_CODE
 	delete m_pNetEventCallback;
