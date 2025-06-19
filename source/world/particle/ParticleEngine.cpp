@@ -99,7 +99,7 @@ void ParticleEngine::crack(const TilePos& tilePos, Facing::Name face)
 			break;
 	}
 
-	add((new TerrainParticle(m_pLevel, pos, pTile))->setPower(0.2f)->scale(0.6f));
+	add((new TerrainParticle(m_pLevel, pos, pTile))->init(tilePos)->setPower(0.2f)->scale(0.6f));
 }
 
 void ParticleEngine::destroyEffect(const TilePos& pos)
@@ -149,11 +149,11 @@ void ParticleEngine::render(Entity* ent, float f)
 		return;
 #endif
 
-	float x1 = Mth::cos(float(M_PI) * ent->m_rot.x / 180.0f);
-	float x3 = Mth::sin(float(M_PI) * ent->m_rot.x / 180.0f);
-	float x4 = -(x3 * Mth::sin(float(M_PI) * ent->m_rot.y / 180.0f));
-	float x5 = x1 * Mth::sin(float(M_PI) * ent->m_rot.y / 180.0f);
-	float x2 = Mth::cos(float(M_PI) * ent->m_rot.y / 180.0f);
+	float x1 = Mth::cos(float(M_PI) * ent->m_rot.y / 180.0f);
+	float x3 = Mth::sin(float(M_PI) * ent->m_rot.y / 180.0f);
+	float x4 = -(x3 * Mth::sin(float(M_PI) * ent->m_rot.x / 180.0f));
+	float x5 = x1 * Mth::sin(float(M_PI) * ent->m_rot.x / 180.0f);
+	float x2 = Mth::cos(float(M_PI) * ent->m_rot.x / 180.0f);
 
 	Particle::xOff = Mth::Lerp(ent->m_posPrev.x, ent->m_pos.x, f);
 	Particle::yOff = Mth::Lerp(ent->m_posPrev.y, ent->m_pos.y, f);

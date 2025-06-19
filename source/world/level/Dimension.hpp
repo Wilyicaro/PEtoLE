@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 #include "world/level/levelgen/biome/BiomeSource.hpp"
 #include "world/level/levelgen/chunk/ChunkSource.hpp"
 #include "Level.hpp"
@@ -22,15 +22,16 @@ public:
 	virtual ~Dimension();
 	static Dimension* getNew(int type);
 
-	virtual Vec3 getFogColor(float, float);
+	virtual Vec3f getFogColor(float, float);
 	virtual void init();
 	virtual bool mayRespawn();
 	virtual bool isValidSpawn(const TilePos& pos);
-
-	float* getSunriseColor(float, float);
-	float getTimeOfDay(int32_t, float);
+	virtual float getCloudHeight();
+	virtual float* getSunriseColor(float, float);
+	virtual float getTimeOfDay(int32_t, float);
 	void init(Level* pLevel);
-	void updateLightRamp();
+	virtual void updateLightRamp();
+
 
 	ChunkSource* createRandomLevelSource();
 
@@ -38,10 +39,10 @@ public:
 	Level* m_pLevel;
 	BiomeSource* m_pBiomeSource;
 	bool m_bFoggy;
-	bool field_D;
-	bool field_E;
-	float field_10[16];
-	int field_50;
+	bool m_bUltraWarm;
+	bool m_bHasCeiling;
+	float m_brightnessRamp[16];
+	int m_ID;
 	float m_sunriseColor[4];
 };
 

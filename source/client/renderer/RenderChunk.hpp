@@ -18,26 +18,26 @@ public:
 	GLuint field_0;
 	int field_4;
 	int m_id;
-	float field_C;
-	float field_10;
-	float field_14;
+	float m_posX;
+	float m_posY;
+	float m_posZ;
 
 public:
 	RenderChunk()
 	{
 		field_0 = -1;
 		field_4 = 0;
-		field_C = 0.0f;
-		field_10 = 0.0f;
-		field_14 = 0.0f;
+		m_posX = 0.0f;
+		m_posY = 0.0f;
+		m_posZ = 0.0f;
 
 		m_id = ++runningId;
 	}
 	RenderChunk(GLuint a1, int a2)
 	{
-		field_C = 0.0f;
-		field_10 = 0.0f;
-		field_14 = 0.0f;
+		m_posX = 0.0f;
+		m_posY = 0.0f;
+		m_posZ = 0.0f;
 
 		m_id = ++runningId;
 		field_0 = a1;

@@ -13,9 +13,9 @@
 #include "thirdparty/GL/GL.hpp"
 #include "RenderChunk.hpp"
 
-#define GET_RED(c)   (uint8_t(((c) >>  0) & 0xFF))
+#define GET_RED(c)   (uint8_t(((c) >>  16) & 0xFF))
 #define GET_GREEN(c) (uint8_t(((c) >>  8) & 0xFF))
-#define GET_BLUE(c)  (uint8_t(((c) >> 16) & 0xFF))
+#define GET_BLUE(c)  (uint8_t(((c) >> 0) & 0xFF))
 #define GET_ALPHA(c) (uint8_t(((c) >> 24) & 0xFF))
 
 #define TRIANGLE_MODE true
@@ -62,6 +62,10 @@ public:
 	void color(int r, int g, int b, int a);
 	void color(char r, char g, char b);
 	void color(float r, float g, float b);
+	void color(float rgb[])
+	{
+		color(rgb[0], rgb[1], rgb[2]);
+	}
 	void color(float r, float g, float b, float a);
 	void draw();
 	int  getVboCount();

@@ -13,27 +13,22 @@
 
 #include "world/tile/LeafTile.hpp"
 #include "world/tile/GrassTile.hpp"
-
-bool LevelRenderer::_areCloudsAvailable = false; // false because 0.1 didn't have them
-bool LevelRenderer::_arePlanetsAvailable = false; // false because 0.1 didn't have them
+#include "TileEntityRenderDispatcher.hpp"
 
 LevelRenderer::LevelRenderer(Minecraft* pMC, Textures* pTexs)
 {
-	field_4 = -9999.0f;
-	field_8 = -9999.0f;
-	field_C = -9999.0f;
-	field_10 = 0.0f;
+	m_destroyProgress = 0.0f;
 	m_noEntityRenderFrames = 2;
 	m_totalEntities = 0;
 	m_renderedEntities = 0;
 	m_culledEntities = 0;
-	field_30 = 0;
+	m_cullStep = 0;
 	m_totalChunks = 0;
 	m_offscreenChunks = 0;
 	m_occludedChunks = 0;
 	m_renderedChunks = 0;
 	m_emptyChunks = 0;
-	field_68 = 0;
+	m_chunkFixOffs = 0;
 	m_resortedMinX = 0;
 	m_resortedMinY = 0;
 	m_resortedMinZ = 0;
@@ -42,21 +37,21 @@ LevelRenderer::LevelRenderer(Minecraft* pMC, Textures* pTexs)
 	m_resortedMaxZ = 0;
 	m_pLevel = nullptr;
 	m_chunks = nullptr;
-	field_98 = nullptr;
+	m_sortedChunks = nullptr;
 	m_chunksLength = 0;
 	m_pTileRenderer = nullptr;
-	field_A4 = 0;
-	field_A8 = 0;
-	field_AC = 0;
+	m_xChunks = 0;
+	m_yChunks = 0;
+	m_zChunks = 0;
 	field_B0 = 0;
-	field_B8 = false;
-	field_BC = -1;
+	m_bOcclusionVisible = false;
+	m_lastViewDistance = -1;
 	m_ticksSinceStart = 0;
 	m_nBuffers = 26136;
 
 	m_pMinecraft = pMC;
 	m_pTextures = pTexs;
-
+	m_oPos = Vec3(-9999, -9999, -9999);
 	m_pBuffers = new GLuint[m_nBuffers];
 	xglGenBuffers(m_nBuffers, m_pBuffers);
 	LOG_I("numBuffers: %d", m_nBuffers);
@@ -171,13 +166,13 @@ void LevelRenderer::generateStars()
 
 void LevelRenderer::deleteChunks()
 {
-	for (int i = 0; i < field_AC; i++)
+	for (int i = 0; i < m_zChunks; i++)
 	{
-		for (int j = 0; j < field_A8; j++)
+		for (int j = 0; j < m_yChunks; j++)
 		{
-			for (int k = 0; k < field_A4; k++)
+			for (int k = 0; k < m_xChunks; k++)
 			{
-				int index = k + field_A4 * (j + field_A8 * i);
+				int index = k + m_xChunks * (j + m_yChunks * i);
 				delete m_chunks[index];
 			}
 		}
@@ -187,9 +182,9 @@ void LevelRenderer::deleteChunks()
 		delete[] m_chunks;
 	m_chunks = nullptr;
 
-	if (field_98)
-		delete[] field_98;
-	field_98 = nullptr;
+	if (m_sortedChunks)
+		delete[] m_sortedChunks;
+	m_sortedChunks = nullptr;
 }
 
 void LevelRenderer::cull(Culler* pCuller, float f)
@@ -201,13 +196,13 @@ void LevelRenderer::cull(Culler* pCuller, float f)
 			continue;
 
 		//@TODO: What does the shift do? (x % 4 == 0)?
-		if (!pChunk->m_bVisible || !((i + field_30) << 28))
+		if (!pChunk->m_bVisible || !((i + m_cullStep) << 28))
 		{
 			pChunk->cull(pCuller);
 		}
 	}
 
-	field_30++;
+	m_cullStep++;
 }
 
 void LevelRenderer::allChanged()
@@ -217,79 +212,82 @@ void LevelRenderer::allChanged()
 	LeafTile* pLeaves = (LeafTile*)Tile::leaves;
 
 	pLeaves->m_bTransparent = m_pMinecraft->getOptions()->m_bFancyGraphics;
-	pLeaves->m_TextureFrame = !pLeaves->m_bTransparent + pLeaves->field_74;
+	pLeaves->m_TextureFrame = !pLeaves->m_bTransparent + pLeaves->m_oTex;
 
 	TileRenderer::m_bFancyGrass = m_pMinecraft->getOptions()->m_bFancyGrass;
 	TileRenderer::m_bBiomeColors = m_pMinecraft->getOptions()->m_bBiomeColors;
 
-	field_BC = m_pMinecraft->getOptions()->m_iViewDistance;
+	m_lastViewDistance = m_pMinecraft->getOptions()->m_iViewDistance;
 
-	int x1 = 64 << (3 - field_BC);
+	int x1 = 64 << (3 - m_lastViewDistance);
 	if (x1 >= 400)
 		x1 = 400;
 
-	field_A4 = x1 / 16 + 1;
-	field_AC = x1 / 16 + 1;
-	field_A8 = 8;
+	m_xChunks = x1 / 16 + 1;
+	m_zChunks = x1 / 16 + 1;
+	m_yChunks = 8;
 
-	m_chunksLength = field_A8 * field_A4 * field_AC;
+	m_chunksLength = m_yChunks * m_xChunks * m_zChunks;
 	LOG_I("chunksLength: %d", m_chunksLength);
 	m_chunks = new Chunk* [m_chunksLength];
-	field_98 = new Chunk* [m_chunksLength];
+	m_sortedChunks = new Chunk* [m_chunksLength];
 
 	m_resortedMinX = 0;
 	m_resortedMinY = 0;
 	m_resortedMinZ = 0;
 
-	field_88.clear();
+	m_dirtyChunks.clear();
+	m_renderableTileEntities.clear();
 
-	m_resortedMaxX = field_A4;
-	m_resortedMaxY = field_AC;
-	m_resortedMaxZ = field_A8;
+	m_resortedMaxX = m_xChunks;
+	m_resortedMaxY = m_zChunks;
+	m_resortedMaxZ = m_yChunks;
 
 	int x2 = 0, x3 = 0;
 
 	// These are actually Chunk coordinates that get converted to Tile coordinates
 	TilePos cp(0, 0, 0);
-	for (cp.x = 0; cp.x < field_A4; cp.x++)
+	for (cp.x = 0; cp.x < m_xChunks; cp.x++)
 	{
-		if (field_A8 <= 0)
+		if (m_yChunks <= 0)
 			continue;
 
-		for (cp.y = 0; cp.y < field_A8; cp.y++)
+		for (cp.y = 0; cp.y < m_yChunks; cp.y++)
 		{
-			for (cp.z = 0; cp.z < field_AC; cp.z++)
+			for (cp.z = 0; cp.z < m_zChunks; cp.z++)
 			{
-				int index = cp.x + field_A4 * (cp.y + field_A8 * cp.z);
+				int index = cp.x + m_xChunks * (cp.y + m_yChunks * cp.z);
 
-				Chunk* pChunk = new Chunk(m_pLevel, cp * 16, 16, x3 + field_B0, &m_pBuffers[x3]);
+				Chunk* pChunk = new Chunk(m_pLevel, m_renderableTileEntities, cp * 16, 16, x3 + field_B0, &m_pBuffers[x3]);
 
-				if (field_B8)
+				if (m_bOcclusionVisible)
 					pChunk->field_50 = 0;
 
 				pChunk->field_4E = false;
-				pChunk->field_4D = true;
+				pChunk->m_bOcclusionVisible = true;
 				pChunk->m_bVisible = true;
 				pChunk->field_48 = x2++;
 				pChunk->setDirty();
 				m_chunks[index] = pChunk;
-				field_98[index] = pChunk;
+				m_sortedChunks[index] = pChunk;
 
 				x3 += 3;
-				field_88.push_back(pChunk);
+				m_dirtyChunks.push_back(pChunk);
 			}
 		}
 	}
 
 	if (m_pLevel)
 	{
-		Mob* pMob = m_pMinecraft->m_pMobPersp;
+		auto& pMob = m_pMinecraft->m_pMobPersp;
 		if (pMob)
 		{
 			resortChunks(pMob->m_pos);
 
-			std::sort(&field_98[0], &field_98[m_chunksLength], DistanceChunkSorter(pMob));
+			std::sort(&m_sortedChunks[0], &m_sortedChunks[m_chunksLength], DistanceChunkSorter(pMob.get()));
 		}
+
+		m_pLevel->viewDistance = x1;
 	}
 
 	m_noEntityRenderFrames = 2;
@@ -305,10 +303,10 @@ void LevelRenderer::resortChunks(const TilePos& pos)
 	m_resortedMaxY = 0x80000000;
 	m_resortedMaxZ = 0x80000000;
 
-	int blkCount = field_A4 * 16;
+	int blkCount = m_xChunks * 16;
 	int blkCntHalf = blkCount / 2;
 
-	for (int fx = 0; fx < field_A4; fx++)
+	for (int fx = 0; fx < m_xChunks; fx++)
 	{
 		int x1 = 16 * fx;
 		int x2 = x1 + blkCntHalf - tp.x;
@@ -321,7 +319,7 @@ void LevelRenderer::resortChunks(const TilePos& pos)
 		if (m_resortedMaxX < x1)
 			m_resortedMaxX = x1;
 
-		for (int fz = 0; fz < field_AC; fz++)
+		for (int fz = 0; fz < m_zChunks; fz++)
 		{
 			int z1 = 16 * fz;
 			int z2 = z1 + blkCntHalf - tp.z;
@@ -334,7 +332,7 @@ void LevelRenderer::resortChunks(const TilePos& pos)
 			if (m_resortedMaxZ < z1)
 				m_resortedMaxZ = z1;
 
-			for (int fy = 0; fy < field_A8; fy++)
+			for (int fy = 0; fy < m_yChunks; fy++)
 			{
 				int y1 = 16 * fy;
 				if (m_resortedMinY > y1)
@@ -342,12 +340,12 @@ void LevelRenderer::resortChunks(const TilePos& pos)
 				if (m_resortedMaxY < y1)
 					m_resortedMaxY = y1;
 
-				Chunk* pChunk = m_chunks[(fz * field_A8 + fy) * field_A4 + fx];
+				Chunk* pChunk = m_chunks[(fz * m_yChunks + fy) * m_xChunks + fx];
 				bool wasDirty = pChunk->isDirty();
 				pChunk->setPos(TilePos(x1, y1, z1));
 
 				if (!wasDirty && pChunk->isDirty())
-					field_88.push_back(pChunk);
+					m_dirtyChunks.push_back(pChunk);
 			}
 		}
 	}
@@ -397,7 +395,7 @@ void LevelRenderer::onGraphicsReset()
 	generateSky(); // inlined in the 0.1.0 demo
 }
 
-void LevelRenderer::render(const AABB& aabb) const
+void LevelRenderer::renderAABBOutline(const AABB& aabb) const
 {
 	Tesselator& t = Tesselator::instance;
 
@@ -433,27 +431,28 @@ void LevelRenderer::checkQueryResults(int a, int b)
 
 void LevelRenderer::renderSameAsLast(int a, float b)
 {
-	m_renderList.render();
+	for (auto& list : m_renderLists)
+		list.render();
 }
 
 int LevelRenderer::renderChunks(int start, int end, int a, float b)
 {
-	field_24.clear();
+	m_pChunks.clear();
 
 	int result = 0;
 	for (int i = start; i < end; i++)
 	{
-		Chunk* pChunk = field_98[i];
+		Chunk* pChunk = m_sortedChunks[i];
 		if (!a)
 		{
 			m_totalChunks++;
-			if (pChunk->field_1C[0])
+			if (pChunk->empty[0])
 			{
 				m_emptyChunks++;
 			}
 			else if (pChunk->m_bVisible)
 			{
-				if (!field_B8 || pChunk->field_4D)
+				if (!m_bOcclusionVisible || pChunk->m_bOcclusionVisible)
 					m_renderedChunks++;
 				else
 					m_occludedChunks++;
@@ -464,51 +463,65 @@ int LevelRenderer::renderChunks(int start, int end, int a, float b)
 			}
 		}
 
-		if (!pChunk->field_1C[a] && pChunk->m_bVisible && pChunk->field_4D && pChunk->getList(a) >= 0)
+		if (!pChunk->empty[a] && pChunk->m_bVisible && pChunk->m_bOcclusionVisible && pChunk->getList(a) >= 0)
 		{
 			result++;
-			field_24.push_back(pChunk);
+			m_pChunks.push_back(pChunk);
 		}
 	}
 
-	Mob* pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pMobPersp;
 
 	float fPosX = pMob->m_posPrev.x + (pMob->m_pos.x - pMob->m_posPrev.x) * b;
 	float fPosY = pMob->m_posPrev.y + (pMob->m_pos.y - pMob->m_posPrev.y) * b;
 	float fPosZ = pMob->m_posPrev.z + (pMob->m_pos.z - pMob->m_posPrev.z) * b;
 
-	m_renderList.clear();
-	m_renderList.init(fPosX, fPosY, fPosZ);
+	int lists = 0;
 
-	for (int i = 0; i < int(field_24.size()); i++)
+	for (auto& list : m_renderLists)
+		list.clear();
+
+	for (Chunk* pChk : m_pChunks)
 	{
-		Chunk* pChk = field_24[i];
-		m_renderList.addR(*pChk->getRenderChunk(a));
-		m_renderList.field_14++;
+		auto& renderChunk = *pChk->getRenderChunk(a);
+		int list = -1;
+		for (int l = 0; l < lists; ++l) {
+			if (m_renderLists[l].isAt(renderChunk)) {
+				list = l;
+	
+			}
+		}
+
+		if (list < 0) {
+			list = lists++;
+			m_renderLists[list].init(fPosX, fPosY, fPosZ);
+		}
+
+		m_renderLists[list].addR(renderChunk);
 	}
 
 	renderSameAsLast(a, b);
 	return result;
 }
 
-void LevelRenderer::render(Mob* pMob, int a, float b)
+int LevelRenderer::render(Mob* pMob, int a, float b)
 {
 	for (int i = 0; i < 10; i++)
 	{
-		field_68 = (field_68 + 1) % m_chunksLength;
-		Chunk* pChunk = m_chunks[field_68];
+		m_chunkFixOffs = (m_chunkFixOffs + 1) % m_chunksLength;
+		Chunk* pChunk = m_chunks[m_chunkFixOffs];
 
 		if (!pChunk->m_bDirty)
 			continue;
 
-		std::vector<Chunk*>::iterator iter = std::find(field_88.begin(), field_88.end(), pChunk);
-		if (iter != field_88.end())
+		std::vector<Chunk*>::iterator iter = std::find(m_dirtyChunks.begin(), m_dirtyChunks.end(), pChunk);
+		if (iter != m_dirtyChunks.end())
 			continue;
 
-		field_88.push_back(pChunk);
+		m_dirtyChunks.push_back(pChunk);
 	}
 
-	if (m_pMinecraft->getOptions()->m_iViewDistance != field_BC)
+	if (m_pMinecraft->getOptions()->m_iViewDistance != m_lastViewDistance)
 		allChanged();
 
 	if (!a)
@@ -516,27 +529,27 @@ void LevelRenderer::render(Mob* pMob, int a, float b)
 
 	Vec3 mobPos = pMob->m_posPrev + (pMob->m_pos - pMob->m_posPrev) * b;
 
-	float dX = pMob->m_pos.x - field_4, dY = pMob->m_pos.y - field_8, dZ = pMob->m_pos.z - field_C;
+	float dX = pMob->m_pos.x - m_oPos.x, dY = pMob->m_pos.y - m_oPos.y, dZ = pMob->m_pos.z - m_oPos.z;
 
 	if (dX * dX + dY * dY + dZ * dZ > 16.0f)
 	{
-		field_4 = pMob->m_pos.x;
-		field_8 = pMob->m_pos.y;
-		field_C = pMob->m_pos.z;
+		m_oPos.x = pMob->m_pos.x;
+		m_oPos.y = pMob->m_pos.y;
+		m_oPos.z = pMob->m_pos.z;
 
 		resortChunks(pMob->m_pos);
-		std::sort(&field_98[0], &field_98[m_chunksLength], DistanceChunkSorter(pMob));
+		std::sort(&m_sortedChunks[0], &m_sortedChunks[m_chunksLength], DistanceChunkSorter(pMob));
 	}
 
 	// @NOTE: Field_B8 doesn't appear to be used??
-	if (field_B8 && !a && !m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_bOcclusionVisible && !a && !m_pMinecraft->getOptions()->m_bAnaglyphs)
 	{
 		int c = 16;
 		checkQueryResults(0, c);
 		
 		// @HUH: why 16?
 		for (int i = 0; i < c; i++)
-			field_98[i]->field_4D = true;
+			m_sortedChunks[i]->m_bOcclusionVisible = true;
 
 		int d = renderChunks(0, c, 0, b);
 
@@ -569,7 +582,7 @@ void LevelRenderer::render(Mob* pMob, int a, float b)
 
 				if (!m_chunks[i]->m_bVisible)
 				{
-					m_chunks[i]->field_4D = true;
+					m_chunks[i]->m_bOcclusionVisible = true;
 					continue;
 				}
 
@@ -598,12 +611,24 @@ void LevelRenderer::render(Mob* pMob, int a, float b)
 				m_chunks[i]->renderBB();
 				m_chunks[i]->field_4E = true;
 			}
+			glPopMatrix();
+	
+			glColorMask(true, true, true, true);
+
+			glDepthMask(true);
+			glEnable(GL_TEXTURE_2D);
+			glEnable(GL_ALPHA_TEST);
+			glEnable(GL_FOG);
+
+			d += renderChunks(cold, c, a, b);
 		}
 		while (c < m_chunksLength);
+
+		return d;
 	}
 	else
 	{
-		renderChunks(0, m_chunksLength, a, b);
+		return renderChunks(0, m_chunksLength, a, b);
 	}
 }
 
@@ -612,9 +637,9 @@ void LevelRenderer::setLevel(Level* level)
 	if (m_pLevel)
 		m_pLevel->removeListener(this);
 
-	field_4 = -9999.0f;
-	field_8 = -9999.0f;
-	field_C = -9999.0f;
+	m_oPos.x = -9999;
+	m_oPos.y = -9999;
+	m_oPos.z = -9999;
 
 	EntityRenderDispatcher::getInstance()->setLevel(level);
 	EntityRenderDispatcher::getInstance()->setMinecraft(m_pMinecraft);
@@ -625,7 +650,7 @@ void LevelRenderer::setLevel(Level* level)
 	m_pTileRenderer = new TileRenderer(m_pLevel);
 
 	if (level)
-	{
+	{	
 		level->addListener(this);
 		allChanged();
 	}
@@ -642,27 +667,27 @@ void LevelRenderer::setDirty(const TilePos& min, const TilePos& max)
 
 	for (int x = minX; x <= maxX; x++)
 	{
-		int x1 = x % field_A4;
+		int x1 = x % m_xChunks;
 		if (x1 < 0)
-			x1 += field_A4;
+			x1 += m_xChunks;
 
 		for (int y = minY; y <= maxY; y++)
 		{
-			int y1 = y % field_A8;
+			int y1 = y % m_yChunks;
 			if (y1 < 0)
-				y1 += field_A8;
+				y1 += m_yChunks;
 
 			for (int z = minZ; z <= maxZ; z++)
 			{
-				int z1 = z % field_AC;
+				int z1 = z % m_zChunks;
 				if (z1 < 0)
-					z1 += field_AC;
+					z1 += m_zChunks;
 
-				Chunk* pChunk = m_chunks[x1 + field_A4 * (y1 + field_A8 * z1)];
+				Chunk* pChunk = m_chunks[x1 + m_xChunks * (y1 + m_yChunks * z1)];
 				if (pChunk->isDirty())
 					continue;
 
-				field_88.push_back(pChunk);
+				m_dirtyChunks.push_back(pChunk);
 				pChunk->setDirty();
 			}
 		}
@@ -690,10 +715,10 @@ bool LevelRenderer::updateDirtyChunks(Mob* pMob, bool b)
 	ChunkVector* pVec = nullptr;
 
 	int nr1 = 0;
-	int sz = int(field_88.size());
+	int sz = int(m_dirtyChunks.size());
 	for (int i = 0; i < sz; i++)
 	{
-		Chunk* pChunk = field_88[i];
+		Chunk* pChunk = m_dirtyChunks[i];
 		if (!b)
 		{
 			if (pChunk->distanceToSqr(pMob) > 1024.0f)
@@ -727,7 +752,7 @@ bool LevelRenderer::updateDirtyChunks(Mob* pMob, bool b)
 
 		nr1++;
 		pVec->push_back(pChunk);
-		field_88[i] = nullptr;
+		m_dirtyChunks[i] = nullptr;
 	}
 
 	if (pVec)
@@ -764,9 +789,9 @@ bool LevelRenderer::updateDirtyChunks(Mob* pMob, bool b)
 
 	int nr3 = 0;
 	int nr4 = 0;
-	for (; nr4 < int(field_88.size()); nr4++)
+	for (; nr4 < int(m_dirtyChunks.size()); nr4++)
 	{
-		Chunk* pChunk = field_88[nr4];
+		Chunk* pChunk = m_dirtyChunks[nr4];
 		if (!pChunk)
 			continue;
 
@@ -781,13 +806,13 @@ bool LevelRenderer::updateDirtyChunks(Mob* pMob, bool b)
 			continue;
 
 		if (nr3 != nr4)
-			field_88[nr3] = pChunk;
+			m_dirtyChunks[nr3] = pChunk;
 
 		nr3++;
 	}
 
 	if (nr4 > nr3)
-		field_88.erase(field_88.begin() + nr3, field_88.end());
+		m_dirtyChunks.erase(m_dirtyChunks.begin() + nr3, m_dirtyChunks.end());
 
 	return nr1 + nr2 == sz;
 }
@@ -798,10 +823,8 @@ void LevelRenderer::renderHit(Player* pPlayer, const HitResult& hr, int i, void*
 	glEnable(GL_ALPHA_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-	// @BUG: possible leftover from Minecraft Classic? This is overridden anyways
-	//glColor4f(1.0f, 1.0f, 1.0f, 0.5f * (0.4f + 0.2f * Mth::sin(float(getTimeMs()) / 100.0f)));
 
-	if (!i && field_10 > 0.0f)
+	if (!i && m_destroyProgress > 0.0f)
 	{
 		glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
 
@@ -821,13 +844,14 @@ void LevelRenderer::renderHit(Player* pPlayer, const HitResult& hr, int i, void*
 		float pz = pPlayer->m_posPrev.z + (pPlayer->m_pos.z - pPlayer->m_posPrev.z) * f;
 
 		Tesselator& t = Tesselator::instance;
+		glEnable(GL_ALPHA_TEST);
 		t.begin();
 		t.offset(-px, -py, -pz);
 		t.noColor();
 		if (!pTile)
-			pTile = Tile::rock;
+			pTile = Tile::stone;
 
-		m_pTileRenderer->tesselateInWorld(pTile, hr.m_tilePos, 240 + int(field_10 * 10.0f));
+		m_pTileRenderer->tesselateInWorld(pTile, hr.m_tilePos, 240 + int(m_destroyProgress * 10.0f));
 
 		t.draw();
 		t.offset(0, 0, 0);
@@ -875,7 +899,7 @@ void LevelRenderer::renderHitSelect(Player* pPlayer, const HitResult& hr, int i,
 	t.offset(-px, -py, -pz);
 	t.noColor();
 	if (!pTile)
-		pTile = Tile::rock;
+		pTile = Tile::stone;
 
 	m_pTileRenderer->tesselateInWorld(pTile, hr.m_tilePos);
 
@@ -898,40 +922,19 @@ void LevelRenderer::renderHitOutline(Player* pPlayer, const HitResult& hr, int i
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glColor4f(0.0f, 0.0f, 0.0f, 0.4f);
-	//glLineWidth(1.0f);
+	glColor4f(0, 0, 0, 0.4f);
+	glLineWidth(2.0f);
 	glDisable(GL_TEXTURE_2D);
 	glDepthMask(false);
+	const constexpr real var6 = 0.002;
+	Tile* pTile = Tile::tiles[m_pLevel->getTile(hr.m_tilePos)];
 
-	// Maximize Line Width
-	glEnable(GL_LINE_SMOOTH);
-	
-	float range[2];
-	glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, range);
-
-	float lineWidth = 2.0f * Minecraft::getRenderScaleMultiplier();
-	if (lineWidth > range[1])
-		lineWidth = range[1];
-
-	glLineWidth(lineWidth);
-
-	TileID tile = m_pLevel->getTile(hr.m_tilePos);
-	if (tile > 0)
-	{
-		Tile::tiles[tile]->updateShape(
-			m_pLevel,
-			hr.m_tilePos);
-		float posX = pPlayer->m_posPrev.x + ((pPlayer->m_pos.x - pPlayer->m_posPrev.x) * f);
-		float posY = pPlayer->m_posPrev.y + ((pPlayer->m_pos.y - pPlayer->m_posPrev.y) * f);
-		float posZ = pPlayer->m_posPrev.z + ((pPlayer->m_pos.z - pPlayer->m_posPrev.z) * f);
-		AABB aabb, tileAABB = Tile::tiles[tile]->getTileAABB(m_pLevel, hr.m_tilePos);
-		aabb.min.y = tileAABB.min.y - 0.002f - posY;
-		aabb.max.y = tileAABB.max.y + 0.002f - posY;
-		aabb.min.z = tileAABB.min.z - 0.002f - posZ;
-		aabb.max.z = tileAABB.max.z + 0.002f - posZ;
-		aabb.min.x = tileAABB.min.x - 0.002f - posX;
-		aabb.max.x = tileAABB.max.x + 0.002f - posX;
-		render(aabb);
+	if (pTile) {
+		pTile->updateShape(m_pLevel, hr.m_tilePos);
+		AABB tileAABB = pTile->getTileAABB(m_pLevel, hr.m_tilePos);
+		tileAABB.expand(var6, var6, var6);
+		tileAABB.move(-(pPlayer->m_posPrev + (pPlayer->m_pos - pPlayer->m_posPrev) * f));
+		this->renderAABBOutline(tileAABB);
 	}
 
 	glDepthMask(true);
@@ -952,22 +955,24 @@ void LevelRenderer::renderEntities(Vec3 pos, Culler* culler, float f)
 		return;
 	}
 
-	Mob* mob = m_pMinecraft->m_pMobPersp;
-
+	auto& mob = m_pMinecraft->m_pMobPersp;
+	
+	TileEntityRenderDispatcher::getInstance()->prepare(m_pLevel, m_pMinecraft->m_pTextures, m_pMinecraft->m_pFont, mob, f);
 	EntityRenderDispatcher::getInstance()->prepare(m_pLevel, m_pMinecraft->m_pTextures, m_pMinecraft->m_pFont, mob, m_pMinecraft->getOptions(), f);
 
 	m_totalEntities = 0;
 	m_renderedEntities = 0;
 	m_culledEntities = 0;
 
-	EntityRenderDispatcher::off = mob->m_posPrev + (mob->m_pos - mob->m_posPrev) * f;
+	
+	TileEntityRenderDispatcher::off = EntityRenderDispatcher::off = mob->m_posPrev + (mob->m_pos - mob->m_posPrev) * f;
 
 	const EntityVector* pVec = m_pLevel->getAllEntities();
 	m_totalEntities = int(pVec->size());
 
 	for (int i = 0; i < m_totalEntities; i++)
 	{
-		Entity* pEnt = (*pVec)[i];
+		auto& pEnt = (*pVec)[i];
 		if (!pEnt->shouldRender(pos))
 			continue;
 
@@ -980,16 +985,21 @@ void LevelRenderer::renderEntities(Vec3 pos, Culler* culler, float f)
 		if (m_pLevel->hasChunkAt(pEnt->m_pos))
 		{
 			m_renderedEntities++;
-			EntityRenderDispatcher::getInstance()->render(pEnt, f);
+			EntityRenderDispatcher::getInstance()->render(pEnt.get(), f);
 		}
+	}
+
+	for (auto& tileEntity : m_renderableTileEntities)
+	{
+		TileEntityRenderDispatcher::getInstance()->render(tileEntity.get(), f);
 	}
 }
 
 extern int t_keepPic;
 
-void LevelRenderer::takePicture(TripodCamera* pCamera, Entity* pOwner)
+void LevelRenderer::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* pOwner)
 {
-	Mob* pOldMob = m_pMinecraft->m_pMobPersp;
+	auto pOldMob = m_pMinecraft->m_pMobPersp;
 	bool bOldDontRenderGui = m_pMinecraft->getOptions()->m_bDontRenderGui;
 	bool bOldThirdPerson = m_pMinecraft->getOptions()->m_bThirdPerson;
 
@@ -1122,7 +1132,7 @@ void LevelRenderer::renderSky(float alpha)
 
 	glDisable(GL_TEXTURE_2D);
 
-	Vec3 sc = m_pLevel->getSkyColor(m_pMinecraft->m_pMobPersp, alpha);
+	Vec3f sc = m_pLevel->getSkyColor(m_pMinecraft->m_pMobPersp.get(), alpha);
 	if (m_pMinecraft->getOptions()->m_bAnaglyphs)
 	{
 		sc.x = (((sc.x * 30.0f) + (sc.y * 59.0f)) + (sc.z * 11.0f)) / 100.0f;
@@ -1148,10 +1158,10 @@ void LevelRenderer::renderSky(float alpha)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	float* c = m_pLevel->m_pDimension->getSunriseColor(m_pLevel->getTimeOfDay(alpha), alpha);
-	if (c != nullptr && arePlanetsAvailable())
+	if (c != nullptr)
 	{
 		glDisable(GL_TEXTURE_2D);
-		//glShadeModel(GL_SMOOTH); // I'd rather fuck up the sunrise gradient than AO, but it doesn't even look like it does that
+		glShadeModel(GL_SMOOTH); // I'd rather fuck up the sunrise gradient than AO, but it doesn't even look like it does that
 
 		glPushMatrix();
 		glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
@@ -1165,7 +1175,7 @@ void LevelRenderer::renderSky(float alpha)
 		int steps = 16;
 		for (int i = 0; i <= steps; i++)
 		{
-			float a = i * 3.1415927f * 2.0f / steps;
+			float a = i * M_PI * 2.0f / steps;
 			float sin = Mth::sin(a);
 			float cos = Mth::cos(a);
 			t.vertex((sin * 120.0f), (cos * 120.0f), (-cos * 40.0f * c[3]));
@@ -1173,7 +1183,7 @@ void LevelRenderer::renderSky(float alpha)
 
 		t.draw();
 		glPopMatrix();
-		//glShadeModel(GL_FLAT); // fuck it, don't bother, doing this SOMEHOW breaks AO
+		glShadeModel(GL_FLAT); // fuck it, don't bother, doing this SOMEHOW breaks AO
 	}
 
 	// Sun, moon, stars
@@ -1188,25 +1198,24 @@ void LevelRenderer::renderSky(float alpha)
 
 	float ss = 30.0f;
 
-	if (arePlanetsAvailable())
-	{
-		m_pTextures->loadAndBindTexture("terrain/sun.png");
-		t.begin();
-		t.vertexUV(-ss, 100.0f, -ss, 0.0f, 0.0f);
-		t.vertexUV(ss, 100.0f, -ss, 1.0f, 0.0f);
-		t.vertexUV(ss, 100.0f, ss, 1.0f, 1.0f);
-		t.vertexUV(-ss, 100.0f, ss, 0.0f, 1.0f);
-		t.draw();
+	
+	m_pTextures->loadAndBindTexture("terrain/sun.png");
+	t.begin();
+	t.vertexUV(-ss, 100.0f, -ss, 0.0f, 0.0f);
+	t.vertexUV(ss, 100.0f, -ss, 1.0f, 0.0f);
+	t.vertexUV(ss, 100.0f, ss, 1.0f, 1.0f);
+	t.vertexUV(-ss, 100.0f, ss, 0.0f, 1.0f);
+	t.draw();
 
-		ss = 20.0f;
-		m_pTextures->loadAndBindTexture("terrain/moon.png");
-		t.begin();
-		t.vertexUV(-ss, -100.0f, ss, 1.0f, 1.0f);
-		t.vertexUV(ss, -100.0f, ss, 0.0f, 1.0f);
-		t.vertexUV(ss, -100.0f, -ss, 0.0f, 0.0f);
-		t.vertexUV(-ss, -100.0f, -ss, 1.0f, 0.0f);
-		t.draw();
-	}
+	ss = 20.0f;
+	m_pTextures->loadAndBindTexture("terrain/moon.png");
+	t.begin();
+	t.vertexUV(-ss, -100.0f, ss, 1.0f, 1.0f);
+	t.vertexUV(ss, -100.0f, ss, 0.0f, 1.0f);
+	t.vertexUV(ss, -100.0f, -ss, 0.0f, 0.0f);
+	t.vertexUV(-ss, -100.0f, -ss, 1.0f, 0.0f);
+	t.draw();
+	
 
 	glDisable(GL_TEXTURE_2D);
 
@@ -1232,30 +1241,27 @@ void LevelRenderer::renderSky(float alpha)
 	glDepthMask(true);
 }
 
-void LevelRenderer::renderClouds(float alpha)
+void LevelRenderer::renderClouds(float partialTick)
 {
-	if (!areCloudsAvailable())
-		return;
-
 	if (m_pMinecraft->getOptions()->m_bFancyGraphics)
 	{
-		renderAdvancedClouds(alpha);
+		renderAdvancedClouds(partialTick);
 		return;
 	}
 
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_CULL_FACE);
 
-	float yPos = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_posPrev.y, m_pMinecraft->m_pMobPersp->m_pos.y, alpha); // not certain if this old pos Y is used
+	float yPos = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_posPrev.y, m_pMinecraft->m_pMobPersp->m_pos.y, partialTick); // not certain if this old pos Y is used
 	m_pTextures->loadAndBindTexture("environment/clouds.png");
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Vec3 cloudColor = m_pLevel->getCloudColor(alpha);
+	Vec3 cloudColor = m_pLevel->getCloudColor(partialTick);
 
-	float offX = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_oPos.x, m_pMinecraft->m_pMobPersp->m_pos.x, alpha) + (float(m_ticksSinceStart) + alpha) * 0.03f;
-	float offZ = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_oPos.z, m_pMinecraft->m_pMobPersp->m_pos.z, alpha);
+	float offX = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_oPos.x, m_pMinecraft->m_pMobPersp->m_pos.x, partialTick) + (float(m_ticksSinceStart) + partialTick) * 0.03f;
+	float offZ = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_oPos.z, m_pMinecraft->m_pMobPersp->m_pos.z, partialTick);
 	
 	int dx2048 = Mth::floor(offX / 2048.0f);
 	int dz2048 = Mth::floor(offZ / 2048.0f);
@@ -1272,8 +1278,8 @@ void LevelRenderer::renderClouds(float alpha)
 	t.color(cloudColor.x, cloudColor.y, cloudColor.z, 0.8f);
 
 	const int incr = 16 * 2;
-	const int maxX = C_MAX_CHUNKS_X * 16;
-	const int maxZ = C_MAX_CHUNKS_Z * 16;
+	const int maxX = 256;
+	const int maxZ = 256;
 	for (int x = -maxX; x < maxX; x += incr)
 	{
 		for (int z = -maxZ; z < maxZ; z += incr)
@@ -1293,23 +1299,21 @@ void LevelRenderer::renderClouds(float alpha)
 	glEnable(GL_CULL_FACE);
 }
 
-void LevelRenderer::renderAdvancedClouds(float alpha)
+void LevelRenderer::renderAdvancedClouds(float partialTick)
 {
 	glDisable(GL_CULL_FACE);
 
-	float yOffs = //Mth::Lerp(m_pMinecraft->m_pMobPersp->m_posPrev.y, m_pMinecraft->m_pMobPersp->m_pos.y, alpha);
-    m_pMinecraft->m_pMobPersp->m_posPrev.y + (m_pMinecraft->m_pMobPersp->m_pos.y - m_pMinecraft->m_pMobPersp->m_posPrev.y) * alpha;
+	float yOffs = m_pMinecraft->m_pMobPersp->m_posPrev.y + (m_pMinecraft->m_pMobPersp->m_pos.y - m_pMinecraft->m_pMobPersp->m_posPrev.y) * partialTick;
 
 	Tesselator& t = Tesselator::instance;
 	constexpr float ss = 12.0f;
 	constexpr float h = 4.0f;
 
 	// @NOTE: Using Mth::Lerp will use incorrect logic
-	float xo = (m_pMinecraft->m_pMobPersp->m_oPos.x + (m_pMinecraft->m_pMobPersp->m_oPos.x - m_pMinecraft->m_pMobPersp->m_oPos.x) * alpha + ((float(m_ticksSinceStart) + alpha) * 0.03f)) / ss;
-	float zo = (m_pMinecraft->m_pMobPersp->m_oPos.z + (m_pMinecraft->m_pMobPersp->m_oPos.z - m_pMinecraft->m_pMobPersp->m_oPos.z) * alpha) / ss + 0.33f;
+	float xo = (m_pMinecraft->m_pMobPersp->m_oPos.x + (m_pMinecraft->m_pMobPersp->m_pos.x - m_pMinecraft->m_pMobPersp->m_oPos.x) * partialTick + ((float(m_ticksSinceStart) + partialTick) * 0.03f)) / ss;
+	float zo = (m_pMinecraft->m_pMobPersp->m_oPos.z + (m_pMinecraft->m_pMobPersp->m_pos.z - m_pMinecraft->m_pMobPersp->m_oPos.z) * partialTick) / ss + 0.33f;
 
-	float yy = ((float)C_MAX_Y - yOffs) + 0.33f; // 108.0f on b1.2_02, see below
-    //float yy = 108.0f - yOffs + 0.33F;
+	float yy = ((float)m_pLevel->m_pDimension->getCloudHeight() - yOffs) + 0.33f;
 
 	int xOffs = Mth::floor(xo / 2048);
 	int zOffs = Mth::floor(zo / 2048);
@@ -1321,7 +1325,7 @@ void LevelRenderer::renderAdvancedClouds(float alpha)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Vec3 cc = m_pLevel->getCloudColor(alpha);
+	Vec3 cc = m_pLevel->getCloudColor(partialTick);
 	float cr = cc.x;
 	float cg = cc.y;
 	float cb = cc.z;
@@ -1464,13 +1468,13 @@ void LevelRenderer::skyColorChanged()
 	for (int i = 0; i < m_chunksLength; i++)
 	{
 		Chunk* pChunk = m_chunks[i];
-		if (!pChunk->field_54)
+		if (!pChunk->m_bSkyLit)
 			continue;
 
 		if (pChunk->isDirty())
 			continue;
 
-		field_88.push_back(pChunk);
+		m_dirtyChunks.push_back(pChunk);
 		pChunk->setDirty();
 	}
 }

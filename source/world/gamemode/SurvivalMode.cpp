@@ -20,7 +20,7 @@ SurvivalMode::SurvivalMode(Minecraft* pMC, Level& level) : GameMode(pMC, level),
 
 void SurvivalMode::initPlayer(Player* p)
 {
-	p->m_rot.x = -180.0f;
+	p->m_rot.y = -180.0f;
 	p->m_pInventory->prepareSurvivalInventory();
 }
 
@@ -31,7 +31,7 @@ bool SurvivalMode::canHurtPlayer()
 
 bool SurvivalMode::startDestroyBlock(Player* player, const TilePos& pos, Facing::Name face)
 {
-	ItemInstance* item = player->getSelectedItem();
+	std::shared_ptr<ItemInstance> item = player->getSelectedItem();
 	if (item && item->getItem() == Item::bow)
 		return true;
 
@@ -55,26 +55,26 @@ bool SurvivalMode::startDestroyBlock(Player* player, const TilePos& pos, Facing:
 
 bool SurvivalMode::destroyBlock(Player* player, const TilePos& pos, Facing::Name face)
 {
-	m_pMinecraft->m_pParticleEngine->destroyEffect(pos);
-
 	TileID tile = _level.getTile(pos);
 	int    data = _level.getData(pos);
 
-	if (!GameMode::destroyBlock(player, pos, face))
-		return false;
-
-	//@HUH: check too late?
-	bool bCanDestroy = m_pMinecraft->m_pLocalPlayer->canDestroy(Tile::tiles[tile]);
-
-	if (bCanDestroy)
-	{
-		Tile::tiles[tile]->playerDestroy(&_level, m_pMinecraft->m_pLocalPlayer, pos, data);
-
-		if (m_pMinecraft->isOnline())
-		{
-			m_pMinecraft->m_pRakNetInstance->send(new RemoveBlockPacket(m_pMinecraft->m_pLocalPlayer->m_EntityID, pos));
+	bool changed = GameMode::destroyBlock(player, pos, face);
+	
+	auto item = player->getSelectedItem();
+	bool couldDestroy = player->canDestroy(Tile::tiles[tile]);
+	if (item) {
+		item->mineBlock(tile, pos, face);
+		if (!item->m_count) {
+			item->snap(player);
+			player->removeSelectedItem();
 		}
 	}
+
+	if (changed && couldDestroy) {
+		Tile::tiles[tile]->playerDestroy(m_pMinecraft->m_pLevel, player, pos, data);
+	}
+
+	return changed;
 
 	return true;
 }
@@ -101,13 +101,13 @@ bool SurvivalMode::continueDestroyBlock(Player* player, const TilePos& pos, Faci
 		return false;
 
 	Tile* pTile = Tile::tiles[tile];
-	float destroyProgress = pTile->getDestroyProgress(m_pMinecraft->m_pLocalPlayer);
+	float destroyProgress = pTile->getDestroyProgress(m_pMinecraft->m_pLocalPlayer.get());
 	m_destroyProgress += getDestroyModifier() * destroyProgress;
 	m_destroyTicks++;
 
 	if ((m_destroyTicks & 3) == 1)
 	{
-		_level.playSound(pos + 0.5f, "step." + pTile->m_pSound->m_name,
+		_level.playSound(pos + 0.5f, pTile->m_pSound->m_name,
 			0.125f * (1.0f + pTile->m_pSound->volume), 0.5f * pTile->m_pSound->pitch);
 	}
 
@@ -138,13 +138,13 @@ void SurvivalMode::render(float f)
 {
 	if (m_destroyProgress <= 0.0f)
 	{
-		m_pMinecraft->m_gui.field_8 = 0.0f;
-		m_pMinecraft->m_pLevelRenderer->field_10 = 0.0f;
+		m_pMinecraft->m_gui.m_progress = 0.0f;
+		m_pMinecraft->m_pLevelRenderer->m_destroyProgress = 0.0f;
 	}
 	else
 	{
 		float x = m_lastDestroyProgress + (m_destroyProgress - m_lastDestroyProgress) * f;
-		m_pMinecraft->m_gui.field_8 = x;
-		m_pMinecraft->m_pLevelRenderer->field_10 = x;
+		m_pMinecraft->m_gui.m_progress = x;
+		m_pMinecraft->m_pLevelRenderer->m_destroyProgress = x;
 	}
 }

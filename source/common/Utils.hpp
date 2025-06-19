@@ -14,6 +14,7 @@
 #include <stdarg.h>
 #include <assert.h>
 #include <limits>
+#include <vector>
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif
@@ -136,12 +137,19 @@ const char* GetGUIBlocksName();
 #define C_BLOCKS_NAME  "gui/gui_blocks.png"
 #else
 #define C_TERRAIN_NAME GetTerrainName()
+#define C_TERRAIN_MIPMAP2_NAME   "terrain_MipmapLevel2.png"
+#define C_TERRAIN_MIPMAP3_NAME   "terrain_MipmapLevel3.png"
 #define C_ITEMS_NAME   "gui/items.png"
 #define C_BLOCKS_NAME  "gui/gui_blocks.png"
 #endif
 
-#define C_MAX_CHUNKS_X (16)
-#define C_MAX_CHUNKS_Z (16)
+#define C_MIN_CHUNKS_X (-27)
+#define C_MIN_CHUNKS_Z (-27)
+
+#define C_MAX_CHUNKS_X (27)
+#define C_MAX_CHUNKS_Z (27)
+
+#define C_MAX_CHUNKS (2916)
 
 // 9 chunks around a player things will tick
 #define C_TICK_DISTANCE_CHKS (9)
@@ -153,7 +161,7 @@ enum eTileID
 	TILE_STONE,
 	TILE_GRASS,
 	TILE_DIRT,
-	TILE_STONEBRICK,
+	TILE_COBBLESTONE,
 	TILE_WOOD,
 	TILE_SAPLING,
 	TILE_BEDROCK,
@@ -180,7 +188,7 @@ enum eTileID
 	TILE_RAIL_ACTIVATOR,
 	TILE_PISTON_STICKY,
 	TILE_COBWEB,
-	TILE_TALLGRASS,
+	TILE_TALL_GRASS,
 	TILE_DEAD_BUSH,
 	TILE_PISTON,
 	TILE_PISTON_HEAD,
@@ -205,8 +213,8 @@ enum eTileID
 	TILE_STAIRS_WOOD,
 	TILE_CHEST,
 	TILE_WIRE,
-	TILE_ORE_EMERALD,
-	TILE_BLOCK_EMERALD,
+	TILE_ORE_DIAMOND,
+	TILE_BLOCK_DIAMOND,
 	TILE_WORKBENCH,
 	TILE_WHEAT,
 	TILE_FARMLAND,
@@ -250,21 +258,6 @@ enum eTileID
 	TILE_STONE_BRICKS,
 	TILE_MUSHROOM1_BLOCK,
 	TILE_MUSHROOM2_BLOCK,
-	TILE_CLOTH_00 = 101,
-	TILE_CLOTH_10,
-	TILE_CLOTH_20,
-	TILE_CLOTH_30,
-	TILE_CLOTH_40,
-	TILE_CLOTH_50,
-	TILE_CLOTH_60,
-	TILE_CLOTH_70,
-	TILE_CLOTH_01,
-	TILE_CLOTH_11,
-	TILE_CLOTH_21,
-	TILE_CLOTH_31,
-	TILE_CLOTH_41,
-	TILE_CLOTH_51,
-	TILE_CLOTH_61,
 
 	TILE_INFO_UPDATEGAME1 = 248,
 	TILE_INFO_UPDATEGAME2 = 249,
@@ -281,7 +274,7 @@ enum eTileID
 	ITEM_BOW,
 	ITEM_ARROW,
 	ITEM_COAL,
-	ITEM_EMERALD,
+	ITEM_DIAMOND,
 	ITEM_INGOT_IRON,
 	ITEM_INGOT_GOLD,
 	ITEM_SWORD_IRON,
@@ -293,10 +286,10 @@ enum eTileID
 	ITEM_SHOVEL_STONE,
 	ITEM_PICKAXE_STONE,
 	ITEM_HATCHET_STONE,
-	ITEM_SWORD_EMERALD,
-	ITEM_SHOVEL_EMERALD,
-	ITEM_PICKAXE_EMERALD,
-	ITEM_HATCHET_EMERALD,
+	ITEM_SWORD_DIAMOND,
+	ITEM_SHOVEL_DIAMOND,
+	ITEM_PICKAXE_DIAMOND,
+	ITEM_HATCHET_DIAMOND,
 	ITEM_STICK,
 	ITEM_BOWL,
 	ITEM_STEW_MUSHROOM,
@@ -310,7 +303,7 @@ enum eTileID
 	ITEM_HOE_WOOD,
 	ITEM_HOE_STONE,
 	ITEM_HOE_IRON,
-	ITEM_HOE_EMERALD,
+	ITEM_HOE_DIAMOND,
 	ITEM_HOE_GOLD,
 	ITEM_SEEDS,
 	ITEM_WHEAT,
@@ -327,10 +320,10 @@ enum eTileID
 	ITEM_CHESTPLATE_IRON,
 	ITEM_LEGGINGS_IRON,
 	ITEM_BOOTS_IRON,
-	ITEM_HELMET_EMERALD,
-	ITEM_CHESTPLATE_EMERALD,
-	ITEM_LEGGINGS_EMERALD,
-	ITEM_BOOTS_EMERALD,
+	ITEM_HELMET_DIAMOND,
+	ITEM_CHESTPLATE_DIAMOND,
+	ITEM_LEGGINGS_DIAMOND,
+	ITEM_BOOTS_DIAMOND,
 	ITEM_HELMET_GOLD,
 	ITEM_CHESTPLATE_GOLD,
 	ITEM_LEGGINGS_GOLD,
@@ -385,7 +378,7 @@ enum eTileID
 
 enum // Textures
 {
-	TEXTURE_GRASS_TOP = 0,
+	TEXTURE_GRASS_TOP,
 	TEXTURE_STONE,
 	TEXTURE_DIRT,
 	TEXTURE_GRASS_SIDE,
@@ -401,7 +394,7 @@ enum // Textures
 	TEXTURE_FLOWER,
 	TEXTURE_WATER_STATIC,
 	TEXTURE_SAPLING,
-	TEXTURE_STONEBRICK,
+	TEXTURE_COBBLESTONE,
 	TEXTURE_BEDROCK,
 	TEXTURE_SAND,
 	TEXTURE_GRAVEL,
@@ -409,13 +402,13 @@ enum // Textures
 	TEXTURE_LOG_TOP,
 	TEXTURE_IRON,
 	TEXTURE_GOLD,
-	TEXTURE_EMERALD,
+	TEXTURE_DIAMOND,
 	TEXTURE_CHEST_ONE_TOP,
 	TEXTURE_CHEST_ONE_SIDE,
 	TEXTURE_CHEST_ONE_FRONT,
 	TEXTURE_MUSHROOM_RED,
 	TEXTURE_MUSHROOM_BROWN,
-	TEXTURE_NONE30,
+	TEXTURE_NONE53,
 	TEXTURE_FIRE1,
 	TEXTURE_ORE_GOLD,
 	TEXTURE_ORE_IRON,
@@ -423,8 +416,8 @@ enum // Textures
 	TEXTURE_BOOKSHELF,
 	TEXTURE_MOSSY_STONE,
 	TEXTURE_OBSIDIAN,
-	TEXTURE_OBSIDIAN_CRYING,
-	TEXTURE_NONE39,
+	TEXTURE_GRASS_SIDE_OVERLAY,
+	TEXTURE_TALL_GRASS,
 	TEXTURE_NONE40,
 	TEXTURE_CHEST_TWO_FRONT_LEFT,
 	TEXTURE_CHEST_TWO_FRONT_RIGHT,
@@ -435,12 +428,12 @@ enum // Textures
 	TEXTURE_FIRE2,
 	TEXTURE_SPONGE,
 	TEXTURE_GLASS,
-	TEXTURE_ORE_EMERALD,
+	TEXTURE_ORE_DIAMOND,
 	TEXTURE_ORE_RED_STONE,
 	TEXTURE_LEAVES_TRANSPARENT,
 	TEXTURE_LEAVES_OPAQUE,
 	TEXTURE_NONE54,
-	TEXTURE_NONE55,
+	TEXTURE_DEAD_BUSH,
 	TEXTURE_NONE56,
 	TEXTURE_CHEST_TWO_BACK_LEFT,
 	TEXTURE_CHEST_TWO_BACK_RIGHT,
@@ -488,7 +481,7 @@ enum // Textures
 	TEXTURE_NONE100,
 	TEXTURE_NONE101,
 	TEXTURE_PUMPKIN_TOP,
-	TEXTURE_BLOODSTONE,
+	TEXTURE_HELLROCK,
 	TEXTURE_SOULSAND,
 	TEXTURE_GLOWSTONE,
 	TEXTURE_NONE106,
@@ -513,9 +506,13 @@ enum // Textures
 	TEXTURE_NONE125,
 	TEXTURE_NONE126,
 	TEXTURE_NONE127,
+	TEXTURE_RAIL,
 
 	TEXTURE_LAPIS = 144,
 	TEXTURE_ORE_LAPIS = 160,
+	TEXTURE_POWERED_RAIL = 163,
+	TEXTURE_REDSTONE_DUST,
+	TEXTURE_DETECTOR_RAIL = 195,
 
 	TEXTURE_SANDSTONE_TOP = 176,
 	TEXTURE_SANDSTONE_SIDE = 192,
@@ -538,12 +535,17 @@ enum eRenderShape
 	SHAPE_TORCH,
 	SHAPE_FIRE,
 	SHAPE_WATER,
-	SHAPE_UNK5,
-	SHAPE_UNK6,
+	SHAPE_DUST,
+	SHAPE_CROPS,
 	SHAPE_DOOR,
 	SHAPE_LADDER,
-	SHAPE_UNK9,
+	SHAPE_RAIL,
 	SHAPE_STAIRS,
+	SHAPE_FENCE,
+	SHAPE_LEVER,
+	SHAPE_CACTUS,
+	SHAPE_BED,
+	SHAPE_RANDOM_CROSS
 };
 
 enum eRenderLayer
@@ -578,6 +580,7 @@ time_t getEpochTimeS();
 time_t getRawTimeS();
 double getTimeS();
 int getTimeMs();
+int64_t getTimeNano();
 
 void sleepMs(int ms);
 
@@ -588,6 +591,21 @@ bool DeleteDirectory(const std::string& name, bool unused);
 uint8_t* ZlibInflateToMemory(uint8_t* pInput, size_t compressedSize, size_t decompressedSize);
 uint8_t* ZlibDeflateToMemory(uint8_t* pInput, size_t sizeBytes, size_t *compressedSizeOut);
 uint8_t* ZlibDeflateToMemoryLvl(uint8_t* pInput, size_t sizeBytes, size_t* compressedSizeOut, int level);
+
+std::vector<uint8_t> compressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip = false, int compressionLevel = 9);
+
+std::vector<uint8_t> decompressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip = false);
+
+void writeBE16(std::ostream& os, uint16_t val);
+
+void writeIntBE(FILE* file, int value);
+
+int readIntBE(FILE* file);
+
+bool w_get(const std::string& url, std::vector<unsigned char>& outData);
+
+bool http_get(const std::string& host, const std::string& path, std::vector<unsigned char>& outData);
+bool https_get(const std::string& host, const std::string& path, std::vector<unsigned char>& outData);
 
 // things that we added:
 

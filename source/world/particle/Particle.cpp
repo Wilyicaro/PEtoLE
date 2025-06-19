@@ -12,7 +12,7 @@ float Particle::xOff, Particle::yOff, Particle::zOff;
 
 void Particle::_init()
 {
-	field_DC = 0;
+	blockTexture = 0;
 	field_E0 = 0.0f;
 	field_E4 = 0.0f;
 	field_E8 = 0;
@@ -73,7 +73,7 @@ void Particle::render(Tesselator& t, float f, float a4, float a5, float a6, floa
 {
 	constexpr float C_MAGIC_1 = 0.062438f; // @BUG: Slightly bigger than 1/16.0f
 
-	int texture = field_DC;
+	int texture = blockTexture;
 	int texX = texture % 16;
 	if (texture < 0)
 		texture += 15;

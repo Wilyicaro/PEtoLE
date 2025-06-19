@@ -12,8 +12,8 @@ const Vec2 Vec2::ZERO = Vec2(0, 0);
 
 void Vec2::_init(float x, float y)
 {
-    this->x = x;
-    this->y = y;
+    this->y = x;
+    this->x = y;
 }
 
 Vec2::Vec2()
@@ -23,14 +23,14 @@ Vec2::Vec2()
 
 Vec2::Vec2(float x, float y)
 {
-    _init(x, y);
+	_init(x, y);
 }
 
 Vec2 Vec2::normalize() const
 {
-	float dist = Mth::sqrt(x * x + y * y);
+	float dist = Mth::sqrt(y * y + x * x);
 	if (dist < 0.0001f)
 		return ZERO;
 
-	return Vec2(x / dist, y / dist);
+	return Vec2(y / dist, x / dist);
 }

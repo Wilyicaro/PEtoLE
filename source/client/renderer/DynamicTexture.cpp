@@ -12,13 +12,17 @@
 DynamicTexture::DynamicTexture(int a2) : m_textureIndex(a2)
 {
 	m_textureSize = 1;
+	m_textureId = 0;
 
 	memset(m_pixels, 0, sizeof m_pixels);
 }
 
 void DynamicTexture::bindTexture(Textures* pTextures)
 {
-	pTextures->loadAndBindTexture(C_TERRAIN_NAME);
+	if (m_textureId == 0)
+		pTextures->loadAndBindTexture(C_TERRAIN_NAME);
+	else if (m_textureId == 1)
+		pTextures->loadAndBindTexture("gui/items.png");
 }
 
 DynamicTexture::~DynamicTexture()

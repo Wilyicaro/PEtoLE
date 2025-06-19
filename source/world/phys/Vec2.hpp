@@ -33,18 +33,18 @@ public:
 	// these are also likely inlined, but I'll declare them in the header
 	Vec2 operator+(const Vec2& b) const
 	{
-		return Vec2(x + b.x, y + b.y);
+		return Vec2(y + b.y, x + b.x);
 	}
 
 	Vec2 operator-(const Vec2& b) const
 	{
-		return Vec2(x - b.x, y - b.y);
+		return Vec2(y - b.y, x - b.x);
 	}
 
 	void operator+=(const Vec2& b)
 	{
-		x += b.x;
 		y += b.y;
+		x += b.x;
 	}
 
 	void operator-=(const Vec2& b)
@@ -54,39 +54,39 @@ public:
 
 	void operator*=(float f)
 	{
-		x *= f;
 		y *= f;
+		x *= f;
 	}
 
 	Vec2 operator-() const
 	{
-		return Vec2(-x, -y);
+		return Vec2(-y, -x);
 	}
 
 	Vec2 operator*(float f) const
 	{
-		return Vec2(f * x, f * y);
+		return Vec2(f * y, f * x);
 	}
 
 	Vec2 operator/(float f) const
 	{
-		return Vec2(x / f, y / f);
+		return Vec2(y / f, x / f);
 	}
 
 	bool operator==(const Vec2& b) const
 	{
-		return x == b.x &&
-			   y == b.y;
+		return y == b.y &&
+			   x == b.x;
 	}
 
 	Vec2 translate(float tx, float ty) const
 	{
-		return Vec2(x + tx, y + ty);
+		return Vec2(y + tx, x + ty);
 	}
 
 	float lengthSqr() const
 	{
-		return x * x + y * y;
+		return y * y + x * x;
 	}
 
 	float length() const
@@ -96,7 +96,7 @@ public:
 
 	Vec2 scale(float scale) const
 	{
-		return Vec2(x * scale, y * scale);
+		return Vec2(y * scale, x * scale);
 	}
 };
 

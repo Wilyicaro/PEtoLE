@@ -16,7 +16,8 @@ public:
 	GrassTile(int ID, Material*);
 
 	int getResource(int, Random*) const override;
-	int getColor(const LevelSource*, const TilePos& pos) const override;
+	int getColor(const LevelSource*, const TilePos& pos, Facing::Name facing, int texture = -1) const override;
+	int getColor(int data, Facing::Name facing, int texture = -1) const override;
 	int getTexture(Facing::Name face) const override;
 	int getTexture(const LevelSource*, const TilePos& pos, Facing::Name face) const override;
 	void tick(Level*, const TilePos& pos, Random*) override;

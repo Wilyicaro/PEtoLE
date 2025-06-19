@@ -11,8 +11,9 @@
 
 void PrimedTnt::_init()
 {
+	m_pEntityType = EntityType::primedTnt;
 	m_fuseTimer = 0;
-	field_C8 = RENDER_TNT;
+	m_renderType = RENDER_TNT;
     m_bBlocksBuilding = true;
 	setSize(0.98f, 0.98f);
 	m_heightOffset = m_bbHeight * 0.5f;

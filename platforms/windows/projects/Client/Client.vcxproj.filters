@@ -81,6 +81,18 @@
     <Filter Include="Source Files\Network">
       <UniqueIdentifier>{14572243-8875-4ea9-aae1-7f52b1953754}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Locale">
+      <UniqueIdentifier>{fe8a6888-8092-4ad6-aa01-e5f85751cf31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Locale">
+      <UniqueIdentifier>{facbb8d8-f5a3-48e8-b8ca-d3b71cdf7892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\Screens\Inventory">
+      <UniqueIdentifier>{2161d732-748b-41d1-96ca-0afd4530fd36}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GUI\Screens\Inventory">
+      <UniqueIdentifier>{7399c75d-551e-48c7-87d5-d500191cdc2c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.hpp">
@@ -377,9 +389,6 @@
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\FoliageColor.hpp">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="$(MC_ROOT)\source\client\gui\components\OptionList.hpp">
-      <Filter>Header Files\GUI\Components</Filter>
-    </ClInclude>
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\entity\ZombieRenderer.hpp">
       <Filter>Header Files\Renderer\Entity</Filter>
     </ClInclude>
@@ -437,9 +446,6 @@
     <ClInclude Include="$(MC_ROOT)\source\client\model\SpiderModel.hpp">
       <Filter>Header Files\Model</Filter>
     </ClInclude>
-    <ClInclude Include="$(MC_ROOT)\source\client\renderer\entity\RocketRenderer.hpp">
-      <Filter>Header Files\Renderer\Entity</Filter>
-    </ClInclude>
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\ControllerBuildInput.hpp">
       <Filter>Header Files\Player\Input</Filter>
     </ClInclude>
@@ -454,6 +460,42 @@
     </ClInclude>
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\BuildActionIntention.hpp">
       <Filter>Header Files\Player\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\locale\Language.hpp">
+      <Filter>Header Files\Locale</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\TextureProcessor.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\HttpTexture.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\CraftingScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -610,9 +652,6 @@
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\DynamicTexture.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\client\renderer\FireTexture.cpp">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Font.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -745,9 +784,6 @@
     <ClCompile Include="$(MC_ROOT)\source\client\model\QuadrupedModel.cpp">
       <Filter>Source Files\Model</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\client\gui\components\OptionList.cpp">
-      <Filter>Source Files\GUI\Components</Filter>
-    </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\GrassColor.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
@@ -808,9 +844,6 @@
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\SpiderRenderer.cpp">
       <Filter>Source Files\Renderer\Entity</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\RocketRenderer.cpp">
-      <Filter>Source Files\Renderer\Entity</Filter>
-    </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\ControllerBuildInput.cpp">
       <Filter>Source Files\Player\Input</Filter>
     </ClCompile>
@@ -821,6 +854,45 @@
       <Filter>Source Files\Player\Input</Filter>
     </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Lighting.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\client\renderer\FireTexture.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\locale\Language.cpp">
+      <Filter>Source Files\Locale</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\HttpTexture.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\CraftingScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\CompassTexture.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\ClockTexture.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>

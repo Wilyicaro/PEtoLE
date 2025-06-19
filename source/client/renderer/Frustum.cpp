@@ -10,7 +10,7 @@
 
 Frustum Frustum::frustum;
 
-void Frustum::doOurJobInGameRenderer()
+void Frustum::prepare()
 {
 	Frustum& f = Frustum::frustum;
 

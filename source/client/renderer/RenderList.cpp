@@ -16,16 +16,16 @@ constexpr int C_MAX_RENDERS = 3072;
 
 RenderList::RenderList()
 {
-	m_posX = 0.0f;
-	m_posY = 0.0f;
-	m_posZ = 0.0f;
-	field_14 = 0;
-	field_18 = false;
-	field_19 = false;
-	field_1C = 0;
+	m_offX = 0.0f;
+	m_offY = 0.0f;
+	m_offZ = 0.0f;
+	m_index = 0;
+	inited = false;
+	rendered = false;
+	m_remaining = 0;
 
 	field_C = new int[C_MAX_RENDERS];
-	field_10 = new RenderChunk[C_MAX_RENDERS];
+	m_renderChunks = new RenderChunk[C_MAX_RENDERS];
 }
 
 RenderList::~RenderList()
@@ -33,75 +33,95 @@ RenderList::~RenderList()
 	if (field_C)
 		delete[] field_C;
 
-	if (field_10)
-		delete[] field_10;
+	if (m_renderChunks)
+		delete[] m_renderChunks;
 }
 
 void RenderList::add(int x)
 {
 	// @BUG: If too many chunks are rendered, this has the potential to overflow.
 #ifndef ORIGINAL_CODE
-	if (field_14 == C_MAX_RENDERS)
+	if (m_index == C_MAX_RENDERS)
 	{
 		render();
-		init(m_posX, m_posY, m_posZ);
-		field_1C = 0;
-		field_19 = false;
+		init(m_offX, m_offY, m_offZ);
+		m_remaining = 0;
+		rendered = false;
 	}
 #endif
 
-	field_C[field_14] = x;
+	field_C[m_index] = x;
 
-	if (field_14 == C_MAX_RENDERS)
+	if (m_index == C_MAX_RENDERS)
 		render();
+
 }
 
 void RenderList::addR(const RenderChunk& rc)
 {
 	// @BUG: If too many chunks are rendered, this has the potential to overflow.
 #ifndef ORIGINAL_CODE
-	if (field_14 == C_MAX_RENDERS)
+	if (m_index == C_MAX_RENDERS)
 	{
 		render();
-		init(m_posX, m_posY, m_posZ);
-		field_1C = 0;
-		field_19 = false;
+		init(m_offX, m_offY, m_offZ);
+		m_remaining = 0;
+		rendered = false;
 	}
 #endif
+	
 
-	field_10[field_14] = rc;
+	m_renderChunks[m_index] = rc;
+
+	m_index++;
+
+	if (m_index == C_MAX_RENDERS)
+		render();
 }
 
 void RenderList::clear()
 {
-	field_18 = false;
-	field_19 = false;
+	inited = false;
+	rendered = false;
 }
 
 void RenderList::init(float x, float y, float z)
 {
-	m_posX = x;
-	m_posY = y;
-	m_posZ = z;
-	field_14 = 0;
-	field_18 = true;
+	m_offX = x;
+	m_offY = y;
+	m_offZ = z;
+	m_index = 0;
+	inited = true;
+}
+
+inline static bool sameSlice(int x0, int x1)
+{
+	return (x0 - x0 & 1023) == (x1 - x1 & 1023);
+}
+
+
+bool RenderList::isAt(const RenderChunk& rc)
+{
+	if (!inited) return false;
+	auto& actual = m_renderChunks[0];
+	return sameSlice(actual.m_posX, rc.m_posX) && sameSlice(actual.m_posZ, rc.m_posZ);
 }
 
 void RenderList::render()
 {
-	if (!field_18) return;
+	if (!inited) return;
 
-	if (!field_19)
+	if (!rendered)
 	{
-		field_19 = true;
-		field_1C = field_14;
-		field_14 = 0;
+		rendered = true;
+		m_remaining = m_index;
+		m_index = 0;
 	}
 
-	if (field_14 < field_1C)
+	if (m_index < m_remaining)
 	{
 		glPushMatrix();
-		glTranslatef(-m_posX, -m_posY, -m_posZ);
+		glTranslatef(-m_offX, -m_offY, -m_offZ);
 		renderChunks();
 		glPopMatrix();
 	}
@@ -113,14 +133,14 @@ void RenderList::renderChunks()
 	xglEnableClientState(GL_COLOR_ARRAY);
 	xglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	if (field_1C > 0)
+	if (m_remaining > 0)
 	{
-		for (int i = 0; i < field_1C; i++)
+		for (int i = 0; i < m_remaining; i++)
 		{
-			RenderChunk& chk = field_10[i];
+			RenderChunk& chk = m_renderChunks[i];
 			glPushMatrix();
 
-			glTranslatef(chk.field_C, chk.field_10, chk.field_14);
+			glTranslatef(chk.m_posX, chk.m_posY, chk.m_posZ);
 			xglBindBuffer(GL_ARRAY_BUFFER, chk.field_0);
 			xglVertexPointer  (3, GL_FLOAT,         sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_x));
 			xglTexCoordPointer(2, GL_FLOAT,         sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_u));

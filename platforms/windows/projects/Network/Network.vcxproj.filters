@@ -100,5 +100,8 @@
     <ClCompile Include="$(MC_ROOT)\source\network\PacketUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\AddMobPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

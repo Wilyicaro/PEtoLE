@@ -30,7 +30,7 @@ HitResult::HitResult(const TilePos& tilePos, Facing::Name hitSide, const Vec3& v
 	m_hitPos = vec;
 }
 
-HitResult::HitResult(Entity* pEnt)
+HitResult::HitResult(std::shared_ptr<Entity> pEnt)
 {
 	_init();
 

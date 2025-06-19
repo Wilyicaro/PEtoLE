@@ -7,6 +7,4 @@ class LoggerWin32 : Logger
 {
 	void print(eLogLevel, const char* const str) override;
 	void print(eLogLevel, std::string str) override;
-	void vprintf(eLogLevel, const char* const fmt, va_list argPtr) override;
-	void printf(eLogLevel, const char* const fmt, ...) override;
 };

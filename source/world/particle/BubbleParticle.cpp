@@ -13,7 +13,7 @@ BubbleParticle::BubbleParticle(Level* level, const Vec3& pos, const Vec3& dir) :
 	Particle(level, pos, dir)
 {
 	m_rCol = m_gCol = m_bCol = 1.0f;
-	field_DC = PTI_BUBBLE;
+	blockTexture = PTI_BUBBLE;
 	setSize(0.02f, 0.02f);
 
 	field_F0 *= 0.2f + 0.6f * sharedRandom.nextFloat();

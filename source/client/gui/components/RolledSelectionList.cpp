@@ -30,7 +30,7 @@ RolledSelectionList::RolledSelectionList(Minecraft* minecraft, int a, int b, int
 	field_48 = false;
 	field_4C = 0;
 	field_50 = 1;
-	g_RolledSelectionListUnk = field_30 = field_34 = float(g - a) / 2.0f;
+	g_RolledSelectionListUnk = m_noNeighborUpdate = field_34 = float(g - a) / 2.0f;
 }
 
 int RolledSelectionList::getItemAtXPositionRaw(int x)
@@ -64,17 +64,17 @@ bool RolledSelectionList::capXPosition()
 	float f1 = float(m_itemWidth - field_18) / 2.0f;
 	int i1 = getNumberOfItems();
 
-	if (field_30 < f1)
+	if (m_noNeighborUpdate < f1)
 	{
-		field_30 = f1;
+		m_noNeighborUpdate = f1;
 		field_38 = 0.0f;
 		return true;
 	}
 
 	f1 += float(m_itemWidth * (i1 - 1));
-	if (field_30 > f1)
+	if (m_noNeighborUpdate > f1)
 	{
-		field_30 = f1;
+		m_noNeighborUpdate = f1;
 		field_38 = 0.0f;
 		return true;
 	}
@@ -87,7 +87,7 @@ void RolledSelectionList::tick()
 	float diff = g_RolledSelectionListUnk - field_34;
 	g_RolledSelectionListUnk = field_34;
 	g_RolledSelectionListUnk2 = diff;
-	field_34 = field_30 - field_38;
+	field_34 = m_noNeighborUpdate - field_38;
 }
 
 void RolledSelectionList::render(int mouseX, int mouseY, float f)
@@ -103,7 +103,7 @@ void RolledSelectionList::render(int mouseX, int mouseY, float f)
 		{
 		_crap:
 			field_28 = -1;
-			field_30 = getPos(f);
+			m_noNeighborUpdate = getPos(f);
 			goto _done;
 		}
 
@@ -151,7 +151,7 @@ void RolledSelectionList::render(int mouseX, int mouseY, float f)
 			}
 			else if (field_28 >= 0)
 			{
-				field_34 = field_30 = field_30 - (float(mouseX) - field_2C);
+				field_34 = m_noNeighborUpdate = m_noNeighborUpdate - (float(mouseX) - field_2C);
 			}
 
 			field_28 = 0;
@@ -172,21 +172,21 @@ _done:
 	Tesselator& t = Tesselator::instance;
 	t.begin();
 	t.color(0x202020);
-	t.vertexUV(field_C,  field_24, 0.0f, (field_C  + float(int(field_30))) / 32.0f, field_24 / 32.0f);
-	t.vertexUV(field_10, field_24, 0.0f, (field_10 + float(int(field_30))) / 32.0f, field_24 / 32.0f);
-	t.vertexUV(field_10, field_20, 0.0f, (field_10 + float(int(field_30))) / 32.0f, field_20 / 32.0f);
-	t.vertexUV(field_C,  field_20, 0.0f, (field_C  + float(int(field_30))) / 32.0f, field_20 / 32.0f);
+	t.vertexUV(field_C,  field_24, 0.0f, (field_C  + float(int(m_noNeighborUpdate))) / 32.0f, field_24 / 32.0f);
+	t.vertexUV(field_10, field_24, 0.0f, (field_10 + float(int(m_noNeighborUpdate))) / 32.0f, field_24 / 32.0f);
+	t.vertexUV(field_10, field_20, 0.0f, (field_10 + float(int(m_noNeighborUpdate))) / 32.0f, field_20 / 32.0f);
+	t.vertexUV(field_C,  field_20, 0.0f, (field_C  + float(int(m_noNeighborUpdate))) / 32.0f, field_20 / 32.0f);
 	t.draw();
 
 	if (!getNumberOfItems())
-		field_30 = 0.0f;
+		m_noNeighborUpdate = 0.0f;
 
 	if (field_48)
-		renderHeader(int(field_C + 4.0f - float(int(field_30))), field_1C / 2 - 40, t);
+		renderHeader(int(field_C + 4.0f - float(int(m_noNeighborUpdate))), field_1C / 2 - 40, t);
 
 	for (int i = 0; i < nItems; i++)
 	{
-		float itemX = float(field_44 + float(int(field_C + 4.0f - float(field_30))) + m_itemWidth * i);
+		float itemX = float(field_44 + float(int(field_C + 4.0f - float(m_noNeighborUpdate))) + m_itemWidth * i);
 		if (field_10 < itemX) continue;
 
 		float width = m_itemWidth - 4.0f;

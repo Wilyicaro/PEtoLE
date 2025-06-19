@@ -1,6 +1,5 @@
 #include "ChunkPos.hpp"
 #include "world/level/TilePos.hpp"
-#include "world/phys/Vec3.hpp"
 
 void ChunkPos::_init(int _x, int _z)
 {

@@ -62,10 +62,10 @@ void TreeTile::onRemove(Level* level, const TilePos& pos)
 				if (tid != Tile::leaves->m_ID) continue;
 
 				int data = level->getData(pos + tp);
-				if (data & 4)
+				if (data & 8)
 					continue;
 
-				level->setDataNoUpdate(pos + tp, data | 4);
+				level->setDataNoUpdate(pos + tp, data | 8);
 			}
 		}
 	}

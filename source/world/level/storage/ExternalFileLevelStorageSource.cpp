@@ -22,7 +22,7 @@ ExternalFileLevelStorageSource::ExternalFileLevelStorageSource(const std::string
 		m_worldsPath += "/com.mojang";
 		if (createFolderIfNotExists(m_worldsPath.c_str()))
 		{
-			m_worldsPath += "/minecraftWorlds";
+			m_worldsPath += "/saves";
 			if (createFolderIfNotExists(m_worldsPath.c_str()))
 			{
 				std::vector<LevelSummary> vls;
@@ -31,7 +31,7 @@ ExternalFileLevelStorageSource::ExternalFileLevelStorageSource(const std::string
 		}
 	}
 
-	m_worldsPath = path + "/games" + "/com.mojang" + "/minecraftWorlds";
+	m_worldsPath = path + "/games" + "/com.mojang" + "/saves";
 }
 
 std::string ExternalFileLevelStorageSource::getName()
@@ -92,16 +92,7 @@ static char g_EFLSSFilterArray[] = { '/','\n','\r','\x09','\0','\xC','`','?','*'
 
 void ExternalFileLevelStorageSource::deleteLevel(const std::string& levelName)
 {
-	std::stringstream ss;
-	ss << m_worldsPath << "/" << levelName;
-	std::string path = ss.str();
-
-	if (DeleteDirectory(path, true))
-		return;
-
-	remove((path + "/chunks.dat").c_str());
-	remove((path + "/player.dat").c_str());
-	remove((path + "/level.dat").c_str());
+	std::filesystem::remove_all(m_worldsPath + "/" + levelName);
 }
 
 void ExternalFileLevelStorageSource::renameLevel(const std::string& oldName, const std::string& newName)

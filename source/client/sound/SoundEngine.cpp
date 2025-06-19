@@ -25,46 +25,101 @@ float SoundEngine::_getVolumeMult(const Vec3& pos)
 	return 1.0f;
 }
 
-void SoundEngine::init(Options* options)
+void SoundEngine::init(Options* options, AppPlatform* plat)
 {
-	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum?
-	m_pOptions = options;
+	this->m_pOptions = options;
+	this->m_pPlatform = plat;
 
-#ifndef MISSING_SOUND_DATA
-	m_repository.add("step.cloth", SA_cloth1);
-	m_repository.add("step.cloth", SA_cloth2);
-	m_repository.add("step.cloth", SA_cloth3);
-	m_repository.add("step.cloth", SA_cloth4);
 
-	m_repository.add("step.grass", SA_grass1);
-	m_repository.add("step.grass", SA_grass2);
-	m_repository.add("step.grass", SA_grass3);
-	m_repository.add("step.grass", SA_grass4);
+	addLocalSound("step.grass", "newsound/step/grass1.ogg");
+	addLocalSound("step.grass", "newsound/step/grass2.ogg");
+	addLocalSound("step.grass", "newsound/step/grass3.ogg");
+	addLocalSound("step.grass", "newsound/step/grass4.ogg");
 
-	m_repository.add("step.gravel", SA_gravel1);
-	m_repository.add("step.gravel", SA_gravel2);
-	m_repository.add("step.gravel", SA_gravel3);
-	m_repository.add("step.gravel", SA_gravel4);
+	addLocalSound("step.stone", "newsound/step/stone1.ogg");
+	addLocalSound("step.stone", "newsound/step/stone2.ogg");
+	addLocalSound("step.stone", "newsound/step/stone3.ogg");
+	addLocalSound("step.stone", "newsound/step/stone4.ogg");
 
-	m_repository.add("step.sand", SA_sand1);
-	m_repository.add("step.sand", SA_sand2);
-	m_repository.add("step.sand", SA_sand3);
-	m_repository.add("step.sand", SA_sand4);
+	addLocalSound("step.gravel", "newsound/step/gravel1.ogg");
+	addLocalSound("step.gravel", "newsound/step/gravel2.ogg");
+	addLocalSound("step.gravel", "newsound/step/gravel3.ogg");
+	addLocalSound("step.gravel", "newsound/step/gravel4.ogg");
 
-	m_repository.add("step.stone", SA_stone1);
-	m_repository.add("step.stone", SA_stone2);
-	m_repository.add("step.stone", SA_stone3);
-	m_repository.add("step.stone", SA_stone4);
+	addLocalSound("step.sand", "newsound/step/sand1.ogg");
+	addLocalSound("step.sand", "newsound/step/sand2.ogg");
+	addLocalSound("step.sand", "newsound/step/sand3.ogg");
+	addLocalSound("step.sand", "newsound/step/sand4.ogg");
 
-	m_repository.add("step.wood", SA_wood1);
-	m_repository.add("step.wood", SA_wood2);
-	m_repository.add("step.wood", SA_wood3);
-	m_repository.add("step.wood", SA_wood4);
+	addLocalSound("step.cloth", "newsound/step/cloth1.ogg");
+	addLocalSound("step.cloth", "newsound/step/cloth2.ogg");
+	addLocalSound("step.cloth", "newsound/step/cloth3.ogg");
+	addLocalSound("step.cloth", "newsound/step/cloth4.ogg");
 
-	m_repository.add("random.splash",  SA_splash);
-	m_repository.add("random.explode", SA_explode);
-	m_repository.add("random.click",   SA_click);
-#endif
+	addLocalSound("step.wood", "newsound/step/wood1.ogg");
+	addLocalSound("step.wood", "newsound/step/wood2.ogg");
+	addLocalSound("step.wood", "newsound/step/wood3.ogg");
+	addLocalSound("step.wood", "newsound/step/wood4.ogg");
+
+	addLocalSound("random.glass", "newsound/random/glass1.ogg");
+	addLocalSound("random.glass", "newsound/random/glass2.ogg");
+	addLocalSound("random.glass", "newsound/random/glass3.ogg");
+
+	addLocalSound("random.splash", "newsound/random/splash.ogg");
+	addLocalSound("random.explode", "newsound/random/explode.ogg");
+	addLocalSound("random.click", "newsound/random/click.ogg");
+	addLocalSound("random.pop", "newsound/random/pop.ogg");
+	addLocalSound("random.door_close", "newsound/random/door_close.ogg");
+	addLocalSound("random.door_open", "newsound/random/door_open.ogg");
+
+	addLocalSound("random.hurt", "newsound/random/hurt.ogg");
+
+	addLocalSound("random.fizz", "newsound/random/fizz.ogg");
+
+	addLocalSound("liquid.water", "newsound/liquid/water.ogg");
+
+
+	addLocalSound("mob.cow", "newsound/mob/cow1.ogg");
+	addLocalSound("mob.cow", "newsound/mob/cow2.ogg");
+	addLocalSound("mob.cow", "newsound/mob/cow3.ogg");
+	addLocalSound("mob.cow", "newsound/mob/cow4.ogg");
+	addLocalSound("mob.cowhurt", "newsound/mob/cowhurt1.ogg");
+	addLocalSound("mob.cowhurt", "newsound/mob/cowhurt2.ogg");
+	addLocalSound("mob.cowhurt", "newsound/mob/cowhurt3.ogg");
+	addLocalSound("mob.cowhurt", "newsound/mob/cowhurt4.ogg");
+
+	addLocalSound("mob.chicken", "newsound/mob/chicken1.ogg");
+	addLocalSound("mob.chicken", "newsound/mob/chicken2.ogg");
+	addLocalSound("mob.chicken", "newsound/mob/chicken3.ogg");
+	addLocalSound("mob.chickenhurt", "newsound/mob/chickenhurt1.ogg");
+	addLocalSound("mob.chickenhurt", "newsound/mob/chickenhurt2.ogg");
+	addLocalSound("mob.chickenplop", "newsound/mob/chickenplop.ogg");
+
+	addLocalSound("mob.sheep", "newsound/mob/sheep1.ogg");
+	addLocalSound("mob.sheep", "newsound/mob/sheep2.ogg");
+	addLocalSound("mob.sheep", "newsound/mob/sheep3.ogg");
+
+	addLocalSound("mob.pig", "newsound/mob/pig1.ogg");
+	addLocalSound("mob.pig", "newsound/mob/pig2.ogg");
+	addLocalSound("mob.pig", "newsound/mob/pig3.ogg");
+	addLocalSound("mob.pigdeath", "newsound/mob/pigdeath.ogg");
+
+	addLocalSound("fire.fire", "newsound/fire/fire.ogg");
+	addLocalSound("fire.ignite", "newsound/fire/ignite.ogg");
+
+}
+
+void SoundEngine::addLocalSound(std::string name, std::string path)
+{
+	int channels, sample_rate;
+	short* output;
+	int samples = m_pPlatform->loadOgg(path, &channels, &sample_rate, &output);
+
+	if (samples > 0) {
+		const PCMSoundHeader& pcm = { channels, sizeof(short), sample_rate, samples };
+		const SoundDesc& sound = SoundDesc(pcm, output);
+		m_repository.add(name, sound);
+	}
 }
 
 void SoundEngine::enable(bool b)
@@ -88,6 +143,8 @@ void SoundEngine::unMute()
 void SoundEngine::destroy()
 {
 }
+
+
 
 void SoundEngine::play(const std::string& name, const Vec3& pos, float volume, float pitch)
 {

@@ -25,7 +25,7 @@ public:
 	virtual void setBrightness(float);
 
 public:
-	float field_4;
+	float m_attackTime;
 	bool m_bRiding;
 	int m_textureWidth;
 	int m_textureHeight;

@@ -106,7 +106,7 @@ bool* LiquidTileDynamic::getSpread(Level* level, const TilePos& pos)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		field_74[i] = 1000;
+		m_oTex[i] = 1000;
 
 		TilePos chk(pos);
 
@@ -134,24 +134,24 @@ bool* LiquidTileDynamic::getSpread(Level* level, const TilePos& pos)
 			continue;
 
 		if (isWaterBlocking(level, TilePos(chk.x, chk.y - 1, chk.z)))
-			field_74[i] = getSlopeDistance(level, chk, 1, i);
+			m_oTex[i] = getSlopeDistance(level, chk, 1, i);
 		else
-			field_74[i] = 0;
+			m_oTex[i] = 0;
 	}
 
-	int min = field_74[0];
+	int min = m_oTex[0];
 	// @NOTE: unrolled loop
 	for (int i = 1; i < 4; i++)
 	{
-		if (min >= field_74[i])
-			min  = field_74[i];
+		if (min >= m_oTex[i])
+			min  = m_oTex[i];
 	}
 
 	// @NOTE: unrolled loop
 	for (int i = 0; i < 4; i++)
-		field_70[i] = field_74[i] == min;
+		m_checkBuffer[i] = m_oTex[i] == min;
 
-	return field_70;
+	return m_checkBuffer;
 }
 
 void LiquidTileDynamic::onPlace(Level* level, const TilePos& pos)
@@ -213,7 +213,7 @@ void LiquidTileDynamic::tick(Level* level, const TilePos& pos, Random* random)
 {
 	int depth = getDepth(level, pos);
 	int speed;
-	if (m_pMaterial != Material::lava || level->m_pDimension->field_D)
+	if (m_pMaterial != Material::lava || level->m_pDimension->m_bUltraWarm)
 		speed = 1;
 	else
 		speed = 2;

@@ -19,4 +19,22 @@ public:
 	{
 		return ChunkTilePos(x + other.x, y + other.y, z + other.z);
 	}
+
+	TilePos toTilePos(const ChunkPos& pos) const
+	{
+		return TilePos(pos.x * 16 + x, y, pos.z * 16 + z);
+	}
+
+	bool operator==(const ChunkTilePos& other) const {
+		return x == other.x && y == other.y && z == other.z;
+	}
 };
+
+namespace std {
+	template <>
+	struct hash<ChunkTilePos> {
+		std::size_t operator()(const ChunkTilePos& pos) const noexcept {
+			return pos.x ^ (pos.y << 1) ^ (pos.z << 2);
+		}
+	};
+}

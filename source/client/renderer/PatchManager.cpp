@@ -18,7 +18,6 @@ PatchManager* GetPatchManager()
 
 PatchManager::PatchManager()
 {
-	m_bGrassTinted = true;
 	m_bGlassSemiTransparent = false;
 	m_nMetalSideYOffset = -1;
 }
@@ -139,12 +138,6 @@ void PatchManager::LoadPatchData(const std::string& patchData)
 			continue;
 		}
 
-		// features -- TODO un-hardcode this
-		if (command == "vegetation_tint")
-		{
-			ReadBool(lineStream, m_bGrassTinted);
-			continue;
-		}
 		if (command == "semi_transparent_glass")
 		{
 			ReadBool(lineStream, m_bGlassSemiTransparent);
@@ -155,16 +148,6 @@ void PatchManager::LoadPatchData(const std::string& patchData)
 			ReadInt(lineStream, m_nMetalSideYOffset);
 			continue;
 		}
-		if (command == "grass_sides_tint")
-		{
-			ReadBool(lineStream, m_bGrassSidesTinted);
-
-			if (m_bGrassSidesTinted)
-				// push a magic value so we can determine whether to disable it if the file doesn't exist
-				m_patchData.push_back(PatchData(TYPE_TERRAIN, 100, 100, "grass_side_transparent.png"));
-
-			continue;
-		}
 
 		LOG_W("Unknown command %s from patch data.", command.c_str());
 	}
@@ -172,48 +155,7 @@ void PatchManager::LoadPatchData(const std::string& patchData)
 
 void PatchManager::PatchTextures(AppPlatform* pAppPlatform, ePatchType patchType)
 {
-	// Use glTexSubImage2D to patch the terrain.png texture on the fly.
-	for (int i = 0; i < int(m_patchData.size()); i++)
-	{
-		PatchData& pd = m_patchData[i];
-		if (pd.m_type != patchType)
-			continue;
-
-		bool bDisableFancyGrassIfFailed = false;
-
-		// got the magic value, we can determine whether to disable fancy pants grass if the file doesn't exist
-		if (pd.m_destX == 1600 && pd.m_destY == 1600 && pd.m_type == TYPE_TERRAIN)
-		{
-			pd.m_destX = 4 * 16;
-			pd.m_destY = 5 * 16;
-
-			bDisableFancyGrassIfFailed = true;
-		}
-
-		// N.B. Well, in some cases, you do want things to fail nicely.
-		Texture texture = pAppPlatform->loadTexture("patches/" + pd.m_filename, false);
-		if (!texture.m_pixels || !texture.m_width || !texture.m_height)
-		{
-			LOG_W("Image %s was not found?! Skipping", pd.m_filename.c_str());
-			if (bDisableFancyGrassIfFailed)
-				m_bGrassSidesTinted = false;
-			continue;
-		}
-
-		glTexSubImage2D(
-			GL_TEXTURE_2D,
-			0,
-			pd.m_destX,
-			pd.m_destY,
-			texture.m_width,
-			texture.m_height,
-			GL_RGBA,
-			GL_UNSIGNED_BYTE,
-			texture.m_pixels
-		);
-
-		SAFE_DELETE_ARRAY(texture.m_pixels);
-	}
+	
 }
 
 void PatchManager::PatchTiles()
@@ -240,11 +182,6 @@ void PatchManager::PatchTiles()
 	}
 }
 
-bool PatchManager::IsGrassTinted()
-{
-	return m_bGrassTinted;
-}
-
 int PatchManager::GetMetalSideYOffset()
 {
 	return m_nMetalSideYOffset;
@@ -253,11 +190,6 @@ int PatchManager::GetMetalSideYOffset()
 bool PatchManager::IsGlassSemiTransparent()
 {
 	return m_bGlassSemiTransparent;
-}
-
-bool PatchManager::IsGrassSidesTinted()
-{
-	return m_bGrassSidesTinted;
 }
 
 void PatchManager::ReadBool(std::istream& is, bool& b)

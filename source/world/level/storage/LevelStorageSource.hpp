@@ -14,8 +14,8 @@ struct LevelSummary
 {
 	std::string m_fileName;
 	std::string m_levelName;
-	int m_lastPlayed;
-	int m_sizeOnDisk;
+	int64_t m_lastPlayed;
+	int64_t m_sizeOnDisk;
 
 	LevelSummary()
 	{
@@ -23,7 +23,7 @@ struct LevelSummary
 		m_sizeOnDisk = 0;
 	}
 
-	LevelSummary(const std::string& a, const std::string& b, int c, int d)
+	LevelSummary(const std::string& a, const std::string& b, int64_t c, int64_t d)
 	{
 		m_fileName = a;
 		m_levelName = b;

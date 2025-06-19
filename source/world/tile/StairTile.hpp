@@ -44,9 +44,9 @@ public:
 	virtual float getExplosionResistance(Entity*) const override;
 	virtual void wasExploded(Level*, const TilePos& pos) override;
 	virtual int getRenderLayer() const override;
-	virtual int use(Level*, const TilePos& pos, Player*) override;
+	virtual bool use(Level*, const TilePos& pos, Player*) override;
 	virtual void stepOn(Level*, const TilePos& pos, Entity*) override;
-	virtual void setPlacedBy(Level*, const TilePos& pos, Mob*) override;
+	virtual void setPlacedBy(Level*, const TilePos& pos, Mob*, Facing::Name face) override;
 	virtual void prepareRender(Level*, const TilePos& pos) override;
 	virtual void attack(Level*, const TilePos& pos, Player*) override;
 	virtual void handleEntityInside(Level*, const TilePos& pos, const Entity*, Vec3&) override;

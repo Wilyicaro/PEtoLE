@@ -12,6 +12,8 @@
 #include "ChunkSource.hpp"
 #include "world/level/storage/ChunkStorage.hpp"
 #include "world/level/Level.hpp"
+#include <unordered_map>
+#include <cstdint>
 
 class Level;
 
@@ -30,19 +32,20 @@ public:
 	bool shouldSave() override;
 	void saveAll() override;
 	int tick() override;
-#ifdef ENH_IMPROVED_SAVING
-	void saveUnsaved() override;
-#endif
+	void saveUnsaved(bool limited = true) override;
+
+	void unloadChunk(std::pair<uint64_t, LevelChunk*> p);
 
 	LevelChunk* load(const ChunkPos& pos);
 	void save(LevelChunk*);
 
 public:
 	bool field_4;
-	LevelChunk* m_pEmptyChunk;
+	LevelChunk* m_pFakeChunk;
 	ChunkSource* m_pChunkSource;
 	ChunkStorage* m_pChunkStorage;
-	LevelChunk* m_chunkMap[C_MAX_CHUNKS_Z][C_MAX_CHUNKS_X];
+	std::unordered_map<uint64_t, LevelChunk*> m_chunkMap;
+	std::unordered_map<uint64_t, LevelChunk*> m_fakeChunkMap;
 	Level* m_pLevel;
 	LevelChunk* m_pLastChunk;
 	ChunkPos m_lastChunkPos;

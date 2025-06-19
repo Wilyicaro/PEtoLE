@@ -34,7 +34,7 @@ public:
 
 private:
 	RectangleArea m_rectArea;
-	bool field_30[10];
+	bool m_noNeighborUpdate[10];
 	Options* m_pOptions;
 	bool field_40;
 	bool m_bJumpBeingHeld;

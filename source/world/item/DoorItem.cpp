@@ -14,7 +14,6 @@
 DoorItem::DoorItem(int id, Material* pMtl) : Item(id)
 {
 	m_maxStackSize = 1;
-	m_maxDamage = 64;
 	m_pMaterial = pMtl;
 }
 
@@ -23,11 +22,11 @@ bool DoorItem::useOn(ItemInstance* inst, Player* player, Level* level, const Til
 	if (face != Facing::UP)
 		return false;
 
-	Tile* pTile = m_pMaterial == Material::wood ? Tile::door_wood : Tile::door_iron;
+	Tile* pTile = m_pMaterial == Material::wood ? Tile::doorWood : Tile::doorIron;
 	if (!pTile->mayPlace(level, pos.above()))
 		return false;
 
-	int faceDir = Mth::floor((((player->m_rot.x + 180.0f) * 4.0f) / 360.0f) - 0.5f) & 3;
+	int faceDir = Mth::floor((((player->m_rot.y + 180.0f) * 4.0f) / 360.0f) - 0.5f) & 3;
 	int offsetX, offsetZ;
 	switch (faceDir)
 	{

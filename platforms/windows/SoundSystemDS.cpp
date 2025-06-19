@@ -160,7 +160,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	unsigned char* bufferPtr;
 	unsigned long bufferSize;
 
-	int length = sound.m_pHeader->m_length * sound.m_pHeader->m_bytes_per_sample;
+
 	bool is2D = sqrtf(x * x + y * y + z * z) == 0.f;
 
 	//For some reason mojang made 3D sounds are REALLY quiet, with some of their volumes literally going below 0.1
@@ -173,12 +173,13 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 
 	WAVEFORMATEX waveFormat;
 	waveFormat.wFormatTag = WAVE_FORMAT_PCM;
-	waveFormat.nSamplesPerSec = DWORD(float(sound.m_pHeader->m_sample_rate) * pitch);
-	waveFormat.wBitsPerSample = 8 * sound.m_pHeader->m_bytes_per_sample;
-	waveFormat.nChannels = sound.m_pHeader->m_channels;
-	waveFormat.nBlockAlign = (waveFormat.wBitsPerSample / 8) * waveFormat.nChannels;
+	waveFormat.nSamplesPerSec = DWORD(float(sound.m_header.m_sample_rate) * pitch);
+	waveFormat.wBitsPerSample = 8 * sound.m_header.m_bytes_per_sample;
+	waveFormat.nChannels = sound.m_header.m_channels;
+	waveFormat.nBlockAlign = (waveFormat.wBitsPerSample * waveFormat.nChannels) / 8;
 	waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
 	waveFormat.cbSize = 0;
+
 
 	// Set the buffer description of the secondary sound buffer that the wave file will be loaded onto.
 	DSBUFFERDESC bufferDesc;
@@ -194,7 +195,10 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 		bufferDesc.dwFlags = DSBCAPS_CTRLVOLUME | DSBCAPS_GLOBALFOCUS;
 	}
 
-	bufferDesc.dwBufferBytes = length;
+	DWORD totalBytes = sound.m_header.m_samples * sound.m_header.m_channels * sound.m_header.m_bytes_per_sample;
+
+	bufferDesc.dwBufferBytes = (totalBytes / waveFormat.nBlockAlign) * waveFormat.nBlockAlign;
+
 	bufferDesc.dwReserved = 0;
 	bufferDesc.lpwfxFormat = &waveFormat;
 	bufferDesc.guid3DAlgorithm = GUID_NULL;
@@ -203,7 +207,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	result = m_directsound->CreateSoundBuffer(&bufferDesc, &tempBuffer, NULL);
 	if (FAILED(result))
 	{
-		LOG_E("SoundSystemDS CreateSoundBuffer failed");
+		LOG_E("SoundSystemDS CreateSoundBuffer failed: 0x%08X", result);
 		return;
 	}
 
@@ -221,7 +225,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 
 
 	// Lock the secondary buffer to write wave data into it.
-	result = soundbuffer->Lock(0, length, (void**)&bufferPtr, (DWORD*)&bufferSize, NULL, 0, 0);
+	result = soundbuffer->Lock(0, totalBytes, (void**)&bufferPtr, (DWORD*)&bufferSize, NULL, 0, 0);
 	if (FAILED(result))
 	{
 		LOG_E("SoundSystemDS lock failed");
@@ -230,7 +234,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	}
 
 	//Move the wave data into the buffer.
-	memcpy(bufferPtr, sound.m_pData, length);
+	memcpy(bufferPtr, sound.m_pData, totalBytes);
 
 	// Unlock the secondary buffer after the data has been written to it.
 	result = soundbuffer->Unlock((void*)bufferPtr, bufferSize, NULL, 0);
@@ -268,7 +272,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	info.object3d = NULL;
 
 	//Check if position is not 0,0,0 and for mono to play 3D sound
-	if (!is2D && sound.m_pHeader->m_channels == 1) 
+	if (!is2D && sound.m_header.m_channels == 1) 
 	{
 		LPDIRECTSOUND3DBUFFER object3d;
 

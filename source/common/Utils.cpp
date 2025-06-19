@@ -10,6 +10,8 @@
 
 #include "common/Utils.hpp"
 #include "compat/PlatformDefinitions.h"
+#include <ostream>
+#include <stdexcept>
 
 #if defined(_WIN32) && !defined(_XBOX)
 
@@ -263,6 +265,11 @@ int getTimeMs()
 	return int(getTimeS() * 1000.0);
 }
 
+int64_t getTimeNano()
+{
+	return int64_t(getTimeS() * 1000.0);
+}
+
 time_t getRawTimeS()
 {
 	timeval tv;
@@ -441,4 +448,171 @@ uint8_t* ZlibDeflateToMemoryLvl(uint8_t* pInput, size_t sizeBytes, size_t* compr
 	*compressedSizeOut = strm.total_out;
 
 	return pOut;
+}
+
+void compressZlib(const std::string& input, std::string& output) {
+	uLongf compressedSize = compressBound(input.size());
+	std::vector<char> buffer(compressedSize);
+
+	int res = compress2(
+		reinterpret_cast<Bytef*>(buffer.data()), &compressedSize,
+		reinterpret_cast<const Bytef*>(input.data()), input.size(),
+		Z_BEST_COMPRESSION
+	);
+
+	if (res != Z_OK) {
+		throw std::runtime_error("Zlib compression failed.");
+	}
+
+	output.assign(buffer.data(), compressedSize);
+}
+
+void decompressZlib(const std::string& input, std::string& output, size_t expectedSize = 0) {
+	size_t sizeHint = expectedSize > 0 ? expectedSize : input.size() * 4;
+	std::vector<char> buffer(sizeHint);
+
+	uLongf destLen = sizeHint;
+	int res = uncompress(
+		reinterpret_cast<Bytef*>(buffer.data()), &destLen,
+		reinterpret_cast<const Bytef*>(input.data()), input.size()
+	);
+
+	if (res != Z_OK) {
+		throw std::runtime_error("Zlib decompression failed.");
+	}
+
+	output.assign(buffer.data(), destLen);
+}
+
+std::vector<uint8_t> compressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip, int compressionLevel) {
+	z_stream strm{};
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+
+	int windowBits = useGzip ? 16 + MAX_WBITS : MAX_WBITS;
+
+	if (deflateInit2(&strm, compressionLevel, Z_DEFLATED, windowBits, 8, Z_DEFAULT_STRATEGY) != Z_OK)
+		throw std::runtime_error("deflateInit2 failed");
+
+	strm.avail_in = static_cast<uInt>(inputSize);
+	strm.next_in = const_cast<Bytef*>(inputData);
+
+	std::vector<uint8_t> output;
+	const size_t CHUNK_SIZE = 4096;
+	uint8_t outChunk[CHUNK_SIZE];
+
+	int ret;
+	do {
+		strm.avail_out = CHUNK_SIZE;
+		strm.next_out = outChunk;
+
+		ret = deflate(&strm, Z_FINISH);
+		if (ret == Z_STREAM_ERROR) {
+			deflateEnd(&strm);
+			throw std::runtime_error("deflate failed");
+		}
+
+		size_t have = CHUNK_SIZE - strm.avail_out;
+		output.insert(output.end(), outChunk, outChunk + have);
+	} while (strm.avail_out == 0);
+
+	deflateEnd(&strm);
+	return output;
+}
+
+
+
+std::vector<uint8_t> decompressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip) {
+	if (!inputData || inputSize == 0)
+		throw std::runtime_error("invalid input for decompression");
+
+	z_stream strm{};
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+
+	strm.avail_in = static_cast<uInt>(inputSize);
+	strm.next_in = const_cast<Bytef*>(inputData);
+
+	// Enable gzip header support if requested
+	int windowBits = useGzip ? 16 + MAX_WBITS : MAX_WBITS;
+
+	if (inflateInit2(&strm, windowBits) != Z_OK)
+		throw std::runtime_error("inflateInit2 failed");
+
+	std::vector<uint8_t> output;
+	const size_t CHUNK_SIZE = 4096;
+	uint8_t outChunk[CHUNK_SIZE];
+
+	int ret;
+	do {
+		strm.avail_out = CHUNK_SIZE;
+		strm.next_out = outChunk;
+
+		ret = inflate(&strm, Z_NO_FLUSH);
+		if (ret == Z_MEM_ERROR || ret == Z_DATA_ERROR || ret == Z_NEED_DICT) {
+			inflateEnd(&strm);
+			throw std::runtime_error("inflate failed");
+		}
+
+		size_t have = CHUNK_SIZE - strm.avail_out;
+		output.insert(output.end(), outChunk, outChunk + have);
+	} while (ret != Z_STREAM_END);
+
+	inflateEnd(&strm);
+	return output;
+}
+
+
+void writeBE16(std::ostream& os, uint16_t val) {
+	os.put(static_cast<char>((val >> 8) & 0xFF));
+	os.put(static_cast<char>(val & 0xFF));
+}
+
+void writeIntBE(FILE* file, int value) {
+	uint8_t bytes[4] = {
+		(uint8_t)(value >> 24),
+		(uint8_t)(value >> 16),
+		(uint8_t)(value >> 8),
+		(uint8_t)value
+	};
+	fwrite(bytes, 1, 4, file);
+}
+
+int readIntBE(FILE* file) {
+	uint8_t bytes[4];
+	fread(bytes, 1, 4, file);
+	return (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
+}
+
+bool w_get(const std::string& url, std::vector<unsigned char>& outData)
+{
+	std::string host, path;
+	size_t schemePos = url.find("://");
+	std::string cleanUrl = (schemePos != std::string::npos) ? url.substr(schemePos + 3) : url;
+
+	size_t pathPos = cleanUrl.find('/');
+	if (pathPos != std::string::npos) {
+		host = cleanUrl.substr(0, pathPos);
+		path = cleanUrl.substr(pathPos);
+	}
+	else {
+		host = cleanUrl;
+		path = "/";
+	}
+
+	return url.find("https") != std::string::npos ? https_get(host, path, outData) : http_get(host, path, outData);
+}
+
+bool http_get(const std::string& host, const std::string& path, std::vector<unsigned char>& outData)
+{
+	// @TODO implement with libcurl
+	return false;
+}
+
+bool https_get(const std::string& host, const std::string& path, std::vector<unsigned char>& outData)
+{
+	// @TODO implement with libcurl
+	return false;
 }

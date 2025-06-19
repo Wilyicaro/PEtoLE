@@ -70,21 +70,12 @@ void Explosion::explode()
 
 	m_power *= 2;
 
-	// Why are we flooring this? It takes floats.
-	/*AABB aabb(
-		(float)Mth::floor(m_pos.x - m_power - 1.0f),
-		(float)Mth::floor(m_pos.y - m_power - 1.0f),
-		(float)Mth::floor(m_pos.z - m_power - 1.0f),
-		(float)Mth::floor(m_pos.x + m_power + 1.0f),
-		(float)Mth::floor(m_pos.y + m_power + 1.0f),
-		(float)Mth::floor(m_pos.z + m_power + 1.0f)
-	);*/
 	AABB aabb(m_pos - m_power - 1.0f, m_pos + m_power + 1.0f);
 
-	EntityVector ents = m_pLevel->getEntities(m_pEntity, aabb);
+	EntityVector ents = m_pLevel->getEntities(m_pEntity ? m_pEntity->shared_from_this() : nullptr, aabb);
 	for (int i = 0; i < ents.size(); i++)
 	{
-		Entity* entity = ents.at(i);
+		auto& entity = ents.at(i);
 		float distPowerRatio = entity->distanceTo(m_pos) / m_power;
 		if (distPowerRatio > 1.0f)
 			continue;

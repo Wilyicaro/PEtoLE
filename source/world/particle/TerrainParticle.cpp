@@ -12,7 +12,7 @@
 void TerrainParticle::_init(Tile* tile)
 {
 	m_pTile = tile;
-	field_DC = tile->m_TextureFrame;
+	blockTexture = tile->m_TextureFrame;
 	field_F4 = tile->field_28;
 	m_rCol = m_gCol = m_bCol = 0.6f;
 	field_F0 *= 0.5f;
@@ -32,10 +32,8 @@ TerrainParticle::TerrainParticle(Level* level, const Vec3& pos, const Vec3& dir,
 
 TerrainParticle* TerrainParticle::init(const TilePos& tilePos)
 {
-	if (m_pTile == Tile::grass)
-		return this;
-
-	int color = m_pTile->getColor(m_pLevel, tilePos);
+	blockTexture = m_pTile->getTexture(Facing::DOWN, m_pLevel->getData(tilePos));
+	int color = m_pTile->getColor(m_pLevel, tilePos, Facing::DOWN, blockTexture);
 	m_rCol *= float(GET_RED(color)) / 255.0f;
 	m_gCol *= float(GET_GREEN(color)) / 255.0f;
 	m_bCol *= float(GET_BLUE(color)) / 255.0f;
@@ -52,7 +50,7 @@ void TerrainParticle::render(Tesselator& t, float f, float a4, float a5, float a
 {
 	constexpr float C_MAGIC_1 = 0.015609f; // @BUG: Slightly bigger than 1/64.0f
 
-	int texture = field_DC;
+	int texture = blockTexture;
 	int texX = texture % 16;
 	if (texture < 0)
 		texture += 15;

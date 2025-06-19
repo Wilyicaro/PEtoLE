@@ -32,9 +32,8 @@ Entity* PathfinderMob::findAttackTarget()
 	return nullptr;
 }
 
-bool PathfinderMob::checkHurtTarget(Entity* pEnt, float f)
+void PathfinderMob::checkHurtTarget(Entity* pEnt, float f)
 {
-	return false;
 }
 
 void PathfinderMob::checkCantSeeTarget(Entity* pEnt, float f)
@@ -91,7 +90,7 @@ float PathfinderMob::getWalkingSpeedModifier() const
 	return mod;
 }
 
-bool PathfinderMob::canSpawn() const
+bool PathfinderMob::canSpawn()
 {
 	if (!Mob::canSpawn())
 		return false;
@@ -140,7 +139,7 @@ void PathfinderMob::updateAi()
 	}
 
 
-	m_rot.y = 0.0f;
+	m_rot.x = 0.0f;
 
 	if (m_path.empty() || m_random.nextInt(100) == 0)
 	{
@@ -179,29 +178,29 @@ void PathfinderMob::updateAi()
 		float ang = Mth::atan2(nodePos.z - m_pos.z, nodePos.x - m_pos.x) * 180.0f / float(M_PI) - 90.0f;
 		float heightDiff = nodePos.y - Mth::floor(m_hitbox.min.y + 0.5f ); // +0.5f is not present on b1.2_02, but is present on 0.12.1
 
-		field_B00.y = m_runSpeed;
+		field_B00.x = m_runSpeed;
 
-		float angDiff = ang - m_rot.x;
+		float angDiff = ang - m_rot.y;
 		while (angDiff < -180.0f) angDiff += 360.0f;
 		while (angDiff >= 180.0f) angDiff -= 360.0f;
 
 		if (angDiff > +MAX_TURN) angDiff = +MAX_TURN;
 		if (angDiff < -MAX_TURN) angDiff = -MAX_TURN;
 
-		float oldYaw = m_rot.x;
+		float oldYaw = m_rot.y;
 
-		m_rot.x += angDiff;
+		m_rot.y += angDiff;
 
 		if (m_bHoldGround && m_pAttackTarget)
 		{
 			float ang2 = Mth::atan2(m_pAttackTarget->m_pos.z - m_pos.z, m_pAttackTarget->m_pos.x - m_pos.x) * 180.0f / float(M_PI) - 90.0f;
-			m_rot.x = ang2;
+			m_rot.y = ang2;
 
 			float thing = ((((angDiff + oldYaw) - ang2) + 90.0f) * float(M_PI)) / 180.0f;
 
 			// @NOTE: Using old field_B00.y value. This is intentional and consistent with b1.2_02.
-			field_B00.x = -field_B00.y * Mth::sin(thing);
-			field_B00.y =  field_B00.y * Mth::cos(thing);
+			field_B00.y = -field_B00.x * Mth::sin(thing);
+			field_B00.x =  field_B00.x * Mth::cos(thing);
 		}
 
 		if (heightDiff > 0.0f)

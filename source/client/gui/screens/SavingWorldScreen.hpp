@@ -10,7 +10,6 @@
 
 #include "../Screen.hpp"
 
-#ifdef ENH_IMPROVED_SAVING
 
 class Entity;
 
@@ -27,5 +26,3 @@ public:
 	int m_timer;
 	//Entity* m_pEntityToDeleteAfterSave;
 };
-
-#endif

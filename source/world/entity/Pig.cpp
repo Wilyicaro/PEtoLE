@@ -10,8 +10,8 @@
 
 Pig::Pig(Level* pLevel) : Animal(pLevel)
 {
-	m_pDescriptor = &EntityTypeDescriptor::pig;
-	field_C8 = RENDER_PIG;
+	m_pEntityType = EntityType::pig;
+	m_renderType = RENDER_PIG;
 	m_texture = "mob/pig.png";
 	setSize(0.9f, 0.9f);
 	// some dataitem stuff
@@ -19,9 +19,9 @@ Pig::Pig(Level* pLevel) : Animal(pLevel)
 int Pig::getDeathLoot() const
 {
 	if (isOnFire())
-		return Item::porkChop_cooked->m_itemID;
+		return Item::cookedPorkchop->m_itemID;
 	else
-		return Item::porkChop_raw->m_itemID;
+		return Item::rawPorkchop->m_itemID;
 }
 
 void Pig::setSaddle(bool b)

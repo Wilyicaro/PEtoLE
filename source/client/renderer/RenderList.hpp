@@ -20,18 +20,19 @@ public:
 	void addR(const RenderChunk&);
 	void clear();
 	void init(float, float, float);
+	bool isAt(const RenderChunk& rc);
 	void render();
 	void renderChunks();
 
 public:
-	float m_posX;
-	float m_posY;
-	float m_posZ;
+	float m_offX;
+	float m_offY;
+	float m_offZ;
 	int* field_C;
-	RenderChunk* field_10;
-	int field_14;
-	bool field_18;
-	bool field_19;
-	int field_1C;
+	RenderChunk* m_renderChunks;
+	int m_index;
+	bool inited;
+	bool rendered;
+	int m_remaining;
 };
 

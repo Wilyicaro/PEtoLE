@@ -18,7 +18,7 @@ public:
 	ConfirmScreen(Screen* pScreen, const std::string& line1, const std::string& line2, const std::string& ok, const std::string& cancel, int x);
 
 	void buttonClicked(Button* pButton) override;
-	bool handleBackEvent(bool b) override;
+	void onClose() override;
 	void init() override;
 	void render(int mouseX, int mouseY, float f) override;
 

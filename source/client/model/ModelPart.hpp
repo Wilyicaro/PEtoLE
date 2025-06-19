@@ -10,7 +10,7 @@
 #include <vector>
 #include "Cube.hpp"
 #include "Model.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 
 class Cube;
 class Model;
@@ -61,8 +61,8 @@ public:
 	float m_textureHeight;
 	int field_40;
 	int field_44;
-	bool field_48;
-	bool field_49;
+	bool m_bVisible;
+	bool m_bNeverRender;
 	bool m_bCompiled;
 	int field_4C;
 	GLuint m_buffer;

@@ -35,12 +35,9 @@ void ConfirmScreen::buttonClicked(Button* pButton)
 	postResult(pButton->m_buttonId == 0);
 }
 
-bool ConfirmScreen::handleBackEvent(bool b)
+void ConfirmScreen::onClose()
 {
-	if (!b)
-		postResult(false);
-
-	return true;
+	postResult(false);
 }
 
 void ConfirmScreen::init()

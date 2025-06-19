@@ -15,18 +15,10 @@ FlameParticle::FlameParticle(Level* level, const Vec3& pos, const Vec3& dir) :
 
 	m_vel = m_vel * 0.01f + dir;
 
-	// @NOTE: Useless genrand_int32 calls. Will keep them in to keep consistent
-	sharedRandom.genrand_int32();
-	sharedRandom.genrand_int32();
-	sharedRandom.genrand_int32();
-	sharedRandom.genrand_int32();
-	sharedRandom.genrand_int32();
-	sharedRandom.genrand_int32();
-
 	field_104 = field_F0;
 	m_rCol = m_gCol = m_bCol = 1.0f;
 	field_EC = int(8.0f / (0.2f + 0.8f * Mth::random())) + 4;
-	field_DC = PTI_FLAME;
+	blockTexture = PTI_FLAME;
 }
 
 float FlameParticle::getBrightness(float unused) const

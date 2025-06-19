@@ -36,7 +36,7 @@ public:
 
 	void updateLiquid(Level*, const TilePos& pos);
 	void fizz(Level*, const TilePos& pos);
-	int getColor(const LevelSource*, const TilePos& pos) const override;
+	int getColor(const LevelSource*, const TilePos& pos, Facing::Name facing, int texture = -1) const override;
 	int getDepth(Level*, const TilePos& pos);
 	int getRenderedDepth(const LevelSource*, const TilePos& pos) const;
 	Vec3 getFlow(const LevelSource*, const TilePos& pos) const;
@@ -54,6 +54,6 @@ public:
 
 public:
 	int field_6C;
-	bool field_70[4];
-	int field_74[4];
+	bool m_checkBuffer[4];
+	int m_oTex[4];
 };

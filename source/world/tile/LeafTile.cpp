@@ -9,21 +9,21 @@
 #include "LeafTile.hpp"
 #include "world/level/Level.hpp"
 #include "client/renderer/PatchManager.hpp"
+#include <client/renderer/FoliageColor.hpp>
 
 LeafTile::LeafTile(int id) : TransparentTile(id, TEXTURE_LEAVES_TRANSPARENT, Material::leaves, false)
 {
-	field_70 = nullptr;
+	m_checkBuffer = nullptr;
 
-	m_TextureFrame = TEXTURE_LEAVES_TRANSPARENT;
-	field_74 = TEXTURE_LEAVES_TRANSPARENT;
+	m_oTex = m_TextureFrame;
 
 	setTicking(true);
 }
 
 LeafTile::~LeafTile()
 {
-	if (field_70)
-		delete[] field_70;
+	if (m_checkBuffer)
+		delete[] m_checkBuffer;
 }
 
 void LeafTile::die(Level* level, const TilePos& pos)
@@ -32,14 +32,34 @@ void LeafTile::die(Level* level, const TilePos& pos)
 	level->setTile(pos, TILE_AIR);
 }
 
-int LeafTile::getColor(const LevelSource* level, const TilePos& pos) const
+int LeafTile::getColor(const LevelSource* levelSource, const TilePos& pos, Facing::Name facing, int texture) const
 {
-	if (GetPatchManager()->IsGrassTinted())
+	int data = levelSource->getData(pos);
+
+	if ((data & 1) == 1)
 	{
-		return 0x339933;
+		return FoliageColor::getEvergreenColor();
+	}
+	if ((data & 2) == 2)
+	{
+		return FoliageColor::getBirchColor();
 	}
 
-	return 0xffffff;
+	levelSource->getBiomeSource()->getBiome(pos);
+	return FoliageColor::get(levelSource->getBiomeSource()->temperatures[0], levelSource->getBiomeSource()->downfalls[0]);
+}
+
+int LeafTile::getColor(int data, Facing::Name facing, int texture) const
+{
+	if ((data & 1) == 1)
+	{
+		return FoliageColor::getEvergreenColor();
+	}
+	if ((data & 2) == 2)
+	{
+		return FoliageColor::getBirchColor();
+	}
+	return FoliageColor::getDefaultColor();
 }
 
 int LeafTile::getTexture(Facing::Name face, int data) const
@@ -74,7 +94,7 @@ void LeafTile::onRemove(Level* level, const TilePos& pos)
 				TileID tile = level->getTile(pos + o);
 				if (tile != Tile::leaves->m_ID) continue;
 
-				level->setDataNoUpdate(pos + o, level->getData(pos + o) | 4);
+				level->setDataNoUpdate(pos + o, level->getData(pos + o) | 8);
 			}
 		}
 	}
@@ -82,48 +102,40 @@ void LeafTile::onRemove(Level* level, const TilePos& pos)
 
 void LeafTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	if (level->m_bIsMultiplayer)
+	if (level->m_bIsOnline)
 		return;
 
 	int data = level->getData(pos);
-	if ((data & 4) == 0)
+	if ((data & 8) == 0)
 		return;
 
 	constexpr int C_RANGE = 32;
 	constexpr int C_RANGE_SMALL = 4;
+	constexpr int k1 = C_RANGE / 2;
+	constexpr int j1 = C_RANGE * C_RANGE;
 
-	if (!field_70)
-		field_70 = new int[C_RANGE * C_RANGE * C_RANGE];
+	if (!m_checkBuffer)
+		m_checkBuffer = new int[C_RANGE * C_RANGE * C_RANGE];
 
 	if (level->hasChunksAt(pos - 5, pos + 5))
 	{
 		TilePos curr(pos);
-		// @TODO: get rid of magic values
-		for (int i = 0x3000; i != 0x5400; i += 0x400, curr.x++)
+		for (int i2 = -C_RANGE_SMALL; i2 <= C_RANGE_SMALL; i2++)
 		{
-			curr.x = pos.x - C_RANGE_SMALL;
-			for (int j = 0; j != 0x120; j += 0x20, curr.y++)
+			curr.x = pos.x + i2;
+			for (int j = -C_RANGE_SMALL; j <= C_RANGE_SMALL; j++)
 			{
-				curr.y = pos.y - C_RANGE_SMALL;
-				for (int k = 0; k != 9; k++, curr.z++)
+				curr.y = pos.y + j;
+				for (int k = -C_RANGE_SMALL; k <= C_RANGE_SMALL; k++)
 				{
-					curr.z = pos.z - C_RANGE_SMALL;
-
+					curr.z = pos.z + k;
 					TileID tile = level->getTile(curr);
-					if (tile == Tile::treeTrunk->m_ID)
-						field_70[0x18C + i + j + k] = 0;
-					else if (tile == Tile::leaves->m_ID)
-						field_70[0x18C + i + j + k] = -2;
-					else
-						field_70[0x18C + i + j + k] = -1;
+					m_checkBuffer[(i2 + k1) * j1 + (j + k1) * C_RANGE + k + k1] = tile == Tile::treeTrunk->m_ID ? 0 : tile == Tile::leaves->m_ID ? -2 : -1;
 				}
 			}
 		}
 
-		constexpr int k1 = C_RANGE / 2;
-		constexpr int j1 = C_RANGE * C_RANGE;
-
-		for (int i2 = 1; i2 <= 4; i2++)
+		for (int i2 = 1; i2 <= C_RANGE_SMALL; i2++)
 		{
 			for (int l2 = -C_RANGE_SMALL; l2 <= C_RANGE_SMALL; l2++)
 			{
@@ -131,34 +143,44 @@ void LeafTile::tick(Level* level, const TilePos& pos, Random* random)
 				{
 					for (int l3 = -C_RANGE_SMALL; l3 <= C_RANGE_SMALL; l3++)
 					{
-						if (field_70[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] != i2 - 1)
+						if (m_checkBuffer[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] != i2 - 1)
 							continue;
 
-						if (field_70[((l2 + k1) - 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] == -2)
-							field_70[((l2 + k1) - 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] = i2;
+						if (m_checkBuffer[((l2 + k1) - 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] == -2)
+							m_checkBuffer[((l2 + k1) - 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] = i2;
 
-						if (field_70[(l2 + k1 + 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] == -2)
-							field_70[(l2 + k1 + 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] = i2;
+						if (m_checkBuffer[(l2 + k1 + 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] == -2)
+							m_checkBuffer[(l2 + k1 + 1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1)] = i2;
 
-						if (field_70[(l2 + k1) * j1 + ((j3 + k1) - 1) * C_RANGE + (l3 + k1)] == -2)
-							field_70[(l2 + k1) * j1 + ((j3 + k1) - 1) * C_RANGE + (l3 + k1)] = i2;
+						if (m_checkBuffer[(l2 + k1) * j1 + ((j3 + k1) - 1) * C_RANGE + (l3 + k1)] == -2)
+							m_checkBuffer[(l2 + k1) * j1 + ((j3 + k1) - 1) * C_RANGE + (l3 + k1)] = i2;
 
-						if (field_70[(l2 + k1) * j1 + (j3 + k1 + 1) * C_RANGE + (l3 + k1)] == -2)
-							field_70[(l2 + k1) * j1 + (j3 + k1 + 1) * C_RANGE + (l3 + k1)] = i2;
+						if (m_checkBuffer[(l2 + k1) * j1 + (j3 + k1 + 1) * C_RANGE + (l3 + k1)] == -2)
+							m_checkBuffer[(l2 + k1) * j1 + (j3 + k1 + 1) * C_RANGE + (l3 + k1)] = i2;
 
-						if (field_70[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + ((l3 + k1) - 1)] == -2)
-							field_70[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + ((l3 + k1) - 1)] = i2;
+						if (m_checkBuffer[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + ((l3 + k1) - 1)] == -2)
+							m_checkBuffer[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + ((l3 + k1) - 1)] = i2;
 
-						if (field_70[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1 + 1)] == -2)
-							field_70[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1 + 1)] = i2;
+						if (m_checkBuffer[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1 + 1)] == -2)
+							m_checkBuffer[(l2 + k1) * j1 + (j3 + k1) * C_RANGE + (l3 + k1 + 1)] = i2;
 					}
 				}
 			}
 		}
-
-		if (field_70[0x4210] < 0)
-			die(level, pos);
-		else
-			level->setDataNoUpdate(pos, data & ~0x4);
 	}
+
+	if (m_checkBuffer[k1 * j1 + k1 * C_RANGE + k1] < 0)
+		die(level, pos);
+	else
+		level->setDataNoUpdate(pos, data & -9);
+}
+
+int LeafTile::getResource(int x, Random* random) const
+{
+	return random->nextInt(20) == 0 ? Tile::sapling->m_ID : 0;
+}
+
+int LeafTile::getSpawnResourcesAuxValue(int x) const
+{
+	return x & 3;
 }

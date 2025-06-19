@@ -10,9 +10,11 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "client/renderer/Texture.hpp"
 #include "client/sound/SoundSystem.hpp"
+#include "thirdparty/json.hpp"
 
 class AppPlatform
 {
@@ -89,6 +91,10 @@ public:
 
 public:
 	virtual std::string getAssetPath(const std::string& path) const;
+	virtual std::optional<std::string> readFile(const std::string& path) const;
+	std::optional<nlohmann::json> loadJson(const std::string& path);
+	virtual int loadOgg(const std::string path, int* channels, int* sample_rate, short** output) const;
+	static int decodeOgg(const unsigned char* mem, int len, int* channels, int* sample_rate, short** output);
 
 private:
 	virtual void _tick();

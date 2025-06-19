@@ -1,175 +1,212 @@
 #include "RegionFile.hpp"
+#include <ctime>
+#include <cassert>
+#include <cstring>
+#include <common/Logger.hpp>
+#include <common/Utils.hpp>
 
-#define SECTOR_BYTES (4096)
 
-static void void_sub(int a, int b)
-{
+RegionFile::RegionFile(const ChunkPos& pos, const std::string directory) {
+    m_pFile = nullptr;
+
+    m_fileName = directory + "/r." + std::to_string(pos.x >> 5) + "." + std::to_string(pos.z >> 5) + ".mcr";
+
+    offsets.resize(1024, 0);
+    timestamps.resize(1024, 0);
 }
 
-#define WRITE(data, elemsize, elemcnt, file) void_sub(int(fwrite(data, elemsize, elemcnt, file)), elemcnt)
-#define READ( data, elemsize, elemcnt, file) void_sub(int(fread (data, elemsize, elemcnt, file)), elemcnt)
-
-RegionFile::RegionFile(const std::string fileName)
-{
-	m_pFile = nullptr;
-	m_fileName = fileName + "/" + "chunks.dat";
-
-	field_20 = new int[1024];
-	field_24 = new int[1024];
-	memset(field_24, 0, 1024 * sizeof(int));
+RegionFile::~RegionFile() {
+    close();
 }
 
-RegionFile::~RegionFile()
-{
-	close();
-	if (field_20) delete[] field_20;
-	if (field_24) delete[] field_24;
+void RegionFile::close() {
+    if (m_pFile) {
+        fclose(m_pFile);
+        m_pFile = nullptr;
+    }
 }
 
-void RegionFile::close()
-{
-	if (m_pFile)
-	{
-		fclose(m_pFile);
-		m_pFile = nullptr;
-	}
+bool RegionFile::open() {
+    close();
+    m_pFile = fopen(m_fileName.c_str(), "r+b");
+
+    if (!m_pFile) {
+        // Criação do arquivo
+        m_pFile = fopen(m_fileName.c_str(), "w+b");
+        if (!m_pFile) return false;
+
+        // Inicializa os cabeçalhos com zeros
+        for (int i = 0; i < 1024; ++i) writeIntBE(m_pFile, 0);
+        for (int i = 0; i < 1024; ++i) writeIntBE(m_pFile, 0);
+
+        fflush(m_pFile);
+    }
+
+    return true;
 }
 
-bool RegionFile::open()
-{
-	close();
-	memset(field_20, 0, 1024 * sizeof(int));
-	
-	m_pFile = fopen(m_fileName.c_str(), "r+b");
-	if (m_pFile)
-	{
-		READ(field_20, sizeof(int), 1024, m_pFile);
-		
-		field_28[0] = false;
+bool RegionFile::readHeaders() {
+    if (!firstRead) return false;
+    firstRead = false;
+    fseek(m_pFile, 0, SEEK_SET);
 
-		for (int i = 0; i < 1024; i++)
-		{
-			int v13 = this->field_20[i];
-			if (v13)
-			{
-				int v12 = v13 >> 8;
-				int v11 = uint8_t(v13);
-				for (int j = 0; j < v11; ++j)
-				{
-					field_28[j + v12] = false;
-				}
-			}
-		}
+    sectorCount = 2;
+    for (int i = 0; i < 1024; ++i) {
+        int offset = offsets[i] = readIntBE(m_pFile);
+        if (offset != 0) {
+            int start = offset >> 8;
+            int count = offset & 0xFF;
+            int end = start + count;
+            if (end > sectorCount) sectorCount = end;
+        }
+    }
 
-		return m_pFile != nullptr;
-	}
+    for (int i = 0; i < 1024; ++i) {
+        timestamps[i] = readIntBE(m_pFile);
+    }
 
-	m_pFile = fopen(m_fileName.c_str(), "w+b");
-	if (!m_pFile)
-		return false;
 
-	WRITE(field_20, sizeof(int), 1024, m_pFile);
-	field_28[0] = false;
+    sectorFlags.assign(sectorCount, false);
+    sectorFlags[0] = sectorFlags[1] = true;
 
-	return true;
+    // Marca os setores usados
+    for (int i = 0; i < 1024; ++i) {
+        int offset = offsets[i];
+        if (offset != 0) {
+            int start = offset >> 8;
+            int count = offset & 0xFF;
+            for (int j = 0; j < count; ++j)
+                if ((start + j) < sectorCount)
+                    sectorFlags[start + j] = true;
+        }
+    }
+
+    return true;
 }
 
-bool RegionFile::readChunk(const ChunkPos& pos, RakNet::BitStream** pBitStream)
-{
-	int idx = field_20[32 * pos.z + pos.x];
-	if (!idx)
-		return false;
+void RegionFile::writeHeaders() {
+    fseek(m_pFile, 0, SEEK_SET);
 
-	int thing = (idx >> 8);
-	int offset = (idx & 0xFF);
+    // Escreve os campos de entrada
+    for (int i = 0; i < 1024; ++i) writeIntBE(m_pFile, offsets[i]);
+    for (int i = 0; i < 1024; ++i) writeIntBE(m_pFile, timestamps[i]);
 
-	int length = 0;
-	fseek(m_pFile, thing * SECTOR_BYTES, SEEK_SET);
-	fread(&length, sizeof(int), 1, m_pFile);
-	
-	assert(length < ((offset & 0xff) * SECTOR_BYTES));
-
-	length -= 4;
-
-	uint8_t* data = new uint8_t[length];
-	READ(data, 1, length, m_pFile);
-
-	*pBitStream = new RakNet::BitStream(data, length, false);
-	return true;
+    fflush(m_pFile);
 }
 
-bool RegionFile::write(int index, RakNet::BitStream& bitStream)
-{
-	fseek(m_pFile, index * SECTOR_BYTES, 0);
-	int length = sizeof(int) + bitStream.GetNumberOfBytesUsed();
+int RegionFile::findFreeSectors(int sectorsNeeded) {
+    int start = 0;
+    int consecutive = 0;
 
-	WRITE(&length, sizeof(length), 1, m_pFile);
-	WRITE(bitStream.GetData(), 1, bitStream.GetNumberOfBytesUsed(), m_pFile);
+    // Verificar se os setores consecutivos estão livres
+    for (size_t i = 2; i < sectorFlags.size(); ++i) {
+        if (!sectorFlags[i]) {
+            if (consecutive == 0) start = i;
+            ++consecutive;
+            if (consecutive >= sectorsNeeded) {
+                // Verificar se os setores consecutivos são válidos e não estão sendo usados por outra chunk
+                bool overlap = false;
+                for (int j = 0; j < sectorsNeeded; ++j) {
+                    if (sectorFlags[start + j]) {
+                        overlap = true;
+                        break;
+                    }
+                }
 
-	return true;
+                if (!overlap) {
+                    // Marcar os setores como ocupados
+                    for (int i = 0; i < sectorsNeeded; ++i) {
+                        sectorFlags[start + i] = true;
+                    }
+                    LOG_I("Allocated sectors: start=%d, needed=%d\n", start, sectorsNeeded);
+                    return start;
+                }
+            }
+        }
+        else {
+            consecutive = 0;
+        }
+    }
+
+    start = sectorFlags.size();
+    sectorFlags.resize(sectorFlags.size() + sectorsNeeded, false);
+    LOG_I("Extended field_28: new size=%zu, allocated start=%d\n", sectorFlags.size(), start);
+    return start;
 }
 
-bool RegionFile::writeChunk(const ChunkPos& pos, RakNet::BitStream& bitStream)
-{
-	int length = bitStream.GetNumberOfBytesUsed();
-	int field20i = field_20[32 * pos.z + pos.x];
-	int lowerIndex = (length + 4) / SECTOR_BYTES + 1;
-	if (lowerIndex > 256)
-		return false;
+bool RegionFile::readChunk(const ChunkPos& pos, std::vector<uint8_t>& outData) {
+    int index = pos.regionIndex();
 
-	int field20iU = field20i >> 8, field20iL = field20i & 0xff;
+    readHeaders();
 
-	if (field20iU && lowerIndex == field20iL)
-	{
-		write(field20iU, bitStream);
-		return true;
-	}
-	
-	for (int i = 0; i < field20iL; i++)
-	{
-		field_28[i + field20iU] = true;
-	}
+    int entry = offsets[index];
 
-	bool bNeedWrite = false;
-	int v22 = 0, i = 0;
-	while (i < lowerIndex)
-	{
-		if (field_28.find(i + v22) == field_28.end())
-		{
-			bNeedWrite = true;
-			break;
-		}
+    if (!entry) return false;
 
-		if (field_28[i + v22])
-		{
-			i++;
-		}
-		else
-		{
-			v22 += i + 1;
-			i = 0;
-		}
-	}
+    int sectorStart = entry >> 8;
+    int sectorCount = entry & 0xFF;
+    fseek(m_pFile, sectorStart * SECTOR_BYTES, SEEK_SET);
 
-	if (bNeedWrite)
-	{
-		fseek(m_pFile, 0, SEEK_END);
-		for (int j = 0; lowerIndex - i > j; j++)
-		{
-			fwrite(field_24, sizeof(int), 1024, m_pFile);
-			field_28[j + v22] = true;
-		}
-	}
+    int length = readIntBE(m_pFile);
+    if (length <= 0 || length > sectorCount * SECTOR_BYTES) return false;
 
-	field_20[32 * pos.z + pos.x] = (v22 << 8) | lowerIndex;
-	for (int k = 0; k < lowerIndex; k++)
-	{
-		field_28[k + v22] = false;
-	}
+    uint8_t compressionType = fgetc(m_pFile);
+    if (compressionType != 2) return false;
 
-	write(v22, bitStream);
-	fseek(m_pFile, sizeof(int) * (pos.x + 32 * pos.z), SEEK_SET);
-	fwrite(&field_20[pos.x + 32 * pos.z], sizeof(int), 1, m_pFile);
+    int compressedLen = length - 1;
+    std::vector<uint8_t> compressedData(compressedLen);
+    fread(compressedData.data(), 1, compressedLen, m_pFile);
 
-	return true;
+    try {
+        outData = decompressZlibStream(compressedData.data(), compressedData.size());
+    }
+    catch (...) {
+        return false;
+    }
+
+    return true;
 }
+
+bool RegionFile::writeChunk(const ChunkPos& pos, const std::vector<uint8_t>& uncompressedData) {
+    std::vector<uint8_t> compressedData;
+    try {
+        compressedData = compressZlibStream(uncompressedData.data(), uncompressedData.size());
+    }
+    catch (...) {
+        return false;
+    }
+
+    int index = pos.regionIndex();
+    int totalLen = 1 + compressedData.size();
+    int sectorsNeeded = (totalLen + 4 + SECTOR_BYTES - 1) / SECTOR_BYTES;
+
+    int sectorStart = findFreeSectors(sectorsNeeded);
+    for (int i = 0; i < sectorsNeeded; ++i) {
+        sectorFlags[sectorStart + i] = true;
+    }
+
+    if (sectorStart + sectorsNeeded > sectorCount) sectorCount = sectorStart + sectorsNeeded;
+
+    fseek(m_pFile, sectorStart * SECTOR_BYTES, SEEK_SET);
+    writeIntBE(m_pFile, totalLen);
+    fputc(2, m_pFile);
+    fwrite(compressedData.data(), 1, compressedData.size(), m_pFile);
+
+    int written = 4 + 1 + compressedData.size();
+    int pad = sectorsNeeded * SECTOR_BYTES - written;
+    if (pad > 0) {
+        std::vector<uint8_t> padding(pad, 0);
+        fwrite(padding.data(), 1, pad, m_pFile);
+    }
+
+    offsets[index] = (sectorStart << 8) | sectorsNeeded;
+    timestamps[index] = static_cast<int>(time(nullptr));
+
+    writeHeaders();
+
+    fflush(m_pFile);
+    return true;
+}
+
+
+

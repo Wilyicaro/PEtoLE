@@ -15,11 +15,13 @@
 
 class Level;
 class Entity;
+class TileEntity;
 
 class Chunk
 {
 public:
-	Chunk(Level*, const TilePos& pos, int, int, GLuint*);
+	Chunk(Level*, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int, int, GLuint*);
+	~Chunk();
 
 	float distanceToSqr(const Entity*) const;
 	float squishedDistanceToSqr(const Entity*) const;
@@ -42,23 +44,25 @@ public:
 
 public:
 	Level* m_pLevel;
+	std::vector<std::shared_ptr<TileEntity>>& m_globalRenderableTileEntities;
+	std::vector<std::shared_ptr<TileEntity>> m_renderableTileEntities;
 	TilePos m_pos;
 	TilePos field_10;
-	bool field_1C[2];
+	bool empty[2];
 	TilePos m_pos2;
 	float field_2C;
 	AABB m_aabb;
 	int field_48;
 	bool m_bVisible;
-	bool field_4D;
+	bool m_bOcclusionVisible;
 	bool field_4E;
 	int field_50;
-	bool field_54;
+	bool m_bSkyLit;
 	RenderChunk m_renderChunks[2];
 	Tesselator* m_pTesselator;
 	int field_8C;
 	GLuint* field_90;
-	bool field_94;
+	bool m_bCompiled;
 	bool m_bDirty;
 };
 

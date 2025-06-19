@@ -17,7 +17,7 @@ public:
 	JoinGameScreen();
 	~JoinGameScreen();
 	void buttonClicked(Button* pButton) override;
-	bool handleBackEvent(bool b) override;
+	void onClose() override;
 	void init() override;
 	bool isInGameScreen() override;
 	void render(int mouseX, int mouseY, float f) override;

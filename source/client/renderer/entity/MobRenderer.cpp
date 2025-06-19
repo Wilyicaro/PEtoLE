@@ -22,9 +22,9 @@ void MobRenderer::setArmor(Model* model)
 	m_pArmorModel = model;
 }
 
-int MobRenderer::prepareArmor(Mob* mob, int a, float b)
+bool MobRenderer::prepareArmor(Mob* mob, int a, float b)
 {
-	return 0;
+	return false;
 }
 
 void MobRenderer::additionalRendering(Mob* mob, float f)
@@ -68,9 +68,9 @@ void MobRenderer::setupRotations(Entity* entity, float x, float y, float z)
 	glRotatef(180.0f - y, 0.0f, 1.0f, 0.0f);
 
 	Mob* mob = (Mob*)entity;
-	if (mob->field_110 > 0)
+	if (mob->m_deathTime > 0)
 	{
-		float t = Mth::sqrt((float(mob->field_110) + z - 1.0f) / 20.0f * 1.6f);
+		float t = Mth::sqrt((float(mob->m_deathTime) + z - 1.0f) / 20.0f * 1.6f);
 		if (t > 1.0f)
 			t = 1.0f;
 
@@ -85,7 +85,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	glPushMatrix();
 	glDisable(GL_CULL_FACE);
 
-	m_pModel->field_4 = getAttackAnim(pMob, f);
+	m_pModel->m_attackTime = getAttackAnim(pMob, f);
 	m_pModel->m_bRiding = false;
 	m_pModel->m_bIsBaby = pMob->isBaby();
 
@@ -95,10 +95,10 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 		m_pArmorModel->m_bIsBaby = m_pModel->m_bIsBaby;
 	}
 
-	float aYaw   = pMob->m_rotPrev.x + (pMob->m_rot.x   - pMob->m_rotPrev.x) * f;
-	float aPitch = pMob->m_rotPrev.y + (pMob->m_rot.y - pMob->m_rotPrev.y) * f;
+	float aYaw   = pMob->m_rotPrev.y + (pMob->m_rot.y   - pMob->m_rotPrev.y) * f;
+	float aPitch = pMob->m_rotPrev.x + (pMob->m_rot.x - pMob->m_rotPrev.x) * f;
 	float fBob   = getBob(pMob, f);
-	float fSmth  = pMob->field_EC + (pMob->field_E8 - pMob->field_EC) * f;
+	float fSmth  = pMob->m_yBodyRotO + (pMob->m_yBodyRot - pMob->m_yBodyRotO) * f;
 
 	setupPosition(pMob, x, y - pMob->m_heightOffset, z);
 	setupRotations(pMob, fBob, fSmth, f);
@@ -106,7 +106,6 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	float fScale = 0.0625f; // the scale variable according to b1.2_02
 	glScalef(-1.0f, -1.0f, 1.0f);
 	scale(pMob, f);
-	//glTranslatef(0.0f, -1.5078f, 0.0f);
 	glTranslatef(0.0f, -24.0f * fScale - (1.0f / 128.0f), 0.0f);
 
 	float x1 = pMob->field_128 + (pMob->field_12C - pMob->field_128) * f;
@@ -114,7 +113,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 		x1 = 1.0f;
 	float x2 = pMob->field_130 - pMob->field_12C * (1.0f - f);
 
-	bindTexture(pMob->getTexture());
+	bindHttpTexture(pMob->m_skinUrl, pMob->getTexture());
 	glEnable(GL_ALPHA_TEST);
 
 	m_pModel->setBrightness(entity->getBrightness(1.0f));
@@ -136,7 +135,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	float fBright = pMob->getBrightness(f);
 	int iOverlayColor = getOverlayColor(pMob, fBright, f);
 
-	if (GET_ALPHA(iOverlayColor) || pMob->m_hurtTime > 0 || pMob->field_110 > 0)
+	if (GET_ALPHA(iOverlayColor) || pMob->m_hurtTime > 0 || pMob->m_deathTime > 0)
 	{
 		glDisable(GL_TEXTURE_2D);
 		glDisable(GL_ALPHA_TEST);
@@ -144,10 +143,10 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDepthFunc(GL_EQUAL);
 
-		if (pMob->m_hurtTime > 0 || pMob->field_110 > 0)
+		if (pMob->m_hurtTime > 0 || pMob->m_deathTime > 0)
 		{
 			glColor4f(fBright, 0.0f, 0.0f, 0.4f);
-			m_pModel->render(x2, x1, fBob, aYaw - fSmth, aPitch, fScale); // was 0.059375f. Why?
+			m_pModel->render(x2, x1, fBob, aYaw - fSmth, aPitch, fScale);
 
 			for (int i = 0; i < 4; i++)
 			{
@@ -197,7 +196,7 @@ void MobRenderer::renderName(Mob* mob, float x, float y, float z)
 		return;
 
 	Player* player = (Player*)mob;
-	if (player == m_pDispatcher->m_pMinecraft->m_pLocalPlayer)
+	if (player == m_pDispatcher->m_pMinecraft->m_pLocalPlayer.get())
 		return;
 
 	// @TODO: don't know why but I have to add this correction. look into it and fix it!
@@ -206,7 +205,7 @@ void MobRenderer::renderName(Mob* mob, float x, float y, float z)
 
 void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float y, float z, int a)
 {
-	if (mob->distanceToSqr(m_pDispatcher->m_pMob) > float(a * a))
+	if (mob->distanceToSqr(m_pDispatcher->m_pMob.get()) > float(a * a))
 		return;
 
 	Font* font = getFont();
@@ -215,8 +214,8 @@ void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float
 	glTranslatef(x + 0.0f, y + 2.3f, z);
 	glNormal3f(0.0f, 1.0f, 0.0f);
 	// billboard the name towards the camera
-	glRotatef(-m_pDispatcher->m_rot.x,   0.0f, 1.0f, 0.0f);
-	glRotatef(+m_pDispatcher->m_rot.y, 1.0f, 0.0f, 0.0f);
+	glRotatef(-m_pDispatcher->m_rot.y,   0.0f, 1.0f, 0.0f);
+	glRotatef(+m_pDispatcher->m_rot.x, 1.0f, 0.0f, 0.0f);
 	glScalef(-0.026667f, -0.026667f, 0.026667f);
 	glDepthMask(false);
 	glDisable(GL_DEPTH_TEST);

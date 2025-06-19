@@ -9,6 +9,8 @@
 #pragma once
 
 #include "../Screen.hpp"
+#include "world/item/ItemInstance.hpp"
+#include <vector>
 
 class Inventory;
 
@@ -35,9 +37,12 @@ public:
 	virtual void mouseClicked(int x, int y, int type) override;
 	virtual void mouseReleased(int x, int y, int type) override;
 	virtual void removed() override;
+	virtual bool isPauseScreen() override;
+	void addCreativeItem(int itemID, int auxValue = 0);
 
 private:
 	int m_selectedSlot;
     Button m_btnPause;
+	std::vector<std::shared_ptr<ItemInstance>> m_items;
 };
 

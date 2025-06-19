@@ -18,11 +18,11 @@ CameraItem::CameraItem(int id) : Item(id)
 {
 }
 
-ItemInstance* CameraItem::use(ItemInstance* inst, Level* level, Player* player)
+std::shared_ptr<ItemInstance> CameraItem::use(std::shared_ptr<ItemInstance> inst, Level* level, Player* player)
 {
 #ifndef ORIGINAL_CODE
 	// prevent players from using this in multiplayer, to prevent a desync of entity IDs
-	if (level->m_bIsMultiplayer)
+	if (level->m_bIsOnline)
 		return inst;
 #endif
 
@@ -33,12 +33,23 @@ ItemInstance* CameraItem::use(ItemInstance* inst, Level* level, Player* player)
  	entity = new Chicken(level);
 	entity->setPos(player->m_pos);
 	level->addEntity(entity);
-
-	entity = new Cow(level);
+	*/
+	auto entity = std::make_shared<Chicken>(level);
 	entity->setPos(player->m_pos);
-	level->addEntity(entity);*/
-	
-	
-	level->addEntity(new TripodCamera(level, player, player->m_pos));
+	level->addEntity(entity);
+
+
+	entity->m_vel.x = -(Mth::sin(player->m_rot.y / 180.0f * real(M_PI)) * Mth::cos(player->m_rot.x / 180.0f * real(M_PI))) * 0.3f;
+	entity->m_vel.z = (Mth::cos(player->m_rot.y / 180.0f * real(M_PI)) * Mth::cos(player->m_rot.x / 180.0f * real(M_PI))) * 0.3f;
+	entity->m_vel.y = 0.1 - Mth::sin(player->m_rot.x / 180.0f * real(M_PI)) * 0.3f;
+
+	float f1 = level->m_random.nextFloat();
+	float f2 = level->m_random.nextFloat();
+
+	entity->m_vel.x += 0.02 * f2 * Mth::cos(2 * real(M_PI) * f1);
+	entity->m_vel.y += 0.1 * (level->m_random.nextFloat() - level->m_random.nextFloat());
+	entity->m_vel.z += 0.02 * f2 * Mth::sin(2 * real(M_PI) * f1);
+
+
 	return inst;
 }

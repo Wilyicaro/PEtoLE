@@ -56,6 +56,10 @@ void NetEventCallback::handle(const RakNet::RakNetGUID& guid, AddPlayerPacket* p
 {
 }
 
+void NetEventCallback::handle(const RakNet::RakNetGUID& guid, AddMobPacket* packet)
+{
+}
+
 void NetEventCallback::handle(const RakNet::RakNetGUID& guid, RemoveEntityPacket* packet)
 {
 }

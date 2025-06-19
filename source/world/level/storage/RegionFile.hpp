@@ -2,27 +2,37 @@
 
 #include <cstdio>
 #include <string>
-#include <cassert>
-#include <map>
-#include "BitStream.h"
+#include <unordered_map>
+#include <vector>
+#include <cstdint>
+#include "BitStream.h" // RakNet
 #include "world/level/levelgen/chunk/ChunkPos.hpp"
 
-class RegionFile
-{
-public:
-	RegionFile(const std::string fileName);
-	~RegionFile();
-	void close();
-	bool open();
-	bool readChunk(const ChunkPos& pos, RakNet::BitStream**);
-	bool write(int index, RakNet::BitStream&);
-	bool writeChunk(const ChunkPos& pos, RakNet::BitStream&);
+#define SECTOR_BYTES 4096
+#define CHUNK_HEADER 5
 
+class RegionFile {
 public:
-	FILE* m_pFile;
-	std::string m_fileName;
-	int* field_20;
-	int* field_24;
-	std::map<int, bool> field_28;
+    RegionFile(const ChunkPos& pos, const std::string directory);
+    ~RegionFile();
+
+    bool firstRead = true;
+    bool open();
+    bool readHeaders();
+    void writeHeaders();
+    void close();
+
+    bool readChunk(const ChunkPos& pos, std::vector<uint8_t>& outData);
+    bool writeChunk(const ChunkPos& pos, const std::vector<uint8_t>& uncompressedData);
+
+private:
+    FILE* m_pFile;
+    std::string m_fileName;
+
+    std::vector<int> offsets;
+    std::vector<int> timestamps;
+    std::vector<bool> sectorFlags;
+    int sectorCount = 0;
+
+    int findFreeSectors(int count);
 };
-

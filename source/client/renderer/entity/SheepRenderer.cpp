@@ -9,7 +9,7 @@ SheepRenderer::~SheepRenderer()
 {
 }
 
-int SheepRenderer::prepareArmor(Mob* mob, int layer, float a)
+bool SheepRenderer::prepareArmor(Mob* mob, int layer, float a)
 {
     Sheep* pSheep = (Sheep*)mob;
     if (layer == 0 && !pSheep->isSheared())
@@ -18,11 +18,11 @@ int SheepRenderer::prepareArmor(Mob* mob, int layer, float a)
         float brightness = pSheep->getBrightness(a);
         int color = pSheep->getColor();
         glColor4f(brightness * Sheep::COLOR[color][0], brightness * Sheep::COLOR[color][1], brightness * Sheep::COLOR[color][2], 1.0f);
-        return 1;
+        return true;
     }
     else
     {
-        return 0;
+        return false;
     }
 }
 

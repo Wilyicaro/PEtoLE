@@ -8,7 +8,8 @@
 
 #include "ServerSideNetworkHandler.hpp"
 #include "common/Utils.hpp"
-#include "world/entity/MobFactory.hpp"
+#include <world/entity/EntityIO.hpp>
+#include <client/locale/Language.hpp>
 
 // This lets you make the server shut up and not log events in the debug console.
 #define VERBOSE_SERVER
@@ -37,9 +38,6 @@ ServerSideNetworkHandler::~ServerSideNetworkHandler()
 {
 	if (m_pLevel)
 		m_pLevel->removeListener(this);
-
-	for (OnlinePlayerMap::iterator it = m_onlinePlayers.begin(); it != m_onlinePlayers.end(); ++it)
-		delete it->second;
 
 	m_onlinePlayers.clear();
 }
@@ -74,7 +72,7 @@ void ServerSideNetworkHandler::onDisconnect(const RakNet::RakNetGUID& guid)
 	if (!pOnlinePlayer)
 		return;
 
-	Player* pPlayer = pOnlinePlayer->m_pPlayer;
+	auto& pPlayer = pOnlinePlayer->m_pPlayer;
 
 	// erase it from the map
 	m_onlinePlayers.erase(m_onlinePlayers.find(guid)); // it better be in our map
@@ -127,7 +125,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 	}
 #endif
 
-	Player* pPlayer = new Player(m_pLevel, m_pLevel->getLevelData()->getGameType());
+	auto pPlayer = std::make_shared<Player>(m_pLevel, m_pLevel->getLevelData()->getGameType());
 	pPlayer->m_guid = guid;
 	pPlayer->m_name = std::string(packet->m_str.C_String());
 
@@ -152,8 +150,8 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 	// send the connecting player info about all other players in the world
 	for (int i = 0; i < int(m_pLevel->m_players.size()); i++)
 	{
-		Player* player = m_pLevel->m_players[i];
-		AddPlayerPacket app(player);
+		auto& player = m_pLevel->m_players[i];
+		AddPlayerPacket app(player.get());
 		RakNet::BitStream appbs;
 		app.write(&appbs);
 		m_pRakNetPeer->Send(&appbs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, guid, false);
@@ -168,7 +166,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 
 	m_pMinecraft->m_gui.addMessage(pPlayer->m_name + " joined the game");
 
-	AddPlayerPacket app(pPlayer);
+	AddPlayerPacket app(pPlayer.get());
 	RakNet::BitStream appbs;
 	app.write(&appbs);
 	m_pRakNetPeer->Send(&appbs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, guid, true);
@@ -229,7 +227,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, MovePlayer
 	//not in the original
 	puts_ignorable("MovePlayerPacket");
 
-	Entity* pEntity = m_pLevel->getEntity(packet->m_id);
+	auto pEntity = m_pLevel->getEntity(packet->m_id);
 	if (pEntity)
 		pEntity->lerpTo(packet->m_pos, packet->m_rot, 3);
 
@@ -238,7 +236,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, MovePlayer
 
 void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlaceBlockPacket* packet)
 {
-	Mob* pMob = (Mob*)m_pLevel->getEntity(packet->m_playerID);
+	auto pMob = std::dynamic_pointer_cast<Mob>(m_pLevel->getEntity(packet->m_playerID));
 	if (!pMob)
 		return;
 
@@ -248,16 +246,16 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlaceBlock
 
 	printf_ignorable("PlaceBlockPacket: %d", tile);
 
-	if (!m_pLevel->mayPlace(tile, pos, true))
+	if (!m_pLevel->mayPlace(tile, pos, true, face))
 		return;
 
 	if (m_pLevel->setTile(pos, tile))
 	{
 		Tile::tiles[tile]->setPlacedOnFace(m_pLevel, pos, face);
-		Tile::tiles[tile]->setPlacedBy(m_pLevel, pos, pMob);
+		Tile::tiles[tile]->setPlacedBy(m_pLevel, pos, pMob.get(), face);
 
 		const Tile::SoundType* pSound = Tile::tiles[tile]->m_pSound;
-		m_pLevel->playSound(pos + 0.5f, "step." + pSound->m_name, 0.5f * (pSound->volume + 1.0f), pSound->pitch * 0.8f);
+		m_pLevel->playSound(pos + 0.5f, pSound->m_name, 0.5f * (pSound->volume + 1.0f), pSound->pitch * 0.8f);
 	}
 
 	redistributePacket(packet, guid);
@@ -267,7 +265,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, RemoveBloc
 {
 	puts_ignorable("RemoveBlockPacket");
 
-	Player* pPlayer = (Player*)m_pLevel->getEntity(packet->m_playerID);
+	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(packet->m_playerID));
 	if (!pPlayer)
 		return;
 
@@ -278,7 +276,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, RemoveBloc
 	if (pTile && setTileResult)
 	{
 		const Tile::SoundType* pSound = pTile->m_pSound;
-		m_pLevel->playSound(pos + 0.5f, "step." + pSound->m_name, 0.5f * (pSound->volume + 1.0f), pSound->pitch * 0.8f);
+		m_pLevel->playSound(pos + 0.5f, pSound->m_destroy, 0.5f * (pSound->volume + 1.0f), pSound->pitch * 0.8f);
 
 		// redistribute the packet only if needed
 		redistributePacket(packet, guid);
@@ -287,7 +285,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, RemoveBloc
 
 void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerEquipmentPacket* packet)
 {
-	Player* pPlayer = (Player*)m_pLevel->getEntity(packet->m_playerID);
+	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(packet->m_playerID));
 	if (!pPlayer)
 	{
 		LOG_W("No player with id %d", packet->m_playerID);
@@ -421,6 +419,8 @@ void ServerSideNetworkHandler::setupCommands()
 	m_commands["seed"]   = &ServerSideNetworkHandler::commandSeed;
 	m_commands["tp"]     = &ServerSideNetworkHandler::commandTP;
 	m_commands["summon"] = &ServerSideNetworkHandler::commandSummon;
+	m_commands["gamemode"] = &ServerSideNetworkHandler::commandGamemode;
+	m_commands["give"] = &ServerSideNetworkHandler::commandGive;
 }
 
 bool ServerSideNetworkHandler::checkPermissions(OnlinePlayer* player)
@@ -571,8 +571,7 @@ void ServerSideNetworkHandler::commandSummon(OnlinePlayer* player, const std::ve
 	ss.str(parms[0]);
 	ss >> entityName;
 
-	const EntityTypeDescriptor* descriptor = EntityTypeDescriptor::GetByEntityTypeName(entityName);
-	if (descriptor != nullptr)
+	if (EntityIO::contains(entityName))
 	{
 		Vec3 pos = player->m_pPlayer->getPos(1.0f);
 		pos.y -= player->m_pPlayer->m_heightOffset + player->m_pPlayer->m_ySlideOffset;
@@ -608,31 +607,24 @@ void ServerSideNetworkHandler::commandSummon(OnlinePlayer* player, const std::ve
 		}
 
 		ss.clear();
-		if (descriptor->getEntityType() != EntityType::UNKNOWN)
+		bool success = false;
+
+		for (int i = 0; i++ < amount;)
 		{
-			bool success = false;
-
-			for (int i = 0; i++ < amount;)
+			auto mob = EntityIO::newEntity(entityName, m_pLevel);
+			if (mob == nullptr)
 			{
-				Mob* mob = MobFactory::CreateMob(descriptor->getEntityType().getId(), m_pLevel);
-				if (mob == nullptr)
-				{
-					ss << "Unable to summon object";
-					break;
-				}
-				mob->setPos(pos);
-				m_pLevel->addEntity(mob);
-				if (!success) success = true;
+				ss << "Unable to summon object";
+				break;
 			}
-
-			if (success)
-			{
-				ss << "Object successfully summoned";
-			}
+			mob->setPos(pos);
+			m_pLevel->addEntity(mob);
+			if (!success) success = true;
 		}
-		else
+
+		if (success)
 		{
-			ss << "Unable to summon unknown entity type";
+			ss << "Object successfully summoned";
 		}
 	}
 	else
@@ -642,4 +634,124 @@ void ServerSideNetworkHandler::commandSummon(OnlinePlayer* player, const std::ve
 	}
 
 	sendMessage(player, ss.str());
+}
+
+void ServerSideNetworkHandler::commandGamemode(OnlinePlayer* player, const std::vector<std::string>& args)
+{
+	if (!checkPermissions(player)) return;
+
+	const int argsSize = args.size();
+
+	if (!argsSize || argsSize > 2)
+	{
+		sendMessage(player, "Usage: /gamemode <gamemode> <player>");
+		return;
+	}
+
+	OnlinePlayer* cPlayer = player;
+
+	if (argsSize == 2 && args[1] != cPlayer->m_pPlayer->m_name)
+	{
+		bool success = false;
+		for (auto p : m_onlinePlayers)
+		{
+			if (p.second == cPlayer) continue;
+			if (p.second->m_pPlayer->m_name == args[1]) {
+				success = true;
+				break;
+			}
+		}
+
+		if (!success)
+			sendMessage(player, "Unable to change gamemode of unknown player");
+	}
+
+	std::stringstream ss;
+	ss.str(args[0]);
+	int mode = 0;
+	ss >> mode;
+
+	if (mode == 0 || mode == 1)
+	{
+		cPlayer->m_pPlayer->setPlayerGameType((GameType) mode);
+		m_pMinecraft->setGameMode(cPlayer->m_pPlayer->getPlayerGameType());
+		sendMessage(player, "Gamemode sucessfully changed");
+	}
+	else
+	{
+		sendMessage(player, "Unable to change to invalid gamemode");
+	}
+}
+
+void ServerSideNetworkHandler::commandGive(OnlinePlayer* player, const std::vector<std::string>& args)
+{
+	if (!checkPermissions(player)) return;
+
+	const int argsSize = args.size();
+
+	if (!argsSize || argsSize > 4)
+	{
+		sendMessage(player, "Usage: /give <item id> <count> <aux> <player>");
+		return;
+	}
+
+	OnlinePlayer* cPlayer = player;
+
+	if (argsSize >= 4 && args[2] != cPlayer->m_pPlayer->m_name)
+	{
+		bool success = false;
+		for (auto p : m_onlinePlayers)
+		{
+			if (p.second == cPlayer) continue;
+			if (p.second->m_pPlayer->m_name == args[2]) {
+				success = true;
+				break;
+			}
+		}
+
+		if (!success)
+			sendMessage(player, "Unable to give to unknown player");
+	}
+
+
+
+	std::stringstream ss;
+	ss.str(args[0]);
+	int itemId = 0;
+	ss >> itemId;
+
+	auto item = Item::items[itemId];
+
+
+	if (!item)
+	{
+		sendMessage(player, "Unable to give an invalid item id");
+		return;
+	}
+
+	int count = 1;
+	if (argsSize >= 2)
+	{
+		ss.clear();
+		ss.str(args[1]);
+		ss >> count;
+	}
+
+	int data = 0;
+	if (argsSize >= 3)
+	{
+		ss.clear();
+		ss.str(args[2]);
+		ss >> data;
+	}
+
+	if (count)
+	{
+		cPlayer->m_pPlayer->m_pInventory->add(std::make_shared<ItemInstance>(item, count, data));
+		sendMessage(player, Util::format("Given %s", Language::getInstance()->get(item->getDescriptionId()).c_str()));
+	}
+	else
+	{
+		sendMessage(player, "Unable to give an invalid item count");
+	}
 }

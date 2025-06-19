@@ -19,6 +19,8 @@ public:
 	void removed() override;
 	void render(int mouseX, int mouseY, float f) override;
 	void keyPressed(int keyCode) override;
+	bool isPauseScreen() override;
+
 
 	void sendMessageAndExit();
 

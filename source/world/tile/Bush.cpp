@@ -9,9 +9,8 @@
 #include "Bush.hpp"
 #include "world/level/Level.hpp"
 
-Bush::Bush(int id, int texture) : Tile(id, Material::plant)
+Bush::Bush(int id, int texture) : Tile(id, texture, Material::plant)
 {
-	m_TextureFrame = texture;
 	setTicking(true);
 	setShape(0.3f, 0.0f, 0.3f, 0.7f, 0.6f, 0.7f);
 }
@@ -33,8 +32,11 @@ bool Bush::isSolidRender() const
 
 bool Bush::mayPlace(const Level* level, const TilePos& pos) const
 {
-	TileID tile = level->getTile(pos.below());
+	return isValidGrowTile(level->getTile(pos.below()));
+}
 
+bool Bush::isValidGrowTile(const TileID tile) const
+{
 	return tile == Tile::grass->m_ID || tile == Tile::dirt->m_ID || tile == Tile::farmland->m_ID;
 }
 
@@ -43,13 +45,16 @@ bool Bush::canSurvive(const Level* level, const TilePos& pos) const
 	if (level->getRawBrightness(pos) <= 7 && !level->canSeeSky(pos))
 		return false;
 
-	return mayPlace(level, pos);
+	return isValidGrowTile(level->getTile(pos.below()));
 }
 
 void Bush::checkAlive(Level* level, const TilePos& pos)
 {
 	if (!canSurvive(level, pos))
+	{
+		spawnResources(level, pos, level->getData(pos));
 		level->setTile(pos, TILE_AIR);
+	}
 }
 
 void Bush::neighborChanged(Level* level, const TilePos& pos, TileID tile)

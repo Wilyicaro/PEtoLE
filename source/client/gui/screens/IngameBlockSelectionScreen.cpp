@@ -17,6 +17,71 @@ IngameBlockSelectionScreen::IngameBlockSelectionScreen() :
 	m_btnPause(0, "Pause")
 {
 	m_selectedSlot = 0;
+
+	addCreativeItem(Tile::stone->m_ID);
+	addCreativeItem(Tile::cobblestone->m_ID);
+	addCreativeItem(Tile::sandStone->m_ID);
+	addCreativeItem(Tile::wood->m_ID);
+	addCreativeItem(Tile::treeTrunk->m_ID);
+	addCreativeItem(Tile::goldBlock->m_ID);
+	addCreativeItem(Tile::ironBlock->m_ID);
+	addCreativeItem(Tile::diamondBlock->m_ID);
+	addCreativeItem(Tile::brick->m_ID);
+	addCreativeItem(Tile::leaves->m_ID);
+	for (int i = 0; i < 16; i++)
+	{
+		addCreativeItem(Tile::cloth->m_ID, i);
+	}
+	addCreativeItem(Tile::glass->m_ID);
+	addCreativeItem(Tile::stairsWood->m_ID);
+	addCreativeItem(Tile::stairsStone->m_ID);
+	addCreativeItem(Tile::stoneSlabHalf->m_ID);
+	addCreativeItem(Tile::sand->m_ID);
+	addCreativeItem(Tile::ladder->m_ID);
+	addCreativeItem(Tile::torch->m_ID);
+	addCreativeItem(Tile::flower->m_ID);
+	addCreativeItem(Tile::rose->m_ID);
+	addCreativeItem(Tile::mushroom1->m_ID);
+	addCreativeItem(Tile::mushroom2->m_ID);
+	addCreativeItem(Tile::reeds->m_ID);
+	addCreativeItem(Tile::obsidian->m_ID);
+	addCreativeItem(Tile::dirt->m_ID);
+
+	addCreativeItem(Tile::grass->m_ID);
+	addCreativeItem(Tile::tnt->m_ID);
+	addCreativeItem(Tile::gravel->m_ID);
+	addCreativeItem(Tile::mossStone->m_ID);
+	addCreativeItem(Tile::bookshelf->m_ID);
+	addCreativeItem(Tile::lapisBlock->m_ID);
+	addCreativeItem(Tile::sponge->m_ID);
+	addCreativeItem(Tile::sapling->m_ID);
+	addCreativeItem(Tile::craftingTable->m_ID);
+	addCreativeItem(Tile::furnace->m_ID);
+	addCreativeItem(Tile::chest->m_ID);
+	addCreativeItem(Tile::cactus->m_ID);
+	addCreativeItem(Tile::coalOre->m_ID);
+	addCreativeItem(Tile::ironOre->m_ID);
+	addCreativeItem(Tile::goldOre->m_ID);
+	addCreativeItem(Tile::diamondOre->m_ID);
+	addCreativeItem(Tile::lapisOre->m_ID);
+	addCreativeItem(Tile::redstoneOre->m_ID);
+	addCreativeItem(Tile::pumpkin->m_ID);
+	addCreativeItem(Tile::pumpkinLantern->m_ID);
+	addCreativeItem(Tile::netherrack->m_ID);
+	addCreativeItem(Tile::soulSand->m_ID);
+	addCreativeItem(Tile::glowstone->m_ID);
+	addCreativeItem(Tile::fence->m_ID);
+	addCreativeItem(Tile::web->m_ID);
+	addCreativeItem(Tile::ice->m_ID);
+	addCreativeItem(Tile::topSnow->m_ID);
+	addCreativeItem(Tile::mobSpawner->m_ID);
+
+	addCreativeItem(Tile::water->m_ID);
+	addCreativeItem(Tile::lava->m_ID);
+	addCreativeItem(Tile::fire->m_ID);
+
+	addCreativeItem(Item::woodDoor->m_itemID);
+	addCreativeItem(Item::ironDoor->m_itemID);
 }
 
 Inventory* IngameBlockSelectionScreen::getInventory()
@@ -61,12 +126,12 @@ int IngameBlockSelectionScreen::getSlotPosY(int y)
 
 int IngameBlockSelectionScreen::getSlotsHeight()
 {
-	return (getInventory()->getNumSlots() + 8) / 9;
+	return (m_items.size() + 8) / 9;
 }
 
 bool IngameBlockSelectionScreen::isAllowed(int slot)
 {
-	return slot >= 0 && slot < getInventory()->getNumSlots();
+	return slot >= 0 && slot < m_items.size();
 }
 
 void IngameBlockSelectionScreen::init()
@@ -79,34 +144,32 @@ void IngameBlockSelectionScreen::init()
 		m_buttons.push_back(&m_btnPause);
 #endif
 	
-	Inventory* pInv = getInventory();
+	if (getInventory()->getSelectedItem()) {
+		int nItems = m_items.size();
 
-	int nItems = pInv->getNumItems();
-
-	for (int i = 0; i < nItems; i++)
-	{
-		if (pInv->getItem(i)->m_itemID == pInv->getSelectedItemId())
+		for (int i = 0; i < nItems; i++)
 		{
-			m_selectedSlot = i;
-			break;
+			if (m_items.at(i)->matches(*getInventory()->getSelectedItem()))
+			{
+				m_selectedSlot = i;
+				break;
+			}
 		}
-	}
 
-	if (!isAllowed(m_selectedSlot))
-		m_selectedSlot = 0;
+		if (!isAllowed(m_selectedSlot))
+			m_selectedSlot = 0;
+	}
 }
 
 void IngameBlockSelectionScreen::renderSlot(int index, int x, int y, float f)
 {
-	ItemInstance* pItem = getInventory()->getItem(index);
-	if (!pItem)
+	std::shared_ptr<ItemInstance> pItem = m_items.at(index);
+
+	if (pItem->isNull())
 		return;
 
-	if (!pItem->m_itemID)
-		return;
-
-	ItemRenderer::renderGuiItem(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pItem, x, y, true);
-	ItemRenderer::renderGuiItemOverlay(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pItem, x, y);
+	ItemRenderer::renderGuiItem(m_pMinecraft->m_pTextures, pItem, x, y);
+	ItemRenderer::renderGuiItemDecorations(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pItem, x, y);
 }
 
 void IngameBlockSelectionScreen::renderSlots()
@@ -115,16 +178,19 @@ void IngameBlockSelectionScreen::renderSlots()
 	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/gui.png");
 
 	for (int y = 0; y != -22 * getSlotsHeight(); y -= 22)
-		blit(m_width / 2 - 182 / 2, m_height - 3 - getBottomY() + y, 0, 0, 182, 22, 0, 0);
+		blit(m_width / 2 - 182 / 2, m_height - 3 - getBottomY() + y, 0, 0, 182, 22, 256, 256);
 
 	if (m_selectedSlot >= 0)
-		blit(m_width / 2 - 92 + 20 * (m_selectedSlot % 9), m_height - 4 - getBottomY() - 22 * (m_selectedSlot / 9), 0, 22, 24, 22, 0, 0);
+	{
+		blit(m_width / 2 - 92 + 20 * (m_selectedSlot % 9), m_height - 4 - getBottomY() - 22 * (m_selectedSlot / 9), 0, 22, 24, 24, 256, 256);
+	}
 
 	for (int y = 0, index = 0; y < getSlotsHeight(); y++)
 	{
 		int posY = getSlotPosY(y);
 		for (int x = 0; x < 9; x++)
 		{
+			if (index >= m_items.size()) break;
 			int posX = getSlotPosX(x);
 			renderSlot(index++, posX, posY, 0.0f);
 		}
@@ -195,11 +261,20 @@ void IngameBlockSelectionScreen::removed()
 	m_pMinecraft->m_gui.inventoryUpdated();
 }
 
+bool IngameBlockSelectionScreen::isPauseScreen() {
+	return false; 
+}
+
+void IngameBlockSelectionScreen::addCreativeItem(int itemID, int auxValue)
+{
+	m_items.push_back(std::make_shared<ItemInstance>(itemID, 1, auxValue));
+}
+
 void IngameBlockSelectionScreen::selectSlotAndClose()
 {
 	Inventory* pInv = getInventory();
 	
-	pInv->selectItem(m_selectedSlot, m_pMinecraft->m_gui.getNumUsableSlots());
+	pInv->setItem(pInv->m_selected, std::make_shared<ItemInstance>(*m_items.at(m_selectedSlot)));
 
 	m_pMinecraft->m_pSoundEngine->play("random.click");
 	m_pMinecraft->setScreen(nullptr);

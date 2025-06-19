@@ -26,6 +26,8 @@ Packet* MinecraftPackets::createPacket(int type)
 			return new StartGamePacket;
 		case PACKET_ADD_PLAYER:
 			return new AddPlayerPacket;
+		case PACKET_ADD_MOB:
+			return new AddMobPacket;
 		case PACKET_REMOVE_ENTITY:
 			return new RemoveEntityPacket;
 		case PACKET_MOVE_PLAYER:

@@ -69,15 +69,6 @@ public:
 
 class LevelRenderer : public LevelListener
 {
-private:
-	static bool _areCloudsAvailable;
-	static bool _arePlanetsAvailable;
-public:
-	static bool areCloudsAvailable() { return _areCloudsAvailable; }
-	static void setAreCloudsAvailable(bool value) { _areCloudsAvailable = value; }
-	static bool arePlanetsAvailable() { return _arePlanetsAvailable; }
-	static void setArePlanetsAvailable(bool value) { _arePlanetsAvailable = value; }
-
 public:
 	LevelRenderer(Minecraft*, Textures*);
 
@@ -85,7 +76,7 @@ public:
 	void entityAdded(Entity*) override;
 	void tileChanged(const TilePos& pos) override;
 	void setTilesDirty(const TilePos& min, const TilePos& max) override;
-	void takePicture(TripodCamera*, Entity*) override;
+	void takePicture(std::shared_ptr<TripodCamera>, Entity*) override;
 	void addParticle(const std::string&, const Vec3& pos, const Vec3& dir) override;
 	void playSound(const std::string& name, const Vec3& pos, float volume, float pitch) override;
 	void skyColorChanged() override;
@@ -97,8 +88,8 @@ public:
 	std::string gatherStats1();
 	std::string gatherStats2();
 	void onGraphicsReset();
-	void render(const AABB& aabb) const;
-	void render(Mob* pMob, int a, float b);
+	void renderAABBOutline(const AABB& aabb) const;
+	int render(Mob* pMob, int a, float b);
 	void renderEntities(Vec3 pos, Culler*, float f);
 	void renderSky(float);
 	void renderClouds(float);
@@ -115,23 +106,21 @@ public:
 	void renderHitOutline(Player* pPlayer, const HitResult& hr, int, void*, float);
 
 public:
-	float field_4;
-	float field_8;
-	float field_C;
-	float field_10;
+	Vec3 m_oPos;
+	float m_destroyProgress;
 	int m_noEntityRenderFrames;
 	int m_totalEntities;
 	int m_renderedEntities;
 	int m_culledEntities;
-	std::vector<Chunk*> field_24;
-	int field_30;
-	RenderList m_renderList;
+	std::vector<Chunk*> m_pChunks;
+	int m_cullStep;
+	RenderList m_renderLists[4];
 	int m_totalChunks;
 	int m_offscreenChunks;
 	int m_occludedChunks;
 	int m_renderedChunks;
 	int m_emptyChunks;
-	int field_68;
+	int m_chunkFixOffs;
 	int m_resortedMinX;
 	int m_resortedMinY;
 	int m_resortedMinZ;
@@ -139,18 +128,18 @@ public:
 	int m_resortedMaxY;
 	int m_resortedMaxZ;
 	Level* m_pLevel;
-	std::vector<Chunk*> field_88;
+	std::vector<Chunk*> m_dirtyChunks;
 	Chunk** m_chunks;
-	Chunk** field_98;
+	Chunk** m_sortedChunks;
 	int m_chunksLength;
 	TileRenderer* m_pTileRenderer;
-	int field_A4;
-	int field_A8;
-	int field_AC;
+	int m_xChunks;
+	int m_yChunks;
+	int m_zChunks;
 	int field_B0;
 	Minecraft* m_pMinecraft;
-	bool field_B8;
-	int field_BC;
+	bool m_bOcclusionVisible;
+	int m_lastViewDistance;
 	int m_ticksSinceStart;
 	//...
 	int m_nBuffers;
@@ -163,4 +152,5 @@ public:
 	int     m_darkBufferCount;
 	//...
 	Textures* m_pTextures;
+	std::vector<std::shared_ptr<TileEntity>> m_renderableTileEntities;
 };

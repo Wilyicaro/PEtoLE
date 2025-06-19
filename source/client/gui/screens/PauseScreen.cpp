@@ -9,17 +9,14 @@
 #include "PauseScreen.hpp"
 #include "OptionsScreen.hpp"
 #include "network/ServerSideNetworkHandler.hpp"
+#include "client/locale/Language.hpp"
 
 PauseScreen::PauseScreen() :
-	//m_oPos(0),
 	field_40(0),
-	m_btnBack(1, "Back to game"),
-	m_btnQuit(2, "Quit to title"),
-	m_btnQuitAndCopy(3, "Quit and copy map"),
-	m_btnVisible(4, "")
-#ifdef ENH_ADD_OPTIONS_PAUSE
-	, m_btnOptions(999, "Options")
-#endif
+	m_btnBack(1, Language::getInstance()->get("inGameMenu.backToGame")),
+	m_btnQuit(2, ""),
+	m_btnVisible(4, ""),
+	m_btnOptions(999, Language::getInstance()->get("menu.options"))
 {
 }
 
@@ -36,59 +33,31 @@ void PauseScreen::init()
 	nButtons++;
 #endif
 
-	int currY = 48, inc = 32;
+	int currY = m_height / 4, inc = 24;
+	m_btnQuit.m_text = Language::getInstance()->get(m_pMinecraft->isOnlineClient() ? "inGameMenu.disconnect" : "inGameMenu.saveAndQuitToTitle");
+	m_btnBack.m_yPos = currY + 8;
+	m_btnQuit.m_yPos = currY + 104;
+	m_btnBack.m_xPos = (m_width - 200) / 2;
+	m_btnQuit.m_xPos = (m_width - 200) / 2;
+	m_btnVisible.m_xPos = (m_width - 200) / 2;
 
-	bool cramped = m_height < currY + inc * nButtons + 10; // also add some padding
-	if (cramped)
-		inc = 25;
+	m_btnVisible.m_yPos = currY + 32;
 
-	m_btnQuit.m_width = 160;
-	m_btnBack.m_width = 160;
-	m_btnVisible.m_width = 160;
-	m_btnQuitAndCopy.m_width = 160;
-
-	m_btnBack.m_yPos = currY; currY += inc;
-	m_btnQuit.m_yPos = currY; currY += inc;
-	m_btnBack.m_xPos = (m_width - 160) / 2;
-	m_btnQuit.m_xPos = (m_width - 160) / 2;
-	m_btnVisible.m_xPos = (m_width - 160) / 2;
-	m_btnQuitAndCopy.m_xPos = (m_width - 160) / 2;
-
-	m_btnVisible.m_yPos =
-	m_btnQuitAndCopy.m_yPos = currY;
-
-#ifdef ENH_ADD_OPTIONS_PAUSE
-	// TODO: when visible or quit&copy are on, lower this
-	m_btnOptions.m_width = 160;
-	m_btnOptions.m_yPos = currY;
+	m_btnOptions.m_yPos = currY + 80;
 	m_btnOptions.m_xPos = m_btnBack.m_xPos;
-#endif
-	currY += inc;
 
 	// add the buttons to the screen:
 	m_buttons.push_back(&m_btnBack);
 
-#ifdef ENH_ADD_OPTIONS_PAUSE
 	m_buttons.push_back(&m_btnOptions);
-#endif
 
 	if (bAddVisibleButton)
 	{
 		updateServerVisibilityText();
 		m_buttons.push_back(&m_btnVisible);
-#ifdef ENH_ADD_OPTIONS_PAUSE
-		m_btnOptions.m_yPos += inc;
-#endif
 	}
 
 	m_buttons.push_back(&m_btnQuit);
-	
-	//m_buttons.push_back(&m_btnQuitAndCopy);
-
-#ifdef ENH_ADD_OPTIONS_PAUSE
-	//swap the options and quit buttons around (??)
-	std::swap(m_btnOptions.m_yPos, m_btnQuit.m_yPos);
-#endif
 
 	for (int i = 0; i < int(m_buttons.size()); i++)
 		m_buttonTabList.push_back(m_buttons[i]);
@@ -120,7 +89,7 @@ void PauseScreen::render(int a, int b, float c)
 {
 	renderBackground();
 
-	drawCenteredString(m_pFont, "Game menu", m_width / 2, 24, 0xFFFFFF);
+	drawCenteredString(m_pFont, Language::getInstance()->get("inGameMenu.gameMenu"), m_width / 2, 24, 0xFFFFFF);
 	Screen::render(a, b, c);
 }
 
@@ -131,9 +100,6 @@ void PauseScreen::buttonClicked(Button* pButton)
 
 	if (pButton->m_buttonId == m_btnQuit.m_buttonId)
 		m_pMinecraft->leaveGame(false);
-
-	if (pButton->m_buttonId == m_btnQuitAndCopy.m_buttonId)
-		m_pMinecraft->leaveGame(true);
 
 	if (pButton->m_buttonId == m_btnVisible.m_buttonId)
 	{

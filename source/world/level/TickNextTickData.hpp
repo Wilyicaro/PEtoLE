@@ -13,7 +13,7 @@
 
 struct TickNextTickData
 {
-	static int C;
+	static int last;
 
 	TickNextTickData(const TilePos& tilePos, int d);
 	int hashCode() const;

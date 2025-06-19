@@ -50,15 +50,10 @@ void JoinGameScreen::buttonClicked(Button* pButton)
 	}
 }
 
-bool JoinGameScreen::handleBackEvent(bool b)
+void JoinGameScreen::onClose()
 {
-	if (!b)
-	{
-		m_pMinecraft->cancelLocateMultiplayer();
-		m_pMinecraft->setScreen(new StartMenuScreen);
-	}
-
-	return true;
+	m_pMinecraft->cancelLocateMultiplayer();
+	Screen::onClose();
 }
 
 void JoinGameScreen::init()

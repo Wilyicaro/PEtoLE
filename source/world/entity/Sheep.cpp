@@ -25,8 +25,8 @@ const float Sheep::COLOR[][3] = {
 
 Sheep::Sheep(Level* pLevel) : Animal(pLevel)
 {
-	m_pDescriptor = &EntityTypeDescriptor::sheep;
-	field_C8 = RENDER_SHEEP;
+	m_pEntityType = EntityType::sheep;
+	m_renderType = RENDER_SHEEP;
 	m_texture = "mob/sheep.png";
 	setSize(0.9f, 1.3f);
 
@@ -40,14 +40,14 @@ void Sheep::_defineEntityData()
 
 bool Sheep::hurt(Entity* pEnt, int damage)
 {
-	if (!m_pLevel->m_bIsMultiplayer && !isSheared() && (pEnt != nullptr && pEnt->getDescriptor().hasCategory(EntityCategories::MOB)))
+	if (!m_pLevel->m_bIsOnline && !isSheared() && (pEnt && pEnt->getType().getCategory().contains(EntityCategories::MOB)))
 	{
 		setSheared(true);
 		int var3 = 1 + m_random.nextInt(3);
 
 		for (int i = 0; i < var3; i++)
 		{
-			ItemEntity* item = spawnAtLocation(new ItemInstance(TILE_CLOTH_00, 1, getColor()), 1.0f);
+			auto item = spawnAtLocation(new ItemInstance(TILE_CLOTH, 1, getColor()), 1.0f);
 			item->m_vel.y += m_random.nextFloat() * 0.05f;
 			item->m_vel.x += (m_random.nextFloat() - m_random.nextFloat()) * 0.1f;
 			item->m_vel.z += (m_random.nextFloat() - m_random.nextFloat()) * 0.1f;

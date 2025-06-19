@@ -1,64 +1,152 @@
 #pragma once
 
-#include <vector>
+#include <array>
 #include "world/item/ItemInstance.hpp"
 #include "world/entity/Player.hpp"
+#include "Container.hpp"
+#include "common/ListTag.hpp"
+#include "common/CompoundTag.hpp"
 
 class Entity;
 class Player; // in case we're included from Player.hpp
 
 #define C_MAX_HOTBAR_ITEMS (9)
-#define C_NUM_SURVIVAL_SLOTS (36)
+#define C_NUM_SLOTS (36)
 #define C_MAX_AMOUNT (64)
 
-class Inventory
+class Inventory : public Container
 {
 public:
 	Inventory(Player*);
 	void prepareCreativeInventory();
 	void prepareSurvivalInventory();
 
-	int getNumSlots();
+	int getContainerSize() override;
 	int getNumItems();
 
-	void addCreativeItem(int itemID, int auxValue = 0);
-	void addTestItem(int itemID, int amount, int auxValue = 0);
+	void setItem(int index, std::shared_ptr<ItemInstance> item) override;
+    void setSelectedItem(std::shared_ptr<ItemInstance> item)
+    {
+        setItem(m_selected, item);
+    }
+    std::shared_ptr<ItemInstance> removeItem(int index, int count) override;
+	void addTestItem(int itemID, int amount = 1, int auxValue = 0);
 
 	void clear();
-	void addItem(ItemInstance* pInst);
+	bool add(std::shared_ptr<ItemInstance> pInst);
     void tick();
 
-	ItemInstance* getItem(int slotNo);
-	ItemInstance* getQuickSlotItem(int slotNo);
-	ItemInstance* getSelectedItem();
-	int getQuickSlotItemId(int slotNo);
+    std::shared_ptr<ItemInstance> getArmor(int index)
+    {
+        return m_armor[index];
+    }
+
+    std::shared_ptr<ItemInstance> getItem(int index) override;
+    std::shared_ptr<ItemInstance> getSelectedItem();
 	int getSelectedItemId();
-	void selectItem(int slotNo, int maxHotBarSlot); // selects an item by slot number and puts it in the quick slots if needed
 	void selectSlot(int slotNo);
 
-	void setQuickSlotIndexByItemId(int slotNo, int itemID);
 	void selectItemById(int itemID, int maxHotBarSlot);
 
 	int getAttackDamage(Entity*);
 
-	void dropAll(bool butNotReally = false);
+    int getArmorValue() const;
 
-	int getSelectedSlotNo() const
-	{
-		return m_selectedHotbarSlot;
-	}
+    void hurtArmor(int amount);
 
-	// v0.2.0 name alias
-	ItemInstance* getSelected() {
-		return getSelectedItem();
-	}
+    void dropAll();
+
+    int getSelectedSlotNo() const
+    {
+        return m_selected;
+    }
+
+    // v0.2.0 name alias
+    std::shared_ptr<ItemInstance> getSelected() {
+        return getSelectedItem();
+    }
+
+    std::string getName() override 
+    {
+        return "Inventory";
+    }
+
+    int getMaxStackSize() override
+    {
+        return C_MAX_AMOUNT;
+    }
+
+    void setChanged() override 
+    {
+        m_bChanged = true;
+    }
+
+    bool stillValid(Player* player) override;
+
+    std::shared_ptr<ItemInstance> getCarried()
+    {
+        return m_carried;
+    }
+
+    void setCarried(std::shared_ptr<ItemInstance> carried);
+
+    std::shared_ptr<ListTag> save(std::shared_ptr<ListTag> var1) {
+
+        for (int i = 0; i < m_items.size(); i++) {
+            std::shared_ptr<ItemInstance> item = m_items[i];
+            if (item) {
+                std::shared_ptr<CompoundTag> var3 = std::make_shared<CompoundTag>();
+                var3->putByte("Slot", i);
+                item->save(var3);
+                var1->add(var3);
+            }
+        }
+
+        for (int i = 0; i < m_armor.size(); i++) {
+            std::shared_ptr<ItemInstance> armor = m_armor[i];
+            if (armor) {
+                std::shared_ptr<CompoundTag> var3 = std::make_shared<CompoundTag>();
+                var3->putByte("Slot", i + 100);
+                armor->save(var3);
+                var1->add(var3);
+            }
+        }
+
+        return var1;
+    }
+
+    void load(std::shared_ptr<ListTag> var1) {
+        clear();
+
+        for (auto v : var1->getValue()) {
+            std::shared_ptr<CompoundTag> var3 = std::dynamic_pointer_cast<CompoundTag>(v);
+            int var4 = var3->getByte("Slot") & 255;
+            std::shared_ptr<ItemInstance> var5 = std::make_shared<ItemInstance>(var3);
+            if (var5->getItem()) {
+                if (var4 >= 0 && var4 < m_items.size()) {
+                    m_items[var4] = var5;
+                }
+
+                if (var4 >= 100 && var4 < m_armor.size() + 100) {
+                    m_armor[var4 - 100] = var5;
+                }
+            }
+        }
+
+    }
 
 public:
-	int m_selectedHotbarSlot;
-private:
-	Player* m_pPlayer;
-	bool m_bIsSurvival;
+	int m_selected;
+    bool m_bChanged;
+    Player* m_pPlayer;
 
-	int m_hotbar[C_MAX_HOTBAR_ITEMS];
-	std::vector<ItemInstance> m_items;
+private:
+    int getSlotWithRemainingSpace(std::shared_ptr<ItemInstance> item);
+    int getFreeSlot();
+    int addResource(std::shared_ptr<ItemInstance> item);
+
+
+    std::shared_ptr<ItemInstance> m_carried = nullptr;
+	std::array<std::shared_ptr<ItemInstance>, C_NUM_SLOTS> m_items;
+    std::array<std::shared_ptr<ItemInstance>, 4> m_armor;
 };

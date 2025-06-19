@@ -11,6 +11,7 @@
 #include "EntityRenderDispatcher.hpp"
 #include "client/renderer/TileRenderer.hpp"
 #include "world/entity/ItemEntity.hpp"
+#include "client/gui/GuiComponent.hpp"
 
 TileRenderer* ItemRenderer::tileRenderer = new TileRenderer;
 
@@ -36,12 +37,12 @@ ItemRenderer::ItemRenderer()
 
 void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, float b)
 {
-	m_random.init_genrand(187);
+	m_random.setSeed(187);
 	ItemEntity* pItemEntity = (ItemEntity*)pEntity;
 
 	glPushMatrix();
-	float yOffset = Mth::sin((float(pItemEntity->field_E0) + b) / 10.0f + pItemEntity->field_E8);
-	const ItemInstance* pItemInstance = &(pItemEntity->m_itemInstance);
+	float yOffset = Mth::sin((float(pItemEntity->m_age) + b) / 10.0f + pItemEntity->m_bobOffs);
+	std::shared_ptr<ItemInstance> pItemInstance = pItemEntity->m_itemInstance;
 
 	int itemsToRender = 1;
 	if (pItemInstance->m_count > 1)
@@ -51,19 +52,31 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 	if (pItemInstance->m_count > 20)
 		itemsToRender = 4;
 
+	//if (pItemEntity->pickingPlayer) 
+	//{
+	//	float var8 = std::min(1.0f, (pItemEntity->m_pickupDelay + b) / (pItemEntity->maxPickTime + 1.0f));
+	//	var8 *= var8;
+	//	float var15 = Mth::Lerp(pItemEntity->pickingPlayer->m_posPrev.x, pItemEntity->pickingPlayer->m_pos.x, b);
+	//	float var17 = Mth::Lerp(pItemEntity->pickingPlayer->m_posPrev.y, pItemEntity->pickingPlayer->m_pos.y, b) - 0.5;
+	//	float var19 = Mth::Lerp(pItemEntity->pickingPlayer->m_posPrev.z, pItemEntity->pickingPlayer->m_pos.z, b);
+	//	x += (var15 - pItemEntity->m_pos.x) * var8;
+	//	y += (var17 - pItemEntity->m_pos.y) * var8;
+	//	z += (var19 - pItemEntity->m_pos.z) * var8;
+	//	float var30 = pItemEntity->m_pLevel->getBrightness(TilePos(x, y + (pItemEntity->m_heightOffset / 2.0F), z));
+	//	glColor4f(var30, var30, var30, 1.0F);
+	//}
+
 	glTranslatef(x, y + 0.1f + yOffset * 0.1f, z);
 	glEnable(GL_RESCALE_NORMAL);
 
 	int itemID = pItemInstance->m_itemID;
 	if (itemID < C_MAX_TILES && TileRenderer::canRender(Tile::tiles[itemID]->getRenderShape()))
 	{
-		glRotatef(((float(pItemEntity->field_E0) + b) / 20.0f + pItemEntity->field_E8) * 57.296f, 0.0f, 1.0f, 0.0f);
+		glRotatef(((float(pItemEntity->m_age) + b) / 20.0f + pItemEntity->m_bobOffs) * 57.296f, 0.0f, 1.0f, 0.0f);
 		bindTexture(C_TERRAIN_NAME);
 
 		float scale = 0.5f;
 
-		// @BUG: If cacti existed and were able to be dropped, they would be 2x the size of a regular tile.
-		// This bug has been in the main game until Java Edition Beta 1.8.
 		if (Tile::tiles[itemID]->isCubeShaped() || pItemInstance->m_itemID == Tile::stoneSlabHalf->m_ID)
 			scale = 0.25f;
 
@@ -102,7 +115,7 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 					0.2f * (m_random.nextFloat() * 2.0f - 1.0f) * 0.3f);
 			}
 
-			glRotatef(180.0f - m_pDispatcher->m_rot.x, 0.0f, 1.0f, 0.0f);
+			glRotatef(180.0f - m_pDispatcher->m_rot.y, 0.0f, 1.0f, 0.0f);
 
 			Tesselator& t = Tesselator::instance;
 			t.begin();
@@ -116,6 +129,7 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 			t.vertexUV(+0.5f, -0.25f, 0.0f, float(16 * (icon % 16 + 1)) / 256.0f, float(16 * (icon / 16 + 1)) / 256.0f);
 			t.vertexUV(+0.5f, +0.75f, 0.0f, float(16 * (icon % 16 + 1)) / 256.0f, float(16 * (icon / 16))     / 256.0f);
 			t.vertexUV(-0.5f, +0.75f, 0.0f, float(16 * (icon % 16))     / 256.0f, float(16 * (icon / 16))     / 256.0f);
+	
 
 			t.draw();
 
@@ -127,60 +141,45 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 	glPopMatrix();
 }
 
-void ItemRenderer::blitRect(Tesselator& t, int x, int y, int w, int h, int color)
-{
-	t.begin();
-	t.color(color);
-	t.vertex(float(x),     float(y),     0.0f);
-	t.vertex(float(x),     float(y + h), 0.0f);
-	t.vertex(float(x + w), float(y + h), 0.0f);
-	t.vertex(float(x + w), float(y),     0.0f);
-	t.draw();
+void ItemRenderer::renderGuiItemDecorations(Font* font, Textures* textures, std::shared_ptr<ItemInstance> item, int x, int y) {
+	if (!item) return;
+
+	if (item->m_count > 1) {
+		std::string amount = std::to_string(item->m_count);
+		//glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		font->drawShadow(amount, x + 19 - 2 - font->width(amount), y + 6 + 3, 0xFFFFFF);
+		//glEnable(GL_LIGHTING);
+		glEnable(GL_DEPTH_TEST);
+	}
+
+	if (item->isDamaged()) {
+		int p = Mth::round(13.0 - (double)item->getDamageValue() * 13.0 / (double)item->getMaxDamage());
+		int cc = Mth::round(255.0 - (double)item->getDamageValue() * 255.0 / (double)item->getMaxDamage());
+
+		//glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		int ca = ((255 - cc) << 16) | (cc << 8);
+		int cb = (((255 - cc) / 4) << 16) | 0x3F00;
+
+		GuiComponent::drawRect(x + 2, y + 13, 13, 2, 0);
+		GuiComponent::drawRect(x + 2, y + 13, 12, 1, cb);
+		GuiComponent::drawRect(x + 2, y + 13, p, 1, ca);
+
+		//glEnable(GL_LIGHTING);
+		glEnable(GL_DEPTH_TEST);
+		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+	}
 }
 
-void ItemRenderer::blit(int dx, int dy, int sx, int sy, int tw, int th)
+void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstance> instance, int x, int y)
 {
-	Tesselator& t = Tesselator::instance;
-
-	float ex = float(dx), ey = float(dy);
-	float uw = float(tw), uh = float(th);
-	float vx = float(sx), vy = float(sy);
-
-	t.begin();
-	t.vertexUV(ex,      ey + uh, 0.0f, float(vx)      / 256.0f, float(vy + uh) / 256.0f);
-	t.vertexUV(ex + uw, ey + uh, 0.0f, float(vx + uw) / 256.0f, float(vy + uh) / 256.0f);
-	t.vertexUV(ex + uw, ey,      0.0f, float(vx + uw) / 256.0f, float(vy)      / 256.0f);
-	t.vertexUV(ex,      ey,      0.0f, float(vx)      / 256.0f, float(vy)      / 256.0f);
-	t.draw();
-}
-
-void ItemRenderer::renderGuiItemOverlay(Font* font, Textures* textures, ItemInstance* instance, int x, int y)
-{
-	if (!instance)
-		return;
-
-	if (instance->m_count == 1)
-		return;
-
-	std::stringstream ss;
-	ss << instance->m_count;
-	std::string amtstr = ss.str();
-
-	int width = font->width(amtstr), height = font->height(amtstr) + 8;
-
-	font->drawShadow(amtstr, x + 17 - width, y + 17 - height, 0xFFFFFF);
-}
-
-void ItemRenderer::renderGuiItem(Font* font, Textures* textures, ItemInstance* instance, int x, int y, bool b)
-{
-	// @NOTE: Font unused but would presumably be used to draw the item amount.
 	// As if that actually works due to us blocking t.begin() and t.draw() calls...
 	if (!instance)
 		return;
 
 	int itemID = instance->m_itemID;
-	if (!b)
-		return;
 
 	// @BUG: This is one of the reasons you can't actually hold items in early Minecraft.
 	// There's an attempt to index `Tile::tiles` out of bounds, which of course fails, and likely crashes the game. :(
@@ -208,46 +207,24 @@ void ItemRenderer::renderGuiItem(Font* font, Textures* textures, ItemInstance* i
 	
 	if (itemID < C_MAX_TILES && bCanRenderAsIs)
 	{
-#ifndef ENH_3D_INVENTORY_TILES
-		textures->loadAndBindTexture(C_BLOCKS_NAME);
 
-		float texU = float(g_ItemFrames[instance->m_itemID] % 10) * 48.0f;
-		float texV = float(g_ItemFrames[instance->m_itemID] / 10) * 48.0f;
-
-		Tesselator& t = Tesselator::instance;
-		// @NOTE: These do nothing, due to a previous t.voidBeginAndEndCalls call.
-		t.begin();
-		t.vertexUV(float(x +  0), float(y + 16), 0.0f,  texU          / 512.0f, (texV + 48.0f) / 512.0f);
-		t.vertexUV(float(x + 16), float(y + 16), 0.0f, (texU + 48.0f) / 512.0f, (texV + 48.0f) / 512.0f);
-		t.vertexUV(float(x + 16), float(y +  0), 0.0f, (texU + 48.0f) / 512.0f,  texV          / 512.0f);
-		t.vertexUV(float(x +  0), float(y +  0), 0.0f,  texU          / 512.0f,  texV          / 512.0f);
-		t.draw();
-#else
 		textures->loadAndBindTexture(C_TERRAIN_NAME);
 
-		//glDisable(GL_BLEND);
-		//glEnable(GL_DEPTH_TEST);
-
 		glPushMatrix();
-
-		// scale, rotate, and translate the tile onto the correct screen coordinate
-		glTranslatef((GLfloat)x + 8, (GLfloat)y + 8, -8);
-		glScalef(10, 10, 10);
-		glRotatef(210.0f, 1.0f, 0.0f, 0.0f);
-		glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
-
-		// TODO: Why can't we rotate stairs 90deg also? What's rotating them!?
-		if (Tile::tiles[itemID]->getRenderShape() != SHAPE_STAIRS)
-			glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+		glTranslatef(x - 2, y + 3, 0.0F);
+		glScalef(10.0F, 10.0F, 10.0F);
+		glTranslatef(1.0F, 0.5F, 8.0F);
+		glScalef(1.0F, 1.0F, -1.0F);
+		glRotatef(210.0F, 1.0F, 0.0F, 0.0F);
+		glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
+		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		glScalef(1.0F, 1.0F, 1.0F);
 		
 		tileRenderer->renderTile(Tile::tiles[itemID], instance->getAuxValue(), 1.0f, true);
 		#undef PARM_HACK
 
 		glPopMatrix();
 
-		//glDisable(GL_DEPTH_TEST);
-		//glEnable(GL_BLEND);
-#endif
 	}
 	else if (instance->getIcon() >= 0)
 	{
@@ -258,6 +235,6 @@ void ItemRenderer::renderGuiItem(Font* font, Textures* textures, ItemInstance* i
 		else
 			textures->loadAndBindTexture(C_ITEMS_NAME);
 
-		blit(x, y, 16 * (instance->getIcon() % 16), 16 * (instance->getIcon() / 16), 16, 16);
+		GuiComponent::blit(x, y, 0, 16 * (instance->getIcon() % 16), 16 * (instance->getIcon() / 16), 16, 16, 256, 256);
 	}
 }

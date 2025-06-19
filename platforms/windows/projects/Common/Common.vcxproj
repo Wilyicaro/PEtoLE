@@ -40,6 +40,7 @@
     <ProjectGuid>{71774270-fd1b-4269-bd8f-f75a52d43eb6}</ProjectGuid>
     <RootNamespace>Common</RootNamespace>
     <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -54,6 +55,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(MC_ROOT)\thirdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">stdcpp20</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -67,6 +69,20 @@
     <ClCompile Include="$(MC_ROOT)\source\common\Utils.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\common\SmoothFloat.cpp" />
     <ClCompile Include="$(MC_ROOT)\compat\LegacyCPPCompatibility.hpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\ByteArrayTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\ByteTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\CompoundTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\DoubleTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\EndTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\FloatTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\IntArrayTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\IntTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\ListTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\LongArrayTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\LongTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\ShortTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\StringTag.cpp" />
+    <ClCompile Include="$(MC_ROOT)\source\common\Tag.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\common\CThread.hpp" />
@@ -77,7 +93,22 @@
     <ClInclude Include="$(MC_ROOT)\source\common\Timer.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\Util.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\Utils.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\IOUtil.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\SmoothFloat.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\ByteArrayTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\ByteTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\CompoundTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\DoubleTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\EndTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\FloatTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\IntArrayTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\IntTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\ListTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\LongArrayTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\LongTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\ShortTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\StringTag.hpp" />
+    <ClInclude Include="$(MC_ROOT)\source\common\Tag.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

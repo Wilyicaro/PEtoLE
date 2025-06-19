@@ -54,13 +54,13 @@ TurnDelta ControllerTurnInput::getTurnDelta()
 	    //LOG_I("deltaTime: %f", deltaTime);
 		if (isTouched)
 		{
-			m_analogTurnVector.x = Controller::getX(m_stickNo);
-			m_analogTurnVector.y = Controller::getY(m_stickNo);
+			m_analogTurnVector.y = Controller::getX(m_stickNo);
+			m_analogTurnVector.x = Controller::getY(m_stickNo);
 		}
 		else
 		{
-			m_analogTurnVector.x *= 0.7f;
 			m_analogTurnVector.y *= 0.7f;
+			m_analogTurnVector.x *= 0.7f;
 		}
 		
 		// Deadzone handling moved to Controller
@@ -69,8 +69,8 @@ TurnDelta ControllerTurnInput::getTurnDelta()
 		//float yt = m_analogTurnVector.y * fabs(m_analogTurnVector.y) * 289.0f; // 200.0f for PE, 17.0f for LCE?
 
 		float turnSpeed = 50.0f * 5.8f;
-		float tx = m_analogTurnVector.x * Mth::abs(m_analogTurnVector.x) * turnSpeed;
-		float ty = m_analogTurnVector.y * Mth::abs(m_analogTurnVector.y) * turnSpeed;
+		float tx = m_analogTurnVector.y * Mth::abs(m_analogTurnVector.y) * turnSpeed;
+		float ty = m_analogTurnVector.x * Mth::abs(m_analogTurnVector.x) * turnSpeed;
 
 		/*xt *= fabs(xt);
 		yt *= fabs(yt);*/
@@ -89,19 +89,19 @@ TurnDelta ControllerTurnInput::getTurnDelta()
 
 		if (!field_18)
 		{
-			m_analogTurnVector.x = sx;
-			m_analogTurnVector.y = sy;
+			m_analogTurnVector.y = sx;
+			m_analogTurnVector.x = sy;
 		}
 
 		if (isTouched)
 		{
-			float diffX = sx - m_analogTurnVector.x;
-			float diffY = sy - m_analogTurnVector.y;
+			float diffX = sx - m_analogTurnVector.y;
+			float diffY = sy - m_analogTurnVector.x;
 
 			deltaX = fabsf(diffX) > 0.0f ? diffX * 100.0f : 0.0f;
 			deltaY = fabsf(diffY) > 0.0f ? diffY * 100.0f : 0.0f; // deltaY is inverted on 0.9.2
-			m_analogTurnVector.x = sx;
-			m_analogTurnVector.y = sy;
+			m_analogTurnVector.y = sx;
+			m_analogTurnVector.x = sy;
 		}
 		else
 		{

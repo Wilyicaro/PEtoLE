@@ -8,6 +8,9 @@
 
 #include "AppPlatform.hpp"
 #include "common/Utils.hpp"
+#include <fstream>
+#include <sstream>
+#include "thirdparty/stb_vorbis.c"
 
 AppPlatform* AppPlatform::m_singleton = nullptr;
 
@@ -251,4 +254,36 @@ std::string AppPlatform::getAssetPath(const std::string &path) const
 	realPath = "assets/" + realPath;
 	
 	return realPath;
+}
+
+std::optional<std::string> AppPlatform::readFile(const std::string& path) const
+{
+	std::ifstream file(getAssetPath(path), std::ios::binary);
+	if (!file) return std::nullopt;
+
+	std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+	return buffer;
+}
+
+std::optional<nlohmann::json> AppPlatform::loadJson(const std::string& path) {
+	auto raw = readFile(path);
+	if (!raw) return std::nullopt;
+
+	try {
+		auto json = nlohmann::json::parse(*raw);
+		return json;
+	}
+	catch (...) {
+		return std::nullopt;
+	}
+}
+
+int AppPlatform::loadOgg(const std::string path, int* channels, int* sample_rate, short** output) const
+{
+	return stb_vorbis_decode_filename(getAssetPath(path).c_str(), channels, sample_rate, output);
+}
+
+int AppPlatform::decodeOgg(const unsigned char* mem, int len, int* channels, int* sample_rate, short** output)
+{
+	return stb_vorbis_decode_memory(mem, len, channels, sample_rate, output);
 }

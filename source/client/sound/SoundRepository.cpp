@@ -10,7 +10,7 @@
 #include "common/Utils.hpp"
 #include "common/Mth.hpp"
 
-void SoundRepository::add(const std::string& name, SoundDesc& sd)
+void SoundRepository::add(const std::string& name, const SoundDesc& sd)
 {
 	std::map<std::string, std::vector<SoundDesc> >::iterator iter = m_repo.find(name);
 	if (iter == m_repo.end())

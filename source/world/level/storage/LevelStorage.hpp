@@ -22,9 +22,8 @@ public:
 	virtual ~LevelStorage();
 	virtual LevelData* prepareLevel(Level*) = 0;
 	virtual ChunkStorage* createChunkStorage(Dimension*) = 0;
-	virtual void saveLevelData(LevelData* levelData, std::vector<Player*>& players) = 0;
-	virtual void saveLevelData(LevelData* levelData);
-	virtual void savePlayerData(LevelData* levelData, std::vector<Player*>& players);
+	virtual void saveLevelData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players) = 0;
+	virtual void savePlayerData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players);
 	virtual void closeAll() = 0;
 };
 

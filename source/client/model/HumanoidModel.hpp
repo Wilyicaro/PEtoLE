@@ -13,7 +13,7 @@
 class HumanoidModel : public Model
 {
 public:
-	HumanoidModel(float a, float b);
+	HumanoidModel(float a, float yOffset = 0.0f);
 	// @TODO - No xrefs: void render(HumanoidModel* a, float f);
 
 	void onGraphicsReset() override;

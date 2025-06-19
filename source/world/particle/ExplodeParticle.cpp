@@ -31,7 +31,7 @@ void ExplodeParticle::tick()
 		remove();
 
 	m_vel.y += 0.004f;
-	field_DC = -8 * field_E8 / field_EC + 7;
+	blockTexture = -8 * field_E8 / field_EC + 7;
 
 	move(m_vel);
 

@@ -178,7 +178,7 @@ void SoundSystemSL::playAt(const SoundDesc &sound, float x, float y, float z, fl
 	dataSinkLocator.outputMix = m_slOutputMix;
 	dataSourceFormat.numChannels = sound.m_header.m_channels;
 	dataSourceFormat.channelMask = sound.m_header.m_channels == 1 ? 4 : 3;
-	dataSourceFormat.samplesPerSec = 1000 * sound.m_header.m_sample_rate;
+	dataSourceFormat.samplesPerSec = 1000 * sound.m_header.m_sample_rate * pitch;
 	dataSourceFormat.formatType = SL_DATAFORMAT_PCM;
 	dataSourceFormat.endianness = SL_BYTEORDER_LITTLEENDIAN;
 	dataSourceFormat.bitsPerSample = 8 * sound.m_header.m_bytes_per_sample;

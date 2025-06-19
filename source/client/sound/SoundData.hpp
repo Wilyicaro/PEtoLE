@@ -16,27 +16,24 @@ struct PCMSoundHeader
 	int m_channels;
 	int m_bytes_per_sample;
 	int m_sample_rate;
-	int m_length;
+	int m_samples;
 };
 
 struct SoundDesc
 {
-	uint16_t* m_pData;
+	short* m_pData;
 	int field_4;
 	PCMSoundHeader m_header;
-	PCMSoundHeader* m_pHeader;
 
 	SoundDesc()
 	{
 		m_pData = nullptr;
 		field_4 = 0;
-		m_pHeader = nullptr;
 	}
-	SoundDesc(PCMSoundHeader& header, uint16_t* data)
+	SoundDesc(const PCMSoundHeader& header, short* data)
 	{
-		m_pHeader = &header;
 		m_header = header;
 		m_pData = data;
-		field_4 = header.m_channels * header.m_length * header.m_bytes_per_sample;
+		field_4 = header.m_channels * header.m_samples * header.m_bytes_per_sample;
 	}
 };

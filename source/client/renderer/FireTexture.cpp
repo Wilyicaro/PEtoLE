@@ -56,7 +56,7 @@ void FireTexture::tick()
                 }
                 a;
 
-                a.x = m_random.genrand_int32();
+                a.x = m_random.nextInt();
                 this->m_data2[i + j * 16] = 0.2f + (((a.b[3] / 256.0f) * 0.1f) + ((((a.b[0] / 256.0f) * (a.b[1] / 256.0f)) * (a.b[2] / 256.0f)) * 4.0f));
             }
         }

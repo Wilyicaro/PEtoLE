@@ -277,6 +277,7 @@ static std::string getExternalStorageDir(struct engine* engine)
 
 static void initWindow(struct engine* engine, struct android_app* app)
 {
+
     if (engine->androidApp->window == NULL)
     {
         LOG_E("no active window?");
@@ -356,6 +357,7 @@ static void initWindow(struct engine* engine, struct android_app* app)
 
     LOG_I("finished initializing");
     engine->animating = 1; 
+    
 }
 
 static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
@@ -397,33 +399,40 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
     }
 }
 
-extern bool g_bIsGrassColorAvailable;	  // world/level/GrassColor.cpp
-extern bool g_bIsFoliageColorAvailable;   // world/level/FoliageColor.cpp
-
-static void CheckOptionalTextureAvailability()
-{
-#ifdef FEATURE_MENU_BACKGROUND
-	Screen::setIsMenuPanoramaAvailable(true);
-#endif
-
-#ifdef FEATURE_CLOUDS
-	LevelRenderer::setAreCloudsAvailable(true);
-#endif
-
-#ifdef FEATURE_GRASS_COLOR
-	g_bIsGrassColorAvailable = true;
-#endif
-
-#ifdef FEATURE_FOLIAGE_COLOR
-	g_bIsFoliageColorAvailable = true;
-#endif
-}
-
 
 void android_main(struct android_app* state) {
+   
+    JNIEnv* env{};
+    state->activity->vm->AttachCurrentThread(&env, NULL);
+
+    jclass activityClass = env->FindClass("android/app/NativeActivity");
+    jmethodID getWindow = env->GetMethodID(activityClass, "getWindow", "()Landroid/view/Window;");
+
+    jclass windowClass = env->FindClass("android/view/Window");
+    jmethodID getDecorView = env->GetMethodID(windowClass, "getDecorView", "()Landroid/view/View;");
+
+    jclass viewClass = env->FindClass("android/view/View");
+    jmethodID setSystemUiVisibility = env->GetMethodID(viewClass, "setSystemUiVisibility", "(I)V");
+
+    jobject window = env->CallObjectMethod(state->activity->clazz, getWindow);
+
+    jobject decorView = env->CallObjectMethod(window, getDecorView);
+
+    jfieldID flagFullscreenID = env->GetStaticFieldID(viewClass, "SYSTEM_UI_FLAG_FULLSCREEN", "I");
+    jfieldID flagHideNavigationID = env->GetStaticFieldID(viewClass, "SYSTEM_UI_FLAG_HIDE_NAVIGATION", "I");
+    jfieldID flagImmersiveStickyID = env->GetStaticFieldID(viewClass, "SYSTEM_UI_FLAG_IMMERSIVE_STICKY", "I");
+
+    const int flagFullscreen = env->GetStaticIntField(viewClass, flagFullscreenID);
+    const int flagHideNavigation = env->GetStaticIntField(viewClass, flagHideNavigationID);
+    const int flagImmersiveSticky = env->GetStaticIntField(viewClass, flagImmersiveStickyID);
+    const int flag = flagFullscreen | flagHideNavigation | flagImmersiveSticky;
+
+    env->CallVoidMethod(decorView, setSystemUiVisibility, flag);
+
+    state->activity->vm->DetachCurrentThread();
+    
+
     struct engine engine;
-	
-	CheckOptionalTextureAvailability();
 
     memset(&engine, 0, sizeof(engine));
     state->userData = &engine;

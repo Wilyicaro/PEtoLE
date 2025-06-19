@@ -22,6 +22,10 @@ public:
 
 	Level* getLevel();
 
+	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+
+	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+
 public:
 	int m_id;
 	int field_E0;

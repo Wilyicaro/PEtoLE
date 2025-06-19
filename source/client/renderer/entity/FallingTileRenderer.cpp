@@ -24,10 +24,6 @@ void FallingTileRenderer::render(Entity* entity, float x, float y, float z, floa
 	glTranslatef(x, y, z);
 
 	bindTexture(C_TERRAIN_NAME);
-
-	// @NOTE: Useless assignment. Already being done by the renderTile function
-	Tesselator::instance.color(1.0f, 1.0f, 1.0f);
-
 	// Render the base
 #ifdef ENH_SHADE_HELD_TILES
 #define ARGPATCH , entity->getBrightness(0.0f)

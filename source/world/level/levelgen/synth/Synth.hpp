@@ -7,10 +7,11 @@
  ********************************************************************/
 
 #pragma once
+#include <world/phys/Vec3T.hpp>
 
 class Synth
 {
 public:
-	virtual float getValue(float, float) = 0;
+	virtual real getValue(real, real) = 0;
 };
 

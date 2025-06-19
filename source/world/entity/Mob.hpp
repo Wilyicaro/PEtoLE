@@ -50,13 +50,13 @@ public:
 	virtual void travel(const Vec2& pos);
 	virtual void updateWalkAnim();
 	virtual void aiStep();
-	//AddAdditonalSaveData TODO
-	//ReadAdditionalSaveData TODO
+	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
 	virtual void lookAt(Entity* pEnt, float, float);
 	virtual bool isLookingAtAnEntity() { return m_pEntLookedAt != nullptr; }
 	virtual Entity* getLookingAt() const { return m_pEntLookedAt; }
 	virtual void beforeRemove() { }
-	virtual bool canSpawn() const;
+	virtual bool canSpawn();
 	virtual float getAttackAnim(float f) const;
 	virtual Vec3 getPos(float f) const;
 	virtual Vec3 getLookAngle(float f) const { return getViewVector(1.0f); }
@@ -88,18 +88,19 @@ public:
 	int field_DC;
 	float field_E0;
 	float field_E4;
-	float field_E8;
-	float field_EC;
+	float m_yBodyRot;
+	float m_yBodyRotO;
 	char field_F0;
 	float m_oAttackAnim;
 	float m_attackAnim;
 	int m_health;
-	int field_100;
+	int m_lastHealth;
+	int m_ambientSoundTime;
 	int m_hurtTime;
 	int m_hurtDuration;
 	float m_hurtDir;
-	int field_110;
-	int field_114;
+	int m_deathTime;
+	int m_attackTime;
 	float m_oTilt;
 	float m_tilt;
 	int field_120;
@@ -114,13 +115,13 @@ public:
 	bool m_bJumping;
 	float field_B10;
 	float m_runSpeed;
+	std::string m_skinUrl;
 	std::string m_texture;
-	std::string m_class;
 	int field_B48;
 	float field_B4C;
 	float field_B50;
-	float field_B54;
-	float field_B58;
+	float m_animStep;
+	float m_animStepO;
 	float m_rotOffs;
 	float field_B60;
 	int field_B64;

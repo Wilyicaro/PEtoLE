@@ -22,9 +22,6 @@ Cube::Cube(ModelPart* a2, int a3, int a4, float x, float y, float z, int d, int 
 	field_2A8 = x2;
 	field_2AC = y2;
 	field_2B0 = z2;
-
-	if (a2->m_bMirror)
-		std::swap(x1, x2);
 	
 	x1 -= g;
 	y1 -= g;
@@ -32,6 +29,9 @@ Cube::Cube(ModelPart* a2, int a3, int a4, float x, float y, float z, int d, int 
 	x2 += g;
 	y2 += g;
 	z2 += g;
+
+	if (a2->m_bMirror)
+		std::swap(x1, x2);
 
 	m_verts[0] = VertexPT(x1, y1, z1, 0.0f, 0.0f);
 	m_verts[1] = VertexPT(x2, y1, z1, 0.0f, 8.0f);

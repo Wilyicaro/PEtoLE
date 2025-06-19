@@ -8,7 +8,7 @@
 
 #include "GrassTile.hpp"
 #include "world/level/Level.hpp"
-#include "client/renderer/PatchManager.hpp"
+#include <client/renderer/GrassColor.hpp>
 
 GrassTile::GrassTile(int id, Material* c) : Tile(id, c)
 {
@@ -16,14 +16,14 @@ GrassTile::GrassTile(int id, Material* c) : Tile(id, c)
 	setTicking(true);
 }
 
-int GrassTile::getColor(const LevelSource* levelSource, const TilePos& pos) const
+int GrassTile::getColor(const LevelSource* levelSource, const TilePos& pos, Facing::Name facing, int texture) const
 {
-	if (GetPatchManager()->IsGrassTinted())
-	{
-		return 0x339933;
-	}
+	return texture == TEXTURE_GRASS_SIDE_OVERLAY || texture == TEXTURE_GRASS_TOP ? GrassColor::get(levelSource, pos) : 0xFFFFFF;
+}
 
-	return 0xffffff;
+int GrassTile::getColor(int data, Facing::Name facing, int texture) const
+{
+	return texture == TEXTURE_GRASS_SIDE_OVERLAY || texture == TEXTURE_GRASS_TOP ? GrassColor::get(1, 0.5) : 0xFFFFFF;
 }
 
 int GrassTile::getResource(int i, Random* random) const
@@ -65,14 +65,14 @@ void GrassTile::tick(Level* level, const TilePos& pos, Random* random)
 {
 	// Controls the spread/death of grass.
 	// It's like a full on automata of sorts. :)
-	if (level->m_bIsMultiplayer)
+	if (level->m_bIsOnline)
 		return;
 
 	if (level->getRawBrightness(pos.above()) <= 3 &&
 		level->getMaterial(pos.above())->blocksLight())
 	{
 		// grass death
-		if (random->genrand_int32() % 4 == 0)
+		if (random->nextInt() % 4 == 0)
 			level->setTile(pos, Tile::dirt->m_ID);
 	}
 	else if (level->getRawBrightness(pos.above()) > 8)

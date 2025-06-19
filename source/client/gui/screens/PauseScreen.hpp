@@ -18,7 +18,6 @@ public:
 	virtual void tick() override;
 	virtual void render(int a, int b, float c) override;
 	virtual void buttonClicked(Button*) override;
-	
 	void updateServerVisibilityText();
 
 private:
@@ -26,7 +25,6 @@ private:
 	int field_40;
 	Button m_btnBack;
 	Button m_btnQuit;
-	Button m_btnQuitAndCopy;
 	Button m_btnVisible;
 
 #ifdef ENH_ADD_OPTIONS_PAUSE

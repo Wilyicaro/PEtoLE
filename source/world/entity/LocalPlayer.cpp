@@ -8,6 +8,10 @@
 
 #include "LocalPlayer.hpp"
 #include "client/app/Minecraft.hpp"
+#include "client/gui/screens/inventory/ChestScreen.hpp"
+#include "client/gui/screens/inventory/CraftingScreen.hpp"
+#include "client/gui/screens/inventory/FurnaceScreen.hpp"
+#include <client/renderer/MobSkinTextureProcessor.hpp>
 
 int dword_250ADC, dword_250AE0;
 
@@ -38,8 +42,10 @@ LocalPlayer::LocalPlayer(Minecraft* pMinecraft, Level* pLevel, User* pUser, Game
 	m_pMinecraft = pMinecraft;
 	m_name = pUser->field_0;
 
-	field_BC4 = i;
+	m_dimension = i;
 	field_C38 = m_pInventory->getSelectedItemId();
+	if (!m_skinUrl.empty())
+	m_pMinecraft->m_pTextures->addHttpTexture(m_skinUrl, new MobSkinTextureProcessor);
 }
 
 LocalPlayer::~LocalPlayer()
@@ -53,11 +59,20 @@ void LocalPlayer::aiStep()
 		m_ySlideOffset = 0.2f;
 
 	m_lastRenderArmRot = m_renderArmRot;
-	m_renderArmRot.x = Mth::Lerp(m_renderArmRot.x, m_rot.x, 0.5f);
 	m_renderArmRot.y = Mth::Lerp(m_renderArmRot.y, m_rot.y, 0.5f);
-
+	m_renderArmRot.x = Mth::Lerp(m_renderArmRot.x, m_rot.x, 0.5f);
+	
+	checkInTile(Vec3(m_pos.x - m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z + m_bbWidth * 0.35f));
+	checkInTile(Vec3(m_pos.x - m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z - m_bbWidth * 0.35f));
+	checkInTile(Vec3(m_pos.x + m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z - m_bbWidth * 0.35f));
+	checkInTile(Vec3(m_pos.x + m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z + m_bbWidth * 0.35f));
 	Mob::aiStep();
 	Player::aiStep();
+}
+
+void LocalPlayer::take(Entity* itemEntity, int)
+{
+	m_pMinecraft->m_pParticleEngine->add(new PickupParticle(m_pLevel, itemEntity->shared_from_this(), shared_from_this(), -0.5f));
 }
 
 void LocalPlayer::drop(const ItemInstance* pItemInstance, bool b)
@@ -87,6 +102,21 @@ bool LocalPlayer::isImmobile() const
 	return Player::isImmobile() || (m_pMinecraft->useController() && m_pMinecraft->m_pScreen); //!m_pMinecraft->m_bGrabbedMouse; // this works if we still set this when not using a mouse
 }
 
+void LocalPlayer::startCrafting(const TilePos& pos)
+{
+	m_pMinecraft->setScreen(new CraftingScreen(m_pInventory, pos, m_pLevel));
+}
+
+void LocalPlayer::openFurnace(std::shared_ptr<FurnaceTileEntity> furnace)
+{
+	m_pMinecraft->setScreen(new FurnaceScreen(m_pInventory, furnace));
+}
+
+void LocalPlayer::openContainer(Container* container)
+{
+	m_pMinecraft->setScreen(new ChestScreen(m_pInventory, container));
+}
+
 void LocalPlayer::animateRespawn()
 {
 
@@ -94,7 +124,7 @@ void LocalPlayer::animateRespawn()
 
 void LocalPlayer::calculateFlight(const Vec3& pos)
 {
-	float f1 = m_pMinecraft->getOptions()->field_244;
+	real f1 = m_pMinecraft->getOptions()->field_244;
 	float x1 = f1 * pos.x;
 	float z1 = f1 * pos.z;
 
@@ -135,13 +165,13 @@ void LocalPlayer::calculateFlight(const Vec3& pos)
 
 void LocalPlayer::closeContainer()
 {
-	Player::closeContainer();
 	m_pMinecraft->setScreen(nullptr);
+	Player::closeContainer();
 }
 
 void LocalPlayer::respawn()
 {
-	m_pMinecraft->respawnPlayer(this);
+	m_pMinecraft->respawnPlayer(std::dynamic_pointer_cast<LocalPlayer>(shared_from_this()));
 }
 
 bool LocalPlayer::isSneaking() const
@@ -153,31 +183,27 @@ int LocalPlayer::move(const Vec3& pos)
 {
 	int result = 0;
 
-	LocalPlayer* pLP = m_pMinecraft->m_pLocalPlayer;
-	if (Minecraft::DEADMAU5_CAMERA_CHEATS && pLP == this && m_pMinecraft->getOptions()->m_bFlyCheat)
+	if (Minecraft::DEADMAU5_CAMERA_CHEATS && m_pMinecraft->getOptions()->m_bFlyCheat)
 	{
-		//@HUH: Using m_pMinecraft->m_pLocalPlayer instead of this, even though they're the same
-		pLP->m_bNoPhysics = true;
+		m_bNoPhysics = true;
 
 		float m_walkDist_old = m_walkDist;
 
-		pLP->calculateFlight(pos);
-		pLP->m_distanceFallen = 0.0f;
-		pLP->m_vel.y = 0.0f;
+		calculateFlight(pos);
+		m_distanceFallen = 0.0f;
+		m_vel.y = 0.0f;
 
-		// This looks very funny.
-		result = pLP->Entity::move(field_BF0);
+		result = Entity::move(field_BF0);
 
-		pLP->m_onGround = true;
+		m_onGround = true;
 
 		m_walkDist = m_walkDist_old;
 	}
 	else
 	{
-#ifndef ORIGINAL_CODE
+
 		// @BUG: In the original Minecraft, you can't stop flying! If you do, you'll just fall through to the bottom of the world. :(
-		pLP->m_bNoPhysics = false;
-#endif
+		m_bNoPhysics = false;
 
 		// autojump stuff
 		if (m_nAutoJumpFrames > 0)
@@ -186,13 +212,13 @@ int LocalPlayer::move(const Vec3& pos)
 			m_pMoveInput->m_bJumping = true;
 		}
 
-		float posX = m_pos.x;
-		float posY = m_pos.y;
+		real posX = m_pos.x;
+		real posY = m_pos.y;
 
 		result = Entity::move(pos);
 
 		//@BUG: backing up posZ too late
-		float posZ = m_pos.z;
+		real posZ = m_pos.z;
 
 		if (m_nAutoJumpFrames <= 0)
 		{
@@ -201,7 +227,7 @@ int LocalPlayer::move(const Vec3& pos)
 				Mth::floor(posZ * 2) == Mth::floor(m_pos.z * 2))
 				return result;
 
-			float dist = Mth::sqrt(pos.x * pos.x + pos.z * pos.z);
+			real dist = Mth::sqrt(pos.x * pos.x + pos.z * pos.z);
 			int x1 = Mth::floor(pos.x / dist + m_pos.x);
 			int z1 = Mth::floor(pos.z / dist + m_pos.z);
 
@@ -220,7 +246,7 @@ int LocalPlayer::move(const Vec3& pos)
 				return 1;
 
 			// are we trying to walk into stairs or a slab?
-			if (tileOnTop != Tile::stairs_stone->m_ID && tileOnTop != Tile::stairs_wood->m_ID && tileOnTop != Tile::stoneSlabHalf->m_ID && m_pMinecraft->getOptions()->m_bAutoJump)
+			if (tileOnTop != Tile::stairsStone->m_ID && tileOnTop != Tile::stairsWood->m_ID && tileOnTop != Tile::stoneSlabHalf->m_ID && m_pMinecraft->getOptions()->m_bAutoJump)
 				// Nope, we're walking towards a full block. Trigger an auto jump.
 				m_nAutoJumpFrames = 1;
 		}
@@ -235,11 +261,11 @@ void LocalPlayer::tick()
 
 	if (m_pMinecraft->isOnline())
 	{
-		if (fabsf(m_pos.x - field_C24.x) > 0.1f ||
-			fabsf(m_pos.y - field_C24.y) > 0.01f ||
-			fabsf(m_pos.z - field_C24.z) > 0.1f ||
-			fabsf(field_C30.y - m_rot.y) > 1.0f ||
-			fabsf(field_C30.x - m_rot.x) > 1.0f)
+		if (Mth::abs(m_pos.x - field_C24.x) > 0.1f ||
+			Mth::abs(m_pos.y - field_C24.y) > 0.01f ||
+			Mth::abs(m_pos.z - field_C24.z) > 0.1f ||
+			Mth::abs(field_C30.x - m_rot.x) > 1.0f ||
+			Mth::abs(field_C30.y - m_rot.y) > 1.0f)
 		{
 			m_pMinecraft->m_pRakNetInstance->send(new MovePlayerPacket(m_EntityID, Vec3(m_pos.x, m_pos.y - m_heightOffset, m_pos.z), m_rot));
 			field_C24 = m_pos;
@@ -258,8 +284,8 @@ void LocalPlayer::updateAi()
 {
 	Player::updateAi();
 
-	field_B00.x = m_pMoveInput->m_horzInput;
-	field_B00.y = m_pMoveInput->m_vertInput;
+	field_B00.y = m_pMoveInput->m_horzInput;
+	field_B00.x = m_pMoveInput->m_vertInput;
 
 	m_bJumping = m_pMoveInput->m_bJumping || m_nAutoJumpFrames > 0;
 }

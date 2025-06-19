@@ -9,7 +9,7 @@
 #pragma once
 
 #include "world/phys/AABB.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 #include "client/model/HumanoidModel.hpp"
 #include "client/renderer/Font.hpp"
 
@@ -19,11 +19,6 @@ class Tile;
 
 class EntityRenderer
 {
-private:
-	static bool _areShadowsAvailable;
-public:
-	static bool areShadowsAvailable() { return _areShadowsAvailable; }
-	static void setAreShadowsAvailable(bool value) { _areShadowsAvailable = value; }
 
 private:
 	Level* getLevel() const;
@@ -34,6 +29,7 @@ private:
 public:
 	EntityRenderer();
 	void bindTexture(const std::string& file);
+	void bindHttpTexture(const std::string& url, const std::string& fallback);
 	Font* getFont();
 	void init(EntityRenderDispatcher* d);
 	static void render(const AABB&, float, float, float);

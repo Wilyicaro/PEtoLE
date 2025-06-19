@@ -80,7 +80,7 @@ void WaterTexture::tick()
 		int r, g, b, a;
 
 		r = int(32.0f  + 32.0f * m);
-		g = int(64.0f  + 50.0f * m);
+		g = int(50.0f  + 64.0f * m);
 		a = int(146.0f + 50.0f * m);
 		b = 255;
 		

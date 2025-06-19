@@ -17,6 +17,7 @@
 
 #define C_MAX_ITEMS (C_MAX_TILES * 2)
 
+
 class ItemInstance; // in case we're included from ItemInstance.hpp
 
 class Level;
@@ -28,22 +29,50 @@ class Tile;
 class Item
 {
 public: // Sub structures
+	enum EquipmentSlot
+	{
+		SLOT_NONE = -1,
+		FEET,
+		LEGS,
+		CHEST,
+		HEAD
+	};
+
 	struct Tier
 	{
-		int   field_0;
-		int   m_Durability;
-		float m_HitStrength;
-		int   field_C;
+		int   m_level;
+		int   m_uses;
+		float m_speed;
+		int   m_damage;
 
-		Tier(int a, int b, float c, int d) :
-			field_0(a),
-			m_Durability(b),
-			m_HitStrength(c),
-			field_C(d)
-		{}
+		Tier(int level, int uses, float speed, int damage) :
+			m_level(level),
+			m_uses(uses),
+			m_speed(speed),
+			m_damage(damage)
+		{
+		}
 
-		// Item tiers
-		static Tier WOOD, STONE, IRON, EMERALD, GOLD;
+		static Tier WOOD, STONE, IRON, DIAMOND, GOLD;
+	};
+
+	struct ArmorTier
+	{
+		int m_level;
+		std::string m_texture1;
+		std::string m_texture2;
+
+		ArmorTier(int level, std::string texture1, std::string texture2) : m_level(level), m_texture1(texture1), m_texture2(texture2)
+		{
+		}
+
+		const std::string& getTexture(EquipmentSlot slot)
+		{
+			if (slot == EquipmentSlot::LEGS) return m_texture2;	
+			return m_texture1;
+		}
+
+		static ArmorTier CLOTH, CHAIN, IRON, DIAMOND, GOLD;
 	};
 
 public: // Methods
@@ -57,16 +86,16 @@ public: // Methods
 	virtual int getIcon(const ItemInstance*) const;
 	virtual bool useOn(ItemInstance*, Level*, const TilePos& pos, Facing::Name face);
 	virtual bool useOn(ItemInstance*, Player*, Level*, const TilePos& pos, Facing::Name face);
-	virtual float getDestroySpeed(ItemInstance*, Tile*);
-	virtual ItemInstance* use(ItemInstance*, Level*, Player*);
+	virtual float getDestroySpeed(ItemInstance * instance, const Tile * tile);
+	virtual std::shared_ptr<ItemInstance> use(std::shared_ptr<ItemInstance>, Level*, Player*);
 	virtual int getMaxStackSize();
 	virtual int getLevelDataForAuxValue(int x);
 	virtual bool isStackedByData();
 	virtual int getMaxDamage();
 	virtual void hurtEnemy(ItemInstance*, Mob*);
-	virtual void mineBlock(ItemInstance*, const TilePos& pos, Facing::Name face);
+	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face);
 	virtual int getAttackDamage(Entity*);
-	virtual bool canDestroySpecial(Tile*);
+	virtual bool canDestroySpecial(const Tile*);
 	virtual void interactEnemy(ItemInstance*, Mob*);
 	virtual Item* handEquipped();
 	virtual bool isHandEquipped();
@@ -80,6 +109,12 @@ public: // Methods
 	virtual Item* getCraftingRemainingItem();
 	virtual bool hasCraftingRemainingItem();
 	virtual std::string getName();
+	virtual void onCrafting(std::shared_ptr<ItemInstance>, Player*, Level*);
+	
+	// Custom methods
+	virtual EquipmentSlot getEquipmentSlot() const;
+	virtual int getDefense() const;
+	virtual const std::string& getArmorTexture() const;
 
 	static void initItems();
 	
@@ -98,108 +133,110 @@ public: // Static declarations
 
 	// The item array.
 	static Item* items[C_MAX_ITEMS];
+	static Random itemRand;
 
-	// Common item definitions
-	static Item
-		*shovel_iron,
-		*pickAxe_iron,
-		*hatchet_iron,
-		*flintAndSteel,
-		*apple,
-		*bow,
-		*arrow,
-		*coal,
-		*emerald,
-		*ironIngot,
-		*goldIngot,
-		*sword_iron,
-		*sword_wood,
-		*shovel_wood,
-		*pickAxe_wood,
-		*hatchet_wood,
-		*sword_stone,
-		*shovel_stone,
-		*pickAxe_stone,
-		*hatchet_stone,
-		*sword_emerald,
-		*shovel_emerald,
-		*pickAxe_emerald,
-		*hatchet_emerald,
-		*stick,
-		*bowl,
-		*mushroomStew,
-		*sword_gold,
-		*shovel_gold,
-		*pickAxe_gold,
-		*hatchet_gold,
-		*string,
-		*feather,
-		*sulphur,
-		*hoe_wood,
-		*hoe_stone,
-		*hoe_iron,
-		*hoe_emerald,
-		*hoe_gold,
-		*seeds,
-		*wheat,
-		*bread,
-		*helmet_cloth,
-		*chestplate_cloth,
-		*leggings_cloth,
-		*boots_cloth,
-		*helmet_iron,
-		*chestplate_iron,
-		*leggings_iron,
-		*boots_iron,
-		*helmet_diamond,
-		*chestplate_diamond,
-		*leggings_diamond,
-		*boots_diamond,
-		*helmet_gold,
-		*chestplate_gold,
-		*leggings_gold,
-		*boots_gold,
-		*flint,
-		*porkChop_raw,
-		*porkChop_cooked,
-		*painting,
-		*apple_gold,
-		*sign,
-		*door_wood,
-		*bucket_empty,
-		*bucket_water,
-		*bucket_lava,
-		*minecart,
-		*saddle,
-		*door_iron,
-		*redStone,
-		*snowBall,
-		*boat,
-		*leather,
-		*milk,
-		*brick,
-		*clay,
-		*reeds,
-		*paper,
-		*book,
-		*slimeBall,
-		*minecart_chest,
-		*minecart_furnace,
-		*egg,
-		*compass,
-		*fishingRod,
-		*clock,
-		*yellowDust,
-		*fish_raw,
-		*fish_cooked,
-		*dye_powder,
-		*bone,
-		*sugar,
-		*cake,
-		*bed,
-		*diode,
-		*record_01,
-		*record_02,
-		*camera,
-		*rocket;
+	static Item* ironShovel;
+	static Item* ironPickaxe;
+	static Item* ironAxe;
+	static Item* flintAndSteel;
+	static Item* apple;
+	static Item* bow;
+	static Item* arrow;
+	static Item* coal;
+	static Item* diamond;
+	static Item* ironIngot;
+	static Item* goldIngot;
+	static Item* ironSword;
+	static Item* woodSword;
+	static Item* woodShovel;
+	static Item* woodPickaxe;
+	static Item* woodAxe;
+	static Item* stoneSword;
+	static Item* stoneShovel;
+	static Item* stonePickaxe;
+	static Item* stoneAxe;
+	static Item* diamondSword;
+	static Item* diamondShovel;
+	static Item* diamondPickaxe;
+	static Item* diamondAxe;
+	static Item* stick;
+	static Item* bowl;
+	static Item* mushroomStew;
+	static Item* goldSword;
+	static Item* goldShovel;
+	static Item* goldPickaxe;
+	static Item* goldAxe;
+	static Item* string;
+	static Item* feather;
+	static Item* sulphur;
+	static Item* woodHoe;
+	static Item* stoneHoe;
+	static Item* ironHoe;
+	static Item* diamondHoe;
+	static Item* goldHoe;
+	static Item* seeds;
+	static Item* wheat;
+	static Item* bread;
+	static Item* clothHelmet;
+	static Item* clothChestplate;
+	static Item* clothLeggings;
+	static Item* clothBoots;
+	static Item* chainHelmet;
+	static Item* chainChestplate;
+	static Item* chainLeggings;
+	static Item* chainBoots;
+	static Item* ironHelmet;
+	static Item* ironChestplate;
+	static Item* ironLeggings;
+	static Item* ironBoots;
+	static Item* diamondHelmet;
+	static Item* diamondChestplate;
+	static Item* diamondLeggings;
+	static Item* diamondBoots;
+	static Item* goldHelmet;
+	static Item* goldChestplate;
+	static Item* goldLeggings;
+	static Item* goldBoots;
+	static Item* flint;
+	static Item* rawPorkchop;
+	static Item* cookedPorkchop;
+	static Item* painting;
+	static Item* goldApple;
+	static Item* sign;
+	static Item* woodDoor;
+	static Item* emptyBucket;
+	static Item* waterBucket;
+	static Item* lavaBucket;
+	static Item* minecart;
+	static Item* saddle;
+	static Item* ironDoor;
+	static Item* redStone;
+	static Item* snowBall;
+	static Item* boat;
+	static Item* leather;
+	static Item* milk;
+	static Item* brick;
+	static Item* clay;
+	static Item* reeds;
+	static Item* paper;
+	static Item* book;
+	static Item* slimeBall;
+	static Item* minecart_chest;
+	static Item* minecart_furnace;
+	static Item* egg;
+	static Item* compass;
+	static Item* fishingRod;
+	static Item* clock;
+	static Item* yellowDust;
+	static Item* rawFish;
+	static Item* cookedFish;
+	static Item* dyePowder;
+	static Item* bone;
+	static Item* sugar;
+	static Item* cake;
+	static Item* bed;
+	static Item* diode;
+	static Item* record_01;
+	static Item* record_02;
+	static Item* camera;
 };

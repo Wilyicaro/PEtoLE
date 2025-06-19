@@ -23,7 +23,7 @@ int RedStoneOreTile::getResource(int x, Random* random) const
 
 int RedStoneOreTile::getResourceCount(Random* random) const
 {
-	return random->genrand_int32() % 2 + 4;
+	return random->nextInt() % 2 + 4;
 }
 
 int RedStoneOreTile::getSpawnResourcesAuxValue(int x) const
@@ -85,16 +85,16 @@ void RedStoneOreTile::animateTick(Level* level, const TilePos& pos, Random* rand
 
 void RedStoneOreTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	if (m_ID == Tile::redStoneOre_lit->m_ID)
-		level->setTile(pos, Tile::redStoneOre->m_ID);
+	if (m_ID == Tile::redstoneOreLit->m_ID)
+		level->setTile(pos, Tile::redstoneOre->m_ID);
 }
 
 void RedStoneOreTile::interact(Level* level, const TilePos& pos)
 {
 	poofParticles(level, pos);
 
-	if (m_ID == Tile::redStoneOre->m_ID)
-		level->setTile(pos, Tile::redStoneOre_lit->m_ID);
+	if (m_ID == Tile::redstoneOre->m_ID)
+		level->setTile(pos, Tile::redstoneOreLit->m_ID);
 }
 
 void RedStoneOreTile::attack(Level* level, const TilePos& pos, Player* player)
@@ -102,7 +102,7 @@ void RedStoneOreTile::attack(Level* level, const TilePos& pos, Player* player)
 	interact(level, pos);
 }
 
-int RedStoneOreTile::use(Level* level, const TilePos& pos, Player* player)
+bool RedStoneOreTile::use(Level* level, const TilePos& pos, Player* player)
 {
 	interact(level, pos);
 	return Tile::use(level, pos, player);

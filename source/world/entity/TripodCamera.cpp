@@ -17,7 +17,7 @@ TripodCamera::TripodCamera(Level* level, Player* player, const Vec3& pos) : Mob(
 	m_bActive = false;
 
 	m_owner = player;
-	field_C8 = RENDER_CAMERA;
+	m_renderType = RENDER_CAMERA;
 
 	m_rotPrev = m_rot = player->m_rot;
 
@@ -70,7 +70,7 @@ void TripodCamera::tick()
 
 	if (field_B90 == 8)
 	{
-		m_pLevel->takePicture(this, m_owner);
+		m_pLevel->takePicture(std::dynamic_pointer_cast<TripodCamera>(shared_from_this()), m_owner);
 		m_pLevel->addParticle("explode", Vec3(m_pos.x, m_pos.y + 0.6f, m_pos.z));
 		m_pLevel->addParticle("explode", Vec3(m_pos.x, m_pos.y + 0.8f, m_pos.z));
 		m_pLevel->addParticle("explode", Vec3(m_pos.x, m_pos.y + 1.0f, m_pos.z));

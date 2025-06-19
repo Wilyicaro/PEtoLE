@@ -13,6 +13,10 @@ void LevelListener::tileChanged(const TilePos& pos)
 
 }
 
+void LevelListener::tileEntityChanged(const TilePos& pos, std::shared_ptr<TileEntity>)
+{
+}
+
 void LevelListener::tileBrightnessChanged(const TilePos& pos)
 {
 	tileChanged(pos);
@@ -33,7 +37,7 @@ void LevelListener::playSound(const std::string& name, const Vec3& pos, float vo
 
 }
 
-void LevelListener::takePicture(TripodCamera*, Entity*)
+void LevelListener::takePicture(std::shared_ptr<TripodCamera>, Entity*)
 {
 
 }

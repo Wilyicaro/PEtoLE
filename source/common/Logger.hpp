@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "Util.hpp"
 
 #ifdef ANDROID
 #include <android/log.h>
@@ -33,8 +34,11 @@ public:
 	const char* GetTag(eLogLevel ll);
 	virtual void print(eLogLevel, const char* const str);
 	virtual void print(eLogLevel, std::string str);
-	virtual void vprintf(eLogLevel, const char* const fmt, va_list argPtr);
-	virtual void printf(eLogLevel, const char* const fmt, ...);
+	template<typename... Args>
+	void printf(eLogLevel level, const char* const fmt, Args... args) 
+	{
+		print(level, Util::format(fmt, args...));
+	}
 };
 
 #ifndef NDEBUG

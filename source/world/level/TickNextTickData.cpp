@@ -8,11 +8,11 @@
 
 #include "TickNextTickData.hpp"
 
-int TickNextTickData::C;
+int TickNextTickData::last;
 
 TickNextTickData::TickNextTickData(const TilePos& tilePos, int d)
 {
-	m_ID = ++C; //@NOTE: not C++
+	m_ID = ++last;
 	field_4 = tilePos;
 	field_10 = d;
 

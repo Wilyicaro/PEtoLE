@@ -20,7 +20,7 @@ public:
 	void itemPlaced();
 	void itemUsed();
 	void render(float f);
-	void renderItem(ItemInstance*);
+	void renderItem(std::shared_ptr<ItemInstance>);
 	void renderScreenEffect(float f);
 	void renderFire(float f);
 	void renderTex(float f, int tex);
@@ -29,7 +29,7 @@ public:
 
 private:
 	int m_lastSlot;
-	ItemInstance m_selectedItem;
+	std::shared_ptr<ItemInstance> m_selectedItem = nullptr;
 	Minecraft* m_pMinecraft;
 	int field_18;
 	float m_height;

@@ -8,6 +8,7 @@
 
 #include "client/app/Minecraft.hpp"
 #include "client/gui/screens/IngameBlockSelectionScreen.hpp"
+#include "client/gui/screens/inventory/InventoryScreen.hpp"
 #include "client/gui/screens/ChatScreen.hpp"
 #include "client/renderer/entity/ItemRenderer.hpp"
 
@@ -21,11 +22,9 @@ float Gui::InvGuiScale = 1.0f / 2.0f;
 float Gui::InvGuiScale = 1.0f / 3.0f;
 #endif
 
-bool Gui::_isVignetteAvailable = false; // false because PE never seemed to have it
-
 Gui::Gui(Minecraft* pMinecraft)
 {
-	field_8 = 0;
+	m_progress = 0;
 	field_C = "";
 	field_24 = 0;
 	field_28 = 0;
@@ -99,7 +98,7 @@ void Gui::renderPumpkin(int var1, int var2)
 	glDisable(GL_ALPHA_TEST);
 
 	m_pMinecraft->m_pTextures->setSmoothing(true);
-	m_pMinecraft->m_pTextures->loadAndBindTexture("/misc/pumpkinblur.png");
+	m_pMinecraft->m_pTextures->loadAndBindTexture("misc/pumpkinblur.png");
 	m_pMinecraft->m_pTextures->setSmoothing(false);
 
 	Tesselator& t = Tesselator::instance;
@@ -163,9 +162,9 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 	renderer->setupGuiScreen();
 
-	LocalPlayer* player = mc->m_pLocalPlayer;
+	auto& player = mc->m_pLocalPlayer;
 
-	if (!mc->m_pLevel || !player)
+	if (!mc->m_pLevel || !player || mc->getOptions()->m_bDontRenderGui)
 		return;
 
 	glEnable(GL_BLEND);
@@ -173,58 +172,18 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 	int width = int(ceilf(Minecraft::width * InvGuiScale)),
 		height = int(ceilf(Minecraft::height * InvGuiScale));
 
-	if (mc->getOptions()->m_bFancyGraphics && isVignetteAvailable())
+	if (mc->getOptions()->m_bFancyGraphics)
 	{
 		renderVignette(player->getBrightness(f), width, height);
-		// WARNING: TOO SPOOKY, DO NOT UNCOMMENT, YOU WILL GET SPOOKED
-		//renderPumpkin(width, height);
 	}
+	auto headGear = player->m_pInventory->getArmor(Item::HEAD);
 
-#ifndef ENH_TRANSPARENT_HOTBAR
-	glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
-#else
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-#endif
+	if (!mc->getOptions()->m_bThirdPerson && headGear && headGear->m_itemID == Tile::pumpkin->m_ID)
+		renderPumpkin(width, height);
 
 	Textures* textures = mc->m_pTextures;
 
-	textures->loadAndBindTexture("gui/gui.png");
-
-	field_4 = -90.0f;
-
-#ifdef ENH_TRANSPARENT_HOTBAR
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-#endif
-
-	int nSlots = getNumSlots();
-	int hotbarWidth = 2 + nSlots * 20;
-
-	// hotbar
-	int cenX = width / 2;
-	blit(cenX - hotbarWidth / 2, height - 22, 0, 0, hotbarWidth, 22, 0, 0);
-
-	Inventory* inventory = player->m_pInventory;
-
-	// selection mark
-	blit(cenX - 1 - hotbarWidth / 2 + 20 * inventory->m_selectedHotbarSlot, height - 23, 0, 22, 24, 22, 0, 0);
-
-	textures->loadAndBindTexture("gui/icons.png");
-
-	if (mc->useSplitControls())
-	{
-#ifndef ENH_TRANSPARENT_HOTBAR
-		//glEnable(GL_BLEND);
-#endif
-
-		// draw crosshair
-		glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
-		blit(cenX - 8, height / 2 - 8, 0, 0, 16, 16, 0, 0);
-
-#ifndef ENH_TRANSPARENT_HOTBAR
-		//glDisable(GL_BLEND);
-#endif
-	}
-	else
+	if (!mc->useSplitControls())
 	{
 		IInputHolder* input = mc->m_pInputHolder;
 		// if needed, draw feedback
@@ -232,7 +191,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 		// NOTE: real Minecraft PE takes it directly from the gamemode as "current progress" and
 		// "last progress". Well guess what? The game mode in question updates our m_fSensitivity with
 		// the pre-interpolated break progress! Isn't that awesome?!
-		float breakProgress = field_8;
+		float breakProgress = m_progress;
 
 		// don't know about this if-structure, it feels like it'd be like
 		// if (m_bFoggy >= 0.0f && breakProgress <= 0.0f)
@@ -246,19 +205,18 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 				float xPos = input->m_feedbackX;
 				float yPos = input->m_feedbackY;
 
-				textures->loadAndBindTexture("gui/feedback_outer.png");
+				textures->loadAndBindTexture("gui/touchscreen.png");
 				glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 				//glEnable(GL_BLEND);
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				blit(InvGuiScale * xPos - 44.0f, InvGuiScale * yPos - 44.0f, 0, 0, 88, 88, 256, 256);
+				blit(InvGuiScale * xPos - 44.0f, InvGuiScale * yPos - 44.0f, 0, 88, 88, 88, 352, 352);
 
 				glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
-				textures->loadAndBindTexture("gui/feedback_fill.png");
 
 				// note: scale starts from 4.0f
 				float halfWidth = (40.0f * breakProgress + 48.0f) / 2.0f;
 
-				blit(InvGuiScale * xPos - halfWidth, InvGuiScale * yPos - halfWidth, 0, 0, halfWidth * 2, halfWidth * 2, 256, 256);
+				blit(InvGuiScale * xPos - halfWidth, InvGuiScale * yPos - halfWidth, 88, 88, halfWidth * 2, halfWidth * 2, 352, 352);
 
 				glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 				//glDisable(GL_BLEND);
@@ -269,67 +227,127 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 			float xPos = input->m_feedbackX;
 			float yPos = input->m_feedbackY;
 
-			textures->loadAndBindTexture("gui/feedback_outer.png");
+			textures->loadAndBindTexture("gui/touchscreen.png");
 			glColor4f(1.0f, 1.0f, 1.0f, Mth::Min(1.0f, input->m_feedbackAlpha));
 			//glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			blit(InvGuiScale * xPos - 44.0f, InvGuiScale * yPos - 44.0f, 0, 0, 88, 88, 256, 256);
+			blit(InvGuiScale * xPos - 44.0f, InvGuiScale * yPos - 44.0f, 0, 88, 88, 88, 352, 352);
 			glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 			//glDisable(GL_BLEND);
 		}
 	}
+
+#ifndef ENH_TRANSPARENT_HOTBAR
+	glColor4f(1.0f, 1.0f, 1.0f, 0.5f);
+#else
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+#endif
+
+
+	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/gui.png");
+
+	zLevel = -90.0f;
+
+#ifdef ENH_TRANSPARENT_HOTBAR
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#endif
+
+	int nSlots = getNumSlots();
+	int hotbarWidth = 2 + nSlots * 20;
+
+	// hotbar
+	int cenX = width / 2;
+	blit(cenX - hotbarWidth / 2, height - 22, 0, 0, Mth::Min(hotbarWidth, 182), 22, 256, 256);
+	if (hotbarWidth > 182)
+	{
+		blit(cenX - hotbarWidth / 2 + 180, height - 22, 182 - (hotbarWidth - 182 + 2), 0, hotbarWidth - 182 + 2, 22, 256, 256);
+	}
+
+	Inventory* inventory = player->m_pInventory;
+
+	// selection mark
+	blit(cenX - 1 - hotbarWidth / 2 + 20 * inventory->m_selected, height - 23, 0, 22, 24, 22, 256, 256);
+
+
+	if (mc->isTouchscreen())
+	{
+		textures->loadAndBindTexture("gui/touchscreen.png");
+		blit(cenX + hotbarWidth / 2 - 19, height - 19, 0, 0, 16, 16, 256, 256);
+	}
+#ifndef ENH_TRANSPARENT_HOTBAR
+	//glEnable(GL_BLEND);
+#endif
+	textures->loadAndBindTexture("gui/icons.png");
+	glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
+	blit(cenX - 8, height / 2 - 8, 0, 0, 16, 16, 256, 256);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+#ifndef ENH_TRANSPARENT_HOTBAR
+	//glDisable(GL_BLEND);
+#endif
 
 	glDisable(GL_BLEND);
 
 	if (mc->m_pGameMode->canHurtPlayer())
 	{
 		// why??
-		m_random.init_genrand(312871 * field_9FC);
+		m_random.setSeed(312871 * field_9FC);
 
 		int emptyHeartX = 16;
 		bool b1 = false;
-		if (player->field_B8 < 10)
+		if (player->m_invulnerableTime < 10)
 		{
-			b1 = player->field_B8 / 3 % 2;
+			b1 = player->m_invulnerableTime / 3 % 2;
 			emptyHeartX += 9 * b1;
 		}
 
-		// @NOTE: At the default scale, this would go off screen.
+		int heartX = cenX - hotbarWidth / 2;
+		int heartYStart = height - 32;
 
-		int heartX = cenX - 191; // why?
-		int heartYStart = height - 10;
-
-		//@NOTE: Alpha-style health UI. I'll probably remove this on release.
-#ifndef ORIGINAL_CODE
-		heartX = cenX - 91;
-		heartYStart = height - 32;
-#endif
+		int armorX = heartX + hotbarWidth - 9;
 
 		int playerHealth = player->m_health;
+		const int armor = player->m_pInventory->getArmorValue();
 
 		for (int healthNo = 1; healthNo <= C_MAX_MOB_HEALTH; healthNo += 2)
 		{
 			int heartY = heartYStart;
 
-			if (playerHealth <= 4 && m_random.genrand_int32() % 2)
+			if (armor > 0) {
+				if (healthNo < armor) {
+					blit(armorX, heartY, 34, 9, 9, 9, 256, 256);
+				}
+
+				if (healthNo == armor) {
+					blit(armorX, heartY, 25, 9, 9, 9, 256, 256);
+				}
+
+				if (healthNo > armor) {
+					blit(armorX, heartY, 16, 9, 9, 9, 256, 256);
+				}
+			}
+
+			armorX -= 8;
+
+			if (playerHealth <= 4 && m_random.nextInt() % 2)
 				heartY++;
 
-			blit(heartX, heartY, emptyHeartX, 0, 9, 9, 0, 0);
+			blit(heartX, heartY, emptyHeartX, 0, 9, 9, 256, 256);
 
 			if (b1)
 			{
-				if (healthNo < player->field_100)
-					blit(heartX, heartY, 70, 0, 9, 9, 0, 0);
-				else if (healthNo == player->field_100)
-					blit(heartX, heartY, 79, 0, 9, 9, 0, 0);
+				if (healthNo < player->m_lastHealth)
+					blit(heartX, heartY, 70, 0, 9, 9, 256, 256);
+				else if (healthNo == player->m_lastHealth)
+					blit(heartX, heartY, 79, 0, 9, 9, 256, 256);
 			}
 
 			if (healthNo < playerHealth)
-				blit(heartX, heartY, 52, 0, 9, 9, 0, 0);
+				blit(heartX, heartY, 52, 0, 9, 9, 256, 256);
 			else if (healthNo == playerHealth)
-				blit(heartX, heartY, 61, 0, 9, 9, 0, 0);
+				blit(heartX, heartY, 61, 0, 9, 9, 256, 256);
 
 			heartX += 8;
+
 		}
 
 		if (player->isUnderLiquid(Material::water))
@@ -338,29 +356,21 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 			int breathFull  = int(ceilf((float(breathRaw - 2) * 10.0f) / 300.0f));
 			int breathMeter = int(ceilf((float(breathRaw)     * 10.0f) / 300.0f)) - breathFull;
 
-			int bubbleX = cenX - 191;
-			int bubbleY = height - 19;
-
-#ifndef ORIGINAL_CODE
-			bubbleX = cenX - 91;
-			bubbleY = height - 41;
-#endif
-
-			//@NOTE: Not sure this works as it should
+			int bubbleX = cenX - hotbarWidth / 2;
+			int bubbleY = height - 41;
 
 			for (int bubbleNo = 0; bubbleNo < breathFull + breathMeter; bubbleNo++)
 			{
 				if (bubbleNo < breathFull)
-					blit(bubbleX, bubbleY, 16, 18, 9, 9, 0, 0);
+					blit(bubbleX, bubbleY, 16, 18, 9, 9, 256, 256);
 				else
-					blit(bubbleX, bubbleY, 25, 18, 9, 9, 0, 0);
+					blit(bubbleX, bubbleY, 25, 18, 9, 9, 256, 256);
 
 				bubbleX += 8;
 			}
 		}
 	}
 
-	textures->loadAndBindTexture("gui/gui_blocks.png");
 
 	int diff = mc->isTouchscreen();
 
@@ -372,24 +382,9 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 		slotX += 20;
 	}
 
-	slotX = cenX - hotbarWidth / 2 + 3;
-	for (int i = 0; i < nSlots - diff; i++)
-	{
-		renderSlotOverlay(i, slotX, height - 19, f);
-
-		slotX += 20;
-	}
-
 #undef DIFF
 
 	field_A3C = false;
-
-	// blit the "more items" button
-	if (mc->isTouchscreen())
-	{
-		textures->loadAndBindTexture(C_TERRAIN_NAME);
-		blit(cenX + hotbarWidth / 2 - 19, height - 19, 208, 208, 16, 16, 0, 0);
-	}
 
 	// render messages
 	if (m_bRenderMessages)
@@ -416,8 +411,8 @@ void Gui::renderSlot(int slot, int x, int y, float f)
 {
 	Inventory* pInv = m_pMinecraft->m_pLocalPlayer->m_pInventory;
 
-	ItemInstance* pInst = pInv->getQuickSlotItem(slot);
-	if (pInst == nullptr || pInst->m_itemID <= 0)
+	std::shared_ptr<ItemInstance> pInst = pInv->getItem(slot);
+	if (!pInst || pInst->m_itemID <= 0)
 		return;
 
     float var6 = ((float)pInst->m_popTime) - f;
@@ -430,25 +425,11 @@ void Gui::renderSlot(int slot, int x, int y, float f)
         glTranslatef(-(x + 8), -(y + 12), 0.0f);
     }
 
-    ItemRenderer::renderGuiItem(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pInst, x, y, true);
+	ItemRenderer::renderGuiItem(m_pMinecraft->m_pTextures, pInst, x, y);
     if (var6 > 0.0f)
         glPopMatrix();
 
-    //ItemRenderer::renderGuiItemDecorations(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pInst, x, y);
-}
-
-void Gui::renderSlotOverlay(int slot, int x, int y, float f)
-{
-	Inventory* pInv = m_pMinecraft->m_pLocalPlayer->m_pInventory;
-
-	ItemInstance* pInst = pInv->getQuickSlotItem(slot);
-	if (!pInst)
-		return;
-
-	if (!pInst->m_itemID)
-		return;
-
-	ItemRenderer::renderGuiItemOverlay(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pInst, x, y);
+    ItemRenderer::renderGuiItemDecorations(m_pMinecraft->m_pFont, m_pMinecraft->m_pTextures, pInst, x, y);
 }
 
 int Gui::getSlotIdAt(int mouseX, int mouseY)
@@ -489,7 +470,8 @@ void Gui::handleClick(int clickID, int mouseX, int mouseY)
 		return;
 
 	if (m_pMinecraft->isTouchscreen() && slot == getNumSlots() - 1)
-		m_pMinecraft->setScreen(new IngameBlockSelectionScreen);
+		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
+		else m_pMinecraft->setScreen(new IngameBlockSelectionScreen);
 	else
 		m_pMinecraft->m_pLocalPlayer->m_pInventory->selectSlot(slot);
 }
@@ -498,9 +480,15 @@ void Gui::handleKeyPressed(int keyCode)
 {
 	Options* options = m_pMinecraft->getOptions();
 
-	if (options->isKey(KM_INVENTORY, keyCode))
+	if (options->isKey(KM_CRAFTING, keyCode))
 	{
 		m_pMinecraft->setScreen(new IngameBlockSelectionScreen);
+		return;
+	}
+
+	if (options->isKey(KM_INVENTORY, keyCode))
+	{
+		m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
 		return;
 	}
 
@@ -511,7 +499,7 @@ void Gui::handleKeyPressed(int keyCode)
 		int maxItems = getNumSlots() - 1;
 		if (m_pMinecraft->isTouchscreen())
 			maxItems--;
-		int* slot = &m_pMinecraft->m_pLocalPlayer->m_pInventory->m_selectedHotbarSlot;
+		int* slot = &m_pMinecraft->m_pLocalPlayer->m_pInventory->m_selected;
 
 		if (slotR)
 		{
@@ -583,10 +571,7 @@ void Gui::renderMessages(bool bShowAll)
 
 int Gui::getNumSlots()
 {
-	if (m_pMinecraft->isTouchscreen())
-		return 4;
-
-	return 9;
+	return 9 + m_pMinecraft->isTouchscreen();
 }
 
 int Gui::getNumUsableSlots()

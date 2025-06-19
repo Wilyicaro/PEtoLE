@@ -20,10 +20,10 @@ DoorTile::DoorTile(int ID, Material* pMtl) : Tile(ID, pMtl)
 	Tile::setShape(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
 }
 
-int DoorTile::use(Level* level, const TilePos& pos, Player* player)
+bool DoorTile::use(Level* level, const TilePos& pos, Player* player)
 {
 	// well, you know, iron doors can't be opened by right clicking
-	if (m_pMaterial == Material::metal)
+	if ((player->isSneaking() && player->getSelectedItem()) || m_pMaterial == Material::metal)
 		return 1;
 
 	int data = level->getData(pos);
@@ -59,7 +59,8 @@ int DoorTile::use(Level* level, const TilePos& pos, Player* player)
 
 void DoorTile::attack(Level* level, const TilePos& pos, Player* player)
 {
-	use(level, pos, player);
+	if (!player->isSneaking())
+		use(level, pos, player);
 }
 
 // @HUH: This function has NO references to itself. Not even in the vtable of the tile.
@@ -72,8 +73,6 @@ bool DoorTile::blocksLight() const
 
 HitResult DoorTile::clip(const Level* level, const TilePos& pos, Vec3 v1, Vec3 v2)
 {
-	// @NOTE: Tile::clip calls updateShape too. So this is redundant
-	updateShape(level, pos);
 	return Tile::clip(level, pos, v1, v2);
 }
 
@@ -104,9 +103,9 @@ int DoorTile::getResource(int data, Random* random) const
 		return 0;
 
 	if (m_pMaterial == Material::metal)
-		return Item::door_iron->m_itemID;
+		return Item::ironDoor->m_itemID;
 
-	return Item::door_wood->m_itemID;
+	return Item::woodDoor->m_itemID;
 }
 
 int DoorTile::getTexture(Facing::Name face, int data) const
@@ -220,21 +219,23 @@ void DoorTile::neighborChanged(Level* level, const TilePos& pos, TileID newTile)
 
 		return;
 	}
-
+	bool topBreak = false;
 	if (level->getTile(pos.above()) != m_ID)
 	{
 		level->setTile(pos, TILE_AIR);
-		isTop = 1;
+		topBreak = true;
 	}
 
 	if (!level->isSolidTile(pos.below()))
 	{
 		level->setTile(pos, TILE_AIR);
+		topBreak = true;
 		if (level->getTile(pos.above()) == m_ID)
 			level->setTile(pos.above(), TILE_AIR);
 	}
 
-	if (!isTop && newTile > 0 && Tile::tiles[newTile]->isSignalSource())
+	if (topBreak) spawnResources(level, pos, isTop);
+	else if (newTile > 0 && Tile::tiles[newTile]->isSignalSource())
 	{
 		bool bOpen = false;
 		if (level->hasNeighborSignal(pos) || level->hasNeighborSignal(pos.above()))

@@ -26,42 +26,8 @@ Biome* Biome::map[4096];
 
 Biome* Biome::_getBiome(float temp, float hum)
 {
-	if (temp < 0.1)
-		return tundra;
-
 	float ht = hum * temp;
-	if (ht < 0.2f)
-	{
-		if (temp >= 0.5f)
-		{
-			if (temp >= 0.95f)
-				return desert;
-			return savanna;
-		}
-		return tundra;
-	}
-
-	if (ht > 0.5f && ht < 0.7f)
-		return swampland;
-
-	if (temp < 0.5f)
-		return taiga;
-
-	if (temp >= 0.97f)
-	{
-		if (ht < 0.45f)
-			return plains;
-		
-		if (ht < 0.9f)
-			return seasonalForest;
-		
-		return rainForest;
-	}
-
-	if (temp >= 0.35f)
-		return forest;
-	
-	return shrubland;
+	return temp < 0.1F ? tundra : (ht < 0.2F ? (temp < 0.5F ? tundra : (temp < 0.95F ? savanna : desert)) : (ht > 0.5F && temp < 0.7F ? swampland : (temp < 0.5F ? taiga : (temp < 0.97F ? (ht < 0.35F ? shrubland : forest) : (ht < 0.45F ? plains : (ht < 0.9F ? seasonalForest : rainForest))))));
 }
 
 float Biome::adjustDepth(float f)
@@ -76,7 +42,17 @@ float Biome::adjustScale(float f)
 
 int Biome::getSkyColor(float x)
 {
-	return 0x80808080;
+	x /= 3.0F;
+	if (x < -1.0F) {
+		x = -1.0F;
+	}
+
+	if (x > 1.0F) {
+		x = 1.0F;
+	}
+
+
+	return Mth::HSBtoRGB(0.62222224F - x * 0.05F, 0.5F + x * 0.1F, 1.0F);
 }
 
 Biome* Biome::getBiome(float hum, float temp)
@@ -97,8 +73,8 @@ void Biome::recalc()
 		}
 	}
 
-	desert->field_20 = desert->field_21 = Tile::sand->m_ID;
-	iceDesert->field_20 = iceDesert->field_21 = Tile::sand->m_ID;
+	desert->topBlock = desert->fillerBlock = Tile::sand->m_ID;
+	iceDesert->topBlock = iceDesert->fillerBlock = Tile::sand->m_ID;
 }
 
 Biome::Biome()
@@ -106,8 +82,8 @@ Biome::Biome()
 	m_name = "";
 	m_Color = 0;
 	m_LeafColor = 0;
-	field_20 = Tile::grass->m_ID;
-	field_21 = Tile::dirt->m_ID;
+	topBlock = Tile::grass->m_ID;
+	fillerBlock = Tile::dirt->m_ID;
 }
 
 Biome::~Biome()
@@ -116,13 +92,20 @@ Biome::~Biome()
 
 Feature* Biome::getTreeFeature(Random* pRandom)
 {
-	pRandom->nextInt(10); // unused result
+	if (pRandom->nextInt(10) == 0) return new FancyTreeFeature;
 
 	return new TreeFeature;
 }
 
 Biome* Biome::setSnowCovered()
 {
+	hasSnow = true;
+	return this;
+}
+
+Biome* Biome::setNoRain()
+{
+	hasRain = false;
 	return this;
 }
 
@@ -204,8 +187,7 @@ void Biome::initBiomes()
 
 Feature* RainforestBiome::getTreeFeature(Random* pRandom)
 {
-	pRandom->nextInt(3); // unused result
-
+	if (pRandom->nextInt(3) == 0) return new FancyTreeFeature;
 	return new TreeFeature;
 }
 
@@ -216,11 +198,7 @@ Feature* ForestBiome::getTreeFeature(Random* pRandom)
 		return new BirchFeature;
 	}
 
-	// @NOTE: Here would be code for a big tree with random->nextInt(3).
-	// But PE doesn't have big trees
-
-	pRandom->nextInt(3);
-
+	if (pRandom->nextInt(3) == 0) return new FancyTreeFeature;
 	return new TreeFeature;
 }
 

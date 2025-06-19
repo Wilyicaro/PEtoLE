@@ -31,7 +31,7 @@ bool TileItem::useOn(ItemInstance* instance, Player* player, Level* level, const
 {
 	TilePos tp(pos);
 
-	if (level->getTile(pos) == Tile::topSnow->m_ID)
+	if (level->getTile(pos) == Tile::topSnow->m_ID || level->getTile(pos) == Tile::tallGrass->m_ID)
 	{
 		face = Facing::DOWN;
 	}
@@ -48,7 +48,7 @@ bool TileItem::useOn(ItemInstance* instance, Player* player, Level* level, const
 	if (!instance->m_count)
 		return false;
 
-	if (!level->mayPlace(m_tile, tp, false))
+	if (!level->mayPlace(m_tile, tp, false, face))
 		return false;
 
 	Tile* pTile = Tile::tiles[m_tile];
@@ -57,11 +57,11 @@ bool TileItem::useOn(ItemInstance* instance, Player* player, Level* level, const
 		return true;
 
 	Tile::tiles[m_tile]->setPlacedOnFace(level, tp, face);
-	Tile::tiles[m_tile]->setPlacedBy(level, tp, player);
+	Tile::tiles[m_tile]->setPlacedBy(level, tp, player, face);
 
 	level->playSound(
 		Vec3(tp) + 0.5f,
-		"step." + pTile->m_pSound->m_name,
+		pTile->m_pSound->m_name,
 		(pTile->m_pSound->volume + 1.0f) * 0.5f,
 		pTile->m_pSound->pitch * 0.8f
 	);

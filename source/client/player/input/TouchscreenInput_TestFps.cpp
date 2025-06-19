@@ -25,7 +25,7 @@ TouchscreenInput_TestFps::TouchscreenInput_TestFps(Minecraft* pMinecraft, Option
 	m_pAreaJump(nullptr)
 {
 	for (int i = 0; i < 10; i++)
-		field_30[i] = 0;
+		m_noNeighborUpdate[i] = 0;
 
 	// Note! Only the first five button entries are used.
 	for (int i = 0; i < 8; i++)
@@ -84,8 +84,8 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 {
 	m_touchAreaModel.clear();
 
-	float widthM = float(width) * 0.11f;
-	float heightM = float(height) * 0.18f;
+	float heightM = height / 5.0f;
+	float widthM = heightM;
 
 	float x1[4], y1[4], x2[4], y2[4];
 
@@ -133,6 +133,8 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 
 void TouchscreenInput_TestFps::tick(Player* pPlayer)
 {
+	if (m_pMinecraft->m_pScreen) return;
+
 	m_horzInput = 0.0f;
 	m_vertInput = 0.0f;
 	m_bJumping = false;
@@ -252,25 +254,25 @@ void TouchscreenInput_TestFps::render(float f)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/gui.png");
+	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/touchscreen.png");
 
 	Tesselator& t = Tesselator::instance;
 	t.begin();
 
 	t.color(isButtonDown(100 + INPUT_LEFT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaLeft, 64, 112);
+	RenderTouchButton(&t, m_pAreaLeft, 64, 128);
 
 	t.color(isButtonDown(100 + INPUT_RIGHT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaRight, 192, 112);
+	RenderTouchButton(&t, m_pAreaRight, 192, 128);
 
 	t.color(isButtonDown(100 + INPUT_FORWARD) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaForward, 0, 112);
+	RenderTouchButton(&t, m_pAreaForward, 0, 128);
 
 	t.color(isButtonDown(100 + INPUT_BACKWARD) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaBackward, 128, 112);
+	RenderTouchButton(&t, m_pAreaBackward, 128, 128);
 
 	t.color(isButtonDown(100 + INPUT_JUMP) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaJump, 0, 176);
+	RenderTouchButton(&t, m_pAreaJump, 0, 192);
 
 	t.draw();
 

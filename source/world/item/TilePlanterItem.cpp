@@ -37,14 +37,16 @@ bool TilePlanterItem::useOn(ItemInstance* instance, Player* player, Level* level
 		return false;
 
 	// why?
-	if (!level->mayPlace(m_tile, tp, false))
+	if (!level->mayPlace(m_tile, tp, false, face))
 		return true;
 
 	if (!level->setTile(tp, m_tile))
 		return true;
 
-	Tile::tiles[m_tile]->setPlacedOnFace(level, tp, face);
-	Tile::tiles[m_tile]->setPlacedBy(level, tp, player);
+	auto tile = Tile::tiles[m_tile];
+	tile->setPlacedOnFace(level, tp, face);
+	tile->setPlacedBy(level, tp, player, face);
+	level->playSound(pos.center(), tile->m_pSound->m_name, (tile->m_pSound->volume + 1.0F) / 2.0F, tile->m_pSound->pitch * 0.8F);
 
 	instance->m_count--;
 	return true;

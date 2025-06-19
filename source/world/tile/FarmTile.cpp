@@ -88,13 +88,13 @@ void FarmTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 
 void FarmTile::stepOn(Level* level, const TilePos& pos, Entity* pEnt)
 {
-	if (level->m_random.genrand_int32() % 4 == 0)
+	if (level->m_random.nextInt() % 4 == 0)
 		level->setTile(pos, Tile::dirt->m_ID);
 }
 
 void FarmTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	int val = random->genrand_int32();
+	int val = random->nextInt();
 
 	//@HUH: weird way of saying val % 5 == 0
 	if (val != 5 * (val / 5))

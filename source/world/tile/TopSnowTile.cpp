@@ -32,7 +32,7 @@ bool TopSnowTile::isSolidRender() const
 
 int TopSnowTile::getResource(int x, Random* random) const
 {
-	return 0;
+	return Item::snowBall->m_itemID;
 }
 
 int TopSnowTile::getResourceCount(Random* random) const
@@ -70,10 +70,9 @@ bool TopSnowTile::shouldRenderFace(const LevelSource* level, const TilePos& pos,
 	if (face == Facing::UP)
 		return true;
 
-	if (level->getMaterial(pos) == m_pMaterial)
-		return false;
+	Material* material = level->getMaterial(pos);
 
-	return Tile::shouldRenderFace(level, pos, face);
+	return material == m_pMaterial ? true : Tile::shouldRenderFace(level, pos, face);
 }
 
 void TopSnowTile::tick(Level* level, const TilePos& pos, Random* random)

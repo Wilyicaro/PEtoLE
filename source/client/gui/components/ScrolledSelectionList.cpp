@@ -22,7 +22,7 @@ ScrolledSelectionList::ScrolledSelectionList(Minecraft* minecraft, int a3, int a
 	field_20(float(a3)),
 	field_24(0.0f),
 	field_2C(-2),
-	field_30(0.0f),
+	m_noNeighborUpdate(0.0f),
 	field_34(0.0f),
 	field_38(0.0f),
 	field_3C(-1),
@@ -115,7 +115,7 @@ void ScrolledSelectionList::checkInput(int mouseX, int mouseY)
 			}
 			else if (field_2C == 0)
 			{
-				float diff = float(mouseY) - field_30;
+				float diff = float(mouseY) - m_noNeighborUpdate;
 				field_34 -= diff;
 				field_38 += diff;
 			}
@@ -157,7 +157,7 @@ void ScrolledSelectionList::render(int mouseX, int mouseY, float f)
 
 	checkInput(mouseX, mouseY);
 
-	field_30 = float(mouseY);
+	m_noNeighborUpdate = float(mouseY);
 	field_38 *= 0.75f;
 	capYPosition();
 

@@ -30,9 +30,9 @@ void LevelDataPacket::write(RakNet::BitStream* pbs)
 	bs.Write(chunksX);
 	bs.Write(chunksZ);
 	ChunkPos chunkPos(0, 0);
-	for (chunkPos.x = 0; chunkPos.x < chunksX; chunkPos.x++)
+	for (chunkPos.x = C_MIN_CHUNKS_X; chunkPos.x < chunksX; chunkPos.x++)
 	{
-		for (chunkPos.z = 0; chunkPos.z < chunksZ; chunkPos.z++)
+		for (chunkPos.z = C_MIN_CHUNKS_Z; chunkPos.z < chunksZ; chunkPos.z++)
 		{
 			bs.Write(chunkSepMagic);
 

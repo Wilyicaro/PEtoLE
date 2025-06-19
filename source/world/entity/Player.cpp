@@ -11,22 +11,25 @@
 
 Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel)
 {
-	m_pDescriptor = &EntityTypeDescriptor::player;
+	m_pEntityType = EntityType::player;
 	m_pInventory = nullptr;
-	field_B94 = 0;
+	m_userType = 0;
 	m_score = 0;
     m_oBob = 0.0f;
     m_bob = 0.0f;
 	m_name = "";
-	field_BC4 = 0;
+	m_dimension = 0;
 	m_bHaveRespawnPos = false;
 	m_destroyingBlock = false;
+	m_dmgSpill = 0;
 
-	field_C8 = RENDER_HUMANOID;
+	m_renderType = RENDER_HUMANOID;
 
 	setPlayerGameType(playerGameType);
 
 	m_pInventory = new Inventory(this);
+	
+	m_containerMenu = m_inventoryMenu = new InventoryMenu(m_pInventory);
 
 	setDefaultHeadHeight();
 
@@ -36,7 +39,6 @@ Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel)
 
 	m_health = 20;
 
-	m_class = "humanoid";
 	m_texture = "mob/char.png";
 
 	m_flameTime = 20;
@@ -59,38 +61,50 @@ bool Player::hurt(Entity* pEnt, int damage)
 {
 	if (isCreative())
 		return false;
-    
-    m_noActionTime = 0;
-    if (m_health <= 0)
-    {
-        return false;
-    }
-    
-    EntityTypeDescriptor entDesc = pEnt->getDescriptor();
-    
-    if (entDesc.hasCategory(EntityCategories::MONSTER) || entDesc.hasCategory(EntityCategories::ABSTRACT_ARROW))
-    {
-        switch (m_pLevel->m_difficulty)
-        {
-            case 0:
-                damage = 0;
-                break;
-            case 1:
-                damage = damage / 3 + 1;
-                break;
-            case 2:
-                // Don't modify damage
-                break;
-            case 3:
-                damage = damage * 3 / 2;
-                break;
-            default:
-                assert(!"Unknown difficulty value");
-                break;
-        }
-    }
+
+	m_noActionTime = 0;
+	if (m_health <= 0)
+	{
+		return false;
+	}
+
+	if (pEnt) {
+		auto& type = pEnt->getType();
+
+		if (type.getCategory().contains(EntityCategories::MONSTER) || type.getCategory().contains(EntityCategories::ABSTRACT_ARROW))
+		{
+			switch (m_pLevel->m_difficulty)
+			{
+			case 0:
+				damage = 0;
+				break;
+			case 1:
+				damage = damage / 3 + 1;
+				break;
+			case 2:
+				// Don't modify damage
+				break;
+			case 3:
+				damage = damage * 3 / 2;
+				break;
+			default:
+				assert(!"Unknown difficulty value");
+				break;
+			}
+		}
+	}
 
     return damage == 0 ? false : Mob::hurt(pEnt, damage);
+}
+
+void Player::actuallyHurt(int damage)
+{
+	int var2 = 25 - m_pInventory->getArmorValue();
+	int var3 = damage * var2 + m_dmgSpill;
+	m_pInventory->hurtArmor(damage);
+	damage = var3 / 25;
+	m_dmgSpill = var3 % 25;
+	Mob::actuallyHurt(damage);
 }
 
 void Player::awardKillScore(Entity* pKilled, int score)
@@ -106,7 +120,7 @@ void Player::resetPos()
 	Entity::resetPos();
 
 	m_health = 20;
-	field_110 = 0;
+	m_deathTime = 0;
 }
 
 void Player::die(Entity* pCulprit)
@@ -122,8 +136,8 @@ void Player::die(Entity* pCulprit)
 
 	if (pCulprit)
 	{
-		m_vel.x = -0.1f * Mth::cos(float((m_hurtDir + m_rot.x) * M_PI / 180.0));
-		m_vel.z = -0.1f * Mth::cos(float((m_hurtDir + m_rot.x) * M_PI / 180.0));
+		m_vel.x = -0.1f * Mth::cos(float((m_hurtDir + m_rot.y) * M_PI / 180.0));
+		m_vel.z = -0.1f * Mth::cos(float((m_hurtDir + m_rot.y) * M_PI / 180.0));
 	}
 	else
 	{
@@ -145,7 +159,6 @@ void Player::aiStep()
     m_pInventory->tick();
 #endif
 	m_oBob = m_bob;
-    //Mob::aiStep(); // called in Java, calling here results in 2x speed player movement
 	float velLen = Mth::sqrt(m_vel.x * m_vel.x + m_vel.z * m_vel.z);
 	float velYAtan = Mth::atan(m_vel.y * -0.2f), x1 = 0.0f;
 
@@ -177,15 +190,23 @@ void Player::aiStep()
 	AABB scanAABB = m_hitbox;
 	scanAABB.grow(1, 1, 1);
 
-	EntityVector ents = m_pLevel->getEntities(this, scanAABB);
+	EntityVector ents = m_pLevel->getEntities(this->shared_from_this(), scanAABB);
 
 	for (EntityVector::iterator it = ents.begin(); it != ents.end(); it++)
 	{
-		Entity* pEnt = *it;
+		auto& pEnt = *it;
 		if (pEnt->m_bRemoved)
 			continue;
 
-		touch(pEnt);
+		touch(pEnt.get());
+	}
+}
+
+void Player::tick()
+{
+	Mob::tick();
+	if (!m_pLevel->m_bIsOnline && m_containerMenu && !m_containerMenu->stillValid(this)) {
+		closeContainer();
 	}
 }
 
@@ -226,18 +247,48 @@ void Player::animateRespawn(Player*, Level*)
 void Player::attack(Entity* pEnt)
 {
 	int atkDmg = m_pInventory->getAttackDamage(pEnt);
-	if (atkDmg > 0)
+	if (atkDmg > 0) 
+	{
 		pEnt->hurt(this, atkDmg);
+		auto var3 = getSelectedItem();
+		if (var3 && pEnt->getType().getCategory().contains(EntityCategories::MOB)) {
+			var3->hurtEnemy((Mob*)pEnt);
+			if (var3->m_count <= 0) {
+				var3->snap(this);
+				removeSelectedItem();
+			}
+		}
+	}
 }
 
 bool Player::canDestroy(const Tile* pTile) const
 {
-	return true;
+	if (pTile->m_pMaterial != Material::stone && pTile->m_pMaterial != Material::metal && pTile->m_pMaterial != Material::snow && pTile->m_pMaterial != Material::topSnow)
+		return true;
+	auto item = getSelectedItem();
+	return item && item->canDestroySpecial(pTile);
 }
 
 void Player::closeContainer()
 {
+	m_containerMenu = m_inventoryMenu;
+}
 
+void Player::remove()
+{
+	m_inventoryMenu->removed(this);
+	if (m_containerMenu) {
+		m_containerMenu->removed(this);
+	}
+}
+
+void Player::carriedChanged(std::shared_ptr<ItemInstance> instance)
+{
+}
+
+void Player::removeSelectedItem()
+{
+	m_pInventory->setSelectedItem(nullptr);
 }
 
 void Player::displayClientMessage(const std::string& msg)
@@ -250,30 +301,30 @@ void Player::drop(const ItemInstance* pItemInstance, bool b)
 	if (pItemInstance->isNull())
 		return;
 
-	ItemEntity* pItemEntity = new ItemEntity(m_pLevel, Vec3(m_pos.x, m_pos.y - 0.3f + getHeadHeight(), m_pos.z), pItemInstance);
-	pItemEntity->field_E4 = 40;
+	auto pItemEntity = std::make_shared<ItemEntity>(m_pLevel, Vec3(m_pos.x, m_pos.y - 0.3f + getHeadHeight(), m_pos.z), pItemInstance);
+	pItemEntity->m_throwTime = 40;
 
 	if (b)
 	{
 		float throwPower = 0.5f * m_random.nextFloat();
 		float throwAngle = m_random.nextFloat();
 
-		pItemEntity->m_vel.x = -(throwPower * Mth::sin(2 * float(M_PI) * throwAngle));
-		pItemEntity->m_vel.z =  (throwPower * Mth::cos(2 * float(M_PI) * throwAngle));
+		pItemEntity->m_vel.x = -(throwPower * Mth::sin(2 * real(M_PI) * throwAngle));
+		pItemEntity->m_vel.z =  (throwPower * Mth::cos(2 * real(M_PI) * throwAngle));
 		pItemEntity->m_vel.y = 0.2f;
 	}
 	else
 	{
-		pItemEntity->m_vel.x = -(Mth::sin(m_rot.x / 180.0f * float(M_PI)) * Mth::cos(m_rot.y / 180.0f * float(M_PI))) * 0.3f;
-		pItemEntity->m_vel.z =  (Mth::cos(m_rot.x / 180.0f * float(M_PI)) * Mth::cos(m_rot.y / 180.0f * float(M_PI))) * 0.3f;
-		pItemEntity->m_vel.y = 0.1f - Mth::sin(m_rot.y / 180.0f * float(M_PI)) * 0.3f;
+		pItemEntity->m_vel.x = -(Mth::sin(m_rot.y / 180.0f * real(M_PI)) * Mth::cos(m_rot.x / 180.0f * real(M_PI))) * 0.3f;
+		pItemEntity->m_vel.z =  (Mth::cos(m_rot.y / 180.0f * real(M_PI)) * Mth::cos(m_rot.x / 180.0f * real(M_PI))) * 0.3f;
+		pItemEntity->m_vel.y = 0.1 - Mth::sin(m_rot.x / 180.0f * real(M_PI)) * 0.3f;
 
 		float f1 = m_random.nextFloat();
 		float f2 = m_random.nextFloat();
 
-		pItemEntity->m_vel.x += 0.02f * f2 * Mth::cos(2 * float(M_PI) * f1);
-		pItemEntity->m_vel.y += 0.1f * (m_random.nextFloat() - m_random.nextFloat());
-		pItemEntity->m_vel.z += 0.02f * f2 * Mth::sin(2 * float(M_PI) * f1);
+		pItemEntity->m_vel.x += 0.02 * f2 * Mth::cos(2 * real(M_PI) * f1);
+		pItemEntity->m_vel.y += 0.1 * (m_random.nextFloat() - m_random.nextFloat());
+		pItemEntity->m_vel.z += 0.02 * f2 * Mth::sin(2 * real(M_PI) * f1);
 	}
 
 	reallyDrop(pItemEntity);
@@ -283,6 +334,23 @@ void Player::drop()
 {
 
 }
+
+float Player::getDestroySpeed(const Tile* tile) const
+{
+	float speed = 1.0f;
+	auto item = getSelectedItem();
+	if (item) speed *= item->getDestroySpeed(tile);
+	if (isUnderLiquid(Material::water)) {
+		speed /= 5.0F;
+	}
+
+	if (!m_onGround) {
+		speed /= 5.0F;
+	}
+
+	return speed;
+}
+
 
 int Player::getInventorySlot(int x) const
 {
@@ -294,7 +362,7 @@ void Player::prepareCustomTextures()
 
 }
 
-void Player::reallyDrop(ItemEntity* pEnt)
+void Player::reallyDrop(std::shared_ptr<ItemEntity> pEnt)
 {
 	m_pLevel->addEntity(pEnt);
 }
@@ -331,9 +399,12 @@ void Player::startCrafting(const TilePos& pos)
 
 }
 
-void Player::startStonecutting(const TilePos& pos)
+void Player::openFurnace(std::shared_ptr<FurnaceTileEntity> tileEntity)
 {
+}
 
+void Player::openContainer(Container* container)
+{
 }
 
 void Player::startDestroying()
@@ -361,7 +432,18 @@ void Player::interact(Entity* pEnt)
 	pEnt->interact(this);
 }
 
-ItemInstance* Player::getSelectedItem() const
+std::shared_ptr<ItemInstance> Player::getSelectedItem() const
 {
 	return m_pInventory->getSelected();
+}
+
+void Player::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+	Mob::addAdditionalSaveData(tag);
+	tag->put("Inventory", m_pInventory->save(std::make_shared<ListTag>()));
+}
+
+void Player::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+	Mob::readAdditionalSaveData(tag);
+	std::shared_ptr <ListTag> var2 = tag->getList("Inventory");
+	m_pInventory->load(var2);
 }

@@ -17,7 +17,7 @@ void Button::_init()
 	m_text = "";
 	m_bEnabled = true;
 	m_bVisible = true;
-	field_36 = false;
+	m_bHoveredOrFocused = false;
 
 #ifndef ORIGINAL_CODE
 	m_lastX = 0;
@@ -46,7 +46,7 @@ Button::Button(int buttonId, int xPos, int yPos, const std::string& text)
 	m_yPos = yPos;
 	m_text = text;
 	m_width  = 200;
-	m_height = 24;
+	m_height = 20;
 }
 
 Button::Button(int buttonId, const std::string& text)
@@ -56,7 +56,7 @@ Button::Button(int buttonId, const std::string& text)
 	m_buttonId = buttonId;
 	m_text = text;
 	m_width  = 200;
-	m_height = 24;
+	m_height = 20;
 }
 
 bool Button::clicked(Minecraft* pMinecraft, int xPos, int yPos)
@@ -92,25 +92,24 @@ void Button::render(Minecraft* pMinecraft, int xPos, int yPos)
 	if (!m_bVisible) return;
 
 	if (!pMinecraft->useController())
-		field_36 = clicked(pMinecraft, xPos, yPos);
+		m_bHoveredOrFocused = clicked(pMinecraft, xPos, yPos);
 
 	Font* pFont = pMinecraft->m_pFont;
 	Textures* pTexs = pMinecraft->m_pTextures;
 
-	pTexs->loadAndBindTexture("gui/gui.png");
-
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-	int iYPos = 20 * getYImage(field_36) + 46;
 
-	blit(m_xPos, m_yPos, 0, iYPos, m_width / 2, m_height, 0, 20);
-	blit(m_xPos + m_width / 2, m_yPos, 200 - m_width / 2, iYPos, m_width / 2, m_height, 0, 20);
+	int v = getYImage(m_bHoveredOrFocused);
+	pTexs->loadAndBindTexture("gui/gui.png");
+	blit(m_xPos, m_yPos, 0, 46 + v * 20, m_width / 2, m_height, 256, 256);
+	blit(m_xPos + m_width / 2, m_yPos, 200 - m_width / 2, 46 + v * 20, m_width / 2, m_height, 256, 256);
 
 	renderBg(pMinecraft, xPos, yPos);
 
 	int textColor;
 	if (!m_bEnabled)
 		textColor = int(0xFFA0A0A0U);
-	else if (field_36)
+	else if (m_bHoveredOrFocused)
 		textColor = int(0xFFFFA0U);
 	else
 		textColor = int(0xE0E0E0U);

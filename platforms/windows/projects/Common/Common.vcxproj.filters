@@ -9,6 +9,12 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="Header Files\Tag">
+      <UniqueIdentifier>{342d9fcb-f787-4f5f-a168-221ea206c821}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tag">
+      <UniqueIdentifier>{26afbdb0-42d5-4e26-a51f-fc6d4994b9e8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\common\CThread.cpp">
@@ -41,6 +47,48 @@
     <ClCompile Include="$(MC_ROOT)\compat\LegacyCPPCompatibility.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\CompoundTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\ByteTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\ShortTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\IntTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\LongTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\FloatTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\DoubleTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\ByteArrayTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\StringTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\ListTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\Tag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\IntArrayTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\LongArrayTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MC_ROOT)\source\common\EndTag.cpp">
+      <Filter>Source Files\Tag</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\common\CThread.hpp">
@@ -69,6 +117,51 @@
     </ClInclude>
     <ClInclude Include="$(MC_ROOT)\source\common\SmoothFloat.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\Tag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\CompoundTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\EndTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\IntTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\ByteTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\ShortTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\LongTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\FloatTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\DoubleTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\ByteArrayTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\StringTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\ListTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\IntArrayTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\LongArrayTag.hpp">
+      <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MC_ROOT)\source\common\IOUtil.hpp">
+      <Filter>Header Files\Tag</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

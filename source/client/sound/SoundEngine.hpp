@@ -9,8 +9,9 @@
 #pragma once
 
 #include "client/options/Options.hpp"
+#include "client/app/AppPlatform.hpp"
 #include "common/Random.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 #include "SoundSystem.hpp"
 #include "SoundRepository.hpp"
 
@@ -20,7 +21,8 @@ private:
 	float _getVolumeMult(const Vec3& pos);
 public:
 	SoundEngine(SoundSystem* soundSystem);
-	void init(Options*);
+	void init(Options* options, AppPlatform*);
+	void addLocalSound(std::string name, std::string path);
 	void enable(bool b);
 	void updateOptions();
 	void mute();
@@ -31,6 +33,7 @@ public:
 public:
 	SoundSystem* m_pSoundSystem;
 	Options* m_pOptions;
+	AppPlatform* m_pPlatform;
 	int field_40;
 	//Random m_random;
 	SoundRepository m_repository;

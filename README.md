@@ -1,19 +1,22 @@
-# ReMinecraftPE
+# PEtoLE
 
-This project aims to create a custom Minecraft experience based on Minecraft: Pocket Edition as of 2011. It's
-based on Minecraft PE v0.1.3.
+This project aims to port all the features from Minecraft Java Edition b1.7.3 to the early Minecraft: Pocket Edition, forked from the [ReMinecraftPE](https://github.com/ReMinecraftPE/)
+My thanks to the contributors of ReMinecraftPE, without them this project would not be possible
 
-**Its goals are:**
-* To add Quality-of-Life features to Minecraft: Pocket Edition, such as a brighter color gamut, an in-game
-  options menu, etc.
-* To add features that were in Minecraft Alpha and the early Betas in 2011. (before and during Minecraft PE's
-  development - this excludes hunger, for example, as it was added in Beta 1.8)
-* To keep the source code layout similar to the original Minecraft PE (reconstructed from clues hidden within
-  certain versions of the game, such as the 0.1.0 touch prototype/debug build)
-* To port the game to more platforms, such as Windows (including older versions), Xbox 360, Wii, and more.
-  Currently there are ports for:
-	* Windows XP-11
+## FAQ
+
+**Why PEtoLE?**
+Well, this project was born out of curiosity regarding the proximity of the Minecraft Pocket Edition codebase to Java Edition, which ended up giving me the idea of ​​trying to make it accurate with TU0 of [Legacy Edition](https://minecraft.wiki/w/Legacy_Console_Edition), but why not first make it accurate with b1.7.3? Since this would be necessary anyway, this project came about, and with this name (Pocket Edition to Legacy Edition)
+Eventually there will be a branch that lives up to this name, but one step at a time, right?
+
+**Why is the goal b1.7.3 instead of b1.6.6, since TU0 is based on it?**
+Well, basically the difference between these two versions is just the scissors, pistons, textures and bug fixes, so since they are minimal, it makes more sense to have the most popular version as the goal.
+
+Currently the platforms originally from the ReMinecraftPE are:
+	* Windows 11 (older versions have not been tested, most of the newer ones should work)
 	* Android (thanks to [Stom](https://github.com/Stommm) for the help)
+
+These are the ports that have not been tested, but could certainly work with some fixes:
 	* Linux
 	* WebGL
 	* Mac OS (port by [BrentDaMage](https://github.com/BrentDaMage))
@@ -21,16 +24,7 @@ based on Minecraft PE v0.1.3.
 	* HaikuOS (thanks to [SanyaSho](https://github.com/SanyaSho))
 	* Xbox 360 (work in progress; port by [BrentDaMage](https://github.com/BrentDaMage))
 
-**We will not do the following:**
-* Add features added in or after Java Edition Beta 1.8
-* Backport features from versions newer than 0.9.0
-* Add The Nether or The End (probably)
-* Add Herobrine
-* Add support for Minecraft Java or Minecraft Bedrock servers. (although LAN play with original MCPE clients
-  will be supported for as long as possible)
-* Modify the project structure
-
-Note: While the original Minecraft PE v0.1.3 may not work on newer devices, ReMinecraftPE works on all Android devices.
+Note: Just like ReMinecraftPE, it should work on all Android devices, but with worse performance due to some optimizations from Pocket Edition being removed for accuracy.
 
 ### This is the main modded version. For the original decompilation, see [ReMinecraftPE/mcped](https://github.com/ReMinecraftPE/mcped)
 
@@ -43,15 +37,12 @@ software with different but compatible licenses:
 - [zlib](https://github.com/madler/zlib): [View license](thirdparty/zlib/LICENSE)
 - [GLES compatibility layer](https://github.com/TheBrokenRail/gles-compatibility-layer): [View license](https://github.com/TheBrokenRail/gles-compatibility-layer/blob/master/LICENSE). Embedded as a submodule.
 - [coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker): [View license](https://github.com/gzuidhof/coi-serviceworker/blob/master/LICENSE). Embedded as a submodule.
+- [stb-vorbis.c](https://github.com/nothings/stb/tree/master): [View license](https://github.com/nothings/stb/blob/master/LICENSE) (Public domain)
+- [json.h](https://github.com/sheredom/json.h): [View license](https://github.com/sheredom/json.h/blob/master/LICENSE) (Public domain)
 
-## WANT TO HELP?
+# DISCLAIMER
 
-Want to help this project? [Here's a list of things left to do.](TODO.md)
-
-## DISCLAIMER
-
-This project **requires** you to have a copy of the Minecraft PE v0.1.3 apk (sha256 of the `libminecraftpe.so`
-inside: `157af341d13a54cc935bbe24c5e1cf3d02d7e40ec20f9859b9853c2e996ebd81`), before you can build.
+This project does not provide game assets, you must have an original copy of Minecraft Java Edition to obtain them, or use an alternative to them.
 
 ## Setup
 
@@ -68,12 +59,9 @@ This fetches the three dependencies we have:
 - [coi-serviceworker](https://github.com/gzuidhof/coi-serviceworker)
 - [gles-compatibility-layer](https://github.com/TheBrokenRail/gles-compatibility-layer.git)
 
-2. Load the sound assets into the `sound_data/` folder in the root of the project
-by **running the following command**:
-* `tools/grabsounds.py /path/to/the/apk/lib/armeabi-v7a/libminecraftpe.so`.
+2. Copy the sounds from your `.minecraft/resources` inside the assets directory (download a b1.7.3 instance before this), then extract the textures from a b1.7.3 jar to this same directory
 
-After that, **prepare the assets folder** from the apk. You will need it for the platform specific
-build.
+# ReMinecraftPE Description
 
 ## Building
 

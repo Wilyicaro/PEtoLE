@@ -72,3 +72,7 @@ void ChatScreen::sendMessageAndExit()
 	
 	m_pMinecraft->setScreen(nullptr);
 }
+
+bool ChatScreen::isPauseScreen() {
+	return false;
+}

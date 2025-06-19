@@ -17,7 +17,7 @@ public:
 	void setArmor(Model*);
 
 	virtual void render(Entity*, float, float, float, float, float) override;
-	virtual int prepareArmor(Mob*, int, float);
+	virtual bool prepareArmor(Mob*, int, float);
 	virtual void setupPosition(Entity*, float, float, float);
 	virtual void setupRotations(Entity*, float, float, float);
 	virtual float getAttackAnim(Mob*, float);

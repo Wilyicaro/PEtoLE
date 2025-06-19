@@ -46,7 +46,7 @@ public:
 	Particle* setPower(float);
 
 public:
-	int field_DC;
+	int blockTexture;
 	float field_E0;
 	float field_E4;
 	int field_E8;
@@ -104,6 +104,18 @@ public:
 
 public:
 	float field_104;
+};
+
+class PickupParticle : public Particle
+{
+public:
+	PickupParticle(Level*, std::shared_ptr<Entity> throwed, std::shared_ptr<Entity> thrower, float vel);
+	void tick() override;
+	int getParticleTexture() override;
+	void render(Tesselator&, float, float, float, float, float, float) override;
+	std::shared_ptr<Entity> throwed;
+	std::shared_ptr<Entity> thrower;
+	float vel;
 };
 
 class ExplodeParticle : public Particle

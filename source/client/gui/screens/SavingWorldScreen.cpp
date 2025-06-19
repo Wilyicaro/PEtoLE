@@ -10,7 +10,6 @@
 #include "RenameMPLevelScreen.hpp"
 #include "StartMenuScreen.hpp"
 
-#ifdef ENH_IMPROVED_SAVING
 
 SavingWorldScreen::SavingWorldScreen(bool bCopyMap/*, Entity* pEnt*/)
 {
@@ -56,10 +55,6 @@ void SavingWorldScreen::tick()
 			m_pMinecraft->m_pLevel = nullptr;
 		}
 
-		// this is safe to do, since on destruction, nothing accesses the parent level or anything
-		//SAFE_DELETE(m_pEntityToDeleteAfterSave);
-		// already done by the Level
-
 		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pLocalPlayer = nullptr;
 
 
@@ -75,5 +70,3 @@ void SavingWorldScreen::tick()
 		m_pMinecraft->m_bIsGamePaused = false;
 	}
 }
-
-#endif

@@ -14,29 +14,29 @@
 #include "Explosion.hpp"
 #include "Region.hpp"
 
-Level::Level(LevelStorage* pStor, const std::string& str, int32_t seed, int storageVersion, Dimension *pDimension)
+Level::Level(LevelStorage* pStor, const std::string& str, int64_t seed, int storageVersion, Dimension *pDimension)
 {
 	m_bInstantTicking = false;
-	m_bIsMultiplayer = false;
+	m_bIsOnline = false;
 	m_bPostProcessing = false;
 	m_skyDarken = 0;
-	field_30 = 0;
+	m_noNeighborUpdate = false;
 	m_pDimension = nullptr;
     m_difficulty = 2; // Java has no actual default, it just always pulls from Options. Putting 2 here just so there's no chance of mobs getting despawned accidentally.
 	m_bCalculatingInitialSpawn = false;
 	m_pChunkSource = nullptr;
 	m_pLevelStorage = pStor;
-	m_randValue = 42184323;
+	m_randValue = Random().nextInt();
 	m_addend = 1013904223;
 	m_bUpdateLights = true;
-	field_B08 = 0;
-	field_B0C = 0;
+	m_maxRecurse = 0;
+	m_bNoLevelData = false;
 
 	m_random.setSeed(1); // initialize with a seed of 1
 
 	LevelData* pData = m_pLevelStorage->prepareLevel(this);
 
-	field_B0C = pData == 0;
+	m_bNoLevelData = pData == nullptr;
 
 	// @BUG: leaking a Dimension*?
 	if (pDimension)
@@ -62,19 +62,8 @@ Level::~Level()
 	SAFE_DELETE(m_pChunkSource);
 	SAFE_DELETE(m_pDimension);
 	SAFE_DELETE(m_pPathFinder);
-
-	const size_t size = m_entities.size();
-	for (int i = 0; i < size; i++)
-	{
-		Entity* pEnt = m_entities.at(i);
-		
-		//you better HOPE this is freed by Minecraft! (or a NetworkHandler)
-		//Really should have used shared pointers and stuff.
-		if (!pEnt->isPlayer())
-			delete pEnt;
-	}
-	
 	m_entities.clear();
+	m_players.clear();
 }
 ChunkSource* Level::createChunkSource()
 {
@@ -98,17 +87,13 @@ float Level::getTimeOfDay(float f)  const
 
 int Level::getSkyDarken(float f) const
 {
-	float x = Mth::cos(getSunAngle(f));
-	float y = 1.0f - (2 * x + 0.5f);
+	float x = getTimeOfDay(f);
+	float y = 1.0f - (2 * Mth::cos(x * M_PI * 2) + 0.5f);
 
 	if (y < 0.0f)
-		return 0; // no darken
-	// 0.1.0 logic
-	/*if (y > 1.0f)
-		return 11; // full dark*/
-	// 0.2.1 logic
-	if (y > 0.8f)
-		return 8; // full dark
+		return 0;
+	if (y > 1.0f)
+		return 11.0f;
 
 	return int(y * 11.0f);
 }
@@ -137,13 +122,13 @@ ChunkSource* Level::getChunkSource() const
 
 LevelChunk* Level::getChunk(const ChunkPos& pos) const
 {
-	return getChunkSource()->getChunk(pos);
+	return m_pChunkSource ? getChunkSource()->getChunk(pos) : nullptr;
 }
 
 TileID Level::getTile(const TilePos& pos) const
 {
 	//@BUG: checking x >= C_MAX_X, but not z >= C_MAX_Z.
-	if (pos.x < C_MIN_X || pos.z < C_MIN_Z || pos.x >= C_MAX_X || pos.z > C_MAX_Z || pos.y < C_MIN_Y || pos.y >= C_MAX_Y)
+	if (pos.x < C_MIN_X || pos.z < C_MIN_Z || pos.x >= C_MAX_X || pos.z >= C_MAX_Z || pos.y < C_MIN_Y || pos.y >= C_MAX_Y)
 		// there's nothing out there!
 		return 0;
 
@@ -178,7 +163,7 @@ int Level::getBrightness(const LightLayer& ll, const TilePos& pos) const
 
 float Level::getBrightness(const TilePos& pos) const
 {
-	return m_pDimension->field_10[getRawBrightness(pos)];
+	return m_pDimension->m_brightnessRamp[getRawBrightness(pos)];
 }
 
 int Level::getRawBrightness(const TilePos& pos) const
@@ -225,6 +210,30 @@ int Level::getRawBrightness(const TilePos& pos, bool b) const
 	return pChunk->getRawBrightness(pos, m_skyDarken);
 }
 
+std::shared_ptr<TileEntity> Level::getTileEntity(const TilePos& pos) const 
+{
+	LevelChunk* pChunk = getChunk(pos);
+	return pChunk ? pChunk->getTileEntity(pos) : nullptr;
+}
+
+void Level::setTileEntity(const TilePos& pos, std::shared_ptr<TileEntity> tileEntity) 
+{
+	LevelChunk* pChunk = getChunk(pos);
+	if (pChunk) {
+		pChunk->setTileEntity(pos, tileEntity);
+	}
+
+}
+
+void Level::removeTileEntity(const TilePos& pos) 
+{
+	LevelChunk* pChunk = getChunk(pos);
+	if (pChunk) {
+		pChunk->removeTileEntity(pos);
+	}
+
+}
+
 void Level::swap(const TilePos& pos1, const TilePos& pos2)
 {
 	int tile1 = getTile(pos1);
@@ -265,18 +274,18 @@ Material* Level::getMaterial(const TilePos& pos) const
 	return pTile->m_pMaterial;
 }
 
-Entity* Level::getEntity(int id) const
+std::shared_ptr<Entity> Level::getEntity(int id) const
 {
 	// prioritize players first.
-	for (std::vector<Player*>::const_iterator it = m_players.begin(); it != m_players.end(); it++)
+	for (std::vector<std::shared_ptr<Player>>::const_iterator it = m_players.begin(); it != m_players.end(); it++)
 	{
-		Player* pEnt = *it;
+		auto& pEnt = *it;
 		if (pEnt->m_EntityID == id)
 			return pEnt;
 	}
-	for (std::vector<Entity*>::const_iterator it = m_entities.begin(); it != m_entities.end(); it++)
+	for (std::vector<std::shared_ptr<Entity>>::const_iterator it = m_entities.begin(); it != m_entities.end(); it++)
 	{
-		Entity* pEnt = *it;
+		auto& pEnt = *it;
 		if (pEnt->m_EntityID == id)
 			return pEnt;
 	}
@@ -294,7 +303,7 @@ bool Level::hasChunk(const ChunkPos& pos) const
 	return m_pChunkSource->hasChunk(pos);
 }
 
-EntityVector Level::getEntities(Entity* pEntExclude, const AABB& aabb) const
+EntityVector Level::getEntities(std::shared_ptr<Entity> pEntExclude, const AABB& aabb) const
 {
 	EntityVector entities = EntityVector();
 
@@ -317,6 +326,29 @@ EntityVector Level::getEntities(Entity* pEntExclude, const AABB& aabb) const
 	return entities;
 }
 
+EntityVector Level::getEntitiesOfCategory(EntityCategories::CategoriesMask category, const AABB& aabb) const
+{
+	EntityVector entities = EntityVector();
+
+	long lowerXBound = floor((aabb.min.x - 2.0f) / 16);
+	long lowerZBound = floor((aabb.min.z - 2.0f) / 16);
+	long upperXBound = floor((aabb.max.x + 2.0f) / 16);
+	long upperZBound = floor((aabb.max.z + 2.0f) / 16);
+
+	for (long z = lowerZBound; z <= upperZBound; z++)
+	{
+		for (long x = lowerXBound; x <= upperXBound; x++)
+		{
+			if (!hasChunk(ChunkPos(x, z))) continue;
+
+			LevelChunk* pChunk = getChunk(ChunkPos(x, z));
+			pChunk->getEntitiesOfCategory(category, aabb, entities);
+		}
+	}
+
+	return entities;
+}
+
 void Level::setUpdateLights(bool b)
 {
 	m_bUpdateLights = b;
@@ -325,14 +357,14 @@ void Level::setUpdateLights(bool b)
 bool Level::updateLights()
 {
 	// if more than 49 concurrent updateLights() calls?
-	if (field_B08 > 49)
+	if (m_maxRecurse > 49)
 		return false;
 
-	field_B08++;
+	m_maxRecurse++;
 
 	if (m_lightUpdates.empty())
 	{
-		field_B08--;
+		m_maxRecurse--;
 		return false;
 	}
 
@@ -345,12 +377,12 @@ bool Level::updateLights()
 
 		if (m_lightUpdates.empty())
 		{
-			field_B08--;
+			m_maxRecurse--;
 			return false;
 		}
 	}
 
-	field_B08--;
+	m_maxRecurse--;
 	return true;
 }
 
@@ -460,7 +492,7 @@ void Level::updateLight(const LightLayer& ll, const TilePos& tilePos1, const Til
 {
 	static int nUpdateLevels;
 
-	if ((m_pDimension->field_E && &ll == &LightLayer::Sky) || !m_bUpdateLights)
+	if ((m_pDimension->m_bHasCeiling && &ll == &LightLayer::Sky) || !m_bUpdateLights)
 		return;
 
 	nUpdateLevels++;
@@ -498,21 +530,18 @@ void Level::updateLight(const LightLayer& ll, const TilePos& tilePos1, const Til
 
 	m_lightUpdates.push_back(LightUpdate(ll, tilePos1, tilePos2));
 
-	// huh??
 	if (m_lightUpdates.size() > 1000000)
+	{
+		LOG_I("More than %d updates, aborting lighting updates", 1000000);
 		m_lightUpdates.clear();
+	}
 
 	nUpdateLevels--;
 }
 
-void Level::updateLight(const LightLayer& ll, const TilePos& tilePos1, const TilePos& tilePos2)
-{
-	updateLight(ll, tilePos1, tilePos2, true);
-}
-
 void Level::updateLightIfOtherThan(const LightLayer& ll, const TilePos& tilePos, int bright)
 {
-	if (m_pDimension->field_E && &ll == &LightLayer::Sky)
+	if (m_pDimension->m_bHasCeiling && &ll == &LightLayer::Sky)
 		return;
 
 	if (!hasChunkAt(tilePos))
@@ -633,7 +662,7 @@ void Level::sendTileUpdated(const TilePos& pos)
 
 void Level::neighborChanged(const TilePos& pos, TileID tile)
 {
-	if (field_30 || m_bIsMultiplayer) return;
+	if (m_noNeighborUpdate || m_bIsOnline) return;
 
 	Tile* pTile = Tile::tiles[getTile(pos)];
 	if (pTile)
@@ -655,6 +684,20 @@ void Level::tileUpdated(const TilePos& pos, TileID tile)
 	sendTileUpdated(pos);
 	updateNeighborsAt(pos, tile);
 }
+
+void Level::tileEntityChanged(const TilePos& pos, std::shared_ptr<TileEntity> tileEntity)
+{
+	if (hasChunkAt(pos)) {
+		getChunkAt(pos)->markUnsaved();
+	}
+
+	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)
+	{
+		LevelListener* pListener = *it;
+		pListener->tileEntityChanged(pos, tileEntity);
+	}
+}
+
 
 bool Level::setTileAndData(const TilePos& pos, TileID tile, int data)
 {
@@ -717,24 +760,17 @@ AABBVector* Level::getCubes(const Entity* pEntUnused, const AABB& aabb)
 {
 	m_aabbs.clear();
 
-	long lowerX = floor(aabb.min.x);
-	long upperX = floor(aabb.max.x + 1);
-	long lowerY = floor(aabb.min.y);
-	long upperY = floor(aabb.max.y + 1);
-	long lowerZ = floor(aabb.min.z);
-	long upperZ = floor(aabb.max.z + 1);
-
-	for (long x = lowerX; x <= upperX; x++)
+	TilePos lower(aabb.min);
+	TilePos upper(aabb.max.x + 1, aabb.max.y + 1, aabb.max.z + 1);
+	TilePos tp;
+	for (tp.x = lower.x; tp.x <= upper.x; tp.x++)
 	{
-		for (long z = lowerZ; z <= upperZ; z++)
+		for (tp.z = lower.z; tp.z <= upper.z; tp.z++)
 		{
-			if (!hasChunkAt(TilePos(x, 64, z))) continue;
+			if (!hasChunkAt(tp)) continue;
 
-			for (long y = lowerY; y <= upperY; y++)
+			for (tp.y = lower.y - 1; tp.y <= upper.y; tp.y++)
 			{
-				// Obviously this is problematic, but using longs in our for loops rather than
-				// ints helps prevents crashes at extreme distances from 0,0
-				TilePos tp((int)x, (int)y, (int)z);
 				Tile* pTile = Tile::tiles[getTile(tp)];
 				if (pTile)
 					pTile->addAABBs(this, tp, &aabb, m_aabbs);
@@ -760,13 +796,13 @@ Player* Level::getNearestPlayer(const Vec3& pos, float maxDist) const
 	float dist = -1.0f;
 	Player* pPlayer = nullptr;
 
-	for (std::vector<Player*>::const_iterator it = m_players.begin(); it != m_players.end(); it++)
+	for (std::vector<std::shared_ptr<Player>>::const_iterator it = m_players.begin(); it != m_players.end(); it++)
 	{
-		Player* player = *it;
+		std::shared_ptr<Player> player = *it;
 		float ldist = player->distanceToSqr(pos);
 		if ((maxDist < 0.0f || ldist < maxDist * maxDist) && (dist == -1.0f || dist > ldist))
 		{
-			pPlayer = player;
+			pPlayer = player.get();
 			dist = ldist;
 		}
 	}
@@ -938,106 +974,32 @@ int Level::getTopTileY(const TilePos& pos) const
 
 int Level::getTopSolidBlock(const TilePos& tilePos) const
 {
-	//int y = C_MAX_Y - 1;
 	LevelChunk* pChunk = getChunkAt(tilePos);
-	if (!pChunk)
-		return C_MAX_Y;
+	ChunkTilePos pos(tilePos);
 
-	TilePos pos(tilePos);
-	while (true)
-	{
-		if (!getMaterial(tilePos)->blocksMotion())
-			break;
-		if (!pos.y)
-			return -1;
-		pos.y--;
-	}
-
-	ChunkTilePos ctp(pos);
-	if (ctp.y <= C_MIN_Y)
-		return 0;
-
-	while (true)
-	{
-		TileID tile = pChunk->getTile(ctp);
-		if (tile)
-		{
-			if (Tile::tiles[tile]->m_pMaterial->blocksMotion())
-				return ctp.y + 1;
-			
-			if (Tile::tiles[tile]->m_pMaterial->isLiquid())
-				break;
+	for (pos.y = 127; pos.y > 0; --pos.y) {
+		int var5 = pChunk->getTile(pos);
+		Material* var6 = var5 == 0 ? Material::air : Tile::tiles[var5]->m_pMaterial;
+		if (var6->isSolid() || var6->isLiquid()) {
+			return pos.y + 1;
 		}
-		if (!--ctp.y)
-			return -1;
 	}
 
-	return ctp.y + 1;
+	return -1;
 }
 
 void Level::validateSpawn()
 {
-	if (m_levelData.getYSpawn() <= 0)
-		m_levelData.setYSpawn(C_MAX_Y / 2);
+	m_levelData.setYSpawn(C_MAX_Y / 2);
 
-	TilePos spawn(m_levelData.getSpawn());
-#ifndef ORIGINAL_CODE
-	int nAttempts = 0;
-#endif
+	TilePos spawn(0, 64, 0);
 
-	// @TODO: fix these gotos
-	if (getTopTile(spawn))
-		goto label_10;
-
-	TileID tile;
-
-	do
-	{
-		// While the spawn isn't valid
-		do
-		{
-			spawn.x += m_random.nextInt(8) - m_random.nextInt(8);
-			spawn.z += m_random.nextInt(8) - m_random.nextInt(8);
-
-			// avoid spawning near world border
-			if (spawn.x < 4) spawn.x += 8;
-			if (spawn.z < 4) spawn.z += 8;
-			if (spawn.x > C_MAX_CHUNKS_X * 16 - 4) spawn.x -= 8;
-			if (spawn.z > C_MAX_CHUNKS_Z * 16 - 4) spawn.z -= 8;
-
-		#ifndef ORIGINAL_CODE
-			nAttempts++;
-			if (nAttempts >= 100000)
-				goto _failure;
-		#endif
-		}
-		while (!getTopTile(spawn));
-
-	label_10:
-		tile = getTopTile(spawn);
+	while (!getTopTile(spawn)) {
+		spawn.x += m_random.nextInt(8) - m_random.nextInt(8);
+		spawn.z += m_random.nextInt(8) - m_random.nextInt(8);
 	}
-	while (tile == Tile::invisible_bedrock->m_ID);
 
-	m_levelData.setXSpawn(spawn.x);
-	m_levelData.setZSpawn(spawn.z);
-
-#ifndef ORIGINAL_CODE
-	return;
-
-_failure:
-
-	/*
-	m_levelData.m_spawnPos.x = C_MAX_CHUNKS_X * 16 / 2;
-	m_levelData.m_spawnPos.z = C_MAX_CHUNKS_X * 16 / 2;
-	m_levelData.m_spawnPos.y = C_MAX_Y;
-	*/
-
-	m_levelData.setSpawn(TilePos(0, 32, 0));
-
-	LOG_W("Failed to validate spawn point, using (%d, %d, %d)", m_levelData.getXSpawn(), m_levelData.getYSpawn(), m_levelData.getZSpawn());
-
-	return;
-#endif
+	m_levelData.setSpawn(spawn);
 }
 
 void Level::removeAllPendingEntityRemovals()
@@ -1046,13 +1008,13 @@ void Level::removeAllPendingEntityRemovals()
 
 	for (EntityVector::iterator it = m_pendingEntityRemovals.begin(); it != m_pendingEntityRemovals.end(); it++)
 	{
-		Entity* ent = *it;
+		std::shared_ptr<Entity> ent = *it;
 		ent->removed();
 
 		LevelChunk* chunk = getChunk(ent->m_chunkPos);
 		if (chunk) chunk->removeEntity(ent);
 
-		entityRemoved(ent);
+		entityRemoved(ent.get());
 
 		//@BUG: MEMORY LEAK -- probably leaking entities here?
 	}
@@ -1065,59 +1027,40 @@ void Level::removeEntities(const EntityVector& vec)
 	m_pendingEntityRemovals.insert(m_pendingEntityRemovals.end(), vec.begin(), vec.end());
 }
 
-bool Level::removeEntity(Entity* pEnt)
+bool Level::removeEntity(std::shared_ptr<Entity> pEnt)
 {
 	pEnt->remove();
 
 	if (pEnt->isPlayer())
-		return Util::remove(m_players, (Player*)pEnt);
+		return Util::remove(m_players, std::dynamic_pointer_cast<Player>(pEnt));
 
 	return false;
 }
 
-bool Level::addEntity(Entity* pEnt)
+bool Level::addEntity(std::shared_ptr<Entity> pEnt)
 {
-	Entity* pOldEnt = getEntity(pEnt->hashCode());
+	auto pOldEnt = getEntity(pEnt->hashCode());
 	if (pOldEnt)
 	{
 		LOG_W("Entity %d already exists.", pEnt->hashCode());
-		//removeEntity(pOldEnt);
 	}
-
-	if (!pEnt->isPlayer() && m_bIsMultiplayer)
-	{
-		LOG_W("Hey, why are you trying to add an non-player entity in a multiplayer world?");
-	}
-
-	//@NOTE: useless Mth::floor() calls
-	Mth::floor(pEnt->m_pos.x / 16);
-	Mth::floor(pEnt->m_pos.z / 16);
-
-	//@NOTE: double check. Looks like someone just hacked it in
-	//@BUG: Camera doesn't work. This might be a side effect of having a demo mode?
-	//@BUG: Leaking the entity pointer.
-#ifdef ORIGINAL_CODE
-	if (!pEnt->isPlayer())
-		return false;
-#endif
 
 	if (pEnt->isPlayer())
 	{
-		m_players.push_back((Player*)pEnt);
+		m_players.push_back(std::dynamic_pointer_cast<Player>(pEnt));
 	}
-
+	getChunk(pEnt->m_pos)->addEntity(pEnt);
 	m_entities.push_back(pEnt);
-
-	entityAdded(pEnt);
+	entityAdded(pEnt.get());
 
 	return true;
 }
 
-void Level::loadPlayer(Player* player)
+void Level::loadPlayer(std::shared_ptr<Player> player)
 {
 	if (!player) return;
 
-	m_levelData.setLoadedPlayerTo(player);
+	m_levelData.setLoadedPlayerTo(player.get());
 
 	addEntity(player);
 }
@@ -1129,7 +1072,7 @@ void Level::prepare()
 
 void Level::saveLevelData()
 {
-	m_pLevelStorage->saveLevelData(&m_levelData);
+	m_pLevelStorage->saveLevelData(&m_levelData, m_players);
 }
 
 void Level::savePlayerData()
@@ -1142,58 +1085,24 @@ void Level::saveAllChunks()
 	m_pChunkSource->saveAll();
 }
 
-#ifdef ENH_IMPROVED_SAVING
-void Level::saveUnsavedChunks()
+void Level::saveUnsavedChunks(bool limited)
 {
-	m_pChunkSource->saveUnsaved();
+	m_pChunkSource->saveUnsaved(limited);
 }
-#endif
 
 void Level::setInitialSpawn()
 {
 	m_bCalculatingInitialSpawn = true;
 
-	int spawnX = C_MAX_CHUNKS_X * 16 / 2, spawnZ = C_MAX_CHUNKS_Z * 16 / 2;
-#ifndef ORIGINAL_CODE
-	int nAttempts = 0;
-#endif
+	int spawnX = 0, spawnZ;
 
-	while (true)
-	{
-		if (m_pDimension->isValidSpawn(TilePos(spawnX, 64, spawnZ)))
-			break;
-
-		spawnX += m_random.nextInt(32) - m_random.nextInt(32);
-		spawnZ += m_random.nextInt(32) - m_random.nextInt(32);
-
-		if (spawnX < 4) spawnX += 32;
-		if (spawnZ < 4) spawnZ += 32;
-		if (spawnX >= C_MAX_CHUNKS_X * 16 - 4) spawnX -= 32;
-		if (spawnZ >= C_MAX_CHUNKS_Z * 16 - 4) spawnZ -= 32;
-
-#ifndef ORIGINAL_CODE
-		if (++nAttempts > 100000)
-			goto _failure;
-#endif
+	for (spawnZ = 0; !m_pDimension->isValidSpawn(TilePos(spawnX, 64, spawnZ)); spawnZ += m_random.nextInt(64) - m_random.nextInt(64)) {
+		spawnX += m_random.nextInt(64) - m_random.nextInt(64);
 	}
 
 	m_levelData.setSpawn(TilePos(spawnX, 64, spawnZ));
 
 	m_bCalculatingInitialSpawn = false;
-
-#ifndef ORIGINAL_CODE
-	return;
-
-_failure:
-
-	// m_levelData.setSpawn(C_MAX_CHUNKS_X * 16 / 2, C_MAX_Y, C_MAX_CHUNKS_X * 16 / 2);
-
-	m_levelData.setSpawn(TilePos(0, 32, 0));
-
-	LOG_W("Failed to validate spawn point, using (%d, %d, %d)", m_levelData.getXSpawn(), m_levelData.getYSpawn(), m_levelData.getZSpawn());
-
-	return;
-#endif
 }
 
 bool Level::canSeeSky(const TilePos& pos) const
@@ -1209,31 +1118,29 @@ bool Level::canSeeSky(const TilePos& pos) const
 	return pChunk->isSkyLit(pos);
 }
 
-Vec3 Level::getSkyColor(Entity* pEnt, float f) const
+Vec3f Level::getSkyColor(Entity* pEnt, float f) const
 {
-	Vec3 result;
+	float var4 = Mth::cos(getSunAngle(f)) * 2.0F + 0.5F;
+	if (var4 < 0.0F) {
+		var4 = 0.0F;
+	}
 
-	float fTODCosAng = Mth::cos(getSunAngle(f));
+	if (var4 > 1.0F) {
+		var4 = 1.0F;
+	}
 
-	// @TODO: Fix the gotos
-
-	result.z = 2 * fTODCosAng + 0.5f;
-	if (result.z < 0.0f)
-		result.z = 0.0f;
-	if (result.z > 1.0f)
-		result.z = 1.0f;
-
-	// @NOTE: Unused result. In JE, it tries to get the biome that the player is standing in.
-	Mth::floor(pEnt->m_pos.x);
-	Mth::floor(pEnt->m_pos.z);
-
-	result.x = result.z * 0.6f;
-	result.y = result.x;
-
-	return result;
+	int var5 = Mth::floor(pEnt->m_pos.x);
+	int var6 = Mth::floor(pEnt->m_pos.z);
+	float var7 = getBiomeSource()->getTemperature(var5, var6);
+	int var8 = getBiomeSource()->getBiome(TilePos(var5, 0, var6))->getSkyColor(var7);
+	Vec3f sky((var8 >> 16 & 255) / 255.0F, (var8 >> 8 & 255) / 255.0F, (var8 & 255) / 255.0F);
+	sky.x *= var4;
+	sky.y *= var4;
+	sky.z *= var4;
+	return sky;
 }
 
-Vec3 Level::getFogColor(float f) const
+Vec3f Level::getFogColor(float f) const
 {
 	return m_pDimension->getFogColor(getTimeOfDay(f), f);
 }
@@ -1257,15 +1164,29 @@ Vec3 Level::getCloudColor(float f) const
 	return result;
 }
 
+bool Level::canChunkExist(const ChunkPos& pos) {
+
+    for (const auto& player : m_players) {
+
+        int dx = std::abs(pos.x - player->m_chunkPos.x);
+        int dz = std::abs(pos.z - player->m_chunkPos.z);
+
+        if (dx <= viewDistance && dz <= viewDistance)
+            return true;
+    }
+
+    return false;
+}
+
 bool Level::isUnobstructed(AABB* aabb) const
 {
 	EntityVector entities = getEntities(nullptr, *aabb);
 	if (entities.size() <= 0)
 		return true;
 
-	for (std::vector<Entity*>::iterator it = entities.begin(); it != entities.end(); it++)
+	for (std::vector<std::shared_ptr<Entity>>::iterator it = entities.begin(); it != entities.end(); it++)
 	{
-		Entity* pEnt = *it;
+		std::shared_ptr<Entity> pEnt = *it;
 		if (!pEnt->m_bRemoved && pEnt->m_bBlocksBuilding)
             return false;
 	}
@@ -1278,11 +1199,11 @@ bool Level::mayInteract(Player* player, const TilePos& pos) const
 	return true;
 }
 
-bool Level::mayPlace(TileID tile, const TilePos& pos, bool b) const
+bool Level::mayPlace(TileID tile, const TilePos& pos, bool b, Facing::Name face) const
 {
 	TileID oldTile = getTile(pos);
 
-	Tile *pTile = Tile::tiles[tile], *pOldTile = Tile::tiles[oldTile];
+	Tile* pTile = Tile::tiles[tile], * pOldTile = Tile::tiles[oldTile];
 
 	if (pTile == nullptr)
 		return false;
@@ -1303,7 +1224,7 @@ bool Level::mayPlace(TileID tile, const TilePos& pos, bool b) const
 	if (pOldTile || tile <= 0)
 		return false;
 
-	return pTile->mayPlace(this, pos);
+	return pTile->mayPlace(this, pos, face);
 }
 
 void Level::removeListener(LevelListener* listener)
@@ -1320,9 +1241,7 @@ void Level::addListener(LevelListener* listener)
 
 void Level::tickPendingTicks(bool b)
 {
-	int size = 10000; // note: 65,536 in Minecraft Java
-	if (size > int(m_pendingTicks.size()))
-		size = int(m_pendingTicks.size());
+	int size = Mth::Min(m_pendingTicks.size(), 65536);
 
 	for (int i = 0; i < size; i++)
 	{
@@ -1345,9 +1264,9 @@ void Level::tickTiles()
 {
 	m_chunksToUpdate.clear();
 
-	for (std::vector<Player*>::iterator it = m_players.begin(); it != m_players.end(); it++)
+	for (std::vector<std::shared_ptr<Player>>::iterator it = m_players.begin(); it != m_players.end(); it++)
 	{
-		Player* player = *it;
+		auto& player = *it;
 
 		int chkX = Mth::floor(player->m_pos.x / 16.0f);
 		int chkZ = Mth::floor(player->m_pos.z / 16.0f);
@@ -1383,7 +1302,7 @@ void Level::tickTiles()
 	}
 }
 
-void Level::tick(Entity* pEnt, bool b)
+void Level::tick(std::shared_ptr<Entity> pEnt, bool b) const
 {
 	TilePos tilePos(pEnt->m_pos);
 
@@ -1391,7 +1310,6 @@ void Level::tick(Entity* pEnt, bool b)
 	{
 		if (!hasChunksAt(TilePos(tilePos.x - 32, 0, tilePos.z - 32), TilePos(tilePos.x + 32, 128, tilePos.z + 32)))
 		{
-			LOG_W("Not updating entity %d because we don't have chunks around it loaded", pEnt->m_EntityID);
 			return;
 		}
 
@@ -1430,11 +1348,6 @@ void Level::tick(Entity* pEnt, bool b)
 
 }
 
-void Level::tick(Entity* pEnt)
-{
-	tick(pEnt, true);
-}
-
 int TICKSPERSECOND = 0;
 int LASTTICKED = 0;
 
@@ -1470,7 +1383,7 @@ void Level::tickEntities()
 
 	for (int i = 0; i<int(m_entities.size()); i++)
 	{
-		Entity* pEnt = m_entities[i];
+		std::shared_ptr<Entity>& pEnt = m_entities[i];
 
 		if (!pEnt->m_bRemoved)
 		{
@@ -1484,12 +1397,13 @@ void Level::tickEntities()
 			m_entities.erase(m_entities.begin() + i);
 			i--;
 
-			entityRemoved(pEnt);
-
-			// If the entity isn't a player (managed by Minecraft* or through OnlinePlayer), then delete it.
-			if (!pEnt->isPlayer())
-				delete pEnt;
+			entityRemoved(pEnt.get());
 		}
+	}
+
+	for (auto& tileEntity : m_tileEntityList)
+	{
+		tileEntity->tick();
 	}
 }
 
@@ -1505,51 +1419,51 @@ HitResult Level::clip(Vec3 v1, Vec3 v2, bool flag) const
 		float xd = 999.0f;
 		float yd = 999.0f;
 		float zd = 999.0f;
-		if (tp2.x > tp1.x) xd = (float)tp1.x + 1.0f;
-		if (tp2.x < tp1.x) xd = (float)tp1.x + 0.0f;
-		if (tp2.y > tp1.y) yd = (float)tp1.y + 1.0f;
-		if (tp2.y < tp1.y) yd = (float)tp1.y + 0.0f;
-		if (tp2.z > tp1.z) zd = (float)tp1.z + 1.0f;
-		if (tp2.z < tp1.z) zd = (float)tp1.z + 0.0f;
+		if (tp2.x > tp1.x) xd = tp1.x + 1.0f;
+		if (tp2.x < tp1.x) xd = tp1.x + 0.0f;
+		if (tp2.y > tp1.y) yd = tp1.y + 1.0f;
+		if (tp2.y < tp1.y) yd = tp1.y + 0.0f;
+		if (tp2.z > tp1.z) zd = tp1.z + 1.0f;
+		if (tp2.z < tp1.z) zd = tp1.z + 0.0f;
 		float xe = 999.0f;
 		float ye = 999.0f;
 		float ze = 999.0f;
 		float xl = v2.x - v1.x;
 		float yl = v2.y - v1.y;
 		float zl = v2.z - v1.z;
-		if (xd != 999.0f) xe = (float)(xd - v1.x) / xl;
-		if (yd != 999.0f) ye = (float)(yd - v1.y) / yl;
-		if (zd != 999.0f) ze = (float)(zd - v1.z) / zl;
+		if (xd != 999.0f) xe = (xd - v1.x) / xl;
+		if (yd != 999.0f) ye = (yd - v1.y) / yl;
+		if (zd != 999.0f) ze = (zd - v1.z) / zl;
 		int hitSide = 0;
 		if (xe >= ye || xe >= ze)
 		{
 			if (ye >= ze)
 			{
 				hitSide = tp2.z <= tp1.z ? Facing::SOUTH : Facing::NORTH;
-				v1.x = v1.x + (float)(xl * ze);
-				v1.y = v1.y + (float)(yl * ze);
+				v1.x = v1.x + (xl * ze);
+				v1.y = v1.y + (yl * ze);
 				v1.z = zd;
 			}
 			else
 			{
 				hitSide = (tp2.y <= tp1.y) ? Facing::UP : Facing::DOWN;
-				v1.x = v1.x + (float)(xl * ye);
+				v1.x = v1.x + (xl * ye);
 				v1.y = yd;
-				v1.z = v1.z + (float)(zl * ye);
+				v1.z = v1.z + (zl * ye);
 			}
 		}
 		else
 		{
 			hitSide = tp2.x <= tp1.x ? Facing::EAST : Facing::WEST;
 			v1.x = xd;
-			v1.y = v1.y + (float)(yl * xe);
-			v1.z = v1.z + (float)(zl * xe);
+			v1.y = v1.y + (yl * xe);
+			v1.z = v1.z + (zl * xe);
 		}
 
 		Vec3 hitVec(v1);
 
 		// Correct the hit positions for each vector
-		hitVec.x = (float)Mth::floor(v1.x);
+		hitVec.x = Mth::floor(v1.x);
 		tp1.x = (int)hitVec.x;
 		if (hitSide == Facing::EAST)
 		{
@@ -1558,7 +1472,7 @@ HitResult Level::clip(Vec3 v1, Vec3 v2, bool flag) const
 		}
 
 
-		hitVec.y = (float)Mth::floor(v1.y);
+		hitVec.y = Mth::floor(v1.y);
 		tp1.y = (int)hitVec.y;
 		if (hitSide == Facing::UP)
 		{
@@ -1567,7 +1481,7 @@ HitResult Level::clip(Vec3 v1, Vec3 v2, bool flag) const
 		}
 
 
-		hitVec.z = (float)Mth::floor(v1.z);
+		hitVec.z = Mth::floor(v1.z);
 		tp1.z = (int)hitVec.z;
 		if (hitSide == Facing::SOUTH)
 		{
@@ -1579,7 +1493,7 @@ HitResult Level::clip(Vec3 v1, Vec3 v2, bool flag) const
 		int    data = getData(tp1);
 		Tile* pTile = Tile::tiles[tile];
 
-		if (tile > 0 && pTile->mayPick(data, false))
+		if (tile > 0 && pTile->mayPick(data, flag))
 		{
 			HitResult hr = pTile->clip(this, tp1, v1, v2);
 			if (hr.isHit())
@@ -1620,7 +1534,7 @@ void Level::addToTickNextTick(const TilePos& tilePos, int d, int delay)
 	}
 }
 
-void Level::takePicture(TripodCamera* pCamera, Entity* pOwner)
+void Level::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* pOwner)
 {
 	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)
 	{
@@ -1660,8 +1574,7 @@ void Level::animateTick(const TilePos& pos)
 {
 	Random random;
 
-	// frequency is 1000 on JE, 100 on PE
-	for (int i = 0; i < 100; i++)
+	for (int i = 0; i < 1000; i++)
 	{
 		TilePos aPos(pos.x + m_random.nextInt(16) - m_random.nextInt(16),
 					 pos.y + m_random.nextInt(16) - m_random.nextInt(16),
@@ -1717,19 +1630,18 @@ void Level::explode(Entity* entity, const Vec3& pos, float power, bool bIsFiery)
 	expl.addParticles();
 }
 
-void Level::addEntities(const std::vector<Entity*>& entities)
+void Level::addEntities(const std::vector<std::shared_ptr<Entity>>& entities)
 {
 	m_entities.insert(m_entities.end(), entities.begin(), entities.end());
 
-	for (std::vector<Entity*>::iterator it = m_entities.begin(); it != m_entities.end(); it++)
+	for (std::vector<std::shared_ptr<Entity>>::iterator it = m_entities.begin(); it != m_entities.end(); it++)
 	{
-		Entity* pEnt = *it;
-		entityAdded(pEnt);
+		entityAdded((*it).get());
 	}
 }
 
 // @UNUSED
-void Level::ensureAdded(Entity* entity)
+void Level::ensureAdded(std::shared_ptr<Entity> entity)
 {
 	ChunkPos chunkPos(Mth::floor(entity->m_pos.x / 16.0f),
 		              Mth::floor(entity->m_pos.z / 16.0f));

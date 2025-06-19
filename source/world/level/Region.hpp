@@ -21,6 +21,7 @@ public:
 	Material* getMaterial(const TilePos& pos) const override;
 	bool isSolidTile(const TilePos& pos) const override;
 	BiomeSource* getBiomeSource() const override;
+	std::shared_ptr<TileEntity> getTileEntity(const TilePos& pos) const override;
 
 	virtual ~Region();
 	Region(const Level* level, const TilePos& min, const TilePos& max);
@@ -50,6 +51,6 @@ private:
 	int field_24;
 	int field_28;
 	int field_2C;
-	int field_30;
+	int m_noNeighborUpdate;
 };
 

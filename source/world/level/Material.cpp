@@ -47,7 +47,8 @@ Material
 * Material::clay,
 * Material::vegetable,
 * Material::portal,
-* Material::cake;
+* Material::cake,
+* Material::web;
 
 void Material::initMaterials()
 {
@@ -76,35 +77,37 @@ void Material::initMaterials()
 	vegetable  = new Material();
 	portal     = new Material();
 	cake       = new Material();
+	web = new DecorationMaterial();
 }
 
 void Material::teardownMaterials()
 {
-	if (air)        delete air;
-	if (dirt)       delete dirt;
-	if (wood)       delete wood;
-	if (stone)      delete stone;
-	if (metal)      delete metal;
-	if (water)      delete water;
-	if (lava)       delete lava;
-	if (leaves)     delete leaves;
-	if (plant)      delete plant;
-	if (sponge)     delete sponge;
-	if (cloth)      delete cloth;
-	if (fire)       delete fire;
-	if (sand)       delete sand;
-	if (decoration) delete decoration;
-	if (glass)      delete glass;
-	if (explosive)  delete explosive;
-	if (coral)      delete coral;
-	if (ice)        delete ice;
-	if (topSnow)    delete topSnow;
-	if (snow)       delete snow;
-	if (cactus)     delete cactus;
-	if (clay)       delete clay;
-	if (vegetable)  delete vegetable;
-	if (portal)     delete portal;
-	if (cake)       delete cake;
+	SAFE_DELETE(air);
+	SAFE_DELETE(dirt);
+	SAFE_DELETE(wood);
+	SAFE_DELETE(stone);
+	SAFE_DELETE(metal);
+	SAFE_DELETE(water);
+	SAFE_DELETE(lava);
+	SAFE_DELETE(leaves);
+	SAFE_DELETE(plant);
+	SAFE_DELETE(sponge);
+	SAFE_DELETE(cloth);
+	SAFE_DELETE(fire);
+	SAFE_DELETE(sand);
+	SAFE_DELETE(decoration);
+	SAFE_DELETE(glass);
+	SAFE_DELETE(explosive);
+	SAFE_DELETE(coral);
+	SAFE_DELETE(ice);
+	SAFE_DELETE(topSnow);
+	SAFE_DELETE(snow);
+	SAFE_DELETE(cactus);
+	SAFE_DELETE(clay);
+	SAFE_DELETE(vegetable);
+	SAFE_DELETE(portal);
+	SAFE_DELETE(cake);
+	SAFE_DELETE(web);
 }
 
 bool Material::isLiquid() const

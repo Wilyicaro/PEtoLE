@@ -20,6 +20,7 @@ public:
 	virtual void tick() override;
 	virtual void keyPressed(int key) override;
 	virtual void render(int x, int y, float f) override;
+	bool isPauseScreen() override;
 
 private:
 	int m_tickCounter;

@@ -20,22 +20,24 @@ private:
 public:
 	BiomeSource() { init(); }
 	BiomeSource(Level*);
+	real getTemperature(int x, int y);
 	virtual ~BiomeSource();
 
 	virtual Biome* getBiome(const ChunkPos& pos);
+	virtual Biome* getBiome(const TilePos& pos);
 	virtual Biome** getBiomeBlock(const TilePos& pos, int, int);
 	virtual Biome** getBiomeBlock(Biome**, const TilePos& pos, int, int);
-	virtual float* getTemperatureBlock(int, int, int, int);
+	virtual real* getTemperatureBlock(int, int, int, int);
 
 public:
-	float* field_4;
-	float* field_8;
-	float* field_C;
+	real* temperatures;
+	real* downfalls;
+	real* noises;
 	int field_10;
 	int field_14;
 	int field_18;
 	int field_1C;
-	Biome** field_20;
+	Biome** biomes;
 	PerlinNoise* m_pPerlinNoise[3];
 	Random m_Random1;
 	Random m_Random2;

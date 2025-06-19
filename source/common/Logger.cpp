@@ -2,7 +2,6 @@
 #include <stdarg.h>
 
 #include "Logger.hpp"
-#include "Util.hpp"
 #include "Utils.hpp"
 
 Logger* Logger::m_singleton = nullptr;
@@ -50,19 +49,4 @@ void Logger::print(eLogLevel ll, const char* const str)
 void Logger::print(eLogLevel ll, std::string str)
 {
     print(ll, str.c_str());
-}
-
-void Logger::vprintf(eLogLevel ll, const char* const fmt, va_list argPtr)
-{
-    print(ll, Util::vformat(fmt, argPtr));
-}
-
-void Logger::printf(eLogLevel ll, const char* const fmt, ...)
-{
-    va_list argList;
-    va_start(argList, fmt);
-
-    vprintf(ll, fmt, argList);
-
-    va_end(argList);
 }

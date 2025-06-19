@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 #include "world/phys/Vec2.hpp"
 #include "world/phys/AABB.hpp"
 #include "world/level/Material.hpp"
@@ -16,8 +16,10 @@
 #include "world/tile/Tile.hpp"
 #include "world/item/ItemInstance.hpp"
 #include "SynchedEntityData.hpp"
-#include "EntityTypeDescriptor.hpp"
+#include "EntityType.hpp"
 #include "common/Utils.hpp"
+#include "common/CompoundTag.hpp"
+#include <string>
 
 class Level;
 class Player;
@@ -41,7 +43,6 @@ enum eEntityRenderType
 	RENDER_SKELETON,
 	RENDER_SPIDER,
 	RENDER_CREEPER,
-	RENDER_ROCKET,
 
 	// custom
 	RENDER_FALLING_TILE = 50,
@@ -78,7 +79,7 @@ struct EntityPos
 	}
 };
 
-class Entity
+class Entity : public std::enable_shared_from_this<Entity>
 {
 private:
 	void _init();
@@ -134,9 +135,9 @@ public:
 	virtual bool hurt(Entity*, int);
 	virtual void animateHurt();
 	virtual float getPickRadius() const { return 0.1f; }
-	virtual ItemEntity* spawnAtLocation(ItemInstance*, float);
-	virtual ItemEntity* spawnAtLocation(int, int);
-	virtual ItemEntity* spawnAtLocation(int, int, float);
+	virtual std::shared_ptr<ItemEntity> spawnAtLocation(ItemInstance*, float);
+	virtual std::shared_ptr<ItemEntity> spawnAtLocation(int, int);
+	virtual std::shared_ptr<ItemEntity> spawnAtLocation(int, int, float);
 	virtual void awardKillScore(Entity* pKilled, int score);
 	virtual void setEquippedSlot(int, int, int);
 	virtual void setRot(const Vec2& rot);
@@ -150,15 +151,23 @@ public:
 	virtual void burn(int);
 	virtual void lavaHurt();
 	virtual int queryEntityRenderer();
+	void load(std::shared_ptr<CompoundTag> tag);
+	bool save(std::shared_ptr<CompoundTag> tag);
+	void saveWithoutId(std::shared_ptr<CompoundTag> tag);
+	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag);
+	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag);
 	// Removed by Mojang. See https://stackoverflow.com/questions/962132/why-is-a-call-to-a-virtual-member-function-in-the-constructor-a-non-virtual-call
 	//virtual void defineSynchedData();
+	std::string getEncodeId();
 
-	const EntityTypeDescriptor& getDescriptor() const { return *m_pDescriptor; }
+	const EntityType& getType() const { return *m_pEntityType; }
 	const SynchedEntityData& getEntityData() const { return m_entityData; }
 
 	int hashCode() const { return m_EntityID; }
 
 	bool operator==(const Entity& other) const;
+
+	void checkInTile(const Vec3& pos);
 
 	float distanceToSqr_inline(const Vec3& pos) const
 	{
@@ -180,7 +189,7 @@ public:
 	int field_24;
 	int field_28;
 	int m_EntityID;
-	float field_30;
+	float m_noNeighborUpdate;
 	bool m_bBlocksBuilding;
 	Level* m_pLevel;
 	Vec3 m_oPos; // "o" in Java or "xo" ""yo" "zo"
@@ -194,10 +203,11 @@ public:
 	AABB m_hitbox;
 	bool m_onGround;
 	bool m_bHorizontalCollision;
-	bool field_7E;
-	bool field_7F;
+	bool m_bVerticalCollision;
+	bool m_bCollision;
 	bool m_bHurt;
-	uint8_t field_81;
+	bool m_bInWeb;
+	uint8_t slide;
 	bool m_bRemoved;
 	float m_heightOffset;
 	float m_bbWidth;
@@ -206,24 +216,24 @@ public:
 	float m_walkDist;
 	Vec3 m_posPrev;
 	float m_ySlideOffset;
-	float field_A8;
+	float m_footSize;
 	bool m_bNoPhysics;
 	float field_B0;
 	int m_tickCount;
-	int field_B8;
+	int m_invulnerableTime;
 	int m_airCapacity;
 	int m_fireTicks;
 	int m_flameTime;
-	int field_C8;  // @NOTE: Render type? (eEntityRenderType)
+	int m_renderType;  // @NOTE: Render type? (eEntityRenderType)
 	float m_distanceFallen; // Supposed to be protected
 	int m_airSupply;
-	uint8_t field_D4;
-	bool field_D5;
-	bool field_D6;
+	uint8_t m_bWasInWater;
+	bool m_bFireImmune;
+	bool m_bFirstTick;
 	int m_nextStep;
 
 	protected:
 		SynchedEntityData m_entityData;
 		bool m_bMakeStepSound;
-		const EntityTypeDescriptor* m_pDescriptor;
+		const EntityType* m_pEntityType;
 };

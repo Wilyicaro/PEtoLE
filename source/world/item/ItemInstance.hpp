@@ -9,6 +9,7 @@
 #pragma once
 
 #include "common/Utils.hpp"
+#include "common/CompoundTag.hpp"
 #include "Item.hpp"
 #include "world/level/TilePos.hpp"
 #include "world/Facing.hpp"
@@ -20,13 +21,14 @@ class Entity;
 class Mob;
 class Player;
 
-class ItemInstance
+class ItemInstance : public std::enable_shared_from_this<ItemInstance>
 {
 private:
     void _init(int itemID, int amount, int auxValue);
     
 public:
 	ItemInstance();
+	ItemInstance(std::shared_ptr<CompoundTag> tag);
 	ItemInstance(Item*);
 	ItemInstance(Item*, int amount);
 	ItemInstance(Item*, int amount, int auxValue);
@@ -39,9 +41,9 @@ public:
     void setAuxValue(int auxValue) { m_auxValue = auxValue; } // Technically doesn't exist in b1.2_02
     int getDamageValue() const { return m_auxValue; }
 
-	bool canDestroySpecial(Tile*);
+	bool canDestroySpecial(const Tile*);
 	std::string getDescriptionId();
-	float getDestroySpeed(Tile*);
+	float getDestroySpeed(const Tile * tile);
 	int getIcon() const;
 	int getMaxDamage() const;
 	int getMaxStackSize() const;
@@ -52,23 +54,37 @@ public:
 	bool isDamaged();
 	bool isStackable();
 	bool isStackedByData();
-	bool matches(ItemInstance*) const;
-	void mineBlock(const TilePos& pos, Facing::Name face);
-	ItemInstance remove(int amt);
+	bool matches(const ItemInstance&) const;
+	bool sameItem(const std::shared_ptr<ItemInstance>) const;
+	void mineBlock(int tile, const TilePos& pos, Facing::Name face);
+	std::shared_ptr<ItemInstance> remove(int amt);
 	void setDescriptionId(const std::string&);
 	void snap(Player*);
 	std::string toString();
-	ItemInstance* use(Level*, Player*);
+	std::shared_ptr<ItemInstance> use(Level*, Player*);
 	bool useOn(Player*, Level*, const TilePos& pos, Facing::Name face);
+	void onCrafting(Player*, Level*);
+	void onCrafting(Player*, Level*, int amount);
 
 	Item* getItem() const;
-	ItemInstance* copy();
+	std::shared_ptr<ItemInstance> copy() const;
 
-	static bool matches(ItemInstance*, ItemInstance*);
+	static bool matches(const std::shared_ptr<ItemInstance>& a1, const std::shared_ptr<ItemInstance>& a2);
 
 	// v0.2.0
 	int getAttackDamage(Entity *pEnt);
 	bool isNull() const;
+	void load(std::shared_ptr<CompoundTag> tag) 
+	{
+		_init(tag->getShort("id"), tag->getByte("Count"), tag->getShort("Damage"));
+	}
+	std::shared_ptr<CompoundTag> save(std::shared_ptr<CompoundTag> tag)
+	{
+		tag->putShort("id", m_itemID);
+		tag->putByte("Count", m_count);
+		tag->putShort("Damage", getDamageValue());
+		return tag;
+	}
 
 public:
 	int m_count;

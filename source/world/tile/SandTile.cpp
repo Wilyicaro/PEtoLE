@@ -11,14 +11,10 @@
 #include "world/entity/FallingTile.hpp"
 
 //@NOTE: True for now
-bool SandTile::instaFall = true;
+bool SandTile::instaFall = false;
 
 SandTile::SandTile(int ID, int texture, Material* pMtl) : Tile(ID, texture, pMtl)
 {
-#ifdef ENH_ALLOW_SAND_GRAVITY
-	// the reason sand doesn't fall in the original MCPE:
-	setTicking(true);
-#endif
 }
 
 int SandTile::getTickDelay() const
@@ -53,11 +49,7 @@ void SandTile::checkSlide(Level* level, const TilePos& pos)
 	}
 	else
 	{
-		// The original code attempts to spawn a falling tile entity, but it fails since it's not a player.
-		// The falling sand tile
-#if defined(ORIGINAL_CODE) || defined(ENH_ALLOW_SAND_GRAVITY)
-		level->addEntity(new FallingTile(level, Vec3(float(pos.x) + 0.5f, float(pos.y) + 0.5f, float(pos.z) + 0.5f), m_ID));
-#endif
+		level->addEntity(std::make_shared<FallingTile>(level, Vec3(float(pos.x) + 0.5f, float(pos.y) + 0.5f, float(pos.z) + 0.5f), m_ID));
 	}
 }
 
@@ -81,7 +73,7 @@ bool SandTile::isFree(Level* level, const TilePos& pos)
 
 void SandTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	if (level->m_bIsMultiplayer)
+	if (level->m_bIsOnline)
 		return;
 
 	checkSlide(level, pos);

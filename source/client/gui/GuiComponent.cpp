@@ -12,22 +12,24 @@
 #pragma warning (disable : 4244)
 #endif
 
-GuiComponent::GuiComponent() : field_4 (0)
+GuiComponent::GuiComponent() : zLevel (0)
 {
 }
 
-void GuiComponent::blit(int dx, int dy, int sx, int sy, int tw, int th, int sw, int sh)
+
+
+void GuiComponent::blit(int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight)
 {
 	Tesselator& t = Tesselator::instance;
 
-	if (!sh) sh = th;
-	if (!sw) sw = tw;
+	if (!textureHeight) textureHeight = height;
+	if (!textureWidth) textureWidth = width;
 
 	t.begin();
-	t.vertexUV(dx,      dy + th, field_4, float(sx)      / 256.0f, float(sy + sh) / 256.0f);
-	t.vertexUV(dx + tw, dy + th, field_4, float(sx + sw) / 256.0f, float(sy + sh) / 256.0f);
-	t.vertexUV(dx + tw, dy,      field_4, float(sx + sw) / 256.0f, float(sy)      / 256.0f);
-	t.vertexUV(dx,      dy,      field_4, float(sx)      / 256.0f, float(sy)      / 256.0f);
+	t.vertexUV(x, y + height, z, u / textureWidth, (v + height) / textureHeight);
+	t.vertexUV(x + width, y + height, z, (u + width) / textureWidth, (v + height) / textureHeight);
+	t.vertexUV(x + width, y, z, (u + width) / textureWidth, v / textureHeight);
+	t.vertexUV(x, y, z, u / textureWidth, v / textureHeight);
 	t.draw();
 }
 
@@ -43,7 +45,7 @@ void GuiComponent::drawString(Font* pFont, const std::string& str, int cx, int c
 	pFont->drawShadow(str, cx, cy, color);
 }
 
-void GuiComponent::fill(int a2, int a3, int a4, int a5, int a6)
+void GuiComponent::fill(int a2, int a3, int a4, int a5, int a6, int zLevel)
 {
 	glEnable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
@@ -53,10 +55,10 @@ void GuiComponent::fill(int a2, int a3, int a4, int a5, int a6)
 	Tesselator& t = Tesselator::instance;
 	t.begin();
 
-	t.vertex(a2, a5, 0.0f);
-	t.vertex(a4, a5, 0.0f);
-	t.vertex(a4, a3, 0.0f);
-	t.vertex(a2, a3, 0.0f);
+	t.vertex(a2, a5, zLevel);
+	t.vertex(a4, a5, zLevel);
+	t.vertex(a4, a3, zLevel);
+	t.vertex(a2, a3, zLevel);
 
 	t.draw();
 
@@ -64,7 +66,24 @@ void GuiComponent::fill(int a2, int a3, int a4, int a5, int a6)
 	glDisable(GL_BLEND);
 }
 
-void GuiComponent::fillGradient(int a2, int a3, int a4, int a5, int a6, int a7)
+void GuiComponent::drawRect(int a2, int a3, int a4, int a5, int a6, int zLevel)
+{
+	glDisable(GL_TEXTURE_2D);
+
+	Tesselator& t = Tesselator::instance;
+	t.begin();
+	t.color(a6);
+	t.vertex(a2, a3 + a5, zLevel);
+	t.vertex(a2 + a4, a3 + a5, zLevel);
+	t.vertex(a2 + a4, a3, zLevel);
+	t.vertex(a2, a3, zLevel);
+
+	t.draw();
+
+	glEnable(GL_TEXTURE_2D);
+}
+
+void GuiComponent::fillGradient(int a2, int a3, int a4, int a5, int a6, int a7, int zLevel)
 {
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
@@ -77,11 +96,11 @@ void GuiComponent::fillGradient(int a2, int a3, int a4, int a5, int a6, int a7)
 
 	// note: for some stupid reason OG uses the float overload.
 	t.color(float(GET_RED(a6)) / 255.0f, float(GET_GREEN(a6)) / 255.0f, float(GET_BLUE(a6)) / 255.0f, float(GET_ALPHA(a6)) / 255.0f);
-	t.vertex(a2, a5, 0.0f);
-	t.vertex(a4, a5, 0.0f);
+	t.vertex(a2, a5, zLevel);
+	t.vertex(a4, a5, zLevel);
 	t.color(float(GET_RED(a7)) / 255.0f, float(GET_GREEN(a7)) / 255.0f, float(GET_BLUE(a7)) / 255.0f, float(GET_ALPHA(a7)) / 255.0f);
-	t.vertex(a4, a3, 0.0f);
-	t.vertex(a2, a3, 0.0f);
+	t.vertex(a4, a3, zLevel);
+	t.vertex(a2, a3, zLevel);
 
 	t.draw();
 

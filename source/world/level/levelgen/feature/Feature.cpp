@@ -8,7 +8,7 @@
 
 #include "Feature.hpp"
 
-void Feature::init(float a, float b, float c)
+void Feature::init(real a, real b, real c)
 {
 
 }

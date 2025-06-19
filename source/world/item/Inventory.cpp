@@ -1,283 +1,204 @@
 #include "Inventory.hpp"
 #include "Item.hpp"
 
-Inventory::Inventory(Player* pPlayer)
+Inventory::Inventory(Player* pPlayer) : Container()
 {
 	m_pPlayer = pPlayer;
-	m_selectedHotbarSlot = 0;
-	m_bIsSurvival = false;
-
-	for (int i = 0; i < C_MAX_HOTBAR_ITEMS; i++)
-		m_hotbar[i] = -1;
+	m_selected = 0;
+	clear();
 }
 
 void Inventory::prepareCreativeInventory()
 {
-	m_bIsSurvival = false;
+	//@TODO b1.8 Items
 
-	m_items.clear();
-
-	// Original list of items.
-	addCreativeItem(Tile::rock->m_ID);
-	addCreativeItem(Tile::stoneBrick->m_ID);
-	addCreativeItem(Tile::sandStone->m_ID);
-	addCreativeItem(Tile::wood->m_ID);
-	addCreativeItem(Tile::treeTrunk->m_ID);
-	addCreativeItem(Tile::goldBlock->m_ID);
-	addCreativeItem(Tile::ironBlock->m_ID);
-	addCreativeItem(Tile::emeraldBlock->m_ID);
-	addCreativeItem(Tile::redBrick->m_ID);
-	addCreativeItem(Tile::leaves->m_ID);
-	addCreativeItem(Tile::cloth_10->m_ID);
-	addCreativeItem(Tile::cloth_20->m_ID);
-	addCreativeItem(Tile::cloth_30->m_ID);
-	addCreativeItem(Tile::cloth_40->m_ID);
-	addCreativeItem(Tile::cloth_50->m_ID);
-	addCreativeItem(Tile::cloth_60->m_ID);
-	addCreativeItem(Tile::cloth_70->m_ID);
-	addCreativeItem(Tile::glass->m_ID);
-	addCreativeItem(Tile::cloth_01->m_ID);
-	addCreativeItem(Tile::cloth_11->m_ID);
-	addCreativeItem(Tile::cloth_21->m_ID);
-	addCreativeItem(Tile::cloth_31->m_ID);
-	addCreativeItem(Tile::cloth_41->m_ID);
-	addCreativeItem(Tile::stairs_wood->m_ID);
-	addCreativeItem(Tile::stairs_stone->m_ID);
-	addCreativeItem(Tile::stoneSlabHalf->m_ID);
-	addCreativeItem(Tile::sand->m_ID);
-	addCreativeItem(Tile::ladder->m_ID);
-	addCreativeItem(Tile::torch->m_ID);
-	addCreativeItem(Tile::flower->m_ID);
-	addCreativeItem(Tile::rose->m_ID);
-	addCreativeItem(Tile::mushroom1->m_ID);
-	addCreativeItem(Tile::mushroom2->m_ID);
-	addCreativeItem(Tile::reeds->m_ID);
-	addCreativeItem(Tile::obsidian->m_ID);
-	addCreativeItem(Tile::dirt->m_ID);
-
-	// New items that weren't in the inventory before.
-	addCreativeItem(Tile::grass->m_ID);
-	addCreativeItem(Tile::tnt->m_ID);
-	addCreativeItem(Tile::gravel->m_ID);
-	addCreativeItem(Tile::cloth->m_ID);
-	addCreativeItem(Tile::mossStone->m_ID);
-	addCreativeItem(Tile::bookshelf->m_ID);
-	addCreativeItem(Tile::lapisBlock->m_ID);
-	addCreativeItem(Tile::sponge->m_ID);
-	addCreativeItem(Tile::sapling->m_ID);
-	addCreativeItem(Tile::cryingObsidian->m_ID);
-	addCreativeItem(Tile::rocketLauncher->m_ID);
-	addCreativeItem(Tile::redStoneOre->m_ID);
-	
-	// test stuff
-	addCreativeItem(Tile::water->m_ID);
-	addCreativeItem(Tile::lava->m_ID);
-	addCreativeItem(Tile::fire->m_ID);
-
-	// items
-	addCreativeItem(Item::camera->m_itemID);
-	addCreativeItem(Item::door_wood->m_itemID);
-	addCreativeItem(Item::door_iron->m_itemID);
-	addCreativeItem(Item::rocket->m_itemID);
-
-	for (int i = 0; i < C_MAX_HOTBAR_ITEMS; i++)
-		m_hotbar[i] = i;
 }
 
 void Inventory::prepareSurvivalInventory()
 {
-	m_bIsSurvival = true;
-	m_items.clear();
-	m_items.resize(C_NUM_SURVIVAL_SLOTS);
-
 	// Add some items for testing
+	addTestItem(Item::ironSword->m_itemID);
+	addTestItem(Item::ironPickaxe->m_itemID);
+	addTestItem(Item::ironAxe->m_itemID);
+	addTestItem(Item::ironShovel->m_itemID);
+	addTestItem(Item::ironHoe->m_itemID);
 	addTestItem(Item::stick->m_itemID, 64);
 	addTestItem(Item::wheat->m_itemID, 64);
 	addTestItem(Item::sugar->m_itemID, 64);
-	addTestItem(Item::camera->m_itemID, 64);
 	addTestItem(Tile::ladder->m_ID, 64);
 	addTestItem(Tile::obsidian->m_ID, 64);
 	addTestItem(Tile::fire->m_ID, 64);
-
-	for (int i = 0; i < C_MAX_HOTBAR_ITEMS; i++)
-		m_hotbar[i] = i;
+	addTestItem(Item::woodDoor->m_itemID);
+	addTestItem(Item::ironDoor->m_itemID);
+	addTestItem(Tile::fence->m_ID, 64);
+	addTestItem(Tile::lever->m_ID, 64);
+	addTestItem(Item::redStone->m_itemID, 64);
+	addTestItem(Tile::redstoneTorchLit->m_ID, 64);
 }
 
-int Inventory::getNumSlots()
+int Inventory::getContainerSize()
 {
-	if (m_bIsSurvival)
-		return C_NUM_SURVIVAL_SLOTS;
-
-	return getNumItems();
+	return C_NUM_SLOTS + 4;
 }
 
 int Inventory::getNumItems()
 {
-	return int(m_items.size());
+	int items;
+	for (items = 0; items < getContainerSize(); items++) {
+		if (m_items[items]) items++;
+	}
+	return items;
 }
 
-void Inventory::addCreativeItem(int itemID, int auxValue)
-{
-	m_items.push_back(ItemInstance(itemID, 1, auxValue));
-}
 
 void Inventory::clear()
 {
-	m_items.clear();
-	m_items.resize(C_NUM_SURVIVAL_SLOTS);
+	m_items.fill(nullptr);
+	m_armor.fill(nullptr);
 }
 
-// This code, and this function, don't exist in b1.2_02
-// "add" exists with these same arguments, which calls "addResource",
-// but addResource's code is entirely different somehow. Did we write this from scratch?
-void Inventory::addItem(ItemInstance* pInst)
+bool Inventory::add(std::shared_ptr<ItemInstance> pInst)
 {
-	if (!m_bIsSurvival)
-	{
-		// Just get rid of the item.
-		pInst->m_count = 0;
-		return;
+	if (!pInst->isDamaged()) {
+		pInst->m_count = addResource(pInst);
+		if (!pInst->m_count) {
+			return true;
+		}
 	}
 
-	// look for an item with the same ID
-	for (int i = 0; i < getNumItems(); i++)
-	{
-		if (m_items[i].m_itemID != pInst->m_itemID)
-			continue;
-
-		int maxStackSize = m_items[i].getMaxStackSize();
-		bool bIsStackedByData = Item::items[pInst->m_itemID]->isStackedByData();
-		if (bIsStackedByData && m_items[i].getAuxValue() != pInst->getAuxValue())
-			continue;
-
-		// try to collate.
-		int combinedItemAmount = pInst->m_count + m_items[i].m_count;
-
-		int leftover = combinedItemAmount - maxStackSize;
-		if (leftover < 0)
-			leftover = 0;
-		else
-			combinedItemAmount = C_MAX_AMOUNT;
-
-		m_items[i].m_count = combinedItemAmount;
-        m_items[i].m_popTime = 5;
-
-		pInst->m_count = leftover;
-
-		if (!bIsStackedByData)
-			m_items[i].setAuxValue(0);
+	int var2 = getFreeSlot();
+	if (var2 >= 0) {
+		m_items[var2] = pInst;
+		m_items[var2]->m_popTime = 5;
+		return true;
 	}
-
-	// If there's nothing leftover:
-	if (pInst->m_count <= 0)
-		return;
-
-	// try to add it to an empty slot
-	for (int i = 0; i < getNumItems(); i++)
-	{
-		if (m_items[i].m_itemID != 0)
-			continue;
-
-		m_items[i] = *pInst;
-        m_items[i].m_popTime = 5;
-		pInst->m_count = 0;
-		return;
+	else {
+		return false;
 	}
 }
 
-// Doesn't exist in PE
+int Inventory::getSlotWithRemainingSpace(std::shared_ptr<ItemInstance> item) {
+	for (int index = 0; index < m_items.size(); index++) {
+		std::shared_ptr<ItemInstance> i = m_items[index];
+		if (i && i->m_itemID == item->m_itemID && i->isStackable() && i->m_count < i->getMaxStackSize() && i->m_count < getMaxStackSize() && (!i->isStackedByData() || i->getAuxValue() == item->getAuxValue())) {
+			return index;
+		}
+	}
+
+	return -1;
+}
+
+int Inventory::getFreeSlot() {
+	for (int var1 = 0; var1 < m_items.size(); var1++) {
+		if (!m_items[var1]) {
+			return var1;
+		}
+	}
+
+	return -1;
+}
+
+int Inventory::addResource(std::shared_ptr<ItemInstance> item) {
+	int var2 = item->m_itemID;
+	int var3 = item->m_count;
+	int var4 = getSlotWithRemainingSpace(item);
+	if (var4 < 0) var4 = getFreeSlot();
+	
+
+	if (var4 < 0) {
+		return var3;
+	}
+	else {
+		if (!m_items[var4]) {
+			m_items[var4] = std::make_shared<ItemInstance>(var2, 0, item->getAuxValue());
+		}
+
+		int var5 = var3;
+		if (var3 > m_items[var4]->getMaxStackSize() - m_items[var4]->m_count) {
+			var5 = m_items[var4]->getMaxStackSize() - m_items[var4]->m_count;
+		}
+
+		if (var5 > getMaxStackSize() - m_items[var4]->m_count) {
+			var5 = getMaxStackSize() - m_items[var4]->m_count;
+		}
+
+		if (!var5) 
+		{
+			return var3;
+		}
+		else 
+		{
+			var3 -= var5;
+			m_items[var4]->m_count += var5;
+			m_items[var4]->m_popTime = 5;
+			return var3;
+		}
+	}
+}
+
 void Inventory::tick()
 {
-    for (int i = 0; i < m_items.size(); i++)
-    {
-        if (!m_items[i].isNull() && m_items[i].m_popTime > 0)
-        {
-            m_items[i].m_popTime--;
-        }
-    }
+	for (auto v : m_items) {
+		if (v && !v->isNull() && v->m_popTime > 0) v->m_popTime--;
+	}
+}
+
+void Inventory::setItem(int index, std::shared_ptr<ItemInstance> item)
+{
+	if (index >= m_items.size()) m_armor[index - m_items.size()] = item;
+	else m_items[index] = item;
+}
+
+std::shared_ptr<ItemInstance> Inventory::removeItem(int index, int count)
+{
+	std::shared_ptr<ItemInstance> item = getItem(index);
+
+	if (item) {
+		if (item->m_count <= count) {
+			setItem(index, nullptr);
+			return item;
+		}
+		else {
+			item = item->remove(count);
+			if (item->m_count == 0) {
+				setItem(index, nullptr);
+			}
+
+			return item;
+		}
+	}
+	else {
+		return nullptr;
+	}
 }
 
 void Inventory::addTestItem(int itemID, int amount, int auxValue)
 {
-	ItemInstance inst(itemID, amount, auxValue);
-	addItem(&inst);
+	std::shared_ptr<ItemInstance> inst = std::make_shared<ItemInstance>(itemID, amount, auxValue);
+	add(inst);
 
-	if (inst.m_count != 0)
+	if (inst->m_count != 0)
 	{
 		LOG_I("AddTestItem: Couldn't add all %d of %s, only gave %d",
-			amount, Item::items[itemID]->m_DescriptionID.c_str(), amount - inst.m_count);
+			amount, Item::items[itemID]->m_DescriptionID.c_str(), amount - inst->m_count);
 	}
 }
 
-ItemInstance* Inventory::getItem(int slotNo)
+std::shared_ptr<ItemInstance> Inventory::getItem(int index)
 {
-	if (slotNo < 0 || slotNo >= int(m_items.size()))
-		return nullptr;
-
-	if (m_items[slotNo].m_count <= 0)
-		m_items[slotNo].m_itemID = 0;
-
-	return &m_items[slotNo];
+	if (index >= m_items.size()) return m_armor[index - m_items.size()];
+	else return m_items[index];
 }
 
-int Inventory::getQuickSlotItemId(int slotNo)
+std::shared_ptr<ItemInstance> Inventory::getSelectedItem()
 {
-	if (slotNo < 0 || slotNo >= C_MAX_HOTBAR_ITEMS)
-		return -1;
-	
-	int idx = m_hotbar[slotNo];
-	ItemInstance* pInst = getItem(idx);
-	if (!pInst)
-		return -1;
-
-	return pInst->m_itemID;
-}
-
-ItemInstance* Inventory::getQuickSlotItem(int slotNo)
-{
-	if (slotNo < 0 || slotNo >= C_MAX_HOTBAR_ITEMS)
-		return nullptr;
-	
-	ItemInstance* pInst = getItem(m_hotbar[slotNo]);
-	if (!pInst)
-		return nullptr;
-
-	if (pInst->m_itemID == 0)
-		return nullptr;
-
-	return pInst;
-}
-
-ItemInstance* Inventory::getSelectedItem()
-{
-	return getQuickSlotItem(m_selectedHotbarSlot);
+	return getItem(m_selected);
 }
 
 int Inventory::getSelectedItemId()
 {
-	return getQuickSlotItemId(m_selectedHotbarSlot);
-}
-
-void Inventory::selectItem(int slotNo, int maxHotBarSlot)
-{
-	if (slotNo < 0 || slotNo >= getNumItems())
-		return;
-
-	// look for it in the hotbar
-	for (int i = 0; i < maxHotBarSlot; i++)
-	{
-		if (m_hotbar[i] == slotNo)
-		{
-			m_selectedHotbarSlot = i;
-			return;
-		}
-	}
-
-	for (int i = maxHotBarSlot - 2; i >= 0; i--)
-		m_hotbar[i + 1] = m_hotbar[i];
-
-	m_hotbar[0] = slotNo;
-	m_selectedHotbarSlot = 0;
+	std::shared_ptr<ItemInstance> item = getSelectedItem();
+	return item ? item->m_itemID : -1;
 }
 
 void Inventory::selectSlot(int slotNo)
@@ -285,62 +206,111 @@ void Inventory::selectSlot(int slotNo)
 	if (slotNo < 0 || slotNo >= C_MAX_HOTBAR_ITEMS)
 		return;
 
-	m_selectedHotbarSlot = slotNo;
-}
-
-void Inventory::setQuickSlotIndexByItemId(int slotNo, int itemID)
-{
-	if (slotNo < 0 || slotNo >= C_MAX_HOTBAR_ITEMS)
-		return;
-
-	if (m_bIsSurvival)
-		return; // TODO
-
-	for (int i = 0; i < getNumItems(); i++)
-	{
-		if (m_items[i].m_itemID == itemID)
-		{
-			m_hotbar[slotNo] = i;
-			return;
-		}
-	}
-
-	m_hotbar[slotNo] = -1;
+	m_selected = slotNo;
 }
 
 void Inventory::selectItemById(int itemID, int maxHotBarSlot)
 {
-	for (int i = 0; i < getNumItems(); i++)
+	for (int i = 0; i < m_items.size(); i++)
 	{
-		if (m_items[i].m_itemID != itemID)
+		if (!m_items[i] || m_items[i]->m_itemID != itemID)
 			continue;
 
-		selectItem(i, maxHotBarSlot);
-		return;
+		if (i < maxHotBarSlot) m_selected = i;
+		else 
+		{
+			auto picked = m_items[i];
+			auto old = getSelectedItem();
+			setItem(m_selected, picked);
+			setItem(i, old);
+		}
+		break;
 	}
-
-	LOG_W("selectItemById: %d doesn't exist", itemID);
 }
 
 int Inventory::getAttackDamage(Entity* pEnt)
 {
-	ItemInstance* pInst = getSelected();
+	std::shared_ptr<ItemInstance> pInst = getSelected();
 	if (!pInst)
 		return 1;
 
 	return pInst->getAttackDamage(pEnt);
 }
 
-void Inventory::dropAll(bool butNotReally)
+int Inventory::getArmorValue() const
 {
-	for (int i = 0; i < getNumItems(); i++)
+	int var1 = 0;
+	int var2 = 0;
+	int var3 = 0;
+
+	for (auto& armor : m_armor)
 	{
-		ItemInstance* item = &m_items[i];
-		if (item->m_count > 0)
-		{
-			if (!butNotReally)
-				m_pPlayer->drop(item->copy(), true);
-			item->m_count = 0;
+		if (!armor || armor->getItem()->getDefense() <= 0) continue;
+		int var5 = armor->getMaxDamage();
+		int var6 = armor->getDamageValue();
+		int var7 = var5 - var6;
+		var2 += var7;
+		var3 += var5;
+		var1 += armor->getItem()->getDefense();
+	}
+
+	if (var3 == 0) {
+		return 0;
+	}
+	else {
+		return (var1 - 1) * var2 / var3 + 1;
+	}
+}
+
+void Inventory::hurtArmor(int amount)
+{
+	for (int i = 0; i < m_armor.size(); i++)
+	{
+		std::shared_ptr<ItemInstance> armor = m_armor[i];
+		if (!armor || armor->getItem()->getDefense() <= 0) continue;
+		armor->hurt(amount);
+		if (!armor->m_count) {
+			armor->snap(m_pPlayer);
+			m_armor[i] = nullptr;
 		}
 	}
+}
+
+void Inventory::dropAll()
+{
+	for (int i = 0; i < m_items.size(); i++)
+	{
+		std::shared_ptr<ItemInstance> item = m_items[i];
+		if (item)
+		{
+			m_pPlayer->drop(item.get(), true);
+			m_items[i] = nullptr;
+		}
+	}
+
+	for (int i = 0; i < m_armor.size(); i++)
+	{
+		std::shared_ptr<ItemInstance> item = m_armor[i];
+		if (item)
+		{
+			m_pPlayer->drop(item.get(), true);
+			m_armor[i] = nullptr;
+		}
+	}
+}
+
+bool Inventory::stillValid(Player* player)
+{
+	if (m_pPlayer->m_bRemoved) {
+		return false;
+	}
+	else {
+		return !(player->distanceToSqr(m_pPlayer) > 64.0);
+	}
+}
+
+void Inventory::setCarried(std::shared_ptr<ItemInstance> carried)
+{
+	m_carried = carried;
+	m_pPlayer->carriedChanged(carried);
 }

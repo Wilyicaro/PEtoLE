@@ -6,7 +6,7 @@
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
 #include "Path.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 #include "world/entity/Entity.hpp"
 
 Path::Path()

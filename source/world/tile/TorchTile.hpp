@@ -19,13 +19,13 @@ public:
 	bool isSolidRender() const override;
 	bool isCubeShaped() const override;
 	int getRenderShape() const override;
-	void animateTick(Level*, const TilePos& pos, Random*) override;
+	virtual void animateTick(Level*, const TilePos& pos, Random*) override;
 	HitResult clip(const Level*, const TilePos& pos, Vec3 a, Vec3 b) override;
 	bool mayPlace(const Level*, const TilePos& pos) const override;
-	void neighborChanged(Level*, const TilePos& pos, TileID tile) override;
-	void onPlace(Level*, const TilePos& pos) override;
+	virtual void neighborChanged(Level*, const TilePos& pos, TileID tile) override;
+	virtual void onPlace(Level*, const TilePos& pos) override;
 	void setPlacedOnFace(Level*, const TilePos& pos, Facing::Name face) override;
-	void tick(Level*, const TilePos& pos, Random*) override;
+	virtual void tick(Level*, const TilePos& pos, Random*) override;
 
 	bool checkCanSurvive(Level*, const TilePos& pos);
 };

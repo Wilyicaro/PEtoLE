@@ -1,7 +1,7 @@
 /********************************************************************
 	Minecraft: Pocket Edition - Decompilation Project
 	Copyright (C) 2023 iProgramInCpp
-	
+
 	The following code is licensed under the BSD 1 clause license.
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
@@ -11,31 +11,28 @@
 
 void ItemEntity::_init(const ItemInstance* itemInstance)
 {
-	field_E0 = 0;
-	field_E4 = 0;
-	field_EC = 0;
+	m_renderType = RENDER_ITEM;
+	m_pEntityType = EntityType::item;
+	m_age = 0;
+	m_throwTime = 0;
+	m_tickCount = 0;
 	m_health = 5;
 	m_bMakeStepSound = false;
 
-	// @NOTE: not setting render type
-	field_E8 = 2 * float(M_PI) * Mth::random();
+	m_bobOffs = 2 * float(M_PI) * Mth::random();
 	setSize(0.25f, 0.25f);
 	m_heightOffset = m_bbHeight * 0.5f;
-#ifdef ORIGINAL_CODE
-	m_pItemInstance = itemInstance != nullptr ? itemInstance : new ItemInstance();
-#else
-	m_itemInstance = itemInstance != nullptr ? ItemInstance(*itemInstance) : ItemInstance();
-#endif
+	m_itemInstance = itemInstance ? itemInstance->copy() : nullptr;
+
 }
 
 void ItemEntity::_init(const ItemInstance* itemInstance, const Vec3& pos)
 {
 	_init(itemInstance);
 
-	field_C8 = RENDER_ITEM;
 	setPos(pos);
 
-	m_rot.x = 360.0f * Mth::random();
+	m_rot.y = 360.0f * Mth::random();
 
 	m_vel.y = 0.2f;
 	m_vel.x = Mth::random() * 0.2f - 0.1f;
@@ -64,102 +61,73 @@ bool ItemEntity::isInWater()
 
 void ItemEntity::playerTouch(Player* player)
 {
-	// Here, this would give the item to the player, and remove the item entity.
-	if (field_E4 != 0)
-		return;
-
 	Inventory* pInventory = player->m_pInventory;
 
-	pInventory->addItem(&m_itemInstance);
+	int oldCount = m_itemInstance->m_count;
+	if (m_pLevel->m_bIsOnline || m_throwTime || !pInventory->add(m_itemInstance))
+		return;
 
-	m_pLevel->playSound(this, "random.pop", 0.3f,
-		(((sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.7f) + 1.0f) + (((sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.7f) + 1.0f));
-
-	if (m_itemInstance.m_count <= 0)
-		remove();
+	m_pLevel->playSound(this, "random.pop", 0.3f, (((sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.7f) + 1.0f) + (((sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.7f) + 1.0f));
+	player->take(this, oldCount);
+	remove();
 }
 
 void ItemEntity::tick()
 {
 	Entity::tick();
 
-	if (field_E4 > 0)
-		field_E4--;
+	if (m_throwTime > 0)
+		m_throwTime--;
 
 	m_oPos = m_pos;
-	m_vel.y -= 0.04f;
+	m_vel.y -= 0.04;
 
 	if (m_pLevel->getMaterial(m_pos) == Material::lava)
 	{
 		// give it a small bounce upwards
-		m_vel.y = 0.2f;
-		m_vel.x = 0.2f * (sharedRandom.nextFloat() - sharedRandom.nextFloat());
-		m_vel.z = 0.2f * (sharedRandom.nextFloat() - sharedRandom.nextFloat());
+		m_vel.y = 0.2;
+		m_vel.x = 0.2 * (sharedRandom.nextFloat() - sharedRandom.nextFloat());
+		m_vel.z = 0.2 * (sharedRandom.nextFloat() - sharedRandom.nextFloat());
+		m_pLevel->playSound(this, "random.fizz", 0.4, 2.0 + sharedRandom.nextFloat() * 0.4);
 	}
 
-	checkInTile(m_pos);
+	checkInTile(Vec3(m_pos.x, (m_hitbox.min.y + m_hitbox.max.y) / 2, m_pos.z));
 
 	move(m_vel);
 
-	float dragFactor = 0.98f;
+	float dragFactor = 0.98;
 
 	if (m_onGround)
 	{
-		dragFactor = 0.588f;
-		TileID tile = m_pLevel->getTile(TilePos(Mth::floor(m_pos.x), Mth::floor(m_hitbox.min.y) - 1, Mth::floor(m_pos.z)));
+		dragFactor = 0.588;
+		TileID tile = m_pLevel->getTile(TilePos(m_pos.x, m_hitbox.min.y - 1, m_pos.z));
 		if (tile > 0)
-			dragFactor = Tile::tiles[tile]->field_30 * 0.98f;
+			dragFactor = Tile::tiles[tile]->friction * 0.98;
 	}
 
 	m_vel.x *= dragFactor;
 	m_vel.z *= dragFactor;
-	m_vel.y *= 0.98f;
+	m_vel.y *= 0.98;
 
 	if (m_onGround)
-		m_vel.y *= -0.5f;
+		m_vel.y *= -0.5;
 
-	field_EC++;
-	field_E0++;
+	m_tickCount++;
+	m_age++;
 
 	// despawn after 5 minutes
-	if (field_E0 >= 6000)
+	if (m_age >= 6000)
 		remove();
 }
 
-void ItemEntity::checkInTile(const Vec3& pos)
-{
-	TilePos flPos = pos;
+void ItemEntity::addAdditionalSaveData(std::shared_ptr<CompoundTag> var1) {
+	var1->putShort("Health", m_health);
+	var1->putShort("Age", m_age);
+	var1->put("Item", m_itemInstance->save(std::make_shared<CompoundTag>()));
+}
 
-	if (!Tile::solid[m_pLevel->getTile(pos)])
-		return;
-	
-	bool solidXN = Tile::solid[m_pLevel->getTile(flPos.west())];
-	bool solidXP = Tile::solid[m_pLevel->getTile(flPos.east())];
-	bool solidYN = Tile::solid[m_pLevel->getTile(flPos.below())];
-	bool solidYP = Tile::solid[m_pLevel->getTile(flPos.above())];
-	bool solidZN = Tile::solid[m_pLevel->getTile(flPos.north())];
-	bool solidZP = Tile::solid[m_pLevel->getTile(flPos.south())];
-
-	float mindist = 9999.0f;
-	int mindir = -1;
-
-	Vec3 diff = pos - flPos;
-	if (!solidXN && diff.x        < mindist) mindist = diff.x,        mindir = 0;
-	if (!solidXP && 1.0f - diff.x < mindist) mindist = 1.0f - diff.x, mindir = 1;
-	if (!solidYN && diff.y < mindist) mindist = diff.y,        mindir = 2;
-	if (!solidYP && 1.0f - diff.y < mindist) mindist = 1.0f - diff.y, mindir = 3;
-	if (!solidZN && diff.z < mindist) mindist = diff.z,        mindir = 4;
-	if (!solidZP && 1.0f - diff.z < mindist) mindist = 1.0f - diff.z, mindir = 5;
-
-	// the -1 case will be handled accordingly
-	float force = 0.1f + 0.2f * sharedRandom.nextFloat();
-	switch (mindir)
-	{
-		case 0: m_vel.x = -force; break;
-		case 1: m_vel.x =  force; break;
-		case 2: m_vel.y = -force; break;
-		case 3: m_vel.y =  force; break;
-		case 4: m_vel.z = -force; break;
-		case 5: m_vel.z =  force; break;
-	}
+void ItemEntity::readAdditionalSaveData(std::shared_ptr<CompoundTag> var1) {
+	m_health = var1->getShort("Health") & 255;
+	m_age = var1->getShort("Age");
+	m_itemInstance = std::make_shared<ItemInstance>(var1->getOrMakeCompound("Item"));
 }

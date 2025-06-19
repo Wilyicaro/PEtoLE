@@ -48,10 +48,7 @@ EntityRenderDispatcher::EntityRenderDispatcher() :
 	m_TntRenderer.init(this);
 	m_CameraRenderer.init(this);
 	m_ItemRenderer.init(this);
-	m_RocketRenderer.init(this);
-#ifdef ENH_ALLOW_SAND_GRAVITY
 	m_FallingTileRenderer.init(this);
-#endif
 }
 
 float EntityRenderDispatcher::distanceToSqr(const Vec3& pos)
@@ -94,13 +91,8 @@ EntityRenderer* EntityRenderDispatcher::getRenderer(int renderType)
 			return &m_SheepRenderer;
 		case RENDER_CREEPER:
 			return &m_CreeperRenderer;
-		case RENDER_ROCKET:
-			return &m_RocketRenderer;
-#ifdef ENH_ALLOW_SAND_GRAVITY
-		// TODO
 		case RENDER_FALLING_TILE:
 			return &m_FallingTileRenderer;
-#endif
 	}
 
 	return nullptr;
@@ -108,7 +100,7 @@ EntityRenderer* EntityRenderDispatcher::getRenderer(int renderType)
 
 EntityRenderer* EntityRenderDispatcher::getRenderer(Entity* pEnt)
 {
-	int renderType = pEnt->field_C8;
+	int renderType = pEnt->m_renderType;
 	if (renderType == RENDER_DYNAMIC)
 		renderType = pEnt->queryEntityRenderer();
 
@@ -120,7 +112,7 @@ void EntityRenderDispatcher::onGraphicsReset()
 	m_HumanoidMobRenderer.onGraphicsReset();
 }
 
-void EntityRenderDispatcher::prepare(Level* level, Textures* textures, Font* font, Mob* mob, Options* options, float f)
+void EntityRenderDispatcher::prepare(Level* level, Textures* textures, Font* font, std::shared_ptr<Mob> mob, Options* options, float f)
 {
 	m_pLevel = level;
 	m_pTextures = textures;
@@ -134,7 +126,7 @@ void EntityRenderDispatcher::prepare(Level* level, Textures* textures, Font* fon
 void EntityRenderDispatcher::render(Entity* entity, float a)
 {
 	Vec3 pos = Vec3(entity->m_posPrev + (entity->m_pos - entity->m_posPrev) * a);
-	float yaw = entity->m_rotPrev.x + a * (entity->m_rot.x - entity->m_rotPrev.x);
+	float yaw = entity->m_rotPrev.y + a * (entity->m_rot.y - entity->m_rotPrev.y);
 
 	float bright = entity->getBrightness(1.0f);
 	glColor4f(bright, bright, bright, 1.0f);
@@ -142,20 +134,13 @@ void EntityRenderDispatcher::render(Entity* entity, float a)
 	render(entity, pos - off, yaw, a);
 }
 
-void EntityRenderDispatcher::render(Entity* entity, const Vec3& pos, float rot, float a)
+void EntityRenderDispatcher::render(Entity* entity, const Vec3& pos, float rot, float a, bool postRender)
 {
 	EntityRenderer* pRenderer = getRenderer(entity);
 	if (pRenderer)
 	{
-#ifndef ORIGINAL_CODE
-		if (pRenderer == &m_HumanoidMobRenderer)
-			m_HumanoidMobRenderer.m_pHumanoidModel->m_bSneaking = entity->isSneaking();
-		else
-			m_HumanoidMobRenderer.m_pHumanoidModel->m_bSneaking = false;
-#endif
-
 		pRenderer->render(entity, pos.x, pos.y, pos.z, rot, a);
-		pRenderer->postRender(entity, pos, rot, a);
+		if (postRender) pRenderer->postRender(entity, pos, rot, a);
 	}
 }
 

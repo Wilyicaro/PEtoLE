@@ -16,18 +16,26 @@ OreTile::OreTile(int id, int texture) : Tile(id, texture, Material::stone)
 
 int OreTile::getResource(int x, Random* random) const
 {
-	return m_ID;
+	if (m_ID == Tile::coalOre->m_ID)
+	{
+		return Item::coal->m_itemID;
+	}
+	else if (m_ID == Tile::diamondOre->m_ID)
+	{
+		return Item::diamond->m_itemID;
+	}
+	else
+	{
+		return m_ID == Tile::lapisOre->m_ID ? Item::dyePowder->m_itemID : m_ID;
+	}
 }
 
 int OreTile::getResourceCount(Random* random) const
 {
-	if (m_ID == Tile::lapisOre->m_ID)
-		return random->genrand_int32() % 5 + 4;
-
-	return 1;
+	return m_ID == Tile::lapisOre->m_ID ? 4 + random->nextInt(5) : 1;
 }
 
 int OreTile::getSpawnResourcesAuxValue(int x) const
 {
-	return 0;
+	return m_ID == Tile::lapisOre->m_ID ? 4 : 0;
 }

@@ -321,6 +321,7 @@ void TextInputBox::charPressed(int k)
 	m_text.insert(m_text.begin() + m_insertHead, k);
 	m_insertHead++;
 	recalculateScroll();
+	m_pParent->onTextBoxUpdated(getKey());
 }
 
 constexpr int PADDING = 5;

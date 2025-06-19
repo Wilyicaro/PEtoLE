@@ -68,7 +68,10 @@ int FireTile::getTickDelay() const
 
 void FireTile::animateTick(Level* level, const TilePos& pos, Random* random)
 {
-	// @TODO: Mark Tile::fire as FireTile* instead of Tile*
+	if (random->nextInt(24) == 0) {
+		level->playSound(pos.center(), "fire.fire", 1.0F + random->nextFloat(), random->nextFloat() * 0.7F + 0.3F);
+	}
+
 	FireTile* pFireTile = (FireTile*)Tile::fire;
 	if (level->isSolidTile(pos.below()) || pFireTile->canBurn(level, pos.below()))
 	{
@@ -178,24 +181,24 @@ void FireTile::onPlace(Level* level, const TilePos& pos)
 
 void FireTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	int data = level->getData(pos);
-	if (data <= 14)
-	{
-		level->setData(pos, data + 1);
+	bool var6 = level->getTile(pos.below()) == Tile::netherrack->m_ID;
+	int var7 = level->getData(pos);
+	if (var7 < 15) {
+		level->setData(pos, var7 + 1);
 		level->addToTickNextTick(pos, m_ID, getTickDelay());
 	}
 
-	if (isValidFireLocation(level, pos))
-	{
-		if (m_igniteOdds[level->getTile(pos.below())] <= 0 && data == 15 && !random->nextInt(4))
-		{
-			// just go out
-			level->setTile(pos, TILE_AIR);
-			return;
+	if (!var6 && !isValidFireLocation(level, pos)) {
+		if (!level->isSolidTile(pos.below()) || var7 > 3) {
+			level->setTile(pos, 0);
 		}
 
-		if (data > 2 && (data & 1) == 0)
-		{
+	}
+	else if (!var6 && !canBurn(level, pos.below()) && var7 == 15 && random->nextInt(4) == 0) {
+		level->setTile(pos, 0);
+	}
+	else {
+		if (var7 % 2 == 0 && var7 > 2) {
 			checkBurn(level, pos.east(), 300, random);
 			checkBurn(level, pos.west(), 300, random);
 			checkBurn(level, pos.below(), 250, random);
@@ -203,37 +206,24 @@ void FireTile::tick(Level* level, const TilePos& pos, Random* random)
 			checkBurn(level, pos.north(), 300, random);
 			checkBurn(level, pos.south(), 300, random);
 
-			TilePos tp(pos.north());
-			for (tp.x = pos.x - 1; tp.x <= pos.x + 1; tp.x++)
-			{
-				for (tp.z = pos.z - 1; tp.z <= pos.z + 1; tp.z++)
-				{
-					int thing = -100;
-					for (tp.y = pos.y - 1; tp.y <= pos.y + 4; tp.y++, thing += 100)
-					{
-						if (tp == pos)
-							continue;
+			for (int var8 = pos.x - 1; var8 <= pos.x + 1; ++var8) {
+				for (int var9 = pos.z - 1; var9 <= pos.z + 1; ++var9) {
+					for (int var10 = pos.y - 1; var10 <= pos.y + 4; ++var10) {
+						if (var8 != pos.x || var10 != pos.y || var9 != pos.z) {
+							int var11 = 100;
+							if (var10 > pos.y + 1) {
+								var11 += (var10 - (pos.y + 1)) * 100;
+							}
 
-						int thing2 = pos.y + 1 >= tp.y ? 100 : thing;
-						int odds = getFireOdds(level, tp);
-						if (odds > 0 && odds >= int(random->nextInt(thing2)))
-							level->setTile(tp, m_ID);
+							int var12 = getFireOdds(level, pos);
+							if (var12 > 0 && random->nextInt(var11) <= var12) {
+								level->setTile(pos, m_ID);
+							}
+						}
 					}
 				}
 			}
 		}
-		if (data == 15)
-		{
-			checkBurn(level, pos.east(), 1, random);
-			checkBurn(level, pos.west(), 1, random);
-			checkBurn(level, pos.below(), 1, random);
-			checkBurn(level, pos.above(), 1, random);
-			checkBurn(level, pos.north(), 1, random);
-			checkBurn(level, pos.south(), 1, random);
-		}
-	}
-	else if (!level->isSolidTile(pos.below()) || data > 3)
-	{
-		level->setTile(pos, TILE_AIR);
+
 	}
 }

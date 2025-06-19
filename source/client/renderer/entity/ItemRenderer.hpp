@@ -18,11 +18,9 @@ public:
 	ItemRenderer();
 
 	void render(Entity*, float, float, float, float, float) override;
-	void blitRect(Tesselator&, int, int, int, int, int);
 
-	static void blit(int, int, int, int, int, int);
-	static void renderGuiItem(Font*, Textures*, ItemInstance*, int, int, bool);
-	static void renderGuiItemOverlay(Font*, Textures*, ItemInstance*, int, int);
+	static void renderGuiItem(Textures*, std::shared_ptr<ItemInstance>, int, int);
+	static void renderGuiItemDecorations(Font*, Textures*, std::shared_ptr<ItemInstance>, int, int);
 
 public:
 	Random m_random;

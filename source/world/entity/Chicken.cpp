@@ -10,8 +10,8 @@
 
 Chicken::Chicken(Level* pLevel) : Animal(pLevel)
 {
-	m_pDescriptor = &EntityTypeDescriptor::chicken;
-	field_C8 = RENDER_CHICKEN;
+	m_pEntityType = EntityType::chicken;
+	m_renderType = RENDER_CHICKEN;
 	m_texture = "mob/chicken.png";
 	setSize(0.3f, 0.7f);
 
@@ -43,7 +43,7 @@ void Chicken::aiStep()
 		m_vel.y *= 0.6f;
 
 	m_flap += m_flapping * 2.0f;
-	if (!m_pLevel->m_bIsMultiplayer && isAlive() && !isBaby() /* && !isChickenJockey()*/ && --m_eggTime <= 0)
+	if (!m_pLevel->m_bIsOnline && isAlive() && !isBaby() /* && !isChickenJockey()*/ && --m_eggTime <= 0)
 	{
 		m_pLevel->playSound(this, "mob.chickenplop", 1.0f, (m_random.nextFloat() - m_random.nextFloat()) * 0.2f + 1.0f);
 		spawnAtLocation(Item::egg->m_itemID, 1);

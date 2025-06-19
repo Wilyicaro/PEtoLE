@@ -16,7 +16,7 @@
 class SoundRepository
 {
 public:
-	void add(const std::string& name, SoundDesc& sd);
+	void add(const std::string& name, const SoundDesc& sd);
 	bool get(const std::string& name, SoundDesc& sd);
 
 public:

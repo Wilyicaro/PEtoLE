@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Vec3.hpp"
+#include "Vec3T.hpp"
 #include "world/level/TilePos.hpp"
 #include "world/Facing.hpp"
 
@@ -41,7 +41,7 @@ private:
 	void _init();
 public:
 	HitResult() { _init(); }
-	HitResult(Entity*);
+	HitResult(std::shared_ptr<Entity>);
 	HitResult(const TilePos& tilePos, Facing::Name hitSide, const Vec3&);
 	bool isHit() const {
 		return m_hitType != NONE;
@@ -56,7 +56,7 @@ public:
 	// hit position
 	Vec3 m_hitPos;
 	
-	Entity* m_pEnt;
+	std::shared_ptr<Entity> m_pEnt;
 	bool m_bUnk24;
 };
 

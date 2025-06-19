@@ -12,11 +12,15 @@
 FallingTile::FallingTile(Level* level) : Entity(level),
 	field_E0(0)
 {
+	m_pEntityType = EntityType::fallingTile;
+	m_renderType = RENDER_FALLING_TILE;
 }
 
 FallingTile::FallingTile(Level* level, const Vec3& pos, int id) : Entity(level),
 	field_E0(0)
 {
+	m_pEntityType = EntityType::fallingTile;
+	m_renderType = RENDER_FALLING_TILE;
 	m_id = id;
     m_bBlocksBuilding = false;
 	setSize(0.98f, 0.98f);
@@ -25,10 +29,6 @@ FallingTile::FallingTile(Level* level, const Vec3& pos, int id) : Entity(level),
 	m_oPos = pos;
 	m_bMakeStepSound = false;
 	m_vel = Vec3::ZERO;
-
-#if defined(ENH_ALLOW_SAND_GRAVITY)
-	field_C8 = RENDER_FALLING_TILE;
-#endif
 }
 
 float FallingTile::getShadowHeightOffs() const
@@ -63,7 +63,7 @@ void FallingTile::tick()
 
 	if (!m_onGround)
 	{
-		if (field_E0 > 100 && !m_pLevel->m_bIsMultiplayer)
+		if (field_E0 > 100 && !m_pLevel->m_bIsOnline)
 			remove();
 
 		return;
@@ -73,17 +73,26 @@ void FallingTile::tick()
 	m_vel.z *= 0.7f;
 	m_vel.y *= -0.5f;
 	remove();
-	if (m_pLevel->mayPlace(m_id, tilePos, true))
+	if (m_pLevel->mayPlace(m_id, tilePos, true, Facing::UP))
 	{
 		m_pLevel->setTile(tilePos, m_id);
 	}
 	else
 	{
-		// @TODO: spawn resources?
+		this->spawnAtLocation(m_id, 1);
 	}
 }
 
 Level* FallingTile::getLevel()
 {
 	return m_pLevel;
+}
+
+
+void FallingTile::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+	tag->putByte("Tile", m_id);
+}
+
+void FallingTile::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+	m_id = tag->getByte("Tile") & 255;
 }

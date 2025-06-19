@@ -30,8 +30,8 @@ void TripodCameraRenderer::render(Entity* entity, float x, float y, float z, flo
 {
 	glPushMatrix();
 	glTranslatef(x, y, z);
-	m_modelPart.m_rot.x  = 0.017453f * (180.0f + 0.5f * entity->m_rot.y);
-	m_modelPart.m_rot.y = -0.017453f * entity->m_rot.x;
+	m_modelPart.m_rot.x  = 0.017453f * (180.0f + 0.5f * entity->m_rot.x);
+	m_modelPart.m_rot.y = -0.017453f * entity->m_rot.y;
 
 	//Tesselator& t = Tesselator::instance;
 	//t.color(1.0f, 1.0f, 1.0f);
@@ -48,7 +48,7 @@ void TripodCameraRenderer::render(Entity* entity, float x, float y, float z, flo
 	m_modelPart.setBrightness(brightness);
 	m_modelPart.render(0.0625f);
 
-	Entity* pHREntity = m_pDispatcher->m_pMinecraft->m_hitResult.m_pEnt;
+	Entity* pHREntity = m_pDispatcher->m_pMinecraft->m_hitResult.m_pEnt.get();
 
 	float time = getFlashTime((TripodCamera*)entity, b);
 	if (time >= 0.0f)

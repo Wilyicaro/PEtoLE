@@ -26,7 +26,7 @@ bool CreativeMode::destroyBlock(Player* player, const TilePos& pos, Facing::Name
 
 bool CreativeMode::startDestroyBlock(Player* player, const TilePos& pos, Facing::Name face)
 {
-	ItemInstance* item = player->getSelectedItem();
+	std::shared_ptr<ItemInstance> item = player->getSelectedItem();
 	if (item && item->getItem() == Item::bow)
 		return true;
 
@@ -61,19 +61,19 @@ void CreativeMode::render(float f)
 {
 	if (m_destroyProgress <= 0.0f)
 	{
-		m_pMinecraft->m_gui.field_8 = 0.0f;
-		m_pMinecraft->m_pLevelRenderer->field_10 = 0.0f;
+		m_pMinecraft->m_gui.m_progress = 0.0f;
+		m_pMinecraft->m_pLevelRenderer->m_destroyProgress = 0.0f;
 	}
 	else
 	{
 		float x = m_lastDestroyProgress + (m_destroyProgress - m_lastDestroyProgress) * f;
-		m_pMinecraft->m_gui.field_8 = x;
-		m_pMinecraft->m_pLevelRenderer->field_10 = x;
+		m_pMinecraft->m_gui.m_progress = x;
+		m_pMinecraft->m_pLevelRenderer->m_destroyProgress = x;
 	}
 }
 
 void CreativeMode::initPlayer(Player* p)
 {
-	p->m_rot.x = -180.0f;
+	p->m_rot.y = -180.0f;
 	p->m_pInventory->prepareCreativeInventory();
 }

@@ -7,12 +7,13 @@
  ********************************************************************/
 
 #include "ImprovedNoise.hpp"
-#include "common/Mth.hpp"
+
+real ImprovedNoise::field_4294_f = 0.5 * (Mth::sqrt(3.0) - 1.0);
+real ImprovedNoise::field_4293_g = (3.0 - Mth::sqrt(3.0)) / 6.0;
 
 ImprovedNoise::ImprovedNoise()
 {
-	Random random(1);
-	init(&random);
+	init(new Random);
 }
 
 ImprovedNoise::ImprovedNoise(Random* pRandom)
@@ -22,12 +23,12 @@ ImprovedNoise::ImprovedNoise(Random* pRandom)
 
 void ImprovedNoise::init(Random* pRandom)
 {
-	m_offsetX = pRandom->nextFloat() * 256.0f;
-	m_offsetY = pRandom->nextFloat() * 256.0f;
-	m_offsetZ = pRandom->nextFloat() * 256.0f;
+	m_offsetX = pRandom->nextDouble() * 256.0;
+	m_offsetY = pRandom->nextDouble() * 256.0;
+	m_offsetZ = pRandom->nextDouble() * 256.0;
 	
-	for (int i = 0; i < 256; i++)
-		m_permutation[i] = i;
+    for (int i = 0; i < 256; ++i)
+        m_permutation[i] = i;
 
 	for (int i = 0; i < 256; i++)
 	{
@@ -39,175 +40,238 @@ void ImprovedNoise::init(Random* pRandom)
 	}
 }
 
-float ImprovedNoise::getValue(float x, float y)
+real ImprovedNoise::getValue(real x, real y)
 {
-	return getValue(x, y, 0.0f);
+	return getValue(x, y, 0.0);
 }
 
-float ImprovedNoise::getValue(float x, float y, float z)
+real ImprovedNoise::getValue(real x, real y, real z)
 {
 	return noise(x, y, z);
 }
 
-float ImprovedNoise::lerp(float prog, float a, float b) const
+real ImprovedNoise::lerp(real prog, real a, real b) const
 {
 	return a + (b - a) * prog;
 }
 
-float ImprovedNoise::grad(int hash, float x, float y, float z) const
+real ImprovedNoise::grad(int hash, real x, real y, real z) const
 {
 	int h = hash & 0xF;
-	float u = h < 8 ? x : y;
-	float v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+	real u = h < 8 ? x : y;
+	real v = h < 4 ? y : h == 12 || h == 14 ? x : z;
 	return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }
 
-float ImprovedNoise::grad2(int hash, float x, float z) const
+real ImprovedNoise::grad2(int hash, real x, real z) const
 {
-	return grad(hash, x, 0.0f, z);
+    int h = hash & 15;
+    real u = (1 - ((h & 8) >> 3)) * x;
+    real v = h < 4 ? 0.0 : h == 12 || h == 14 ? x : z;
+    return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
 }
 
-float ImprovedNoise::fade(float x) const
+real ImprovedNoise::fade(real x) const
 {
-	return x * x * x * (x * (x * 6.0f - 15.0f) + 10.0f);
+	return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
 }
 
-float ImprovedNoise::noise(float x, float y, float z)
+real ImprovedNoise::noise(real x, real y, real z)
 {
-	// couldn't figure out how to get it to work well enough so I just decided to port the original implementation from:
-	// https://cs.nyu.edu/~perlin/noise/
-	x += m_offsetX;
-	y += m_offsetY;
-	z += m_offsetZ;
+    x += m_offsetX;
+    y += m_offsetY;
+    z += m_offsetZ;
 
-	int X = Mth::floor(x) & 255,
-		Y = Mth::floor(y) & 255,
-		Z = Mth::floor(z) & 255;
+    int X = Mth::floor(x) & 255,
+        Y = Mth::floor(y) & 255,
+        Z = Mth::floor(z) & 255;
 
-	x -= Mth::floor(x);
-	y -= Mth::floor(y);
-	z -= Mth::floor(z);
+    x -= Mth::floor(x);
+    y -= Mth::floor(y);
+    z -= Mth::floor(z);
 
-	float u = fade(x),
-		  v = fade(y),
-		  w = fade(z);
+    float u = fade(x),
+        v = fade(y),
+        w = fade(z);
 
-	int* p = m_permutation;
-	int A = p[X    ] + Y, AA = p[A] + Z, AB = p[A + 1] + Z,
-		B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
+    int* p = m_permutation;
+    int A = p[X] + Y, AA = p[A] + Z, AB = p[A + 1] + Z,
+        B = p[X + 1] + Y, BA = p[B] + Z, BB = p[B + 1] + Z;
 
-	return lerp(w, lerp(v, lerp(u, grad(p[AA  ], x  , y  , z   ),
-		                           grad(p[BA  ], x-1, y  , z   )),
-		                   lerp(u, grad(p[AB  ], x  , y-1, z   ),
-							       grad(p[BB  ], x-1, y-1, z   ))),
-		           lerp(v, lerp(u, grad(p[AA+1], x  , y  , z-1 ),
-					               grad(p[BA+1], x-1, y  , z-1 )),
-					       lerp(u, grad(p[AB+1], x  , y-1, z-1 ),
-							       grad(p[BB+1], x-1, y-1, z-1 ))));
+    return lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z),
+        grad(p[BA], x - 1, y, z)),
+        lerp(u, grad(p[AB], x, y - 1, z),
+            grad(p[BB], x - 1, y - 1, z))),
+        lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1),
+            grad(p[BA + 1], x - 1, y, z - 1)),
+            lerp(u, grad(p[AB + 1], x, y - 1, z - 1),
+                grad(p[BB + 1], x - 1, y - 1, z - 1))));
 }
 
-void ImprovedNoise::add(float* a2, float a3, float a4, float a5, int a6, int a7, int a8, float a9, float a10, float a11, float a12)
+void ImprovedNoise::add(real* output, real x, real y, real z, int xSize, int ySize, int zSize, real xScale, real yScale, real zScale, real amplitude) 
 {
-	// @TODO: clean this up
-	if (a7 == 1)
-	{
-		for (int i = 0; i < a6; i++)
-		{
-			float x2 = m_offsetX + a9 * (i + a3);
-			int   x3 = Mth::floor(x2);
-			float x4 = float(x3);
-			float x5 = x2 - x4;
+    int i = 0;
 
-			int* x6 = &m_permutation[uint8_t(x3)];
-			int* x8 = &m_permutation[uint8_t(x3 + 1)];
-			float* x7 = &a2[a8 * i];
+    if (ySize == 1) {
+        int i = 0;
+        real invAmp = 1.0 / amplitude;
 
-			for (int j = 0; j < a8; j++)
-			{
-				float x9 = m_offsetZ + a11 * (j + a5);
-				int   x10 = Mth::floor(x9);
-				float x11 = float(x10);
-				float x12 = x9 - x11;
+        for (int xIdx = 0; xIdx < xSize; ++xIdx) {
+            real dx = (x + xIdx) * xScale + m_offsetX;
+            int xInt = Mth::floor(dx);
+            int xLow = xInt & 255;
+            dx -= xInt;
+            real fadeX = fade(dx);
 
-				int* x13 = &m_permutation[uint8_t(x10) + m_permutation[*x6]];
-				int* x15 = &m_permutation[uint8_t(x10) + m_permutation[*x8]];
+            for (int zIdx = 0; zIdx < zSize; ++zIdx) {
+                real dz = (z + zIdx) * zScale + m_offsetZ;
+                int zInt = Mth::floor(dz);
+                int zLow = zInt & 255;
+                dz -= zInt;
+                real fadeZ = fade(dz);
 
-				float x16 = grad2(*x13, x5, x12);
-				float x17 = grad(*x15, x5 - 1, 0, x12);
-				float x18 = lerp(fade(x5), x16, x17);
-				float x19 = grad(x13[1], x5, 0, x12 - 1);
-				float x20 = grad(x15[1], x5 - 1, 0, x12 - 1);
-				float x21 = lerp(fade(x5), x19, x20);
+                int a = m_permutation[xLow] + 0;
+                int aa = m_permutation[a] + zLow;
+                int b = m_permutation[xLow + 1] + 0;
+                int ba = m_permutation[b] + zLow;
 
-				*x7 += (1.0f / a12) * lerp(fade(x12), x18, x21);
-				x7++;
-			}
-		}
+                real grad1 = grad2(m_permutation[aa], dx, dz);
+                real grad2 = grad(m_permutation[ba], dx - 1.0, 0.0, dz);
 
-		return;
-	}
+                real lerp1 = lerp(fadeX, grad1, grad2);
 
-	float x30 = 0, x31 = 0, x32 = 0, x33 = 0;
-	int x34 = -1, x35 = 0;
+                real grad3 = grad(m_permutation[aa + 1], dx, 0.0, dz - 1.0);
+                real grad4 = grad(m_permutation[ba + 1], dx - 1.0, 0.0, dz - 1.0);
 
-	for (int i = 0; i < a6; i++)
-	{
-		float x36 = m_offsetX + a9 * (i + a3);
-		int   x37 = Mth::floor(x36);
-		float x38 = float(x37);
-		float x39 = x36 - x38;
-		float x40 = fade(x39);
-		if (a8 <= 0) continue;
+                real lerp2 = lerp(fadeX, grad3, grad4);
 
-		int* x42 = &m_permutation[uint8_t(x37)];
-		int* x43 = &m_permutation[uint8_t(x37) + 1];
-		for (int j = 0; j < a8; j++)
-		{
-			float x44 = m_offsetZ + a11 * (j + a5);
-			int   x45 = Mth::floor(x44);
-			float x46 = float(x45);
-			float x47 = x44 - x46;
-			uint8_t x48 = uint8_t(x45);
-			if (a7 <= 0) continue;
+                real finalVal = lerp(fadeZ, lerp1, lerp2);
 
-			float* x49 = &a2[x35];
-			for (int k = 0; k < a7; k++)
-			{
-				float x50 = m_offsetY + a10 * (k + a4);
-				int   x51 = Mth::floor(x50);
-				float x52 = float(x51);
-				float x53 = x50 - x52;
-				uint8_t bx51 = uint8_t(x51);
+                output[i++] += finalVal * invAmp;
+            }
+        }
+    }
+    else {
+        int i = 0;
+        int vc = -1;
+        real invAmp = 1.0 / amplitude;
+        real lerpX1 = 0, lerpX2 = 0, lerpX3 = 0, lerpX4 = 0;
 
-				if (k == 0 || bx51 != x34)
-				{
-					int* x54 = &m_permutation[bx51 + *x42];
-					int  x55 = x54[0] + x48;
-					int  x56 = x54[1] + x48;
-					int* x57 = &m_permutation[bx51 + *x43];
-					int  x58 = x57[1] + x48;
-					int* x59 = &m_permutation[*x57 + x48];
-					float x60 = grad(m_permutation[x55], x39, x53, x47);
-					float x61 = grad(*x59, x39 - 1, x53, x47);
-					x33 = lerp(x40, x60, x61);
-					float x62 = grad(m_permutation[x56], x39, x53 - 1, x47);
-					float x63 = grad(m_permutation[x58], x39 - 1, x53 - 1, x47);
-					x32 = lerp(x40, x62, x63);
-					float x64 = grad(m_permutation[x55 + 1], x39, x53, x47 - 1);
-					float x65 = grad(x59[1], x39 - 1, x53, x47 - 1);
-					x31 = lerp(x40, x64, x65);
-					float x66 = grad(m_permutation[x56 + 1], x39, x53 - 1, x47 - 1);
-					float x67 = grad(m_permutation[x58 + 1], x39 - 1, x53 - 1, x47 - 1);
-					x34 = bx51;
-					x30 = lerp(x40, x66, x67);
-				}
+        for (int xIdx = 0; xIdx < xSize; ++xIdx) {
+            real xPos = (x + xIdx) * xScale + m_offsetX;
+            int xInt = Mth::floor(xPos);
+            xPos -= xInt;
+            int xLow = xInt & 255;
+            real fadeX = fade(xPos);
 
-				float x68 = lerp(fade(x53), x33, x32);
-				float x69 = lerp(fade(x53), x31, x30);
-				*x49 += (1.0f / a12) * lerp(fade(x47), x68, x69);
-				x49++;
-			}
-			x35 += a7;
-		}
-	}
+            for (int zIdx = 0; zIdx < zSize; ++zIdx) {
+                real zPos = (z + zIdx) * zScale + m_offsetZ;
+                int zInt = Mth::floor(zPos);
+                zPos -= zInt;
+                int zLow = zInt & 255;
+                real fadeZ = fade(zPos);
+
+                for (int yIdx = 0; yIdx < ySize; ++yIdx) {
+                    real yPos = (y + yIdx) * yScale + m_offsetY;
+                    int yInt = Mth::floor(yPos);
+                    yPos -= yInt;
+                    int yLow = yInt & 255;
+                    real fadeY = fade(yPos);
+
+                    if (yIdx == 0 || yLow != vc) {
+                        vc = yLow;
+                        int A = m_permutation[xLow] + yLow;
+                        int AA = m_permutation[A] + zLow;
+                        int AB = m_permutation[A + 1] + zLow;
+                        int B = m_permutation[xLow + 1] + yLow;
+                        int BA = m_permutation[B] + zLow;
+                        int BB = m_permutation[B + 1] + zLow;
+
+                        lerpX1 = lerp(fadeX, grad(m_permutation[AA], xPos, yPos, zPos), grad(m_permutation[BA], xPos - 1, yPos, zPos));
+                        lerpX2 = lerp(fadeX, grad(m_permutation[AB], xPos, yPos - 1, zPos), grad(m_permutation[BB], xPos - 1, yPos - 1, zPos));
+                        lerpX3 = lerp(fadeX, grad(m_permutation[AA + 1], xPos, yPos, zPos - 1), grad(m_permutation[BA + 1], xPos - 1, yPos, zPos - 1));
+                        lerpX4 = lerp(fadeX, grad(m_permutation[AB + 1], xPos, yPos - 1, zPos - 1), grad(m_permutation[BB + 1], xPos - 1, yPos - 1, zPos - 1));
+                    }
+
+                    real finalVal = lerp(fadeZ, lerp(fadeY, lerpX1, lerpX2), lerp(fadeY, lerpX3, lerpX4));
+
+                    output[i++] += finalVal * invAmp;
+                }
+            }
+        }
+    }
+}
+
+void ImprovedNoise::addBiome(real* var1, real var2, real var4, int var6, int var7, real var8, real var10, real var12)
+{
+    int var14 = 0;
+
+    for (int var15 = 0; var15 < var6; ++var15) {
+        real var16 = (var2 + (real)var15) * var8 + m_offsetX;
+
+        for (int var18 = 0; var18 < var7; ++var18) {
+            real var19 = (var4 + (real)var18) * var10 + m_offsetY;
+            real var27 = (var16 + var19) * field_4294_f;
+            int var29 = Mth::floor(var16 + var27);
+            int var30 = Mth::floor(var19 + var27);
+            real var31 = (real)(var29 + var30) * field_4293_g;
+            real var33 = (real)var29 - var31;
+            real var35 = (real)var30 - var31;
+            real var37 = var16 - var33;
+            real var39 = var19 - var35;
+            uint8_t var41;
+            uint8_t var42;
+            if (var37 > var39) {
+                var41 = 1;
+                var42 = 0;
+            }
+            else {
+                var41 = 0;
+                var42 = 1;
+            }
+
+            real var43 = var37 - real(var41) + field_4293_g;
+            real var45 = var39 - real(var42) + field_4293_g;
+            real var47 = var37 - 1.0 + 2.0 * field_4293_g;
+            real var49 = var39 - 1.0 + 2.0 * field_4293_g;
+            int var51 = var29 & 255;
+            int var52 = var30 & 255;
+            int var53 = m_permutation[var51 + m_permutation[var52]] % 12;
+            int var54 = m_permutation[var51 + var41 + m_permutation[var52 + var42]] % 12;
+            int var55 = m_permutation[var51 + 1 + m_permutation[var52 + 1]] % 12;
+            real var56 = 0.5 - var37 * var37 - var39 * var39;
+            real var21;
+            if (var56 < 0.0) {
+                var21 = 0.0;
+            }
+            else {
+                var56 *= var56;
+                var21 = var56 * var56 * func_4156_a(field_4296_d[var53], var37, var39);
+            }
+
+            real var58 = 0.5 - var43 * var43 - var45 * var45;
+            real var23;
+            if (var58 < 0.0) {
+                var23 = 0.0;
+            }
+            else {
+                var58 *= var58;
+                var23 = var58 * var58 * func_4156_a(field_4296_d[var54], var43, var45);
+            }
+
+            real var60 = 0.5 - var47 * var47 - var49 * var49;
+            real var25;
+            if (var60 < 0.0) {
+                var25 = 0.0;
+            }
+            else {
+                var60 *= var60;
+                var25 = var60 * var60 * func_4156_a(field_4296_d[var55], var47, var49);
+            }
+
+            int var10001 = var14++;
+            var1[var10001] += 70.0 * (var21 + var23 + var25) * var12;
+        }
+    }
+
 }

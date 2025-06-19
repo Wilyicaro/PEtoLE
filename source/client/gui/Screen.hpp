@@ -46,7 +46,7 @@ public:
 	virtual void updateEvents();
 	virtual void mouseEvent();
 	virtual void keyboardEvent();
-	virtual bool handleBackEvent(bool b) { return false; }
+	virtual void onClose();
 	virtual void tick();
 	virtual void removed() {};
 	virtual void renderBackground(int);
@@ -58,6 +58,7 @@ public:
 	virtual void confirmResult(bool b, int i) {};
 	virtual void onTextBoxUpdated(int id) {};
 	virtual void buttonClicked(Button* pButton) {};
+	virtual void mouseDragged(double x, double y, int button, double deltaX, double deltaY);
 	virtual void mouseClicked(int, int, int);
 	virtual void mouseReleased(int, int, int);
 	virtual void keyPressed(int);

@@ -83,7 +83,7 @@ void ClientSideNetworkHandler::onDisconnect(const RakNet::RakNetGUID& rakGuid)
 	puts_ignorable("onDisconnect");
 
 	if (m_pLevel)
-		m_pLevel->m_bIsMultiplayer = false;
+		m_pLevel->m_bIsOnline = false;
 
 	m_pMinecraft->m_gui.addMessage("Disconnected from server");
 }
@@ -130,10 +130,10 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, StartGa
 		pStartGamePkt->m_seed,
 		pStartGamePkt->m_levelVersion);
 
-	m_pLevel->m_bIsMultiplayer = true;
+	m_pLevel->m_bIsOnline = true;
 
 	GameType gameType = pStartGamePkt->m_gameType != GAME_TYPES_MAX ? pStartGamePkt->m_gameType : m_pLevel->getDefaultGameType();
-	LocalPlayer *pLocalPlayer = new LocalPlayer(m_pMinecraft, m_pLevel, m_pMinecraft->m_pUser, gameType, m_pLevel->m_pDimension->field_50);
+	auto pLocalPlayer = std::make_shared<LocalPlayer>(m_pMinecraft, m_pLevel, m_pMinecraft->m_pUser, gameType, m_pLevel->m_pDimension->m_ID);
 	pLocalPlayer->m_guid = ((RakNet::RakPeer*)m_pServerPeer)->GetMyGUID();
 	pLocalPlayer->m_EntityID = pStartGamePkt->m_entityId;
 	
@@ -159,7 +159,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, AddPlay
 
 	if (!m_pLevel) return;
 
-	Player* pPlayer = new Player(m_pLevel, m_pLevel->getDefaultGameType());
+	auto pPlayer = std::make_shared<Player>(m_pLevel, m_pLevel->getDefaultGameType());
 	pPlayer->m_EntityID = pAddPlayerPkt->m_id;
 	m_pLevel->addEntity(pPlayer);
 
@@ -178,11 +178,20 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, AddPlay
 	m_pMinecraft->m_gui.addMessage(pPlayer->m_name + " joined the game");
 }
 
+void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, AddMobPacket* pAddMobPkt)
+{
+	puts_ignorable("AddMobPacket");
+
+	if (!m_pLevel) return;
+
+	
+}
+
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveEntityPacket* pRemoveEntityPkt)
 {
 	if (!m_pLevel) return;
 
-	Entity* pEnt = m_pLevel->getEntity(pRemoveEntityPkt->m_id);
+	auto pEnt = m_pLevel->getEntity(pRemoveEntityPkt->m_id);
 
 	if (pEnt)
 		m_pLevel->removeEntity(pEnt);
@@ -192,7 +201,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, MovePla
 {
 	if (!m_pLevel) return;
 
-	Entity* pEntity = m_pLevel->getEntity(packet->m_id);
+	auto pEntity = m_pLevel->getEntity(packet->m_id);
 	if (!pEntity)
 	{
 		LOG_E("No player with id %d", packet->m_id);
@@ -206,7 +215,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlaceBl
 {
 	puts_ignorable("PlaceBlockPacket");
 
-	Player* pPlayer = (Player*)m_pLevel->getEntity(pPlaceBlockPkt->m_playerID);
+	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(pPlaceBlockPkt->m_playerID));
 	if (!pPlayer)
 	{
 		LOG_E("No player with id %d", pPlaceBlockPkt->m_playerID);
@@ -223,7 +232,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlaceBl
 	TileID tile = pPlaceBlockPkt->m_tile;
 	Facing::Name face = (Facing::Name)pPlaceBlockPkt->m_face;
 
-	if (!m_pLevel->mayPlace(tile, pos, true))
+	if (!m_pLevel->mayPlace(tile, pos, true, face))
 		return;
 
 	Tile* pTile = Tile::tiles[tile];
@@ -231,17 +240,17 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlaceBl
 		return;
 
 	Tile::tiles[tile]->setPlacedOnFace(m_pLevel, pos, face);
-	Tile::tiles[tile]->setPlacedBy(m_pLevel, pos, pPlayer);
+	Tile::tiles[tile]->setPlacedBy(m_pLevel, pos, pPlayer.get(), face);
 
 	const Tile::SoundType* pSound = pTile->m_pSound;
-	m_pLevel->playSound(pos + 0.5f, "step." + pSound->m_name, 0.5f * (1.0f + pSound->volume), 0.8f * pSound->pitch);
+	m_pLevel->playSound(pos + 0.5f, pSound->m_name, 0.5f * (1.0f + pSound->volume), 0.8f * pSound->pitch);
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveBlockPacket* pRemoveBlockPkt)
 {
 	puts_ignorable("RemoveBlockPacket");
 
-	Player* pPlayer = (Player*)m_pLevel->getEntity(pRemoveBlockPkt->m_playerID);
+	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(pRemoveBlockPkt->m_playerID));
 	if (!pPlayer)
 	{
 		LOG_E("No player with id %d", pRemoveBlockPkt->m_playerID);
@@ -263,7 +272,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveB
 	if (pTile && setTileResult)
 	{
 		const Tile::SoundType* pSound = pTile->m_pSound;
-		m_pLevel->playSound(pos + 0.5f, "step." + pSound->m_name, 0.5f * (1.0f + pSound->volume), 0.8f * pSound->pitch);
+		m_pLevel->playSound(pos + 0.5f, pSound->m_destroy, 0.5f * (1.0f + pSound->volume), 0.8f * pSound->pitch);
 
 		pTile->destroy(m_pLevel, pos, data);
 	}
@@ -371,7 +380,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlayerE
 	if (!m_pLevel)
 		return;
 
-	Player* pPlayer = (Player*)m_pLevel->getEntity(pPlayerEquipmentPkt->m_playerID);
+	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(pPlayerEquipmentPkt->m_playerID));
 	if (!pPlayer)
 		return;
 
@@ -444,9 +453,9 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataP
 	}
 
 	ChunkPos cp(0, 0);
-	for (cp.x = 0; cp.x < chunksX; cp.x++)
+	for (cp.x = C_MIN_CHUNKS_X; cp.x < chunksX; cp.x++)
 	{
-		for (cp.z = 0; cp.z < chunksZ; cp.z++)
+		for (cp.z = C_MIN_CHUNKS_Z; cp.z < chunksZ; cp.z++)
 		{
 			bs->Read(magicNum);
 

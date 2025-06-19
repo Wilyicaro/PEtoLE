@@ -11,6 +11,7 @@
 #include "Textures.hpp"
 #include "common/Random.hpp"
 class Textures; // in case we are being included from Textures. We don't need a complete type
+class Minecraft;
 
 // Essentially, the way these work is by patching themselves into terrain.png with a
 // call to glTexSubImage2D
@@ -27,7 +28,9 @@ public:
 protected:
 	int m_textureIndex;
 	int m_textureSize;
+	int m_textureId;
 	uint8_t m_pixels[1024];
+	bool m_anaglyph3d = false;
 
 	friend class Textures;
 };
@@ -115,3 +118,35 @@ public:
 	float* m_data2;
 	Random m_random;
 };
+
+class CompassTexture : public DynamicTexture
+{
+public:
+	CompassTexture(Minecraft* minecraft);
+	~CompassTexture();
+
+	void tick() override;
+
+private:
+	Minecraft* m_pMinecraft;
+	uint32_t* m_data;
+	double m_rot;
+	double m_rota;
+};
+
+class ClockTexture : public DynamicTexture
+{
+public:
+	ClockTexture(Minecraft* minecraft);
+	~ClockTexture();
+
+	void tick() override;
+
+private:
+	Minecraft* m_pMinecraft;
+	uint32_t* m_data;
+	uint32_t* m_dialData;
+	double m_rot;
+	double m_rota;
+};
+

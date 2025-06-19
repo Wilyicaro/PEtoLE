@@ -1,0 +1,184 @@
+#include "Recipes.hpp"
+
+Recipes::Recipes()
+{
+    //StructureRecipes
+    add(ShapedRecipeBuilder({ "###", "# #", "###" }, std::make_shared<ItemInstance>(Tile::chest)).add('#', Tile::wood));
+    add(ShapedRecipeBuilder({ "###", "# #", "###" }, std::make_shared<ItemInstance>(Tile::furnace)).add('#', Tile::cobblestone));
+    add(ShapedRecipeBuilder({ "##", "##" }, std::make_shared<ItemInstance>(Tile::craftingTable)).add('#', Tile::wood));
+    add(ShapedRecipeBuilder({ "##", "##" }, std::make_shared<ItemInstance>(Tile::sandStone)).add('#', Tile::sand));
+
+    add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Item::paper, 3))
+        .add('#', Item::reeds));
+
+    add(ShapedRecipeBuilder({ "#", "#", "#" }, std::make_shared<ItemInstance>(Item::book, 1))
+        .add('#', Item::paper));
+
+    add(ShapedRecipeBuilder({ "###", "###" }, std::make_shared<ItemInstance>(Tile::fence, 2))
+        .add('#', Item::stick));
+
+    //add(ShapedRecipeBuilder({"###", "#X#", "###"}, std::make_shared<ItemInstance>(Tile::recordPlayer, 1))
+    //    .add('#', Tile::wood)
+    //    .add('X', Item::diamond));
+
+    //add(ShapedRecipeBuilder({"###", "#X#", "###"}, std::make_shared<ItemInstance>(Tile::musicBlock, 1))
+    //    .add('#', Tile::wood)
+    //    .add('X', Item::redStone));
+
+    add(ShapedRecipeBuilder({ "###", "XXX", "###" }, std::make_shared<ItemInstance>(Tile::bookshelf, 1))
+        .add('#', Tile::wood)
+        .add('X', Item::book));
+
+    add(ShapedRecipeBuilder({ "##", "##" }, std::make_shared<ItemInstance>(Tile::snow, 1))
+        .add('#', Item::snowBall));
+
+    add(ShapedRecipeBuilder({ "##", "##" }, std::make_shared<ItemInstance>(Tile::clay, 1))
+        .add('#', Item::clay));
+
+    add(ShapedRecipeBuilder({ "##", "##" }, std::make_shared<ItemInstance>(Tile::brick, 1))
+        .add('#', Item::brick));
+
+    add(ShapedRecipeBuilder({ "###", "###", "###" }, std::make_shared<ItemInstance>(Tile::glowstone, 1))
+        .add('#', Item::yellowDust));
+
+    add(ShapedRecipeBuilder({ "###", "###", "###" }, std::make_shared<ItemInstance>(Tile::cloth, 1))
+        .add('#', Item::string));
+
+    add(ShapedRecipeBuilder({ "X#X", "#X#", "X#X" }, std::make_shared<ItemInstance>(Tile::tnt, 1))
+        .add('X', Item::sulphur)
+        .add('#', Tile::sand));
+
+    add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Tile::stoneSlabHalf, 3))
+        .add('#', Tile::cobblestone));
+
+    add(ShapedRecipeBuilder({ "# #", "###", "# #" }, std::make_shared<ItemInstance>(Tile::ladder, 2))
+        .add('#', Item::stick));
+
+    add(ShapedRecipeBuilder({ "##", "##", "##" }, std::make_shared<ItemInstance>(Item::woodDoor, 1))
+        .add('#', Tile::wood));
+
+    add(ShapedRecipeBuilder({ "##", "##", "##" }, std::make_shared<ItemInstance>(Item::ironDoor, 1))
+        .add('#', Item::ironIngot));
+
+    //add(ShapedRecipeBuilder({ "###", "###", " X " }, std::make_shared<ItemInstance>(Item::sign, 1))
+    //    .add('#', Tile::wood)
+    //    .add('X', Item::stick));
+
+    add(ShapedRecipeBuilder({ "AAA", "BEB", "CCC" }, std::make_shared<ItemInstance>(Item::cake, 1))
+        .add('A', Item::milk)
+        .add('B', Item::sugar)
+        .add('C', Item::wheat)
+        .add('E', Item::egg));
+
+    add(ShapedRecipeBuilder({ "#" }, std::make_shared<ItemInstance>(Item::sugar, 1))
+        .add('#', Item::reeds));
+
+    add(ShapedRecipeBuilder({ "#" }, std::make_shared<ItemInstance>(Tile::wood, 4))
+        .add('#', Tile::treeTrunk));
+
+    add(ShapedRecipeBuilder({ "#", "#" }, std::make_shared<ItemInstance>(Item::stick, 4))
+        .add('#', Tile::wood));
+
+    add(ShapedRecipeBuilder({ "X", "#" }, std::make_shared<ItemInstance>(Tile::torch, 4))
+        .add('X', Item::coal)
+        .add('#', Item::stick));
+
+    add(ShapedRecipeBuilder({ "X", "#" }, std::make_shared<ItemInstance>(Tile::torch, 4))
+        .add('X', std::make_shared<ItemInstance>(Item::coal, 1, 1))
+        .add('#', Item::stick));
+
+    add(ShapedRecipeBuilder({ "# #", " # " }, std::make_shared<ItemInstance>(Item::bowl, 4))
+        .add('#', Tile::wood));
+
+    add(ShapedRecipeBuilder({ "X X", "X#X", "X X" }, std::make_shared<ItemInstance>(Tile::rail, 16))
+        .add('X', Item::ironIngot)
+        .add('#', Item::stick));
+
+    //add(ShapedRecipeBuilder({ "# #", "###" }, std::make_shared<ItemInstance>(Item::minecart, 1))
+    //    .add('#', Item::ironIngot));
+
+    add(ShapedRecipeBuilder({ "A", "B" }, std::make_shared<ItemInstance>(Tile::pumpkinLantern, 1))
+        .add('A', Tile::pumpkin)
+        .add('B', Tile::torch));
+
+    //add(ShapedRecipeBuilder({"A", "B"}, std::make_shared<ItemInstance>(Item::minecart_chest, 1))
+    //    .add('A', Tile::chest)
+    //    .add('B', Item::minecart));
+
+    //add(ShapedRecipeBuilder({"A", "B"}, std::make_shared<ItemInstance>(Item::minecart_furnace, 1))
+    //    .add('A', Tile::furnace)
+    //    .add('B', Item::minecart));
+
+    //add(ShapedRecipeBuilder({ "# #", "###" }, std::make_shared<ItemInstance>(Item::boat, 1))
+    //    .add('#', Tile::wood));
+
+    add(ShapedRecipeBuilder({ "# #", " # " }, std::make_shared<ItemInstance>(Item::emptyBucket, 1))
+        .add('#', Item::ironIngot));
+
+    add(ShapedRecipeBuilder({ "A ", " B" }, std::make_shared<ItemInstance>(Item::flintAndSteel, 1))
+        .add('A', Item::ironIngot)
+        .add('B', Item::flint));
+
+    add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Item::bread, 1))
+        .add('#', Item::wheat));
+
+    add(ShapedRecipeBuilder({ "#  ", "## ", "###" }, std::make_shared<ItemInstance>(Tile::stairsWood, 4))
+        .add('#', Tile::wood));
+
+    //add(ShapedRecipeBuilder({"  #", " #X", "# X"}, std::make_shared<ItemInstance>(Item::fishingRod, 1))
+    //    .add('#', Item::stick)
+    //    .add('X', Item::string));
+
+    add(ShapedRecipeBuilder({ "#  ", "## ", "###" }, std::make_shared<ItemInstance>(Tile::stairsStone, 4))
+        .add('#', Tile::cobblestone));
+
+    //add(ShapedRecipeBuilder({ "###", "#X#", "###" }, std::make_shared<ItemInstance>(Item::painting, 1))
+    //    .add('#', Item::stick)
+    //    .add('X', Tile::cloth));
+
+    add(ShapedRecipeBuilder({ "###", "#X#", "###" }, std::make_shared<ItemInstance>(Item::goldApple, 1))
+        .add('#', Tile::goldBlock)
+        .add('X', Item::apple));
+
+    add(ShapedRecipeBuilder({ "X", "#" }, std::make_shared<ItemInstance>(Tile::lever, 1))
+        .add('X', Item::stick)
+        .add('#', Tile::cobblestone));
+
+    add(ShapedRecipeBuilder({ "X", "#" }, std::make_shared<ItemInstance>(Tile::redstoneTorchLit, 1))
+        .add('X', Item::redStone)
+        .add('#', Item::stick));
+
+    //add(ShapedRecipeBuilder({" # ", "#X#", " # "}, std::make_shared<ItemInstance>(Item::clock, 1))
+    //    .add('#', Item::goldIngot)
+    //    .add('X', Item::redStone));
+
+    //add(ShapedRecipeBuilder({" # ", "#X#", " # "}, std::make_shared<ItemInstance>(Item::compass, 1))
+    //    .add('#', Item::ironIngot)
+    //    .add('X', Item::redStone));
+
+    add(ShapedRecipeBuilder({ "#" }, std::make_shared<ItemInstance>(Tile::button, 1))
+        .add('#', Tile::stone));
+
+    //add(ShapedRecipeBuilder({"###"}, std::make_shared<ItemInstance>(Tile::pressurePlate_stone, 1))
+    //    .add('#', Tile::stone));
+
+    //add(ShapedRecipeBuilder({"###"}, std::make_shared<ItemInstance>(Tile::pressurePlate_wood, 1))
+    //    .add('#', Tile::wood));
+
+    //add(ShapedRecipeBuilder({"###", "#X#", "#R#"}, std::make_shared<ItemInstance>(Tile::dispenser, 1))
+    //    .add('#', Tile::stoneBrick)
+    //    .add('X', Item::bow)
+    //    .add('R', Item::redStone));
+
+    std::sort(m_recipes.begin(), m_recipes.end(), [](const std::unique_ptr<Recipe>& a, const std::unique_ptr<Recipe>& b) {
+        if (!b->isShaped() && b->isShaped()) {
+            return false;
+        }
+        if (a->isShaped() && !b->isShaped()) {
+            return true;
+        }
+        return a->size() > b->size();
+    });
+
+    LOG_I("%d recipes loaded", m_recipes.size());
+}

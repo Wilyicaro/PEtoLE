@@ -33,7 +33,7 @@ HumanoidModel::HumanoidModel(float a, float b):
 
 	m_head.addBox(-4, -8, -4, 8, 8, 8, a);
 	m_head.setPos(0, b, 0);
-	m_body.addBox(-4, 0, -2, 8, 12, 4);
+	m_body.addBox(-4, 0, -2, 8, 12, 4, a);
 	m_body.setPos(0, b, 0);
 	m_arm1.addBox(-3, -2, -2, 4, 12, 4, a);
 	m_arm1.setPos(-5, b + 2, 0);
@@ -73,11 +73,7 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 	//a6 = pitch, a5 = yaw-ish
 	m_head.m_rot.y = a5 * 0.017453f;
 	m_head.m_rot.x = a6 * 0.017453f;
-	if (m_head.m_rot.x < -1.0f)
-		m_head.m_rot.x = -1.0f;
-	if (m_head.m_rot.x > 1.0f)
-		m_head.m_rot.x = 1.0f;
-	float v12 = (a2 * 0.6662f) + 3.1416f;
+	float v12 = (a2 * 0.6662f) + M_PI;
 	m_arm1.m_rot.x = (Mth::cos(v12) * 2.0f * a3) * 0.5f;
 	m_arm2.m_rot.x = Mth::cos(a2 * 0.6662f) * 2.0f * a3 * 0.5f; // @HUH: multiplying by 2 and also by 1/2
 	m_arm1.m_rot.z = 0.0f;
@@ -89,38 +85,38 @@ void HumanoidModel::setupAnim(float a2, float a3, float a4, float a5, float a6, 
 	
 	if (m_bRiding)
 	{
-		float v15 = (3.1416f * -0.5f) * 0.4f;
+		float v15 = (M_PI * -0.5f) * 0.4f;
 		m_arm1.m_rot.x += v15;
 		m_arm2.m_rot.x += v15;
-		float v16 = (3.1416f * -0.5f) * 0.8f;
+		float v16 = (M_PI * -0.5f) * 0.8f;
 		m_leg1.m_rot.x = v16;
 		m_leg2.m_rot.x = v16;
-		m_leg1.m_rot.y = (3.1416f * 0.5f) * 0.2f;
-		m_leg2.m_rot.y = (3.1416f * -0.5f) * 0.2f;
+		m_leg1.m_rot.y = (M_PI * 0.5f) * 0.2f;
+		m_leg2.m_rot.y = (M_PI * -0.5f) * 0.2f;
 	}
 
 	if (m_bHoldingLeftHand)
-		m_arm2.m_rot.x = ((3.1416f * 0.5f) * -0.2f) + (m_arm2.m_rot.x * 0.5f);
+		m_arm2.m_rot.x = ((M_PI * 0.5f) * -0.2f) + (m_arm2.m_rot.x * 0.5f);
 	if (m_bHoldingRightHand)
-		m_arm1.m_rot.x = ((3.1416f * 0.5f) * -0.2f) + (m_arm1.m_rot.x * 0.5f);
+		m_arm1.m_rot.x = ((M_PI * 0.5f) * -0.2f) + (m_arm1.m_rot.x * 0.5f);
 	
 	m_arm1.m_rot.y = 0.0f;
 	m_arm2.m_rot.y = 0.0f;
 
-	if (field_4 > -9990.0f)
+	if (m_attackTime > -9990.0f)
 	{
-		m_body.m_rot.y = Mth::sin(Mth::sqrt(field_4) * 3.1416f * 2.0f) * 0.2f;
+		m_body.m_rot.y = Mth::sin(Mth::sqrt(m_attackTime) * M_PI * 2.0f) * 0.2f;
 		m_arm1.m_pos.z = 5.0f * Mth::sin(m_body.m_rot.y);
 		m_arm1.m_pos.x = -5.0f * Mth::cos(m_body.m_rot.y);
 		m_arm2.m_pos.z = -5.0f * Mth::sin(m_body.m_rot.y);
 		m_arm2.m_pos.x = 5.0f * Mth::cos(m_body.m_rot.y);
 		m_arm1.m_rot.y = m_arm1.m_rot.y + m_body.m_rot.y;
 		m_arm2.m_rot.y = m_arm2.m_rot.y + m_body.m_rot.y;
-		float o = 1.0f - field_4;
+		float o = 1.0f - m_attackTime;
 		m_arm2.m_rot.x += m_body.m_rot.y;
-		m_arm1.m_rot.x -= -((m_head.m_rot.x - 0.7f) * Mth::sin(3.1416f * field_4)) * 0.75f + Mth::sin((1.0f - o * o * o * o) * 3.1416f) * 1.2f;
+		m_arm1.m_rot.x -= -((m_head.m_rot.x - 0.7f) * Mth::sin(M_PI * m_attackTime)) * 0.75f + Mth::sin((1.0f - o * o * o * o) * M_PI) * 1.2f;
 		m_arm1.m_rot.y += m_body.m_rot.y * 2.0f;
-		m_arm1.m_rot.z = Mth::sin(field_4 * 3.1416f) * -0.4f;
+		m_arm1.m_rot.z = Mth::sin(m_attackTime * M_PI) * -0.4f;
 	}
 
 	if (m_bSneaking)

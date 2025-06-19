@@ -197,7 +197,7 @@ int StairTile::getRenderLayer() const
 	return m_pParent->getRenderLayer();
 }
 
-int StairTile::use(Level* level, const TilePos& pos, Player* player)
+bool StairTile::use(Level* level, const TilePos& pos, Player* player)
 {
 	return m_pParent->use(level, pos, player);
 }
@@ -207,9 +207,9 @@ void StairTile::stepOn(Level* level, const TilePos& pos, Entity* entity)
 	m_pParent->stepOn(level, pos, entity);
 }
 
-void StairTile::setPlacedBy(Level* level, const TilePos& pos, Mob* mob)
+void StairTile::setPlacedBy(Level* level, const TilePos& pos, Mob* mob, Facing::Name face)
 {
-	int rot = Mth::floor(0.5f + (mob->m_rot.x * 4.0f / 360.0f)) & 3;
+	int rot = Mth::floor(0.5f + (mob->m_rot.y * 4.0f / 360.0f)) & 3;
 
 	int data = 0;
 

@@ -45,7 +45,7 @@ float Mth::invSqrt(float number)
 	int32_t i;
 	float x2, y;
 	const float threehalfs = 1.5F;
-
+	
 	x2 = number * 0.5F;
 	y  = number;
 	i  = * ( int32_t * ) &y;                   // evil floating point bit level hacking
@@ -55,6 +55,10 @@ float Mth::invSqrt(float number)
   // y  = y * ( threehalfs - ( x2 * y * y ) );  // 2nd iteration, this can be removed
 
 	return y;
+}
+
+double Mth::sqr(double d) {
+	return d * d;
 }
 
 float Mth::sin(float a2)
@@ -99,10 +103,25 @@ int Mth::floor(float f)
 {
 	int result = int(f);
 
-	if (result > f)
+	if (f < result)
 		result--;
 
 	return result;
+}
+
+int Mth::floor(double d)
+{
+	int result = int(d);
+
+	if (d < result)
+		result--;
+
+	return result;
+}
+
+int Mth::round(double d)
+{
+	return floor(d + 0.5);
 }
 
 float Mth::atan(float f)
@@ -120,12 +139,22 @@ float Mth::Min(float a, float b)
 	return a < b ? a : b;
 }
 
+double Mth::Min(double a, double b)
+{
+	return a < b ? a : b;
+}
+
 int Mth::Min(int a, int b)
 {
 	return a < b ? a : b;
 }
 
 float Mth::Max(float a, float b)
+{
+	return a > b ? a : b;
+}
+
+double Mth::Max(double a, double b)
 {
 	return a > b ? a : b;
 }
@@ -175,4 +204,52 @@ int Mth::random(int max)
 float Mth::random()
 {
 	return g_Random.nextFloat();
+}
+
+
+int Mth::HSBtoRGB(float hue, float saturation, float brightness) {
+	int r = 0, g = 0, b = 0;
+	if (saturation == 0) {
+		r = g = b = (int)(brightness * 255.0f + 0.5f);
+	}
+	else {
+		float h = (hue - floor(hue)) * 6.0f;
+		float f = h - floor(h);
+		float p = brightness * (1.0f - saturation);
+		float q = brightness * (1.0f - saturation * f);
+		float t = brightness * (1.0f - (saturation * (1.0f - f)));
+		switch ((int)h) {
+		case 0:
+			r = (int)(brightness * 255.0f + 0.5f);
+			g = (int)(t * 255.0f + 0.5f);
+			b = (int)(p * 255.0f + 0.5f);
+			break;
+		case 1:
+			r = (int)(q * 255.0f + 0.5f);
+			g = (int)(brightness * 255.0f + 0.5f);
+			b = (int)(p * 255.0f + 0.5f);
+			break;
+		case 2:
+			r = (int)(p * 255.0f + 0.5f);
+			g = (int)(brightness * 255.0f + 0.5f);
+			b = (int)(t * 255.0f + 0.5f);
+			break;
+		case 3:
+			r = (int)(p * 255.0f + 0.5f);
+			g = (int)(q * 255.0f + 0.5f);
+			b = (int)(brightness * 255.0f + 0.5f);
+			break;
+		case 4:
+			r = (int)(t * 255.0f + 0.5f);
+			g = (int)(p * 255.0f + 0.5f);
+			b = (int)(brightness * 255.0f + 0.5f);
+			break;
+		case 5:
+			r = (int)(brightness * 255.0f + 0.5f);
+			g = (int)(p * 255.0f + 0.5f);
+			b = (int)(q * 255.0f + 0.5f);
+			break;
+		}
+	}
+	return 0xff000000 | (r << 16) | (g << 8) | (b << 0);
 }

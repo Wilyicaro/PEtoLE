@@ -30,11 +30,11 @@ void LiquidTileStatic::neighborChanged(Level* level, const TilePos& pos, TileID 
 
 void LiquidTileStatic::setDynamic(Level* level, const TilePos& pos)
 {
-	level->field_30 = true;
+	level->m_noNeighborUpdate = true;
 	level->setTileAndDataNoUpdate(pos, m_ID - 1, level->getData(pos));
 	level->setTilesDirty(pos, pos);
 	level->addToTickNextTick(pos, m_ID - 1, getTickDelay());
-	level->field_30 = false;
+	level->m_noNeighborUpdate = false;
 }
 
 void LiquidTileStatic::tick(Level* level, const TilePos& pos, Random* random)
@@ -42,12 +42,13 @@ void LiquidTileStatic::tick(Level* level, const TilePos& pos, Random* random)
 	if (m_pMaterial != Material::lava)
 		return;
 
-	int y2 = pos.y + random->genrand_int32() % 3;
+	int y2 = random->nextInt(3);
 	TilePos tp(pos);
-	while (tp.y != y2)
+	for (int i = 0; i < y2; ++i)
 	{
-		tp.x += random->genrand_int32() % 3 - 1;
-		tp.z += random->genrand_int32() % 3 - 1;
+		tp.x += random->nextInt(3) - 1;
+		tp.y++;
+		tp.z += random->nextInt(3) - 1;
 
 		TileID tile = level->getTile(tp.above());
 		if (tile)
@@ -66,7 +67,5 @@ void LiquidTileStatic::tick(Level* level, const TilePos& pos, Random* random)
 			level->setTile(tp.above(), Tile::fire->m_ID);
 			return;
 		}
-
-		tp.y++;
 	}
 }

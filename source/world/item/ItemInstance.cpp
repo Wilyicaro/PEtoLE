@@ -25,6 +25,11 @@ ItemInstance::ItemInstance()
 	_init(0, 0, 0);
 }
 
+ItemInstance::ItemInstance(std::shared_ptr<CompoundTag> tag) {
+	m_count = 0;
+	load(tag);
+}
+
 ItemInstance::ItemInstance(Item* pItem)
 {
 	_init(pItem->m_itemID, 1, 0);
@@ -60,17 +65,18 @@ ItemInstance::ItemInstance(int itemID, int amount, int auxValue)
 	_init(itemID, amount, auxValue);
 }
 
+
 Item* ItemInstance::getItem() const
 {
 	return Item::items[m_itemID];
 }
 
-ItemInstance* ItemInstance::copy()
+std::shared_ptr<ItemInstance> ItemInstance::copy() const
 {
-	return new ItemInstance(m_itemID, m_count, m_auxValue);
+	return std::make_shared<ItemInstance>(m_itemID, m_count, m_auxValue);
 }
 
-bool ItemInstance::canDestroySpecial(Tile* tile)
+bool ItemInstance::canDestroySpecial(const Tile* tile)
 {
 	return getItem()->canDestroySpecial(tile);
 }
@@ -80,7 +86,7 @@ std::string ItemInstance::getDescriptionId()
 	return getItem()->getDescriptionId(this);
 }
 
-float ItemInstance::getDestroySpeed(Tile* tile)
+float ItemInstance::getDestroySpeed(const Tile * tile)
 {
 	return getItem()->getDestroySpeed(this, tile);
 }
@@ -132,18 +138,12 @@ bool ItemInstance::isDamageableItem()
 
 bool ItemInstance::isDamaged()
 {
-	return m_auxValue > 0;
+	return isDamageableItem() && m_auxValue > 0;
 }
 
 bool ItemInstance::isStackable()
 {
-	if (getMaxStackSize() <= 1)
-		return false;
-
-	if (isDamageableItem())
-		return !isDamaged();
-
-	return true;
+	return getMaxStackSize() > 1 && (!isDamageableItem() || !isDamaged());
 }
 
 bool ItemInstance::isStackedByData()
@@ -151,22 +151,27 @@ bool ItemInstance::isStackedByData()
 	return getItem()->isStackedByData();
 }
 
-bool ItemInstance::matches(ItemInstance* other) const
+bool ItemInstance::matches(const ItemInstance& other) const
 {
-	return this->getAuxValue() == other->getAuxValue() &&
-           this->m_count == other->m_count &&
-           this->m_itemID == other->m_itemID;
+	return this->getAuxValue() == other.getAuxValue() &&
+		this->m_count == other.m_count &&
+		this->m_itemID == other.m_itemID;
 }
 
-bool ItemInstance::matches(ItemInstance* a1, ItemInstance* a2)
+bool ItemInstance::sameItem(const std::shared_ptr<ItemInstance> item) const
 {
-	if (a1 == a2 && a1 == nullptr)
+	return m_itemID == item->m_itemID;
+}
+
+bool ItemInstance::matches(const std::shared_ptr<ItemInstance>& a1, const std::shared_ptr<ItemInstance>& a2)
+{
+	if (a1 == a2 && !a1)
 		return true;
 
-	if (a1 == nullptr || a2 == nullptr)
+	if (!a1 || !a2)
 		return false;
 
-	return a1->matches(a2);
+	return a1->matches(*a2); // agora com referência
 }
 
 int ItemInstance::getAttackDamage(Entity *pEnt)
@@ -174,15 +179,15 @@ int ItemInstance::getAttackDamage(Entity *pEnt)
 	return getItem()->getAttackDamage(pEnt);
 }
 
-void ItemInstance::mineBlock(const TilePos& pos, Facing::Name face)
+void ItemInstance::mineBlock(int tile, const TilePos& pos, Facing::Name face)
 {
-	return getItem()->mineBlock(this, pos, face);
+	return getItem()->mineBlock(this, tile, pos, face);
 }
 
-ItemInstance ItemInstance::remove(int count)
+std::shared_ptr<ItemInstance> ItemInstance::remove(int count)
 {
 	m_count -= count;
-	return ItemInstance(m_itemID, count, m_auxValue);
+	return std::make_shared<ItemInstance>(m_itemID, count, m_auxValue);
 }
 
 void ItemInstance::setDescriptionId(const std::string& str)
@@ -202,9 +207,9 @@ std::string ItemInstance::toString()
 	return ss.str();
 }
 
-ItemInstance* ItemInstance::use(Level* level, Player* player)
+std::shared_ptr<ItemInstance> ItemInstance::use(Level* level, Player* player)
 {
-	return getItem()->use(this, level, player);
+	return getItem()->use(shared_from_this(), level, player);
 }
 
 bool ItemInstance::useOn(Player* player, Level* level, const TilePos& pos, Facing::Name face)
@@ -212,10 +217,19 @@ bool ItemInstance::useOn(Player* player, Level* level, const TilePos& pos, Facin
 	return getItem()->useOn(this, player, level, pos, face);
 }
 
+void ItemInstance::onCrafting(Player* player, Level* level)
+{
+	onCrafting(player, level, m_count);
+}
+
+void ItemInstance::onCrafting(Player* player, Level* level, int amount)
+{
+	getItem()->onCrafting(shared_from_this(), player, level);
+}
+
 bool ItemInstance::isNull() const
 {
-	// 0.9.2
-	if (m_itemID <= 0) // m_field_10, assuming this is m_itemID
+	if (m_itemID <= 0)
 		return true;
 
 	if (m_auxValue != 0)
@@ -225,5 +239,5 @@ bool ItemInstance::isNull() const
 	if (m_popTime != 0)
 		return false;
 
-	return true; // isNull
+	return true;
 }

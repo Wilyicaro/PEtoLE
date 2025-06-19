@@ -19,7 +19,6 @@
 #include "CowRenderer.hpp"
 #include "ChickenRenderer.hpp"
 #include "CreeperRenderer.hpp"
-#include "RocketRenderer.hpp"
 
 class Minecraft;
 class Font;
@@ -37,9 +36,9 @@ public:
 	EntityRenderer* getRenderer(Entity* pEnt);
 	EntityRenderer* getRenderer(int renderType);
 	void onGraphicsReset();
-	void prepare(Level*, Textures*, Font*, Mob*, Options*, float);
+	void prepare(Level*, Textures*, Font*, std::shared_ptr<Mob>, Options*, float);
 	void render(Entity*, float);
-	void render(Entity*, const Vec3& pos, float rot, float a);
+	void render(Entity*, const Vec3& pos, float rot, float a, bool postRender = true);
 	void setLevel(Level*);
 	void setMinecraft(Minecraft*);
 
@@ -59,14 +58,12 @@ public:
 	//SpiderRenderer m_SpiderRenderer;
 	//SkeletonRenderer m_SkeletonRenderer;
 	//ZombieRenderer m_ZombieRenderer;
-	//SheepRenderer m_SheepRenderer;
 	//SheepFurRenderer m_SheepFurRenderer;
 	TripodCameraRenderer m_CameraRenderer;
-	RocketRenderer m_RocketRenderer;
 	Textures* m_pTextures;
 	Level* m_pLevel;
 	Minecraft* m_pMinecraft;
-	Mob* m_pMob;
+	std::shared_ptr<Mob> m_pMob;
 	Vec2 m_rot;
 	Options* m_pOptions;
 	Vec3 m_pos;

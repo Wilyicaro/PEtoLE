@@ -36,6 +36,7 @@
 
 // custom:
 #include "client/renderer/PatchManager.hpp"
+#include "client/locale/Language.hpp"
 
 float Minecraft::_renderScaleMultiplier = 1.0f;
 
@@ -148,12 +149,14 @@ void Minecraft::grabMouse()
 
 void Minecraft::setScreen(Screen* pScreen)
 {
-#ifndef ORIGINAL_CODE
 	if (pScreen == nullptr && !isLevelGenerated())
 	{
-		return;
+		pScreen = new StartMenuScreen;
 	}
-#endif
+	else if (pScreen == nullptr && m_pLocalPlayer->m_health <= 0)
+	{
+		pScreen = new DeathScreen;
+	}
 
 	if (m_bUsingScreen)
 	{
@@ -228,7 +231,7 @@ bool Minecraft::isOnlineClient() const
 	if (!m_pLevel)
 		return false;
 
-	return m_pLevel->m_bIsMultiplayer;
+	return m_pLevel->m_bIsOnline;
 }
 
 bool Minecraft::isTouchscreen() const
@@ -270,9 +273,8 @@ void Minecraft::setGameMode(GameType gameType)
 
 void Minecraft::handleBuildAction(const BuildActionIntention& action)
 {
-	LocalPlayer* player = m_pLocalPlayer;
+	auto player = m_pLocalPlayer;
 	bool canInteract = getTimeMs() - m_lastInteractTime >= 200;
-	if (player->isUsingItem()) return;
 
 	if (action.isDestroyStart() || action.isAttack())
 	{
@@ -292,7 +294,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 	case HitResult::ENTITY:
 		if (action.isAttack())
 		{
-			m_pGameMode->attack(player, m_hitResult.m_pEnt);
+			m_pGameMode->attack(player.get(), m_hitResult.m_pEnt.get());
 			m_lastBlockBreakTime = getTimeMs();
 		}
 		else if (action.isInteract() && canInteract)
@@ -300,7 +302,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 			if (m_hitResult.m_pEnt->interactPreventDefault())
 				bInteract = false;
 
-			m_pGameMode->interact(player, m_hitResult.m_pEnt);
+			m_pGameMode->interact(player.get(), m_hitResult.m_pEnt.get());
 			m_lastInteractTime = getTimeMs();
 		}
 		break;
@@ -310,27 +312,23 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 		if (action.isDestroy())
 		{
 			if (!pTile) return;
-			//if (pTile->isLiquidTile()) return;
 
 			player->swing();
 
-			// @BUG: This is only done on the client side.
-			//bool extinguished = m_pLevel->extinguishFire(player, m_hitResult.m_tilePos, m_hitResult.m_hitSide);
+			bool extinguished = m_pLevel->extinguishFire(player.get(), m_hitResult.m_tilePos, m_hitResult.m_hitSide);
+	
+			if (extinguished) break;
 
-			// Allows fire to be extinguished *without* destroying blocks
-			// @BUG: Hits sometimes pass through fire when done from above
-			//if (extinguished) break;
-
-			if (pTile != Tile::unbreakable || (player->field_B94 >= 100 && !m_hitResult.m_bUnk24))
+			if (pTile != Tile::bedrock || (player->m_userType >= 100 && !m_hitResult.m_bUnk24))
 			{
 				bool destroyed = false;
 				if (action.isDestroyStart())
 				{
-					destroyed = m_pGameMode->startDestroyBlock(player, m_hitResult.m_tilePos, m_hitResult.m_hitSide);
+					destroyed = m_pGameMode->startDestroyBlock(player.get(), m_hitResult.m_tilePos, m_hitResult.m_hitSide);
 					player->startDestroying();
 				}
 
-				bool contDestory = m_pGameMode->continueDestroyBlock(player, m_hitResult.m_tilePos, m_hitResult.m_hitSide);
+				bool contDestory = m_pGameMode->continueDestroyBlock(player.get(), m_hitResult.m_tilePos, m_hitResult.m_hitSide);
 
 				destroyed = destroyed || contDestory;
 				m_pParticleEngine->crack(m_hitResult.m_tilePos, m_hitResult.m_hitSide);
@@ -351,20 +349,36 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 		}
 		else if (action.isPlace() && canInteract)
 		{
-			ItemInstance* pItem = getSelectedItem();
-			if (pItem &&
-				m_pGameMode->useItemOn(
-					player,
+			std::shared_ptr<ItemInstance> pItem = getSelectedItem();
+			int oldCount = pItem ? pItem->m_count : 0;
+			if (m_pGameMode->useItemOn(
+					player.get(),
 					m_pLevel,
-					pItem->m_itemID <= 0 ? nullptr : pItem,
+					pItem,
 					m_hitResult.m_tilePos,
-					m_hitResult.m_hitSide))
+					m_hitResult.m_hitSide)
+				)
 			{
 				bInteract = false;
 
 				player->swing();
 
 				m_lastInteractTime = getTimeMs();
+
+				if (!pItem) return;
+
+				if (player->isCreative() && pItem->m_count != oldCount)
+				{
+					pItem->m_count = oldCount;
+				}
+				else if (!pItem->m_count)
+				{
+					m_pLocalPlayer->m_pInventory->setItem(m_pLocalPlayer->m_pInventory->m_selected, nullptr);
+				}
+				else if (pItem->m_count != oldCount)
+				{
+					m_pGameRenderer->m_pItemInHandRenderer->itemPlaced();
+				}
 
 				if (isOnline())
 				{
@@ -380,7 +394,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 						hitSide = Facing::DOWN;
 					}
 
-					m_pRakNetInstance->send(new PlaceBlockPacket(player->m_EntityID, tp.relative(hitSide, 1), TileID(pItem->m_itemID), hitSide));
+					m_pRakNetInstance->send(new PlaceBlockPacket(player->m_EntityID, tp.relative(hitSide), TileID(pItem->m_itemID), hitSide));
 				}
 			}
 		}
@@ -389,11 +403,11 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 
 	if (bInteract && action.isInteract() && canInteract)
 	{
-		ItemInstance* pItem = getSelectedItem();
-		if (pItem && !player->isUsingItem())
+		std::shared_ptr<ItemInstance> pItem = getSelectedItem();
+		if (pItem)
 		{
 			m_lastInteractTime = getTimeMs();
-			if (m_pGameMode->useItem(player, m_pLevel, pItem))
+			if (m_pGameMode->useItem(player.get(), m_pLevel, pItem))
 				m_pGameRenderer->m_pItemInHandRenderer->itemUsed();
 		}
 	}
@@ -481,13 +495,8 @@ void Minecraft::tickInput()
 			}
 			else if (getOptions()->isKey(KM_DROP, keyCode))
 			{
-				ItemInstance *item = m_pLocalPlayer->m_pInventory->getSelected();
-				if (item != nullptr)
-				{
-					ItemInstance itemDrop = m_pLocalPlayer->isSurvival() ? item->remove(1) : ItemInstance(*item);
-					itemDrop.m_count = 1;
-					m_pLocalPlayer->drop(&itemDrop);
-				}
+				m_pLocalPlayer->drop(m_pLocalPlayer->m_pInventory->removeItem(m_pLocalPlayer->m_pInventory->m_selected, 1).get());
+				
 			}
 			else if (getOptions()->isKey(KM_TOGGLEGUI, keyCode))
 			{
@@ -530,7 +539,7 @@ void Minecraft::tickInput()
 
 	BuildActionIntention bai;
 	IBuildInput* buildInput = m_pInputHolder->getBuildInput();
-	if (buildInput && buildInput->tickBuild(m_pLocalPlayer, &bai))
+	if (buildInput && buildInput->tickBuild(m_pLocalPlayer.get(), &bai))
 		handleBuildAction(bai);
 
 	field_2B4 = getTimeMs();
@@ -596,7 +605,7 @@ void Minecraft::sendMessage(const std::string& message)
 	}
 }
 
-void Minecraft::resetPlayer(Player* player)
+void Minecraft::resetPlayer(std::shared_ptr<Player> player)
 {
 	m_pLevel->validateSpawn();
 	player->reset();
@@ -613,7 +622,7 @@ void Minecraft::resetPlayer(Player* player)
 			return;
 	}
 
-	std::vector<Player*>& vec2 = m_pLevel->m_players;
+	auto& vec2 = m_pLevel->m_players;
 	for (int i = 0; i < int(vec2.size()); i++)
 	{
 		// remove the player if he is already in the player list
@@ -628,16 +637,16 @@ void Minecraft::resetPlayer(Player* player)
 	m_pLevel->addEntity(player);
 }
 
-void Minecraft::respawnPlayer(Player* player)
+void Minecraft::respawnPlayer(std::shared_ptr<Player> player)
 {
 	resetPlayer(player);
-
+	player->respawn();
 	// TODO: send a RespawnPacket
 }
 
 std::string Minecraft::getVersionString() const
 {
-	return "v0.1.0 alpha";
+	return "b1.6.6 - PEtoLE";
 }
 
 void Minecraft::_reloadInput()
@@ -711,7 +720,7 @@ void Minecraft::tick()
 		if (m_pLevel && !isGamePaused())
 		{
             m_pLevel->m_difficulty = m_options->m_difficulty;
-            if (m_pLevel->m_bIsMultiplayer)
+            if (m_pLevel->m_bIsOnline)
             {
                 m_pLevel->m_difficulty = 3;
             }
@@ -739,7 +748,7 @@ void Minecraft::tick()
 			if (m_pMobPersp)
 			{
 				m_pSoundEngine->m_pSoundSystem->setListenerPos(m_pMobPersp->m_pos.x, m_pMobPersp->m_pos.y, m_pMobPersp->m_pos.z);
-				m_pSoundEngine->m_pSoundSystem->setListenerAngle(m_pMobPersp->m_rot.x, m_pMobPersp->m_rot.y);
+				m_pSoundEngine->m_pSoundSystem->setListenerAngle(m_pMobPersp->m_rot.y, m_pMobPersp->m_rot.x);
 			}
 #endif
 
@@ -749,6 +758,9 @@ void Minecraft::tick()
 			m_pScreen->tick();
 
 		Multitouch::reset();
+
+
+		m_bIsGamePaused = (!isOnline() || m_pLevel && m_pLevel->m_players.size() == 1) && m_pScreen && m_pScreen->isPauseScreen();
 	}
 }
 
@@ -787,11 +799,11 @@ void Minecraft::update()
 	tickMouse();
 #endif
 
-	m_pGameRenderer->render(m_timer.m_renderTicks);
-
-	// Added by iProgramInCpp
 	if (m_pGameMode)
 		m_pGameMode->render(m_timer.m_renderTicks);
+
+	m_pGameRenderer->render(m_timer.m_renderTicks);
+
 
 	double time = getTimeS();
 	m_fDeltaTime = time - m_fLastUpdated;
@@ -802,12 +814,6 @@ void Minecraft::init()
 {
 	// Optional features that you really should be able to get away with not including.
 	Screen::setIsMenuPanoramaAvailable(platform()->doesTextureExist("gui/background/panorama_0.png"));
-	LevelRenderer::setAreCloudsAvailable(platform()->doesTextureExist("environment/clouds.png"));
-	LevelRenderer::setArePlanetsAvailable(platform()->doesTextureExist("terrain/sun.png") && platform()->doesTextureExist("terrain/moon.png"));
-	GrassColor::setIsAvailable(platform()->doesTextureExist("misc/grasscolor.png"));
-	FoliageColor::setIsAvailable(platform()->doesTextureExist("misc/foliagecolor.png"));
-	Gui::setIsVignetteAvailable(platform()->doesTextureExist("misc/vignette.png"));
-	EntityRenderer::setAreShadowsAvailable(platform()->doesTextureExist("misc/shadow.png"));
 
 	GetPatchManager()->LoadPatchData(platform()->getPatchData());
 
@@ -815,24 +821,27 @@ void Minecraft::init()
 
 	m_pRakNetInstance = new RakNetInstance;
 
+	if (platform()->hasFileSystemAccess())
+		m_options = new Options(m_externalStorageDir);
+	else
+		m_options = new Options();
+
 	m_pTextures = new Textures(m_options, platform());
 	m_pTextures->addDynamicTexture(new WaterTexture);
 	m_pTextures->addDynamicTexture(new WaterSideTexture);
 	m_pTextures->addDynamicTexture(new LavaTexture);
 	m_pTextures->addDynamicTexture(new LavaSideTexture);
 	m_pTextures->addDynamicTexture(new FireTexture(0));
-
-	if (platform()->hasFileSystemAccess())
-		m_options = new Options(m_externalStorageDir);
-	else
-		m_options = new Options();
+	m_pTextures->addDynamicTexture(new FireTexture(1));
+	m_pTextures->addDynamicTexture(new CompassTexture(this));
+	m_pTextures->addDynamicTexture(new ClockTexture(this));
 
 	m_options->m_bUseController = platform()->hasGamepad();
 	m_options->loadControls();
 
 	_reloadInput();
 
-	m_pTextures->loadAndBindTexture(C_TERRAIN_NAME);
+	m_pTextures->loadAndBindTerrain();
 	GetPatchManager()->PatchTextures(platform(), TYPE_TERRAIN);
 	m_pTextures->loadAndBindTexture(C_ITEMS_NAME);
 	GetPatchManager()->PatchTextures(platform(), TYPE_ITEMS);
@@ -840,7 +849,7 @@ void Minecraft::init()
 	GetPatchManager()->PatchTiles();
 
 	m_pSoundEngine = new SoundEngine(platform()->getSoundSystem());
-	m_pSoundEngine->init(m_options);
+	m_pSoundEngine->init(m_options, m_pPlatform);
 
 	m_pLevelRenderer = new LevelRenderer(this, m_pTextures);
 	m_pGameRenderer = new GameRenderer(this);
@@ -848,16 +857,12 @@ void Minecraft::init()
 	m_pUser = new User(getOptions()->m_playerName, "");
 
 	// "Default.png" for the launch image overwrites "default.png" for the font during app packaging
-	m_pFont = new Font(m_options, "font/default8.png", m_pTextures);
+	m_pFont = new Font(m_options, "font/default.png", m_pTextures);
 
-	if (GrassColor::isAvailable())
-	{
-		GrassColor::init(m_pPlatform->loadTexture("misc/grasscolor.png", true));
-	}
-	if (FoliageColor::isAvailable())
-	{
-		FoliageColor::init(m_pPlatform->loadTexture("misc/foliagecolor.png", true));
-	}
+
+	GrassColor::init(m_pPlatform->loadTexture("misc/grasscolor.png", true));
+	FoliageColor::init(m_pPlatform->loadTexture("misc/foliagecolor.png", true));
+	Language::getInstance()->init();
 }
 
 Minecraft::~Minecraft()
@@ -892,91 +897,18 @@ Minecraft::~Minecraft()
 
 void Minecraft::prepareLevel(const std::string& unused)
 {
-	field_DA0 = 1;
 
-	float startTime = getTimeS();
-	Level* pLevel = m_pLevel;
-
-	if (!pLevel->field_B0C)
-	{
-		pLevel->setUpdateLights(0);
-	}
-
-	for (int i = 8, i2 = 0; i != 8 + C_MAX_CHUNKS_X * 16; i += 16)
-	{
-		for (int j = 8; j != 8 + C_MAX_CHUNKS_Z * 16; j += 16, i2 += 100)
-		{
-			// this looks like some kind of progress tracking
-			m_progressPercent = i2 / (C_MAX_CHUNKS_X * C_MAX_CHUNKS_Z);
-
-			float time1 = getTimeS();
-
-			// generating all the chunks at once
-			(void)m_pLevel->getTile(TilePos(i, (C_MAX_Y + C_MIN_Y) / 2, j));
-
-			if (time1 != -1.0f)
-				getTimeS();
-
-			float time2 = getTimeS();
-			if (m_pLevel->field_B0C)
-			{
-				while (m_pLevel->updateLights());
-			}
-
-			if (time2 != -1.0f)
-				getTimeS();
-		}
-	}
-
-	if (startTime != -1.0f)
-		getTimeS();
-
-	m_pLevel->setUpdateLights(1);
-
-	startTime = getTimeS();
-
-	ChunkPos cp(0, 0);
-	for (cp.x = 0; cp.x < C_MAX_CHUNKS_X; cp.x++)
-	{
-		for (cp.z = 0; cp.z < C_MAX_CHUNKS_Z; cp.z++)
-		{
-			LevelChunk* pChunk = m_pLevel->getChunk(cp);
-			if (!pChunk)
-				continue;
-
-			if (pChunk->field_237)
-				continue;
-
-			pChunk->m_bUnsaved = false;
-			pChunk->clearUpdateMap();
-		}
-	}
-
-	if (startTime != -1.0f)
-		getTimeS();
-
-	field_DA0 = 3;
-
-	if (m_pLevel->field_B0C)
+	if (m_pLevel->m_bNoLevelData)
 	{
 		m_pLevel->setInitialSpawn();
 		m_pLevel->saveLevelData();
-		m_pLevel->getChunkSource()->saveAll();
 	}
 	else
 	{
 		m_pLevel->saveLevelData();
 	}
 
-	m_progressPercent = -1;
-	field_DA0 = 2;
-
-	startTime = getTimeS();
-
 	m_pLevel->prepare();
-
-	if (startTime != -1.0f)
-		getTimeS();
 
 	// These strings are initialized and then removed quickly afterwards. Probably some debug leftover
 	// "Generate level:";
@@ -1060,13 +992,48 @@ void Minecraft::generateLevel(const std::string& unused, Level* pLevel)
 
 	// std::string("Level generated: "); //@QUIRK: unused string instance
 
-	LocalPlayer* pLocalPlayer = m_pLocalPlayer;
+	std::shared_ptr<LocalPlayer> pLocalPlayer = m_pLocalPlayer;
 	if (!pLocalPlayer)
 	{
 		pLocalPlayer = m_pGameMode->createPlayer(pLevel);
 		m_pLocalPlayer = pLocalPlayer;
-		m_pGameMode->initPlayer(pLocalPlayer);
+		m_pLocalPlayer->resetPos();
+		m_pGameMode->initPlayer(pLocalPlayer.get());
 	}
+	
+
+	if (!pLevel->m_bNoLevelData)
+	{
+		pLevel->setUpdateLights(0);
+	}
+
+
+	for (int i = -128, i2 = 0; i != 128; i += 16)
+	{
+		for (int j = -128; j != 128; j += 16, i2 += 100)
+		{
+			// this looks like some kind of progress tracking
+			m_progressPercent = i2 / 256;
+
+			float time1 = getTimeS();
+
+			m_pLevel->getTile(TilePos(static_cast<uint32_t>(m_pLocalPlayer-> m_pos.x) + i, (C_MAX_Y + C_MIN_Y) / 2, static_cast<uint32_t>(m_pLocalPlayer->m_pos.z)));
+
+			if (time1 != -1.0f)
+				getTimeS();
+
+			float time2 = getTimeS();
+			if (m_pLevel->m_bNoLevelData)
+			{
+				while (m_pLevel->updateLights());
+			}
+
+			if (time2 != -1.0f)
+				getTimeS();
+		}
+	}
+
+	m_pLevel->setUpdateLights(1);
 
 	if (pLocalPlayer)
 		pLocalPlayer->m_pMoveInput = m_pInputHolder->getMoveInput();
@@ -1077,15 +1044,10 @@ void Minecraft::generateLevel(const std::string& unused, Level* pLevel)
 	if (m_pParticleEngine)
 		m_pParticleEngine->setLevel(pLevel);
 
-	m_pGameMode->adjustPlayer(m_pLocalPlayer);
+	m_pGameMode->adjustPlayer(m_pLocalPlayer.get());
 
 	pLevel->validateSpawn();
 	pLevel->loadPlayer(m_pLocalPlayer);
-
-	if (m_pLocalPlayer)
-	{
-		m_pLocalPlayer->resetPos();
-	}
 
 	m_pMobPersp = m_pLocalPlayer;
 	m_pLevel = pLevel;
@@ -1108,12 +1070,6 @@ void* Minecraft::prepareLevel_tspawn(void* ptr)
 bool Minecraft::pauseGame()
 {
 	if (isGamePaused() || m_pScreen) return false;
-
-	if (!isOnline())
-	{
-		// Actually pause the game, because fuck bedrock edition
-		m_bIsGamePaused = true;
-	}
 	m_pLevel->savePlayerData();
 	setScreen(new PauseScreen);
 
@@ -1129,7 +1085,7 @@ bool Minecraft::resumeGame()
 	return true;
 }
 
-void Minecraft::setLevel(Level* pLevel, const std::string& text, LocalPlayer* pLocalPlayer)
+void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr<LocalPlayer> pLocalPlayer)
 {
 	m_pMobPersp = nullptr;
 
@@ -1163,7 +1119,7 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, LocalPlayer* pL
 	}
 }
 
-void Minecraft::selectLevel(const std::string& a, const std::string& b, int c)
+void Minecraft::selectLevel(const std::string& a, const std::string& b, int64_t c)
 {
 	LevelStorage* pStor = m_pLevelStorageSource->selectLevel(a, false);
 	Dimension* pDim = Dimension::getNew(0);
@@ -1184,26 +1140,9 @@ LevelStorageSource* Minecraft::getLevelSource()
 	return m_pLevelStorageSource;
 }
 
-ItemInstance* Minecraft::getSelectedItem()
+std::shared_ptr<ItemInstance> Minecraft::getSelectedItem()
 {
-	ItemInstance* pInst = m_pLocalPlayer->getSelectedItem();
-
-	if (!pInst)
-		return nullptr;
-
-	if (m_pGameMode->isSurvivalType())
-		return pInst;
-
-    // Create new "unlimited" ItemInstance for Creative mode
-    
-	if (pInst->isNull())
-		return nullptr;
-
-	m_CurrItemInstance.m_itemID = pInst->m_itemID;
-	m_CurrItemInstance.m_count = 999;
-	m_CurrItemInstance.setAuxValue(pInst->getAuxValue());
-
-	return &m_CurrItemInstance;
+	return m_pLocalPlayer->getSelectedItem();
 }
 
 int Minecraft::getFpsIntlCounter()
@@ -1246,16 +1185,6 @@ void Minecraft::leaveGame(bool bCopyMap)
 	m_pLocalPlayer = nullptr;
 	m_pNetEventCallback = nullptr;
 	field_D9C = 0;
-
-#ifndef ENH_IMPROVED_SAVING
-	// this is safe to do, since on destruction, we don't actually delete it.
-	SAFE_DELETE(m_pLocalPlayer);
-
-	if (bCopyMap)
-		setScreen(new RenameMPLevelScreen("_LastJoinedServer"));
-	else
-		setScreen(new StartMenuScreen);
-#endif
 }
 
 void Minecraft::hostMultiplayer()

@@ -9,13 +9,13 @@
 #include "Textures.hpp"
 #include "common/Utils.hpp"
 
-bool Textures::MIPMAP = false;
 
-int Textures::loadTexture(const std::string& name, bool bIsRequired)
+int Textures::loadTexture(const std::string& name, bool bIsRequired, int mipmap, bool bindTexture)
 {
-	std::map<std::string, GLuint>::iterator i = m_textures.find(name);
+	auto i = m_textures.find(name);
 	if (i != m_textures.end())
 		return i->second;
+	
 
 	Texture t = m_pPlatform->loadTexture(name, bIsRequired);
 
@@ -32,27 +32,22 @@ int Textures::loadTexture(const std::string& name, bool bIsRequired)
 	}
 
 	if (t.m_pixels) {
-		return assignTexture(name, t);
+		return assignTexture(name, t, mipmap, bindTexture);
 	} else {
 		return -1;
 	}
 }
 
-int Textures::assignTexture(const std::string& name, Texture& texture)
+
+void Textures::prepareTextureParams()
 {
-	GLuint textureID = 0;
-
-	glGenTextures(1, &textureID);
-	if (textureID != m_currBoundTex)
+	if (m_bMipmap)
 	{
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		m_currBoundTex = textureID;
-	}
-
-	if (MIPMAP)
-	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		#ifndef ANDROID
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 2);
+		#endif
 	}
 	else
 	{
@@ -76,30 +71,100 @@ int Textures::assignTexture(const std::string& name, Texture& texture)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
+}
+
+int Textures::assignTexture(const std::string& name, Texture& texture, int mipmap, bool bindTexture)
+{
+	GLuint textureID = 0;
+
+	glGenTextures(1, &textureID);
+	loadTexture(texture, textureID, mipmap, bindTexture);
+	if (!name.empty()) {
+		m_textures[name] = textureID;
+	}
+	m_textureData[textureID] = TextureData(textureID, texture);
+
+	return textureID;
+}
+
+void Textures::loadTexture(Texture& texture, GLuint textureID, int mipmap, bool bindTexture)
+{
+	if (bindTexture) {
+		if (textureID != m_currBoundTex)
+		{
+			glBindTexture(GL_TEXTURE_2D, textureID);
+			m_currBoundTex = textureID;
+		}
+		prepareTextureParams();
+	}
 
 	GLuint internalFormat = GL_RGB;
 
 	if (texture.m_hasAlpha)
 		internalFormat = GL_RGBA;
 
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, texture.m_width, texture.m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.m_pixels);
+	glTexImage2D(GL_TEXTURE_2D, mipmap, GL_RGBA, texture.m_width, texture.m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.m_pixels);
+}
 
-	m_textures[name] = textureID;
+int Textures::loadHttpTexture(const std::string& url, const std::string& backup)
+{
+	HttpTexture* texture = m_httpTextures[url];
+	if (texture && texture->loadedImage && !texture->isLoaded) {
+		if (texture->id < 0) {
+			texture->id = assignTexture("", *texture->loadedImage);
+		}
+		else {
+			loadTexture(*texture->loadedImage, texture->id);
+		}
+		texture->isLoaded = true;
+	}
 
-	m_textureData[textureID] = TextureData(textureID, texture);
+	if (texture && texture->id >= 0) {
+		return texture->id;
+	}
+	else {
+		return backup.empty() ? -1 : loadTexture(backup);
+	}
+}
 
-	return textureID;
+
+HttpTexture* Textures::addHttpTexture(const std::string& url, TextureProcessor* processor)
+{
+	HttpTexture* texture = m_httpTextures[url];
+	if (!texture) {
+		m_httpTextures[url] = new HttpTexture(url, processor);
+	}
+	else {
+		++texture->count;
+	}
+
+	return texture;
+}
+
+void Textures::removeHttpTexture(const std::string& url)
+{
+	HttpTexture* texture = m_httpTextures[url];
+	if (texture) {
+		--texture->count;
+		if (!texture->count) {
+			if (texture->id >= 0) {
+				glDeleteTextures(1, &texture->id);
+			}
+
+			m_httpTextures.erase(url);
+		}
+	}
 }
 
 void Textures::clear()
 {
 	// note: Textures::clear() does not touch the dynamic textures vector
 
-	for (std::map<std::string, GLuint>::iterator it = m_textures.begin(); it != m_textures.end(); it++)
-		glDeleteTextures(1, &it->second);
+	for (auto& it : m_textures)
+		glDeleteTextures(1, &it.second);
 
-	for (std::map<GLuint, TextureData>::iterator it = m_textureData.begin(); it != m_textureData.end(); it++)
-		delete[] it->second.textureData.m_pixels;
+	for (auto& it : m_textureData)
+		delete[] it.second.textureData.m_pixels;
 
 	m_textures.clear();
 	m_textureData.clear();
@@ -110,6 +175,7 @@ Textures::Textures(Options* pOptions, AppPlatform* pAppPlatform)
 {
 	m_bClamp = false;
 	m_bBlur = false;
+	m_bMipmap = false;
 
 	m_pPlatform = pAppPlatform;
 	m_pOptions = pOptions;
@@ -137,6 +203,7 @@ void Textures::tick()
 		DynamicTexture* pDynaTex = *it;
 
 		pDynaTex->bindTexture(this);
+		pDynaTex->m_anaglyph3d = m_pOptions->m_bAnaglyphs;
 		pDynaTex->tick();
 
 		for (int x = 0; x < pDynaTex->m_textureSize; x++)
@@ -159,14 +226,24 @@ void Textures::tick()
 	}
 }
 
-int Textures::loadAndBindTexture(const std::string& name)
+void Textures::bind(int bind)
 {
-	int id = loadTexture(name, true);
+	if (m_currBoundTex != bind && bind >= 0)
+	{
+		m_currBoundTex = bind;
+		glBindTexture(GL_TEXTURE_2D, bind);
+	}
+}
+
+int Textures::loadAndBindTexture(const std::string& name, int mipmap)
+{
+	int id = loadTexture(name, true, mipmap);
 
 	if (m_currBoundTex != id)
 	{
 		m_currBoundTex = id;
 		glBindTexture(GL_TEXTURE_2D, id);
+		prepareTextureParams();
 	}
 
 	return id;
@@ -180,7 +257,7 @@ void Textures::addDynamicTexture(DynamicTexture* pTexture)
 
 Texture* Textures::getTemporaryTextureData(GLuint id)
 {
-	std::map<GLuint, TextureData>::iterator i = m_textureData.find(id);
+	auto i = m_textureData.find(id);
 	if (i == m_textureData.end())
 		return nullptr;
 

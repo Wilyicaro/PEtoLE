@@ -10,6 +10,8 @@
 #include "SelectWorldScreen.hpp"
 #include "ProgressScreen.hpp"
 #include "common/Util.hpp"
+#include <stdio.h>
+#include <inttypes.h>
 
 CreateWorldScreen::CreateWorldScreen() :
 	m_textName(this, 1, 0, 0, 0, 0, "", "Unnamed world"),
@@ -106,14 +108,14 @@ void CreateWorldScreen::buttonClicked(Button* pButton)
 
 		levelUniqueName = GetUniqueLevelName(m_pMinecraft->m_pLevelStorageSource, levelUniqueName);
 
-		int seed = int(getEpochTimeS());
+		int64_t seed = getEpochTimeS();
 
 		std::string seedThing = Util::stringTrim(seedStr);
 		if (!seedThing.empty())
 		{
-			int num;
-			if (sscanf(seedThing.c_str(), "%d", &num) > 0)
-				seed = num;
+			int64_t num;
+			if (sscanf(seedThing.c_str(), "%" PRId64, &num) > 0)
+				seed = num, LOG_I("%" PRId64, seed);
 			else
 				seed = Util::hashCode(seedThing);
 		}

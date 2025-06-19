@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include "common/Utils.hpp"
+#include "thirdparty/GL/GL.hpp"
 
 struct Texture
 {
@@ -18,6 +19,7 @@ struct Texture
 	uint32_t* m_pixels;
 	bool	  m_hasAlpha;
 	uint8_t   field_D;
+	GLuint id;
 
 	Texture()
 	{

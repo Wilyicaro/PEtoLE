@@ -11,6 +11,7 @@
 #include "world/entity/MobCategory.hpp"
 #include "client/player/input/Multitouch.hpp"
 #include "client/gui/screens/StartMenuScreen.hpp"
+#include "world/entity/EntityType.hpp"
 
 #ifdef DEMO
 #include "world/level/storage/MemoryLevelStorageSource.hpp"
@@ -25,34 +26,20 @@ bool NinecraftApp::handleBack(bool b)
 	if (m_bPreparingLevel)
 		return true;
 
-	if (!m_pLevel)
-	{
-		if (!m_pScreen)
-			return false;
-
-		return m_pScreen->handleBackEvent(b);
-	}
-
 	if (b)
 		return true;
+
 
 	if (!m_pScreen)
 	{
 		pauseGame();
 		return false;
-	}
-
-	if (m_pScreen->handleBackEvent(b))
-		return true;
-
-	if (isGamePaused())
+	} 
+	else if (isTouchscreen())
 	{
-		resumeGame();
-		return true;
+		m_pScreen->onClose();
 	}
 
-
-	setScreen(nullptr);
 	return true;
 }
 
@@ -84,12 +71,12 @@ void NinecraftApp::init()
 	{
 		_hasInitedStatics = true;
 		Material::initMaterials();
-		EntityTypeDescriptor::initDescriptors(); // custom
+		EntityType::initTypes();
 		MobCategory::initMobCategories();
 		Tile::initTiles();
 		Item::initItems();
 		Biome::initBiomes();
-		//TileEntity::initTileEntities();
+		TileEntity::initTileEntities();
 	}
 
 	initGLStates();

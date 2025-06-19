@@ -55,7 +55,7 @@ public:
 
 	std::string getSplashString();
 
-	bool handleBackEvent(bool b) override;
+	void onClose() override;
 
 protected:
 	friend class TitleTile;
@@ -63,8 +63,7 @@ protected:
 	Button m_startButton;
 	Button m_joinButton;
 	Button m_optionsButton;
-	Button m_testButton;
-	Button m_buyButton;
+	Button m_exitButton;
 	std::string field_154;
 	int field_16C;
 	std::string field_170;

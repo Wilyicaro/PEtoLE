@@ -45,7 +45,7 @@ bool GameMode::destroyBlock(Player* player, const TilePos& pos, Facing::Name fac
 		return false;
 
 
-	_level.playSound(pos + 0.5f, "step." + pTile->m_pSound->m_name,
+	_level.playSound(pos + 0.5f, pTile->m_pSound->m_destroy,
 		(pTile->m_pSound->volume * 0.5f) + 0.5f, pTile->m_pSound->pitch * 0.8f);
 
 	pTile->destroy(&_level, pos, tileData);
@@ -89,9 +89,9 @@ float GameMode::getPickRange() const
 	return 7.5f;
 }
 
-LocalPlayer* GameMode::createPlayer(Level* pLevel)
+std::shared_ptr<LocalPlayer> GameMode::createPlayer(Level* pLevel)
 {
-	return new LocalPlayer(m_pMinecraft, pLevel, m_pMinecraft->m_pUser, pLevel->getDefaultGameType(), _level.m_pDimension->field_50);
+	return std::make_shared<LocalPlayer>(m_pMinecraft, pLevel, m_pMinecraft->m_pUser, pLevel->getDefaultGameType(), _level.m_pDimension->m_ID);
 }
 
 void GameMode::initPlayer(Player* pPlayer)
@@ -117,29 +117,38 @@ void GameMode::attack(Player* player, Entity* entity)
 	player->attack(entity);
 }
 
-int GameMode::handleInventoryMouseClick(int a, int b, int c, Player* player)
+std::shared_ptr<ItemInstance> GameMode::handleInventoryMouseClick(int containerId, int slotNum, int buttonNum, Player* player)
 {
-	return 0;
+	return player->m_containerMenu->clicked(slotNum, buttonNum, player);
 }
 
 void GameMode::handleCloseInventory(int a, Player* player)
 {
+	player->m_containerMenu->removed(player);
+	player->m_containerMenu = player->m_inventoryMenu;
 }
 
-bool GameMode::useItem(Player* player, Level* level, ItemInstance* instance)
+bool GameMode::useItem(Player* player, Level* level, std::shared_ptr<ItemInstance> instance)
 {
 	int oldCount = instance->m_count;
+	std::shared_ptr<ItemInstance> itemInstance = instance->use(level, player);
+	if (itemInstance != instance || itemInstance && itemInstance->m_count != oldCount) {
+		player->m_pInventory->setItem(player->m_pInventory->m_selected, itemInstance);
+		if (!itemInstance->m_count) {
+			player->m_pInventory->setItem(player->m_pInventory->m_selected, nullptr);
+		}
 
-	if (instance == instance->use(level, player))
-		return instance->m_count != oldCount;
-
-	return true;
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
-bool GameMode::useItemOn(Player* player, Level* level, ItemInstance* instance, const TilePos& pos, Facing::Name face)
+bool GameMode::useItemOn(Player* player, Level* level, std::shared_ptr<ItemInstance> instance, const TilePos& pos, Facing::Name face)
 {
 	TileID tile = level->getTile(pos);
-	if (tile > 0 && Tile::tiles[tile]->use(level, pos, player))
+	if (tile && Tile::tiles[tile]->use(level, pos, player))
 		return true;
 
 	if (instance)

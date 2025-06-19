@@ -9,8 +9,6 @@
 #include "EntityRenderer.hpp"
 #include "EntityRenderDispatcher.hpp"
 
-bool EntityRenderer::_areShadowsAvailable = false; // false because PE used a reimplementation with geometry later on, rather than a texture
-
 EntityRenderer::EntityRenderer() : m_model(0.0f, 0.0f)
 {
 	m_shadowRadius = 0.0f;
@@ -21,6 +19,11 @@ EntityRenderer::EntityRenderer() : m_model(0.0f, 0.0f)
 void EntityRenderer::bindTexture(const std::string& file)
 {
 	m_pDispatcher->m_pTextures->loadAndBindTexture(file);
+}
+
+void EntityRenderer::bindHttpTexture(const std::string& url, const std::string& fallback)
+{
+	m_pDispatcher->m_pTextures->bind(m_pDispatcher->m_pTextures->loadHttpTexture(url, fallback));
 }
 
 Font* EntityRenderer::getFont()
@@ -40,9 +43,6 @@ void EntityRenderer::onGraphicsReset()
 
 void EntityRenderer::renderFlame(Entity* e, const Vec3& pos, float a)
 {
-	Vec3 ePos(pos);
-	ePos.y -= e->m_heightOffset; // Fixed fire rendering above player's head in third-person
-
 	glDisable(GL_LIGHTING);
 	int tex = Tile::fire->getTexture(Facing::NORTH);
 	int xt = (tex & 15) << 4;
@@ -52,30 +52,50 @@ void EntityRenderer::renderFlame(Entity* e, const Vec3& pos, float a)
 	float v0 = (float)yt / 256.0f;
 	float v1 = ((float)yt + 15.99f) / 256.0f;
 	glPushMatrix();
-	glTranslatef(ePos.x, ePos.y, ePos.z);
+	glTranslatef(pos.x, pos.y, pos.z);
 	float s = e->m_bbWidth * 1.4f; // bbWidth instead of e->m_hitbox.max.x
 	glScalef(s, s, s);
 	bindTexture(C_TERRAIN_NAME);
 	Tesselator& t = Tesselator::instance;
-	float r = 1.0f;
 	float xo = 0.5f;
-	float yo = 0.0f;
-	float h = e->m_bbHeight / e->m_bbWidth;
-	glRotatef(-m_pDispatcher->m_rot.x, 0.0f, 1.0f, 0.0f);
-	glTranslatef(0.0f, 0.0f, -0.4f + (float)((int)h) * 0.02f);
+	float h = e->m_bbHeight / s;
+	float yo = e->m_pos.y - e->m_hitbox.min.y;
+	glRotatef(-m_pDispatcher->m_rot.y, 0.0f, 1.0f, 0.0f);
+	glTranslatef(0.0f, 0.0f, -0.3f + (float)((int)h) * 0.02f);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	t.begin();
-
+	float sd = 0.0f;
+	int i = 0;
 	while (h > 0.0f)
 	{
-		t.vertexUV(r - xo, 0.0f - yo, 0.0f, u1, v1);
-		t.vertexUV(0.0f - xo, 0.0f - yo, 0.0f, u0, v1);
-		t.vertexUV(0.0f - xo, 1.4f - yo, 0.0f, u0, v0);
-		t.vertexUV(r - xo, 1.4f - yo, 0.0f, u1, v0);
-		--h;
-		--yo;
-		r *= 0.9f;
-		glTranslatef(0.0f, 0.0f, -0.04f);
+		if (i % 2 == 0) {
+			u0 = (float)xt / 256.0F;
+			u1 = ((float)xt + 15.99F) / 256.0F;
+			v0 = (float)yt / 256.0F;
+			v1 = ((float)yt + 15.99F) / 256.0F;
+		}
+		else {
+			u0 = (float)xt / 256.0F;
+			u1 = ((float)xt + 15.99F) / 256.0F;
+			v0 = (float)(yt + 16) / 256.0F;
+			v1 = ((float)(yt + 16) + 15.99F) / 256.0F;
+		}
+
+		if (i / 2 % 2 == 0) {
+			float var24 = u1;
+			u1 = u0;
+			u0 = var24;
+		}
+
+		t.vertexUV(xo, 0.0f - yo, sd, u1, v1);
+		t.vertexUV(- xo, 0.0f - yo, sd, u0, v1);
+		t.vertexUV(- xo, 1.4f - yo, sd, u0, v0);
+		t.vertexUV(xo, 1.4f - yo, sd, u1, v0);
+		h -= 0.45f;
+		yo -= 0.45f;
+		xo *= 0.9f;
+		sd += 0.03f;
+		i++;
 	}
 
 	t.draw();
@@ -248,7 +268,7 @@ void EntityRenderer::renderFlat(const AABB& aabb)
 
 void EntityRenderer::postRender(Entity* entity, const Vec3& pos, float rot, float a)
 {
-	if (m_pDispatcher->m_pOptions->m_bFancyGraphics && areShadowsAvailable() && m_shadowRadius > 0.0f)
+	if (m_pDispatcher->m_pOptions->m_bFancyGraphics && m_shadowRadius > 0.0f)
 	{
 		float dist = m_pDispatcher->distanceToSqr(entity->m_pos);
 		float pow = (1.0f - dist / 256.0f) * m_shadowStrength;

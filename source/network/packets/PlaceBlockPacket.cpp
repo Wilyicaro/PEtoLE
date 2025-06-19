@@ -17,7 +17,6 @@ void PlaceBlockPacket::write(RakNet::BitStream* bs)
 {
 	bs->Write((unsigned char)PACKET_PLACE_BLOCK);
 	bs->Write(m_playerID);
-	// The order of the TilePos matters here
 	bs->Write(m_pos.x);
 	bs->Write(m_pos.z);
 	bs->Write(m_pos.y);
@@ -28,7 +27,6 @@ void PlaceBlockPacket::write(RakNet::BitStream* bs)
 void PlaceBlockPacket::read(RakNet::BitStream* bs)
 {
 	bs->Read(m_playerID);
-	// The order of the TilePos matters here
 	bs->Read(m_pos.x);
 	bs->Read(m_pos.z);
 	bs->Read(m_pos.y);

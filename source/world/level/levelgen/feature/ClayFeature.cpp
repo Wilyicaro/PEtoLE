@@ -17,61 +17,44 @@ ClayFeature::ClayFeature(int id, int count)
 
 bool ClayFeature::place(Level* level, Random* random, const TilePos& pos)
 {
-    if (level->getMaterial(pos) != Material::water)
-    {
+    if (level->getMaterial(pos) != Material::water) {
         return false;
     }
+    else {
+        float var6 = random->nextFloat() * M_PI;
+        real var7 = (real)((float)(pos.x + 8) + Mth::sin(var6) * (float)m_count / 8.0F);
+        real var9 = (real)((float)(pos.x + 8) - Mth::sin(var6) * (float)m_count / 8.0F);
+        real var11 = (real)((float)(pos.z + 8) + Mth::cos(var6) * (float)m_count / 8.0F);
+        real var13 = (real)((float)(pos.z + 8) - Mth::cos(var6) * (float)m_count / 8.0F);
+        real var15 = (real)(pos.y + random->nextInt(3) + 2);
+        real var17 = (real)(pos.y + random->nextInt(3) + 2);
 
-    // @NOTE: This appears to be pretty much the same as the ore feature.
+        for (int var19 = 0; var19 <= m_count; ++var19) {
+            real var20 = var7 + (var9 - var7) * (real)var19 / (real)m_count;
+            real var22 = var15 + (var17 - var15) * (real)var19 / (real)m_count;
+            real var24 = var11 + (var13 - var11) * (real)var19 / (real)m_count;
+            real var26 = random->nextDouble() * (real)m_count / 16.0;
+            real var28 = (real)(Mth::sin((float)var19 * M_PI / (float)m_count) + 1.0F) * var26 + 1.0;
+            real var30 = (real)(Mth::sin((float)var19 * M_PI / (float)m_count) + 1.0F) * var26 + 1.0;
 
-    float fAng = random->nextFloat() * float(M_PI);
-
-    float d0 = float(pos.x + 8) + 0.125f * float(m_count) * Mth::sin(fAng);
-    float d1 = float(pos.x + 8) - 0.125f * float(m_count) * Mth::sin(fAng);
-    float d2 = float(pos.z + 8) - 0.125f * float(m_count) * Mth::cos(fAng);
-    float d3 = float(pos.z + 8) - 0.125f * float(m_count) * Mth::cos(fAng);
-
-    float d4 = float(pos.y + random->nextInt(3) + 2);
-    float d5 = float(pos.y + random->nextInt(3) + 2);
-
-    for (int i = 0; i <= m_count; i++)
-    {
-        float d6 = d0 + ((d1 - d0) * float(i)) / float(m_count);
-        float d7 = d4 + ((d5 - d4) * float(i)) / float(m_count);
-        float d8 = d2 + ((d3 - d2) * float(i)) / float(m_count);
-        float d9 = (random->nextFloat() * float(m_count)) / 16.0f;
-
-        // @NOTE: seems to be calculated twice??
-        float radius_1 = float(Mth::sin((float(i) * float(M_PI)) / float(m_count)) + 1.0f) * d9 + 1.0f;
-        float radius_2 = float(Mth::sin((float(i) * float(M_PI)) / float(m_count)) + 1.0f) * d9 + 1.0f;
-
-        TilePos min(d6 - radius_1 / 2.0f,
-                    d7 - radius_2 / 2.0f,
-                    d6 - radius_1 / 2.0f);
-        TilePos max(d6 + radius_1 / 2.0f,
-                    d7 + radius_2 / 2.0f,
-                    d6 + radius_1 / 2.0f);
-
-        TilePos tp(min.x, max.y, max.z);
-
-        for (tp.x = min.x; tp.x <= max.x; tp.x++)
-        {
-            for (tp.y = min.y; tp.y <= max.y; tp.y++)
-            {
-                for (tp.z = min.z; tp.z <= max.z; tp.z++)
-                {
-                    float d12 = ((float(tp.x) + 0.5f) - d6) / (radius_1 / 2.0f);
-                    float d13 = ((float(tp.y) + 0.5f) - d7) / (radius_2 / 2.0f);
-                    float d14 = ((float(tp.z) + 0.5f) - d8) / (radius_1 / 2.0f);
-                    if (d12 * d12 + d13 * d13 + d14 * d14 >= 1.0f)
-                        continue;
-
-                    if (level->getTile(tp) == Tile::sand->m_ID)
-                        level->setTileNoUpdate(tp, m_ID);
+            TilePos tp;
+            for (tp.x = Mth::floor(var20 - var28 / 2.0); tp.x <= Mth::floor(var20 + var28 / 2.0); ++tp.x) {
+                for (tp.y = Mth::floor(var22 - var30 / 2.0); tp.y <= Mth::floor(var22 + var30 / 2.0); ++tp.y) {
+                    for (tp.z = Mth::floor(var24 - var28 / 2.0); tp.z <= Mth::floor(var24 + var28 / 2.0); ++tp.z) {
+                        real var35 = ((real)tp.x + 0.5 - var20) / (var28 / 2.0);
+                        real var37 = ((real)tp.y + 0.5 - var22) / (var30 / 2.0);
+                        real var39 = ((real)tp.z + 0.5 - var24) / (var28 / 2.0);
+                        if (var35 * var35 + var37 * var37 + var39 * var39 < 1.0) {
+                            int var41 = level->getTile(tp);
+                            if (var41 == Tile::sand->m_ID) {
+                                level->setTileNoUpdate(tp, m_ID);
+                            }
+                        }
+                    }
                 }
             }
         }
-    }
 
-    return true;
+        return true;
+    }
 }

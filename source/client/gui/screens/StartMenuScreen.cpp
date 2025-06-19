@@ -12,6 +12,7 @@
 #include "ProgressScreen.hpp"
 #include "SelectWorldScreen.hpp"
 #include "JoinGameScreen.hpp"
+#include "client/locale/Language.hpp"
 
 #if defined(_WIN32) || (defined(TARGET_OS_MAC) && TARGET_OS_IPHONE == 0)
 #define CAN_QUIT
@@ -355,11 +356,10 @@ const char* gSplashes[] =
 };
 
 StartMenuScreen::StartMenuScreen() :
-	m_startButton  (2,   0, 0, 160, 24, "Start Game"),
-	m_joinButton   (3,   0, 0, 160, 24, "Join Game"),
-	m_optionsButton(4,   0, 0,  78, 22, "Options"),
-	m_testButton   (999, 0, 0,  78, 22, "Test"),
-	m_buyButton    (5,   0, 0,  78, 22, "Buy")
+	m_startButton  (2,   0, 0, 200, 20, Language::getInstance()->get("menu.singleplayer")),
+	m_joinButton   (3,   0, 0, 200, 20, Language::getInstance()->get("menu.multiplayer")),
+	m_optionsButton(4,   0, 0, 200, 20, Language::getInstance()->get("menu.options")),
+	m_exitButton    (5,   0, 0, 200, 20, Language::getInstance()->get("menu.exit"))
 {
 	m_pTiles = nullptr;
 	m_chosenSplash = -1;
@@ -416,17 +416,9 @@ void StartMenuScreen::buttonClicked(Button* pButton)
 		m_pMinecraft->locateMultiplayer();
 		m_pMinecraft->setScreen(new JoinGameScreen);
 	}
-	else if (pButton->m_buttonId == m_buyButton.m_buttonId)
+	else if (pButton->m_buttonId == m_exitButton.m_buttonId)
 	{
-#ifdef TITLE_CROP_MODE
-		TitleTile::regenerate();
-		return;
-#endif
-#if !defined(DEMO) && defined(CAN_QUIT)
 		m_pMinecraft->quit();
-#else
-		m_pMinecraft->platform()->buyGame();
-#endif
 	}
 	else if (pButton->m_buttonId == m_optionsButton.m_buttonId)
 	{
@@ -436,16 +428,13 @@ void StartMenuScreen::buttonClicked(Button* pButton)
 
 void StartMenuScreen::init()
 {
-	int yPos = m_height / 2;
+	int yPos = m_height / 4 + 48;
 
-	m_joinButton.m_yPos = yPos + 25;
-	m_startButton.m_yPos = yPos - 3;
+	m_startButton.m_yPos = yPos;
+	m_joinButton.m_yPos = yPos + 24;
 
-	yPos += 55;
-
-	m_optionsButton.m_yPos = yPos;
-	m_testButton.m_yPos = yPos;
-	m_buyButton.m_yPos = yPos;
+	m_optionsButton.m_yPos = yPos + 48;
+	m_exitButton.m_yPos = yPos + 72;
 
 	m_startButton.m_xPos = (m_width - m_startButton.m_width) / 2;
 
@@ -453,17 +442,14 @@ void StartMenuScreen::init()
 
 	m_joinButton.m_xPos = x1 / 2;
 	m_optionsButton.m_xPos = x1 / 2;
-	m_buyButton.m_xPos = x1 / 2 + m_optionsButton.m_width + 4;
-	m_testButton.m_xPos = x1 / 2 + m_optionsButton.m_width + 4;
+	m_exitButton.m_xPos = x1 / 2;
 
 	// add the buttons to the screen:
 	m_buttons.push_back(&m_startButton);
 	m_buttons.push_back(&m_joinButton);
 	m_buttons.push_back(&m_optionsButton);
 
-#if defined(DEMO) || defined(CAN_QUIT)
-	m_buttons.push_back(&m_buyButton);
-#endif
+	m_buttons.push_back(&m_exitButton);
 
 	for (int i = 0; i < int(m_buttons.size()); i++)
 		m_buttonTabList.push_back(m_buttons[i]);
@@ -479,9 +465,6 @@ void StartMenuScreen::init()
 
 	field_188 = (m_width - m_pFont->width(field_170)) / 2;
 
-#if !defined(DEMO) && defined(CAN_QUIT)
-	m_buyButton.m_text = "Quit";
-#endif
 
 	_updateLicense();
 }
@@ -495,41 +478,12 @@ void StartMenuScreen::drawLegacyTitle()
 {
 	Textures* tx = m_pMinecraft->m_pTextures;
 
-	bool crampedMode = false;
-	//int titleYPos = 4;
-	//int titleYPos = 30; // -- MC Java position
-	int titleYPos = 15;
-
-	int id = tx->loadTexture("gui/title.png", true);
-	Texture* pTex = tx->getTemporaryTextureData(id);
-
-	if (pTex)
-	{
-		if (id != tx->m_currBoundTex)
-		{
-			glBindTexture(GL_TEXTURE_2D, id);
-			tx->m_currBoundTex = id;
-		}
-
-		int left = (m_width - pTex->m_width) / 2;
-		int width = pTex->m_width;
-		int height = pTex->m_height;
-
-		if (m_width * 3 / 4 < width)
-		{
-			crampedMode = true;
-			titleYPos = 4;
-		}
-
-		Tesselator& t = Tesselator::instance;
-		glColor4f(1, 1, 1, 1);
-		t.begin();
-		t.vertexUV(left, height + titleYPos, field_4, 0.0f, 1.0f);
-		t.vertexUV(left + width, height + titleYPos, field_4, 1.0f, 1.0f);
-		t.vertexUV(left + width, titleYPos, field_4, 1.0f, 0.0f);
-		t.vertexUV(left, titleYPos, field_4, 0.0f, 0.0f);
-		t.draw();
-	}
+	const int titleYPos = 30;
+	short width = 274;
+	int leftPos = m_width / 2 - width / 2;
+	tx->loadAndBindTexture("title/mclogo.png");
+	blit(leftPos, titleYPos, 0, 0, 155, 44, 256, 256);
+	blit(leftPos + 155, titleYPos, 0, 45, 155, 44, 256, 256);
 
 }
 
@@ -544,28 +498,13 @@ void StartMenuScreen::render(int a, int b, float c)
 
 	//int titleYPos = 4;
 	//int titleYPos = 30; // -- MC Java position.
-	int titleYPos = 15;
-	bool crampedMode = false;
 
-	if (m_width * 3 / 4 < 256)
-	{
-		crampedMode = true;
-		titleYPos = 4;
-	}
 
-	if (m_pMinecraft->getOptions()->m_bOldTitleLogo)
-		drawLegacyTitle();
-	else
-		draw3dTitle(c);
+	drawLegacyTitle();
 
-	drawString(m_pFont, field_170, field_188, 58 + titleYPos, 0xFFCCCCCC);
 	drawString(m_pFont, field_154, field_16C, m_height - 10, 0x00FFFFFF);
 
-	// Draw the splash text, if we have enough room.
-#ifndef TITLE_CROP_MODE
-	if (!crampedMode)
-		drawSplash();
-#endif
+	drawSplash();
 
 	Screen::render(a, b, c);
 }
@@ -582,123 +521,6 @@ void StartMenuScreen::tick()
 		for (int i = 0; i < Width * Height; i++)
 			m_pTiles[i]->tick();
 	}
-}
-
-void StartMenuScreen::draw3dTitle(float f)
-{
-	int Width = int(sizeof gLogoLine1 - 1);
-	int Height = int(sizeof gLogoLines / sizeof * gLogoLines);
-
-	if (!m_pTiles)
-	{
-		m_pTiles = new TitleTile*[Width * Height];
-
-		for (int y = 0; y < Height; y++)
-			for (int x = 0; x < Width; x++)
-				m_pTiles[y * Width + x] = new TitleTile(this, x, y);
-	}
-
-	int titleHeight = int(120 / Gui::InvGuiScale);
-
-	if (m_width * 3 / 4 < 256) // cramped mode
-		titleHeight = int(80 / Gui::InvGuiScale);
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluPerspective(70.0f, float(Minecraft::width) / titleHeight, 0.05f, 100.0f);
-	glViewport(0, Minecraft::height - titleHeight, Minecraft::width, titleHeight);
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	//glDisable(GL_CULL_FACE);
-	glDepthMask(true);
-
-	for (int i = 0; i < 3; i++)
-	{
-		glPushMatrix();
-		glTranslatef(0.4f, 0.6f, -12.0f);
-		switch (i)
-		{
-			case 0:
-				glClear(GL_DEPTH_BUFFER_BIT);
-				glTranslatef(0.0f, -0.5f, -0.5f);
-				glEnable(GL_BLEND);
-				//force set alpha
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
-
-			case 1:
-				glDisable(GL_BLEND);
-				glClear(GL_DEPTH_BUFFER_BIT);
-				//revert
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-				break;
-				
-			case 2:
-				glEnable(GL_BLEND);
-				//glBlendFunc(GL_SRC_COLOR, GL_ONE);
-				break;
-		}
-
-		glScalef(1.0f, -1.0f, 1.0f);
-		glRotatef(8.0f, 1.0f, 0.0f, 0.0f);
-		//glRotatef(15.0f, 1.0f, 0.0f, 0.0f);
-		glScalef(0.89f, 1.0f, 0.4f);
-		glTranslatef(-Width * 0.5f, -Height * 0.5f, 0.0f);
-
-		m_pMinecraft->m_pTextures->loadAndBindTexture("terrain.png");
-		if (i == 0) {
-			m_pMinecraft->m_pTextures->loadAndBindTexture("gui/black.png");
-		}
-
-		for (int y = 0; y < Height; y++)
-		{
-			for (int x = 0; x < Width; x++)
-			{
-				if (gLogoLines[y][x] == ' ')
-					continue;
-
-				Tile* pTile = TitleTile::getTileFromChar(gLogoLines[y][x]);
-
-				glPushMatrix();
-
-				TitleTile* pTTile = m_pTiles[y * Width + x];
-				float z = Mth::Lerp(pTTile->lastHeight, pTTile->height, f);
-				float scale = 1.0f;
-				float bright = 1.0f;
-				float rotation = 180.0f;
-
-				if (i == 0)
-				{
-					scale = z * 0.04f + 1.0f;
-					bright = 1.0f / scale;
-					z = 0.0f;
-				}
-
-				glTranslatef(float(x), float(y), z);
-				glScalef(scale, scale, scale);
-				glScalef(-1.0f, 1.0f, 1.0f);
-				glRotatef(rotation, 0.0f, 0.0f, 1.0f);
-
-				// rotate 90 deg on the X axis to correct lighting
-				glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-				m_tileRenderer.renderTile(pTile, i == 0 ? 999 : 0, bright, true);
-
-				glPopMatrix();
-			}
-		}
-
-		glPopMatrix();
-	}
-
-	glDisable(GL_BLEND);
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-	glViewport(0, 0, Minecraft::width, Minecraft::height);
-	//glEnable(GL_CULL_FACE);
 }
 
 void StartMenuScreen::drawSplash()
@@ -733,13 +555,8 @@ std::string StartMenuScreen::getSplashString()
 	return std::string(gSplashes[m_chosenSplash]);
 }
 
-bool StartMenuScreen::handleBackEvent(bool b)
+void StartMenuScreen::onClose()
 {
-	if (!b)
-	{
-		m_pMinecraft->quit();
-	}
-	return true;
 }
 
 Tile* TitleTile::_tiles[3];
@@ -783,11 +600,6 @@ Tile* TitleTile::getTileFromChar(char c)
 // NOTE: Using the tile enum instead of Tile::tileName->id, may want to.. not?
 static const int _tileBlockList[] = {
 	TILE_BOOKSHELF,
-	TILE_CLOTH, // TODO: fix these? There's way too many black wool tiles
-	TILE_CLOTH_00,
-	TILE_CLOTH_01,
-	TILE_CLOTH_10,
-	TILE_CLOTH_41,
 	TILE_STAIRS_WOOD,
 	TILE_STAIRS_STONE,
 	TILE_TOPSNOW,

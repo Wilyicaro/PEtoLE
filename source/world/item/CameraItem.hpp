@@ -14,5 +14,5 @@ class CameraItem : public Item
 public:
 	CameraItem(int id);
 
-	ItemInstance* use(ItemInstance* inst, Level* level, Player* player) override;
+	std::shared_ptr<ItemInstance> use(std::shared_ptr<ItemInstance> inst, Level* level, Player* player) override;
 };

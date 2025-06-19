@@ -3,9 +3,9 @@
 #ifdef USE_OPENAL
 
 #ifdef _WIN32
-#include <al.h>
-#include <alc.h>
-#pragma comment( lib, "OpenAl32.lib" )
+#include <AL/al.h>
+#include <AL/alc.h>
+#pragma comment( lib, "OpenAL32.lib" )
 #elif defined(__APPLE__)
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>
@@ -19,7 +19,7 @@
 #include <map>
 
 #include "client/sound/SoundSystem.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 
 #define MAX_IDLE_SOURCES 50
 #define MAX_DISTANCE 16.0f

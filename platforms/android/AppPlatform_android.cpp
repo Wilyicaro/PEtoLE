@@ -357,3 +357,37 @@ int AppPlatform_android::getKeyboardUpOffset()
 	// For now we'll just return 1/2 of the screen height. That ought to cover most cases.
 	return m_ScreenHeight / 2;
 }
+
+std::optional<std::string> AppPlatform_android::readFile(const std::string& path) const
+{
+    AAsset* asset = AAssetManager_open(m_app->activity->assetManager, path.c_str(), AASSET_MODE_BUFFER);
+    if (!asset) return std::nullopt;
+
+    size_t size = AAsset_getLength(asset);
+    std::string buffer(size, '\0');
+    AAsset_read(asset, &buffer[0], size);
+    AAsset_close(asset);
+
+    return buffer;
+}
+
+int AppPlatform_android::loadOgg(const std::string path, int* channels, int* sample_rate, short** output) const
+{
+	auto realPath = path.c_str();
+	AAsset* asset = AAssetManager_open(m_app->activity->assetManager, realPath, AASSET_MODE_STREAMING);
+    if (!asset) {
+        __android_log_print(ANDROID_LOG_ERROR, "Audio", "Asset Loading Error: %s", realPath);
+        return 0;
+    }
+
+    off_t size = AAsset_getLength(asset);
+    unsigned char* data = new unsigned char[size];
+    AAsset_read(asset, data, size);
+    AAsset_close(asset);
+
+    int samples = decodeOgg(data, size, channels, sample_rate, output);
+   
+    delete[] data;
+
+	return samples;
+}

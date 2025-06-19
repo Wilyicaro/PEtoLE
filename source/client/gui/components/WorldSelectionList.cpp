@@ -61,7 +61,7 @@ void WorldSelectionList::tick()
 
 		field_D8 = 0;
 		field_38 = 0.0f;
-		field_34 = field_30 = field_60;
+		field_34 = m_noNeighborUpdate = field_60;
 		m_selectedIndex = getItemAtPosition(field_18 / 2, field_1C / 2);
 		return;
 	}
@@ -76,7 +76,7 @@ void WorldSelectionList::tick()
 	field_38 *= 0.8f;
 	if (abs_field38 < 1.0f && field_28 < 0)
 	{
-		float x1 = float((field_18 - m_itemWidth) / 2) + field_30;
+		float x1 = float((field_18 - m_itemWidth) / 2) + m_noNeighborUpdate;
 		int x2 = getItemAtXPositionRaw(int(x1 - 10.0f * field_38));
 		float x3 = float(m_itemWidth * x2) - x1;
 
@@ -85,8 +85,8 @@ void WorldSelectionList::tick()
 
 		if (Mth::abs(x3) > 1.0f || abs_field38 >= 0.1f)
 		{
-			field_5C = field_30;
-			field_60 = field_30 + x3;
+			field_5C = m_noNeighborUpdate;
+			field_60 = m_noNeighborUpdate + x3;
 			field_54 = 0.0f;
 			field_D8 = 1;
 			field_58 = float(Mth::Min(7, int(float(0.25f * Mth::abs(x3))) + 1));
@@ -157,10 +157,10 @@ void WorldSelectionList::renderItem(int index, int xPos, int yPos, int width, Te
 	t.begin();
 	t.color(color1);
 	float y = float(yPos) - 6.0f;
-	t.vertexUV(float(xCenter - 32), y,         this->field_4, 0.0f, 0.0f);
-	t.vertexUV(float(xCenter - 32), y + 48.0f, this->field_4, 0.0f, 1.0f);
-	t.vertexUV(float(xCenter + 32), y + 48.0f, this->field_4, 1.0f, 1.0f);
-	t.vertexUV(float(xCenter + 32), y,         this->field_4, 1.0f, 0.0f);
+	t.vertexUV(float(xCenter - 32), y,         this->zLevel, 0.0f, 0.0f);
+	t.vertexUV(float(xCenter - 32), y + 48.0f, this->zLevel, 0.0f, 1.0f);
+	t.vertexUV(float(xCenter + 32), y + 48.0f, this->zLevel, 1.0f, 1.0f);
+	t.vertexUV(float(xCenter + 32), y,         this->zLevel, 1.0f, 0.0f);
 	t.draw();
 }
 
@@ -179,7 +179,7 @@ void WorldSelectionList::commit()
 		std::stringstream ss;
 		ss << item.m_levelName << "/preview.png";
 
-		m_previewImages.push_back("gui/default_world.png");
+		m_previewImages.push_back("pack.png");
 
 		std::vector<std::string> vs;
 		vs.push_back(item.m_levelName);
@@ -194,7 +194,7 @@ void WorldSelectionList::stepLeft()
 	if (m_selectedIndex <= 0)
 		return;
 
-	field_5C = field_30;
+	field_5C = m_noNeighborUpdate;
 	field_D8 = 1;
 	field_60 = field_5C - float(m_itemWidth);
 	field_54 = 0.0f;
@@ -207,7 +207,7 @@ void WorldSelectionList::stepRight()
 	if (m_selectedIndex < 0 || m_selectedIndex >= getNumberOfItems() - 1)
 		return;
 
-	field_5C = field_30;
+	field_5C = m_noNeighborUpdate;
 	field_D8 = 1;
 	field_60 = field_5C + float(m_itemWidth);
 	field_54 = 0.0f;

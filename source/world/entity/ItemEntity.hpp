@@ -25,21 +25,19 @@ public:
 	void playerTouch(Player*) override;
 	void tick() override;
 
-	void checkInTile(const Vec3& pos);
+	void addAdditionalSaveData(std::shared_ptr<CompoundTag>) override;
+
+	void readAdditionalSaveData(std::shared_ptr<CompoundTag>) override;
 
 public:
-	// @NOTE: The original code keeps a pointer to something which is not duplicated with a new(), nor does it delete() the instance.
-	// So either it's leaked, or the code will use invalid memory.
-#ifdef ORIGINAL_CODE
-	ItemInstance* m_pItemInstance;
-#else
-	ItemInstance m_itemInstance;
-#endif
 
-	int field_E0;
-	int field_E4;
-	float field_E8;
-	int field_EC;
+	std::shared_ptr<ItemInstance> m_itemInstance;
+
+
+	int m_age;
+	int m_throwTime;
+	int m_tickCount;
 	int m_health;
+	float m_bobOffs;
 };
 

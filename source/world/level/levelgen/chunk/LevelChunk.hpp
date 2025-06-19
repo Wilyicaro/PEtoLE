@@ -16,6 +16,13 @@
 #include "client/renderer/LightLayer.hpp"
 #include "world/level/levelgen/chunk/ChunkPos.hpp"
 #include "world/level/levelgen/chunk/ChunkTilePos.hpp"
+#include <common/CompoundTag.hpp>
+#include <common/LongTag.hpp>
+#include <common/IntTag.hpp>
+#include <common/ByteTag.hpp>
+#include <common/ListTag.hpp>
+#include <world/tile/entity/TileEntity.hpp>
+#include <world/entity/EntityCategories.hpp>
 
 class Level;
 class AABB;
@@ -28,6 +35,10 @@ private:
 protected:
 	LevelChunk() { _init(); }
 public:
+	std::shared_ptr<CompoundTag> serialize();
+
+	void deserialize(std::shared_ptr<CompoundTag> tag);
+
 	LevelChunk(Level*, const ChunkPos& pos);
 	LevelChunk(Level*, TileID* pBlockData, const ChunkPos& pos);
 	virtual ~LevelChunk();
@@ -46,19 +57,20 @@ public:
 	virtual int getBrightness(const LightLayer& ll, const ChunkTilePos& pos);
 	virtual void setBrightness(const LightLayer& ll, const ChunkTilePos& pos, int brightness);
 	virtual int getRawBrightness(const ChunkTilePos& pos, int skySubtract);
-	virtual void addEntity(Entity*);
-	virtual void removeEntity(Entity*);
-	virtual void removeEntity(Entity*, int vec);
+	virtual void addEntity(std::shared_ptr<Entity>);
+	virtual void removeEntity(std::shared_ptr<Entity>);
+	virtual void removeEntity(std::shared_ptr<Entity> , int vec);
 	virtual bool isSkyLit(const ChunkTilePos& pos);
 	virtual void lightLava();
 	virtual void recalcBlockLights();
 	virtual void skyBrightnessChanged();
 	virtual void load();
 	virtual void unload();
-	virtual bool shouldSave(bool b);
+	virtual bool shouldSave(bool b = false);
 	virtual void markUnsaved();
 	virtual int  countEntities();
-	virtual void getEntities(Entity* pEntExclude, const AABB&, std::vector<Entity*>& out);
+	virtual void getEntities(std::shared_ptr<Entity> pEntExclude, const AABB&, std::vector<std::shared_ptr<Entity>>& out);
+	virtual void getEntitiesOfCategory(EntityCategories::CategoriesMask category, const AABB&, std::vector<std::shared_ptr<Entity>>& out);
 	virtual TileID getTile(const ChunkTilePos& pos);
 	virtual bool setTile(const ChunkTilePos& pos, TileID tile);
 	virtual bool setTileAndData(const ChunkTilePos& pos, TileID tile, int data);
@@ -67,6 +79,13 @@ public:
 	virtual void setBlocks(uint8_t* pData, int y);
 	virtual int  getBlocksAndData(uint8_t* pData, int, int, int, int, int, int, int);
 	virtual int  setBlocksAndData(uint8_t* pData, int, int, int, int, int, int, int);
+	virtual std::shared_ptr<TileEntity> getTileEntity(const ChunkTilePos& pos);
+	virtual void addTileEntity(std::shared_ptr<TileEntity> tileEntity)
+	{
+		setTileEntity(tileEntity->m_pos, tileEntity);
+	}
+	virtual void setTileEntity(const ChunkTilePos& pos, std::shared_ptr<TileEntity> tileEntity);
+	virtual void removeTileEntity(const ChunkTilePos& pos);
 	virtual Random getRandom(int32_t l);
 	virtual void recalcHeight(const ChunkTilePos& pos);
 	virtual bool isEmpty();
@@ -76,7 +95,6 @@ public:
 	static bool touchedSky;
 
 public:
-
 	int field_4;
 	bool m_bLoaded;
 	Level* m_pLevel;
@@ -88,14 +106,15 @@ public:
 	int      m_lightBlkCnt;
 	uint8_t m_heightMap[256];
 	uint8_t m_updateMap[256];
-	int field_228;
+	int m_minHeight;
 	ChunkPos m_chunkPos;
-	uint8_t field_234;
+	uint8_t m_bIsTerrainPopulated;
 	bool m_bUnsaved;
-	uint8_t field_236;
+	bool m_bFakeChunk;
 	uint8_t field_237;
-	int field_238;
-	int field_23C;
+	int m_lastSaveHadEntities;
+	int m_lastSaveTime;
 	TileID* m_pBlockData;
-	std::vector<Entity*> m_entities[128 / 16];
+	std::vector<std::shared_ptr<Entity>> m_entities[128 / 16];
+	std::unordered_map<ChunkTilePos, std::shared_ptr<TileEntity>> m_tileEntities;
 };

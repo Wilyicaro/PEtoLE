@@ -17,9 +17,11 @@ void ChunkSource::saveAll()
 
 }
 
-#ifdef ENH_IMPROVED_SAVING
-void ChunkSource::saveUnsaved()
+void ChunkSource::saveUnsaved(bool limited)
 {
 
 }
-#endif
+
+void ChunkSource::unloadFarChunks()
+{
+}

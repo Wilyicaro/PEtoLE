@@ -10,6 +10,7 @@
 
 #include <set>
 #include <sstream>
+#include <filesystem>
 #include "LevelStorageSource.hpp"
 
 #ifndef DEMO

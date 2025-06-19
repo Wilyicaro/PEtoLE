@@ -27,8 +27,7 @@ public:
 	virtual bool shouldSave() = 0;
 	virtual void saveAll();
 	virtual std::string gatherStats() = 0;
-#ifdef ENH_IMPROVED_SAVING
-	virtual void saveUnsaved();
-#endif
+	virtual void saveUnsaved(bool limited = true);
+	virtual void unloadFarChunks();
 };
 

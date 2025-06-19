@@ -10,8 +10,19 @@
 #include "world/level/Level.hpp"
 #include "world/level/Region.hpp"
 #include "TileRenderer.hpp"
+#include "TileEntityRenderDispatcher.hpp"
+#include <set>
+#include <algorithm>
 
 int Chunk::updates;
+
+Chunk::~Chunk() {
+	for (int i = 0; i < 2; ++i) {
+		if (!empty[i]) {
+			xglDeleteBuffers(1, &m_renderChunks[i].field_0);
+		}
+	}
+}
 
 float Chunk::distanceToSqr(const Entity* pEnt) const
 {
@@ -33,10 +44,10 @@ float Chunk::squishedDistanceToSqr(const Entity* pEnt) const
 
 void Chunk::reset()
 {
-	field_1C[0] = true;
-	field_1C[1] = true;
+	empty[0] = true;
+	empty[1] = true;
 	m_bVisible = false;
-	field_94 = false;
+	m_bCompiled = false;
 }
 
 int Chunk::getList(int idx)
@@ -44,7 +55,7 @@ int Chunk::getList(int idx)
 	if (!m_bVisible)
 		return -1;
 
-	if (field_1C[idx])
+	if (empty[idx])
 		return -1;
 
 	return field_8C + idx;
@@ -60,7 +71,7 @@ int Chunk::getAllLists(int* arr, int arr_idx, int idx)
 	if (!m_bVisible)
 		return arr_idx;
 
-	if (field_1C[idx])
+	if (empty[idx])
 		return arr_idx;
 
 	arr[arr_idx++] = field_8C + idx;
@@ -80,13 +91,13 @@ void Chunk::renderBB()
 
 bool Chunk::isEmpty()
 {
-	if (!field_94)
+	if (!m_bCompiled)
 		return false;
 
-	if (!field_1C[0])
+	if (!empty[0])
 		return false;
 
-	if (!field_1C[1])
+	if (!empty[1])
 		return false;
 
 	return true;
@@ -129,9 +140,10 @@ void Chunk::rebuild()
 	updates++;
 
 	LevelChunk::touchedSky = false;
-
-	field_1C[0] = true;
-	field_1C[1] = true;
+	std::set<std::shared_ptr<TileEntity>> oldSet(m_renderableTileEntities.begin(), m_renderableTileEntities.end());
+	m_renderableTileEntities.clear();
+	empty[0] = true;
+	empty[1] = true;
 
 	TilePos min(m_pos), max(m_pos + field_10);
 
@@ -162,6 +174,14 @@ void Chunk::rebuild()
 						t.offset(float(-m_pos.x), float(-m_pos.y), float(-m_pos.z));
 					}
 
+					if (!layer && Tile::isEntityTile[tile]) {
+						auto et = region.getTileEntity(tp);
+						if (TileEntityRenderDispatcher::getInstance()->hasRenderer(et.get())) 
+						{
+							m_renderableTileEntities.push_back(et);
+						}
+					}
+
 					Tile* pTile = Tile::tiles[tile];
 
 					if (layer == pTile->getRenderLayer())
@@ -183,22 +203,46 @@ void Chunk::rebuild()
 			RenderChunk* pRChk = &m_renderChunks[layer];
 
 			*pRChk = rchk;
-			pRChk->field_C  = float(m_pos.x);
-			pRChk->field_10 = float(m_pos.y);
-			pRChk->field_14 = float(m_pos.z);
+			pRChk->m_posX  = float(m_pos.x);
+			pRChk->m_posY = float(m_pos.y);
+			pRChk->m_posZ = float(m_pos.z);
 
 			t.offset(0.0f, 0.0f, 0.0f);
 
 			if (bDrewThisLayer)
-				field_1C[layer] = false;
+				empty[layer] = false;
 		}
 
 		if (!bNeedAnotherLayer)
 			break;
 	}
 
-	field_54 = LevelChunk::touchedSky;
-	field_94 = true;
+	std::set<std::shared_ptr<TileEntity>> newSet(m_renderableTileEntities.begin(), m_renderableTileEntities.end());
+
+	std::vector<std::shared_ptr<TileEntity>> toAdd, toRemove;
+
+	std::set_difference(
+		newSet.begin(), newSet.end(),
+		oldSet.begin(), oldSet.end(),
+		std::back_inserter(toAdd)
+	);
+
+	std::set_difference(
+		oldSet.begin(), oldSet.end(),
+		newSet.begin(), newSet.end(),
+		std::back_inserter(toRemove)
+	);
+
+	for (auto& e : toAdd)
+		m_globalRenderableTileEntities.push_back(e);
+
+	for (auto& e : toRemove) {
+		auto it = std::find(m_globalRenderableTileEntities.begin(), m_globalRenderableTileEntities.end(), e);
+		if (it != m_globalRenderableTileEntities.end())
+			m_globalRenderableTileEntities.erase(it);
+	}
+	m_bSkyLit = LevelChunk::touchedSky;
+	m_bCompiled = true;
 }
 
 void Chunk::translateToPos()
@@ -206,11 +250,11 @@ void Chunk::translateToPos()
 	glTranslatef(float(m_pos.x), float(m_pos.y), float(m_pos.z));
 }
 
-Chunk::Chunk(Level* level, const TilePos& pos, int a, int b, GLuint* bufs)
+Chunk::Chunk(Level* level, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int a, int b, GLuint* bufs) : m_globalRenderableTileEntities(renderableTileEntities)
 {
-	field_4D = true;
+	m_bOcclusionVisible = true;
 	field_4E = false;
-	field_94 = false;
+	m_bCompiled = false;
 	m_bDirty = false;
 
 	m_pLevel = level;

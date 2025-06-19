@@ -14,12 +14,16 @@ class HumanoidMobRenderer : public MobRenderer
 {
 public:
 	HumanoidMobRenderer(HumanoidModel*, float);
+	virtual bool prepareArmor(Mob* mob, int a, float b) override;
 	virtual void additionalRendering(Mob*, float) override;
+	virtual void render(Entity*, float, float, float, float, float) override;
 	virtual void onGraphicsReset() override;
 
 	void renderHand();
 
 public:
 	HumanoidModel* m_pHumanoidModel;
+	HumanoidModel* m_armorParts1;
+	HumanoidModel* m_armorParts2;
 };
 

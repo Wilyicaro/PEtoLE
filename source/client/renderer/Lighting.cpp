@@ -1,6 +1,6 @@
 #include "Lighting.hpp"
 
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 
 #include "thirdparty/GL/GL.hpp"
 
@@ -8,12 +8,10 @@ float Lighting::lb[4] = {};
 
 void Lighting::turnOff()
 {
-#ifdef USE_GL_NORMAL_LIGHTING
 	glDisable(GL_LIGHTING);
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHT1);
 	glDisable(GL_COLOR_MATERIAL);
-#endif
 }
 
 void Lighting::turnOn()

@@ -8,14 +8,14 @@
 
 #include "TestChunkSource.hpp"
 #include "world/level/Level.hpp"
-#include "EmptyLevelChunk.hpp"
+#include "FakeLevelChunk.hpp"
 
 TestChunkSource::TestChunkSource(Level* pLevel)
 {
 	m_pLevel = pLevel;
 	memset(m_chunkMap, 0, sizeof m_chunkMap);
 
-	m_pEmptyChunk = new EmptyLevelChunk(pLevel, nullptr, ChunkPos(0,0));
+	m_pEmptyChunk = new FakeLevelChunk(pLevel, nullptr, ChunkPos(0,0), FakeLevelChunk::NONE);
 
 	m_lastChunkPos = ChunkPos(-99999, -99999);
 	m_pLastChunk = m_pEmptyChunk;
@@ -23,9 +23,9 @@ TestChunkSource::TestChunkSource(Level* pLevel)
 
 TestChunkSource::~TestChunkSource()
 {
-	for (int z = 0; z < C_MAX_CHUNKS_Z; z++)
+	for (int z = C_MIN_CHUNKS_Z; z < C_MAX_CHUNKS_Z; z++)
 	{
-		for (int x = 0; x < C_MAX_CHUNKS_X; x++)
+		for (int x = C_MIN_CHUNKS_X; x < C_MAX_CHUNKS_X; x++)
 		{
 			if (m_chunkMap[z][x])
 				delete m_chunkMap[z][x];
@@ -38,7 +38,7 @@ LevelChunk* TestChunkSource::generateChunk(const ChunkPos& pos)
 	//@NOTE: This gets called a dangerous amount of recursions (for the entire damn world!)
 	// We really should fix this...
 
-	if (pos.x < 0 || pos.z < 0 || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
 		return nullptr;
 	
 	if (m_chunkMap[pos.z][pos.x])
@@ -78,7 +78,7 @@ LevelChunk* TestChunkSource::generateChunk(const ChunkPos& pos)
 				else if (i > 3)
 					*p = TILE_STONE;
 				else
-					*p = TILE_STONEBRICK;
+					*p = TILE_COBBLESTONE;
 
 				// generate a hole at (128,0,128) for testing
 				//if (i == 0 && j == 0 && k == 0 && x == 8 && z == 8)
@@ -156,7 +156,7 @@ LevelChunk* TestChunkSource::getChunk(const ChunkPos& pos)
 
 LevelChunk* TestChunkSource::getChunkDontCreate(const ChunkPos& pos)
 {
-	if (pos.x < 0 || pos.z < 0 || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
 		return nullptr;
 
 	if (m_chunkMap[pos.z][pos.x])

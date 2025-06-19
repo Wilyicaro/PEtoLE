@@ -32,6 +32,11 @@ public: // Instance Functions
 	Biome* setLeafColor(int color);
 	Biome* setName(const std::string& name);
 	Biome* setSnowCovered();
+	Biome* setNoRain();
+	bool canOnlyRain() const
+	{
+		return !hasSnow && hasRain;
+	}
 
 public: // Static Variables
 	static Biome
@@ -55,9 +60,11 @@ private: // Private Functions
 public: // Instance Variables
 	std::string m_name;
 	int m_Color;
-	TileID field_20;
-	TileID field_21;
+	TileID topBlock;
+	TileID fillerBlock;
 	int m_LeafColor;
+	bool hasSnow;
+	bool hasRain = true;
 };
 
 class RainforestBiome : public Biome

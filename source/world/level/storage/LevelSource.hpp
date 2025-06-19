@@ -8,9 +8,12 @@
 
 #pragma once
 
+#include <memory>
 #include "common/Utils.hpp"
 #include "world/level/Material.hpp"
 #include "world/level/levelgen/biome/BiomeSource.hpp"
+
+class TileEntity;
 
 class LevelSource
 {
@@ -22,5 +25,6 @@ public:
 	virtual Material* getMaterial(const TilePos& pos) const = 0;
 	virtual bool isSolidTile(const TilePos& pos) const = 0;
 	virtual BiomeSource* getBiomeSource() const = 0;
+	virtual std::shared_ptr<TileEntity> getTileEntity(const TilePos& pos) const  = 0;
 };
 

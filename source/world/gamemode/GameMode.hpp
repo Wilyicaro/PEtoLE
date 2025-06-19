@@ -31,15 +31,15 @@ public:
 	virtual void tick();
 	virtual void render(float f);
 	virtual float getPickRange() const;
-	virtual bool useItem(Player*, Level*, ItemInstance*);
-	virtual bool useItemOn(Player*, Level*, ItemInstance*, const TilePos& pos, Facing::Name face);
-	virtual LocalPlayer* createPlayer(Level*);
+	virtual bool useItem(Player*, Level*, std::shared_ptr<ItemInstance>);
+	virtual bool useItemOn(Player*, Level*, std::shared_ptr<ItemInstance>, const TilePos& pos, Facing::Name face);
+	virtual std::shared_ptr<LocalPlayer> createPlayer(Level*);
 	virtual void initPlayer(Player*);
 	virtual void adjustPlayer(Player*);
 	virtual bool canHurtPlayer();
 	virtual void interact(Player*, Entity*);
 	virtual void attack(Player*, Entity*);
-	virtual int handleInventoryMouseClick(int, int, int, Player*);
+	virtual std::shared_ptr<ItemInstance> handleInventoryMouseClick(int, int, int, Player*);
 	virtual void handleCloseInventory(int, Player*);
 	virtual bool isCreativeType() const { return true; }
 	virtual bool isSurvivalType() const { return false; }

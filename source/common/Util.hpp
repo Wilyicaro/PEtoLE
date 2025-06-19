@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <stdint.h>
+#include <stdexcept>
 
 class Util
 {
@@ -23,8 +24,17 @@ public:
 	static std::string stringTrim(const std::string &, const std::string &, bool, bool);
 	static std::string stringTrim(const std::string &);
 
-	static std::string vformat(const char* fmt, va_list argPtr);
-	static std::string format(const char* fmt, ...);
+	template<typename... Args>
+	static std::string format(const char* fmt, Args... args) {
+		int size = std::snprintf(nullptr, 0, fmt, args...) + 1;
+		if (size <= 0) {
+			return EMPTY_STRING;
+		}
+
+		std::vector<char> buf(size);
+		std::snprintf(buf.data(), size, fmt, args...);
+		return std::string(buf.data());
+	}
 
 	template<typename T>
 	static bool remove(std::vector<T>& vec, const T& t)

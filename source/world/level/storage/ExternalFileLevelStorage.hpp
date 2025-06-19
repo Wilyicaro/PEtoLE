@@ -9,9 +9,11 @@
 #pragma once
 
 #include <list>
+#include <unordered_map>
 #include "LevelStorage.hpp"
 #include "ChunkStorage.hpp"
 #include "RegionFile.hpp"
+#include <cstdint>
 
 #ifndef DEMO
 
@@ -31,8 +33,8 @@ public:
 	// LevelStorage
 	LevelData* prepareLevel(Level* level) override;
 	ChunkStorage* createChunkStorage(Dimension*) override;
-	void saveLevelData(LevelData* levelData, std::vector<Player*>& players) override;
-	void savePlayerData(LevelData* levelData, std::vector<Player*>& players) override;
+	void saveLevelData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players) override;
+	void savePlayerData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players) override;
 	void closeAll() override;
 	void tick() override;
 	void flush() override;
@@ -47,13 +49,13 @@ public:
 	static bool writeLevelData(const std::string& path, LevelData* pLevelData);
 
 public:
+	RegionFile* createOrGetRegion(const ChunkPos& pos);
 	std::string field_8;
 	std::string m_levelDirPath;
 	LevelData* m_pLevelData;
-	RegionFile* m_pRegionFile;
+	std::unordered_map<uint64_t,RegionFile*> m_pRegionMap;
 	Level* m_pLevel;
 	int m_timer;
-	std::list<UnsavedLevelChunk> m_unsavedLevelChunks;
 };
 
 #endif

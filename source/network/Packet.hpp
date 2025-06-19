@@ -9,7 +9,8 @@
 #pragma once
 
 #include <string>
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
+#include "world/phys/Vec2.hpp"
 #include "world/gamemode/GameType.hpp"
 #include "world/entity/Player.hpp"
 #include "RakNetTypes.h"
@@ -238,6 +239,21 @@ public:
 	RakNet::RakString m_name;
 	int m_id;
 	Vec3 m_pos;
+};
+
+class AddMobPacket : public Packet
+{
+public:
+	AddMobPacket() {}
+	AddMobPacket(const Mob* mob);
+	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
+	void write(RakNet::BitStream*) override;
+	void read(RakNet::BitStream*) override;
+public:
+	int m_id;
+	int m_type;
+	Vec3 m_pos;
+	Vec2 m_rot;
 };
 
 class RemoveEntityPacket : public Packet

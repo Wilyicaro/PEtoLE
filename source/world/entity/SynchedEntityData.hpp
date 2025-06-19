@@ -5,7 +5,7 @@
 
 #include "common/Util.hpp"
 #include "world/item/ItemInstance.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 
 #define C_ENTITYDATA_EOF_MARKER (127)
 #define C_ENTITYDATA_TYPE_MASK (224)

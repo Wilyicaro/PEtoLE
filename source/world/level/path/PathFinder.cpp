@@ -53,7 +53,7 @@ int PathFinder::isFree(Entity* pEntity, const TilePos& pos, const Node* node)
 				if (id <= 0)
 					continue;
 
-				if (id == Tile::door_iron->m_ID || id == Tile::door_wood->m_ID)
+				if (id == Tile::doorIron->m_ID || id == Tile::doorWood->m_ID)
 				{
 					if (!DoorTile::isOpen(m_pLevel->getData(tp)))
 						return 0;

@@ -23,6 +23,7 @@ public:
 	// TODO: void addAdditonalSaveData();
 	virtual void animateRespawn() override;
 	virtual void aiStep() override;
+	virtual void take(Entity*, int) override;
 	virtual bool isSneaking() const override;
 	virtual int move(const Vec3& pos) override;
 	virtual void tick() override;
@@ -30,9 +31,12 @@ public:
 	virtual bool isLocalPlayer() const override { return true; }
 	virtual void drop(const ItemInstance* pItemInstance, bool b = false) override;
 	virtual bool isImmobile() const override;
+	virtual void startCrafting(const TilePos& pos) override;
+	virtual void openFurnace(std::shared_ptr<FurnaceTileEntity> furnace) override;
+	virtual void openContainer(Container* container) override;
 
 	void calculateFlight(const Vec3& pos);
-	void closeContainer(); //@HUH: oddly enough not a virtual/override
+	void closeContainer() override; //@HUH: oddly enough not a virtual/override
 	void respawn();
 
 private:

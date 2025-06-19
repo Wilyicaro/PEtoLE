@@ -348,7 +348,7 @@ void AppPlatform_sdl_base::gameControllerRemoved(int32_t index)
 void AppPlatform_sdl_base::handleKeyEvent(int key, uint8_t state)
 {
 	// This really should be handled somewhere else.
-	// Unforunately, there is no global keyboard handler.
+	// Unfortunately, there is no global keyboard handler.
 	// Keyboard events are either handled in Screen::keyboardEvent
 	// when a Screen is visible, or in Minecraft::tickInput
 	// when LocalPlayer exists.

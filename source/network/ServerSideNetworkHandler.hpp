@@ -19,10 +19,10 @@ class ServerSideNetworkHandler;
 
 struct OnlinePlayer
 {
-	Player* m_pPlayer; // The player avatar this online player controls
+	std::shared_ptr<Player> m_pPlayer; // The player avatar this online player controls
 	RakNet::RakNetGUID m_guid;
 
-	OnlinePlayer(Player* p, const RakNet::RakNetGUID& guid) : m_pPlayer(p), m_guid(guid) {}
+	OnlinePlayer(std::shared_ptr<Player> p, const RakNet::RakNetGUID& guid) : m_pPlayer(p), m_guid(guid) {}
 };
 
 typedef void(ServerSideNetworkHandler::* CommandFunction)(OnlinePlayer* player, const std::vector<std::string>& parms);
@@ -76,6 +76,8 @@ public:
 	void commandSeed   (OnlinePlayer*, const std::vector<std::string>&);
 	void commandTP     (OnlinePlayer*, const std::vector<std::string>&);
 	void commandSummon (OnlinePlayer*, const std::vector<std::string>&);
+	void commandGamemode(OnlinePlayer*, const std::vector<std::string>&);
+	void commandGive(OnlinePlayer*, const std::vector<std::string>&);
 
 public:
 	Minecraft* m_pMinecraft;

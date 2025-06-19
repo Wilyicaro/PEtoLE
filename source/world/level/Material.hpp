@@ -42,6 +42,7 @@ public:
 		*cloth,
 		*fire,
 		*sand,
+		*redstone,
 		*decoration,
 		*glass,
 		*explosive,
@@ -53,7 +54,8 @@ public:
 		*clay,
 		*vegetable,
 		*portal,
-		*cake;
+		*cake,
+		*web;
 
 public:
 	bool m_bFlammable;

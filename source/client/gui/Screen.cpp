@@ -17,7 +17,7 @@ Screen::Screen()
 	field_10 = false;
 	m_tabButtonIndex = 0;
 	m_pClickedButton = 0;
-	m_yOffset = -1;
+	m_yOffset = 0;
 	m_pFont = nullptr;
 	m_pMinecraft = nullptr;
 }
@@ -42,7 +42,7 @@ void Screen::keyPressed(int key)
 {
 	if (m_pMinecraft->getOptions()->isKey(KM_MENU_CANCEL, key))
 	{
-		m_pMinecraft->handleBack(false);
+		onClose();
 	}
 
 	if (m_pMinecraft->useController() && m_buttonTabList.size() > 0)
@@ -197,7 +197,12 @@ void Screen::renderMenuBackground(float f)
 	fillGradient(0, 0, m_width, m_height, 0x89000000, 0x89FFFFFF);
 }
 
-void Screen::mouseClicked(int xPos, int yPos, int d) // d = clicked?
+void Screen::mouseDragged(double x, double y, int button, double deltaX, double deltaY)
+{
+}
+
+
+void Screen::mouseClicked(int xPos, int yPos, int d)
 {
 	if (!d) return;
 	
@@ -290,6 +295,11 @@ void Screen::render(int xPos, int yPos, float unused)
 #endif
 }
 
+void Screen::onClose()
+{
+	m_pMinecraft->setScreen(nullptr);
+}
+
 void Screen::tick()
 {
 	g_panoramaAngle++;
@@ -368,8 +378,19 @@ void Screen::updateEvents()
 {
 	if (field_10) return;
 
+	for (int i = 1; i < MouseButtonType::BUTTON_COUNT; i++)
+	{
+		if (Mouse::getButtonState((MouseButtonType)i)) 
+		{
+			int dx, dy;
+			m_pMinecraft->m_pPlatform->getMouseDiff(dx, dy);
+			mouseDragged((double) m_width * Mouse::getX() / Minecraft::width, (double) m_height * Mouse::getY() / Minecraft::height + getYOffset(), i, (double)m_width * dx / Minecraft::width, (double)m_height * dy / Minecraft::height);
+		}
+	}
+
 	while (Mouse::next())
 		mouseEvent();
+
 
 	while (Keyboard::next())
 		keyboardEvent();
@@ -387,9 +408,9 @@ void Screen::mouseEvent()
 	if (pAction->isButton())
 	{
 		if (Mouse::getEventButtonState())
-			mouseClicked (m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height - 1 + getYOffset(), Mouse::getEventButton());
+			mouseClicked(m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height + getYOffset(), Mouse::getEventButton());
 		else
-			mouseReleased(m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height - 1 + getYOffset(), Mouse::getEventButton());
+			mouseReleased(m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height + getYOffset(), Mouse::getEventButton());
 	}
 }
 
@@ -417,18 +438,10 @@ void Screen::renderDirtBackground(int unk)
 	glDisable(GL_FOG);
 
 	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/background.png");
-	glColor4f(1, 1, 1, 1);
+	glColor4f(0.25f, 0.25f, 0.25f, 1);
+	blit(0, 0, 0, 0, m_width, m_height, 32, 32);
 
-	Tesselator& t = Tesselator::instance;
-	t.begin();
-	t.offset(0, m_yOffset, 0);
-	t.color(0x404040);
-	t.vertexUV(0.0f,           float(m_height), 0, 0,                      float(unk) + float(m_height) / 32.0f);
-	t.vertexUV(float(m_width), float(m_height), 0, float(m_width) / 32.0f, float(unk) + float(m_height) / 32.0f);
-	t.vertexUV(float(m_width), 0,               0, float(m_width) / 32.0f, float(unk) + 0.0f);
-	t.vertexUV(0.0f,           0,               0, 0,                      float(unk) + 0.0f);
-	t.offset(0, 0, 0);
-	t.draw();
+	glColor4f(1, 1, 1, 1);
 }
 
 
@@ -438,7 +451,7 @@ void Screen::updateTabButtonSelection()
 	{
 		for (int i = 0; i < int(m_buttonTabList.size()); i++)
 		{
-			m_buttonTabList[i]->field_36 = m_tabButtonIndex == i;
+			m_buttonTabList[i]->m_bHoveredOrFocused = m_tabButtonIndex == i;
 		}
 	}
 }

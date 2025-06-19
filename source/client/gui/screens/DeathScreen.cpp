@@ -45,7 +45,7 @@ void DeathScreen::keyPressed(int key)
 
 void DeathScreen::render(int x, int y, float f)
 {
-	fillGradient(0, 0, m_width, m_height, 0xA0303080, 0x60000050);
+	fillGradient(0, 0, m_width, m_height, 0x60500000, 0xA0803030);
 
 	glPushMatrix();
 	glScalef(2.0f, 2.0f, 2.0f);
@@ -55,4 +55,9 @@ void DeathScreen::render(int x, int y, float f)
 	// render the buttons after 1.5 seconds
 	if (m_tickCounter >= 30)
 		Screen::render(x, y, f);
+}
+
+bool DeathScreen::isPauseScreen()
+{
+	return true;
 }

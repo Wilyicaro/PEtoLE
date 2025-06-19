@@ -12,18 +12,19 @@
 // I doubt they used C++11 (since it came out in 2011), but this is weird...
 // We'll use std::unordered_map instead.
 
-#include <map>
+#include <unordered_map>
 #include "ChunkSource.hpp"
 #include "common/Utils.hpp"
 #include "world/level/levelgen/synth/PerlinNoise.hpp"
 #include "world/level/levelgen/biome/BiomeSource.hpp"
 #include "world/level/levelgen/feature/Feature.hpp"
 #include "world/level/levelgen/feature/LargeCaveFeature.hpp"
+#include <cstdint>
 
 class RandomLevelSource : public ChunkSource
 {
 public:
-	RandomLevelSource(Level*, int32_t seed, int);
+	RandomLevelSource(Level*, int64_t seed, int);
 	int tick() override;
 	bool shouldSave() override;
 	bool hasChunk(const ChunkPos& pos) override;
@@ -33,17 +34,16 @@ public:
 	std::string gatherStats() override;
 	void postProcess(ChunkSource*, const ChunkPos& pos) override;
 
-	float* getHeights(float*, int, int, int, int, int, int);
-	void prepareHeights(const ChunkPos& pos, TileID*, void*, float*);
+	real* getHeights(real*, int, int, int, int, int, int);
+	void prepareHeights(const ChunkPos& pos, TileID*, void*, real*);
 	void buildSurfaces (const ChunkPos& pos, TileID*, Biome**);
 	
 
 public:
 	bool field_4;
 	LargeCaveFeature m_largeCaveFeature;
-	int field_9D8[1024];
-	std::map<int, LevelChunk*> m_chunks;
-	float field_19F0;
+	std::unordered_map<uint64_t, LevelChunk*> m_chunks;
+	real field_19F0;
 	Random m_random;
 	PerlinNoise m_perlinNoise1;
 	PerlinNoise m_perlinNoise2;
@@ -54,20 +54,20 @@ public:
 	PerlinNoise m_perlinNoise7;
 	PerlinNoise m_perlinNoise8;
 	Level* m_pLevel;
-	float* field_7280;
-	float field_7284[256];
-	float field_7684[256];
-	float field_7A84[256];
+	real* field_7280;
+	real m_sandBuffer[256];
+	real m_gravelBuffer[256];
+	real m_depthBuffer[256];
 	// @TODO
-	float* field_7E84;
-	float* field_7E88;
-	float* field_7E8C;
-	float* field_7E90;
-	float* field_7E94;
+	real* m_pnr;
+	real* m_ar;
+	real* m_br;
+	real* m_sr;
+	real* m_dr;
 	// @TODO
 
 
-	static const float SNOW_CUTOFF;
-	static const float SNOW_SCALE;
+	static const real SNOW_CUTOFF;
+	static const real SNOW_SCALE;
 };
 

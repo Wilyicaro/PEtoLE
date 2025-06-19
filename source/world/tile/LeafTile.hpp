@@ -16,15 +16,20 @@ public:
 	LeafTile(int id);
 	~LeafTile();
 
-	int getColor(const LevelSource*, const TilePos& pos) const override;
+	int getColor(const LevelSource*, const TilePos& pos, Facing::Name facing, int texture = -1) const override;
+	int getColor(int data, Facing::Name facing, int texture = -1) const override;
 	int getTexture(Facing::Name face, int data) const override;
 	bool isSolidRender() const override;
 	void onRemove(Level*, const TilePos& pos) override;
 	void stepOn(Level*, const TilePos& pos, Entity*) override;
 	void tick(Level*, const TilePos& pos, Random*) override;
 
+	int getResource(int x, Random* random) const override;
+
+	int getSpawnResourcesAuxValue(int x) const override;
+
 	void die(Level*, const TilePos& pos);
 
-	int* field_70;
-	int field_74;
+	int* m_checkBuffer;
+	int m_oTex;
 };

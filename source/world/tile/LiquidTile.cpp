@@ -12,23 +12,23 @@
 LiquidTile::LiquidTile(int id, Material* pMtl) : Tile(id, pMtl == Material::lava ? TEXTURE_LAVA : TEXTURE_WATER, pMtl)
 {
 	field_6C = 0;
-	field_70[0] = 0;
-	field_74[0] = 0;
+	m_checkBuffer[0] = 0;
+	m_oTex[0] = 0;
 
 	setTicking(true);
 }
 
 void LiquidTile::animateTick(Level* level, const TilePos& pos, Random* random)
 {
-	if (m_pMaterial == Material::water)
+	if (m_pMaterial == Material::water && !random->nextInt(64))
 	{
-		if (!random->nextInt(64))
-			// @BUG: Return value unused.
-			level->getData(pos);
+		int data = level->getData(pos);
+		if (data > 0 && data < 8) {
+			level->playSound(Vec3(pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f), "liquid.water", random->nextFloat() * 0.25F + 12.0F / 16.0F, random->nextFloat() * 1.0F + 0.5F);
+		}
 	}
 
-	// @BUG: Redundant check for isSolidTile?
-	if (m_pMaterial == Material::lava && level->getMaterial(pos.above()) == Material::air && !level->isSolidTile(pos.above()) && !random->nextInt(3))
+	if (m_pMaterial == Material::lava && level->getMaterial(pos.above()) == Material::air && !level->isSolidTile(pos.above()) && !random->nextInt(100))
 	{
 		level->addParticle("lava", Vec3(pos.x + random->nextFloat(), pos.y + m_aabb.max.y, pos.z + random->nextFloat()));
 	}
@@ -56,7 +56,7 @@ float LiquidTile::getBrightness(const LevelSource* level, const TilePos& pos) co
 	return b1;
 }
 
-int LiquidTile::getColor(const LevelSource* level, const TilePos& pos) const
+int LiquidTile::getColor(const LevelSource*, const TilePos& pos, Facing::Name facing, int texture) const
 {
 	return 0x999999FF;
 }
@@ -275,7 +275,7 @@ void LiquidTile::updateLiquid(Level* level, const TilePos& pos)
 		}
 		else
 		{
-			newTile = Tile::stoneBrick;
+			newTile = Tile::cobblestone;
 		}
 
 		level->setTile(pos, newTile->m_ID);

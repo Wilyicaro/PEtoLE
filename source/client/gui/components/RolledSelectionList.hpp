@@ -39,7 +39,7 @@ public:
 	// @NOTE: This is inlined.
 	inline int transformX(int x)
 	{
-		return int(x - field_C - float(field_44) + float(int(field_30)) - 4.0f);
+		return int(x - field_C - float(field_44) + float(int(m_noNeighborUpdate)) - 4.0f);
 	}
 
 public:
@@ -53,7 +53,7 @@ public:
 	float field_24;
 	int field_28;
 	float field_2C;
-	float field_30;
+	float m_noNeighborUpdate;
 	float field_34;
 	float field_38;
 	int field_3C;

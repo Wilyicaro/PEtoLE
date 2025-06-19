@@ -9,96 +9,76 @@
 #include "Feature.hpp"
 #include "world/level/Level.hpp"
 
-bool SpruceFeature::place(Level* level, Random* random, const TilePos& pos)
-{
-	if (pos.y <= C_MIN_Y)
-		return false;
+bool SpruceFeature::place(Level* level, Random* random, const TilePos& pos) {
+    if (pos.y <= C_MIN_Y) return false;
 
-	int height = random->nextInt(4) + 6;
-	if (height + pos.y >= C_MAX_Y)
-		return false;
+    int height = random->nextInt(4) + 6;
+    int base = 1 + random->nextInt(2);
+    int leafStart = height - base;
+    int leafRadius = 2 + random->nextInt(2);
+    bool canPlace = true;
 
-	int x1 = random->nextInt(2) + 1;
-	int x2 = random->nextInt(2) + 2;
-	int upperY = pos.y + 1 + height;
-	
-	bool bCanPlace = true;
-	for (int i = 0, cy = pos.y; cy <= upperY && bCanPlace; i++, cy++)
-	{
-		int range = x2;
-		if (x1 <= i)
-			range = 0;
+    // Validate space first
+    for (int y = pos.y; y <= pos.y + height && canPlace; y++) {
+        int range = (y - pos.y < base) ? 0 : leafRadius;
+        for (int x = pos.x - range; x <= pos.x + range && canPlace; x++) {
+            for (int z = pos.z - range; z <= pos.z + range && canPlace; z++) {
+                if (y < 0 || y >= C_MAX_Y ||
+                    (level->getTile(TilePos(x, y, z)) != TILE_AIR &&
+                        level->getTile(TilePos(x, y, z)) != Tile::leaves->m_ID)) {
+                    canPlace = false;
+                }
+            }
+        }
+    }
+    if (!canPlace) return false;
 
-		for (int cx = pos.x - range; cx <= pos.x + range && bCanPlace; cx++)
-		{
-			for (int cz = pos.z - range; cz <= pos.z + range && bCanPlace; cz++)
-			{
-				if (cy >= C_MAX_Y || cy < C_MIN_Y)
-				{
-					bCanPlace = false;
-					break;
-				}
+    // Validate soil
+    TileID soil = level->getTile(pos.below());
+    if (soil != Tile::grass->m_ID && soil != Tile::dirt->m_ID) return false;
 
-				TileID tile = level->getTile(TilePos(cx, cy, cz));
-				if (tile != TILE_AIR && tile != Tile::leaves->m_ID)
-					bCanPlace = false;
-			}
-		}
-	}
-	
-	if (!bCanPlace)
-		return false;
+    if (pos.y >= C_MAX_Y - height) return false;
 
-	TileID tileBelow = level->getTile(pos.below());
-	if (tileBelow != Tile::grass->m_ID && tileBelow != Tile::dirt->m_ID)
-		return false;
+    // Prepare soil
+    level->setTileNoUpdate(pos.below(), Tile::dirt->m_ID);
 
-	if (pos.y >= C_MAX_Y - 1 - height)
-		return false;
+    // Leaves first
+    int radius = random->nextInt(2);
+    int rStep = 1;
+    int rReset = 0;
 
-	level->setTileNoUpdate(pos.below(), Tile::dirt->m_ID);
+    for (int y = 0; y <= leafStart; y++) {
+        int cy = pos.y + height - y;
+        for (int x = pos.x - radius; x <= pos.x + radius; x++) {
+            for (int z = pos.z - radius; z <= pos.z + radius; z++) {
+                if ((std::abs(x - pos.x) != radius ||
+                    std::abs(z - pos.z) != radius ||
+                    radius <= 0) &&
+                    !Tile::solid[level->getTile(TilePos(x, cy, z))]) {
+                    level->setTileAndDataNoUpdate(TilePos(x, cy, z), Tile::leaves->m_ID, 1);
+                }
+            }
+        }
+        if (radius >= rStep) {
+            radius = rReset;
+            rReset = 1;
+            rStep++;
+            if (rStep > leafRadius) rStep = leafRadius;
+        }
+        else {
+            radius++;
+        }
+    }
 
-	int range = random->nextInt(2);
-	int b2 = 1, b3 = 0;
-
-	TilePos tp(pos.x - range, 0, pos.z - range);
-	for (tp.y = 0; tp.y <= height - x1; tp.y++)
-	{
-		int b1 = height + pos.y - tp.y;
-		for (tp.x = pos.x - range; tp.x <= pos.x + range; tp.x++)
-		{
-			int dx = tp.x - pos.x;
-			for (tp.z = pos.z - range; tp.z <= pos.z + range; tp.z++)
-			{
-				int dz = tp.z - pos.z;
-				if ((abs(dx) != range || abs(dz) != range || range <= 0) && !Tile::solid[level->getTile(TilePos(tp.x, b1, tp.z))])
-					level->setTileAndDataNoUpdate(TilePos(tp.x, b1, tp.z), Tile::leaves->m_ID, 1);
-			}
-		}
-
-		if (range >= b2)
-		{
-			b2++;
-			range = b3;
-			if (b2 > x2)
-				b2 = x2;
-			b3 = 1;
-		}
-		else
-		{
-			range++;
-		}
-	}
-
-	int mheight = height - random->nextInt(3);
-	for (int yd = 0; yd < mheight; yd++)
-	{
-		int cy = yd + pos.y;
-		
-		TileID tile = level->getTile(TilePos(pos.x, cy, pos.z));
-		if (tile == TILE_AIR || tile == Tile::leaves->m_ID)
-			level->setTileAndDataNoUpdate(TilePos(pos.x, cy, pos.z), Tile::treeTrunk->m_ID, 1);
-	}
-
-	return true;
+    // Then trunk
+    int trunkHeight = height - random->nextInt(3);
+    for (int y = 0; y < trunkHeight; y++) {
+        int cy = pos.y + y;
+        TileID tile = level->getTile(TilePos(pos.x, cy, pos.z));
+        if (tile == TILE_AIR ||
+            tile == Tile::leaves->m_ID) {
+            level->setTileAndDataNoUpdate(TilePos(pos.x, cy, pos.z), Tile::treeTrunk->m_ID, 1);
+        }
+    }
+    return true;
 }

@@ -9,6 +9,12 @@
 #include "ExternalFileLevelStorage.hpp"
 #include "world/level/Level.hpp"
 #include "GetTime.h"
+#include <common/CompoundTag.hpp>
+#include <common/ByteArrayTag.hpp>
+#include <common/LongTag.hpp>
+#include <common/IntTag.hpp>
+#include <common/ByteTag.hpp>
+#include <common/ListTag.hpp>
 
 #ifndef DEMO
 
@@ -19,10 +25,10 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a, const s
 	m_levelDirPath(path),
 	m_timer(0)
 {
-	m_pRegionFile = nullptr;
 	m_pLevel = nullptr;
 
 	createFolderIfNotExists(m_levelDirPath.c_str());
+	createFolderIfNotExists((m_levelDirPath+"/region").c_str());
 
 	std::string datLevel  = m_levelDirPath + "/" + "level.dat";
 	std::string datPlayer = m_levelDirPath + "/" + "player.dat";
@@ -40,10 +46,12 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a, const s
 
 ExternalFileLevelStorage::~ExternalFileLevelStorage()
 {
-	if (m_pRegionFile)
-		delete m_pRegionFile;
-	if (m_pLevelData)
-		delete m_pLevelData;
+	SAFE_DELETE(m_pLevelData);
+
+	for (auto it = m_pRegionMap.begin(); it != m_pRegionMap.end(); ) {
+		SAFE_DELETE(it->second);
+		it = m_pRegionMap.erase(it);
+	}
 }
 
 LevelData* ExternalFileLevelStorage::prepareLevel(Level* level)
@@ -57,10 +65,9 @@ ChunkStorage* ExternalFileLevelStorage::createChunkStorage(Dimension* pDim)
 	return this;
 }
 
-void ExternalFileLevelStorage::saveLevelData(LevelData* levelData, std::vector<Player*>& players)
+void ExternalFileLevelStorage::saveLevelData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players)
 {
-	// Uncomment this when using level v2
-	//levelData->setStorageVersion(2);
+	if (!players.empty()) players[0]->saveWithoutId(levelData->m_LocalPlayerData = std::make_shared<CompoundTag>());
 	writeLevelData(m_levelDirPath + "/" + "level.dat", levelData);
 	savePlayerData(levelData, players);
 
@@ -69,32 +76,9 @@ void ExternalFileLevelStorage::saveLevelData(LevelData* levelData, std::vector<P
 	m_pLevelData = new LevelData(*levelData);
 }
 
-void ExternalFileLevelStorage::savePlayerData(LevelData* levelData, std::vector<Player*>& players)
+void ExternalFileLevelStorage::savePlayerData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players)
 {
-	if (players.empty())
-		return;
 
-	FILE* pFile = fopen((m_levelDirPath + "/" + "player.dat").c_str(), "wb");
-	if (!pFile)
-	{
-		LOG_W("Not saving player data");
-		return;
-	}
-
-	levelData->m_LocalPlayerData.savePlayer(players[0]);
-
-	int nPlayers = 1;
-	fwrite(&nPlayers, sizeof nPlayers, 1, pFile);
-
-	int nSizePD = 80;
-	fwrite(&nSizePD,  sizeof nSizePD, 1, pFile);
-
-	// @NOTE: No reason to swap elementCount and elementSize here. I understood it the
-	// last time - to check whether the data loaded all the way. However, no checks are
-	// done here.
-	fwrite(&levelData->m_LocalPlayerData, 1, nSizePD, pFile);
-
-	fclose(pFile);
 }
 
 void ExternalFileLevelStorage::closeAll()
@@ -104,136 +88,77 @@ void ExternalFileLevelStorage::closeAll()
 void ExternalFileLevelStorage::tick()
 {
 	m_timer++;
-	if (m_timer % 50 != 0 || !m_pLevel)
+	if (m_timer % 6000 != 0 || !m_pLevel)
 		return;
 
-	ChunkPos cp(0, 0);
-	for (cp.z = 0; cp.z < C_MAX_CHUNKS_Z; cp.z++)
-	{
-		for (cp.x = 0; cp.x < C_MAX_CHUNKS_X; cp.x++)
-		{
-			LevelChunk* pChunk = m_pLevel->getChunk(cp);
-			if (!pChunk || !pChunk->m_bUnsaved)
-				continue;
-
-			int index = cp.x + cp.z * 16;
-
-			std::list<UnsavedLevelChunk>::iterator iter = m_unsavedLevelChunks.begin();
-			for (; iter != m_unsavedLevelChunks.end(); ++iter)
-			{
-				if (iter->m_index == index)
-				{
-					iter->m_foundTime = RakNet::GetTimeMS();
-					break;
-				}
-			}
-
-			if (iter == m_unsavedLevelChunks.end())
-			{
-				UnsavedLevelChunk ulc = { index, int(RakNet::GetTimeMS()), pChunk };
-				m_unsavedLevelChunks.push_back(ulc);
-			}
-
-			pChunk->m_bUnsaved = false;
-		}
-	}
-
-	int count = 0;
-	while (count < C_CHUNKS_TO_SAVE_PER_TICK && !m_unsavedLevelChunks.empty())
-	{
-		count++;
-
-		std::list<UnsavedLevelChunk>::iterator iter = m_unsavedLevelChunks.begin();
-		for (std::list<UnsavedLevelChunk>::iterator it2 = m_unsavedLevelChunks.begin(); it2 != m_unsavedLevelChunks.end(); ++it2)
-		{
-			if (iter->m_foundTime > it2->m_foundTime)
-				iter = it2;
-		}
-
-		LevelChunk* pChunk = iter->m_pChunk;
-		m_unsavedLevelChunks.erase(iter);
-
-		save(m_pLevel, pChunk);
-	}
+	m_pLevel->saveUnsavedChunks(true);
 }
 
 void ExternalFileLevelStorage::flush()
 {
 }
 
+RegionFile* ExternalFileLevelStorage::createOrGetRegion(const ChunkPos& pos)
+{
+	RegionFile* regionFile = m_pRegionMap[pos.regionKey()];
+	if (!regionFile)
+		m_pRegionMap[pos.regionKey()] = regionFile = new RegionFile(pos, m_levelDirPath+"/region");
+	return regionFile;
+}
+
 LevelChunk* ExternalFileLevelStorage::load(Level* level, const ChunkPos& pos)
 {
-	if (!m_pRegionFile)
-	{
-		m_pRegionFile = new RegionFile(m_levelDirPath);
+	RegionFile* regionFile = createOrGetRegion(pos);
 
-		if (!m_pRegionFile->open())
-		{
-			SAFE_DELETE(m_pRegionFile);
-			m_pRegionFile = nullptr;
-
-			return nullptr;
-		}
-	}
-
-	RakNet::BitStream* pBitStream = nullptr;
-	if (!m_pRegionFile->readChunk(pos, &pBitStream))
+	if (!regionFile->open()) {
+		LOG_W("Not loading :(   (x: %d  z: %d)", pos.x, pos.z);
 		return nullptr;
-
-	pBitStream->ResetReadPointer();
-
-	TileID* pData = new TileID[16 * 16 * 128];
-	pBitStream->Read((char*)pData, 16 * 16 * 128 * sizeof(TileID));
-
-	LevelChunk* pChunk = new LevelChunk(level, pData, pos);
-	pBitStream->Read((char*)pChunk->m_tileData, 16 * 16 * 128 / 2);
-
-	if (m_pLevelData->getStorageVersion() >= 1)
-	{
-		pBitStream->Read((char*)pChunk->m_lightSky, 16 * 16 * 128 / 2);
-		pBitStream->Read((char*)pChunk->m_lightBlk, 16 * 16 * 128 / 2);
 	}
 
-	pBitStream->Read((char*)pChunk->m_updateMap, sizeof pChunk->m_updateMap);
-	
-	delete pBitStream->GetData();
-	delete pBitStream;
+	std::vector<uint8_t> decompressedData;
+	if (!regionFile->readChunk(pos, decompressedData)) return nullptr;
 
-	pChunk->recalcHeightmap();
-	pChunk->m_bUnsaved = false;
-	pChunk->field_234 = true;
-	pChunk->field_237 = true;
+	std::istringstream is(std::string(decompressedData.begin(), decompressedData.end()), std::ios::binary);
+	auto rootTag = Tag::readNamed(is);
+	auto levelTag = std::dynamic_pointer_cast<CompoundTag>(rootTag)->getOrMakeCompound("Level");
 
-	return pChunk;
+	if (!levelTag) {
+		LOG_E("NBT: Missing 'Level' tag");
+		return nullptr;
+	}
+
+
+	LevelChunk* chunk = new LevelChunk(level, new TileID[16 * 16 * 128], pos);
+	chunk->deserialize(levelTag);
+	chunk->recalcHeightmap();
+	chunk->m_bUnsaved = false;
+	chunk->m_bIsTerrainPopulated = true;
+	chunk->field_237 = true;
+
+	return chunk;
 }
 
 void ExternalFileLevelStorage::save(Level* level, LevelChunk* chunk)
 {
-	if (!m_pRegionFile)
-		m_pRegionFile = new RegionFile(m_levelDirPath);
-
-	if (!m_pRegionFile->open())
-	{
-		SAFE_DELETE(m_pRegionFile);
-		m_pRegionFile = nullptr;
-
+	RegionFile* regionFile = createOrGetRegion(chunk->m_chunkPos);
+	if (!regionFile->open()) {
 		LOG_W("Not saving :(   (x: %d  z: %d)", chunk->m_chunkPos.x, chunk->m_chunkPos.z);
 		return;
 	}
 
-	RakNet::BitStream bs;
-	bs.Write((const char*)chunk->m_pBlockData, 16 * 16 * 128 * sizeof(TileID));
-	bs.Write((const char*)chunk->m_tileData,   16 * 16 * 128 / 2);
+	auto root = std::make_shared<CompoundTag>();
+	root->put("Level", chunk->serialize());
 
-	if (m_pLevelData->getStorageVersion() >= 1)
-	{
-		bs.Write((const char*)chunk->m_lightSky, 16 * 16 * 128 / 2);
-		bs.Write((const char*)chunk->m_lightBlk, 16 * 16 * 128 / 2);
-	}
+	std::ostringstream oss(std::ios::binary);
+	Tag::writeNamed(oss, "", root);
 
-	bs.Write((const char*)chunk->m_updateMap, sizeof chunk->m_updateMap);
+	std::string nbtData = oss.str();
+	std::vector<uint8_t> nbtBytes(nbtData.begin(), nbtData.end());
 
-	m_pRegionFile->writeChunk(chunk->m_chunkPos, bs);
+	LOG_I("Saving chunk %d,%d, NBT size: %zu", chunk->m_chunkPos.x, chunk->m_chunkPos.z, nbtData.size());
+
+	regionFile->writeChunk(chunk->m_chunkPos, nbtBytes);
+	chunk->m_bUnsaved = false;
 }
 
 void ExternalFileLevelStorage::saveEntities(Level* level, LevelChunk* chunk)
@@ -243,33 +168,31 @@ void ExternalFileLevelStorage::saveEntities(Level* level, LevelChunk* chunk)
 
 bool ExternalFileLevelStorage::readLevelData(const std::string& path, LevelData* pLevelData)
 {
-	FILE* pFile = fopen(path.c_str(), "rb");
+	FILE* pFile = std::fopen(path.c_str(), "rb");
 	if (!pFile)
 		return false;
 
-	int version = 0, length = 0;
-	if (fread(&version, sizeof(int), 1, pFile) != 1)
-	{
-	_cleanup:
-		fclose(pFile);
-		return false;
-	}
+	// Ler todo o conteúdo
+	std::fseek(pFile, 0, SEEK_END);
+	size_t size = std::ftell(pFile);
+	std::fseek(pFile, 0, SEEK_SET);
 
-	if (fread(&length, sizeof(int), 1, pFile) != 1)
-		goto _cleanup;
+	std::vector<uint8_t> compressedData(size);
+	std::fread(compressedData.data(), 1, size, pFile);
+	std::fclose(pFile);
 
-	uint8_t* data = new uint8_t[length];
+	std::vector<uint8_t> decompressed = decompressZlibStream(compressedData.data(), compressedData.size(), true);
 
-	if (fread(data, sizeof(uint8_t), length, pFile) != length)
-	{
-		SAFE_DELETE_ARRAY(data);
-		goto _cleanup;
-	}
+	std::istringstream iss(std::string(reinterpret_cast<const char*>(decompressed.data()), decompressed.size()));
 
-	RakNet::BitStream bs(data, length, false);
-	pLevelData->read(bs, version);
 
-	SAFE_DELETE_ARRAY(data);
+	std::shared_ptr<Tag> tag = Tag::readNamed(iss);
+
+	if (tag->getType() != TagType::TAG_Compound)
+		throw std::runtime_error("invalid root tag in level.dat");
+
+	pLevelData->deserialize(std::dynamic_pointer_cast<CompoundTag>(tag)->getOrMakeCompound("Data"));
+
 	fclose(pFile);
 
 	return true;
@@ -277,29 +200,6 @@ bool ExternalFileLevelStorage::readLevelData(const std::string& path, LevelData*
 
 bool ExternalFileLevelStorage::readPlayerData(const std::string& path, LevelData* pLevelData)
 {
-	FILE* pFile = fopen(path.c_str(), "rb");
-	if (!pFile)
-		return false;
-
-	// don't know if it's actually nPlayers or version
-	int nPlayers = 0, size = 0;
-	if (fread(&nPlayers, sizeof(int), 1, pFile) != 1)
-		goto _cleanup;
-
-	if (fread(&size, sizeof(int), 1, pFile) != 1)
-		goto _cleanup;
-
-	if (nPlayers != 1)
-		goto _cleanup;
-
-	if (fread(&pLevelData->m_LocalPlayerData, 1, sizeof pLevelData->m_LocalPlayerData, pFile) == size)
-		pLevelData->m_nPlayers = nPlayers;
-
-	fclose(pFile);
-	return true;
-
-_cleanup:
-	fclose(pFile);
 	return false;
 }
 
@@ -309,18 +209,26 @@ bool ExternalFileLevelStorage::writeLevelData(const std::string& path, LevelData
 	if (!pFile)
 		return false;
 
-	RakNet::BitStream bs;
-	pLevelData->write(bs);
+	std::ostringstream oss(std::ios::binary);
+	auto root = std::make_shared<CompoundTag>();
+	root->put("Data", pLevelData->serialize());
+	Tag::writeNamed(oss, "", root);
 
-	int storageVersion = pLevelData->getStorageVersion();
-	fwrite(&storageVersion, sizeof(int), 1, pFile);
+	std::string nbtData = oss.str();
 
-	int length = bs.GetNumberOfBytesUsed();
-	fwrite(&length, sizeof(int), 1, pFile);
-	fwrite(bs.GetData(), 1, length, pFile);
+	std::vector<uint8_t> compressedData(nbtData.begin(), nbtData.end());
+	try {
+		compressedData = compressZlibStream(compressedData.data(), compressedData.size(), true);
+	}
+	catch (...) {
+		return false;
+	}
+
+	fwrite(compressedData.data(), 1, compressedData.size(), pFile);
 	fclose(pFile);
 
 	return true;
 }
+
 
 #endif

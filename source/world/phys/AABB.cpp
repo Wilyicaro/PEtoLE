@@ -18,7 +18,7 @@ AABB::AABB(Vec3 _min, Vec3 _max)
 	max = _max;
 }
 
-AABB::AABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
+AABB::AABB(real minX, real minY, real minZ, real maxX, real maxY, real maxZ)
 {
 	min = Vec3(minX, minY, minZ);
 	max = Vec3(maxX, maxY, maxZ);
@@ -85,7 +85,7 @@ HitResult AABB::clip(const Vec3& vec1, const Vec3& vec2)
 	return HitResult(TilePos(0, 0, 0), collType, *pVec);
 }
 
-float AABB::clipXCollide(const AABB& bud, float f) const
+real AABB::clipXCollide(const AABB& bud, real f) const
 {
 	if (bud.max.y > min.y && bud.min.y < max.y && bud.max.z > min.z && bud.min.z < max.z)
 	{
@@ -105,7 +105,7 @@ float AABB::clipXCollide(const AABB& bud, float f) const
 	return f;
 }
 
-float AABB::clipYCollide(const AABB& bud, float f) const
+real AABB::clipYCollide(const AABB& bud, real f) const
 {
 	if (bud.max.x > min.x && bud.min.x < max.x && bud.max.z > min.z && bud.min.z < max.z)
 	{
@@ -125,7 +125,7 @@ float AABB::clipYCollide(const AABB& bud, float f) const
 	return f;
 }
 
-float AABB::clipZCollide(const AABB& bud, float f) const
+real AABB::clipZCollide(const AABB& bud, real f) const
 {
 	if (bud.max.x > min.x && bud.min.x < max.x && bud.max.y > min.y && bud.min.y < max.y)
 	{
@@ -176,9 +176,21 @@ void AABB::move(const Vec3& vec)
 	max += vec;
 }
 
-void AABB::move(float x, float y, float z)
+void AABB::move(real x, real y, real z)
 {
 	move(Vec3(x, y, z));
+}
+
+AABB AABB::cloneMove(const Vec3& vec)
+{
+	AABB copy(*this);
+	copy.move(vec);
+	return copy;
+}
+
+AABB AABB::cloneMove(real x, real y, real z)
+{
+	return cloneMove(Vec3(x, y, z));
 }
 
 // same thing
@@ -188,19 +200,19 @@ void AABB::grow(const Vec3& vec)
 	max += vec;
 }
 
-void AABB::grow(float x, float y, float z)
+void AABB::grow(real x, real y, real z)
 {
 	grow(Vec3(x, y, z));
 }
 
 // same thing
-void AABB::grow(float x)
+void AABB::grow(real x)
 {
 	min -= Vec3(x, x, x);
 	max += Vec3(x, x, x);
 }
 
-void AABB::expand(float x, float y, float z)
+void AABB::expand(real x, real y, real z)
 {
 	if (x < 0) min.x += x;
 	if (x > 0) max.x += x;

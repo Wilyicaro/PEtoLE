@@ -22,13 +22,14 @@ bool TreeFeature::place(Level* level, Random* random, const TilePos& pos)
 	// Ensure that we can place this tree
 	bool bCanPlace = true;
 	TilePos tp;
-	for (tp.y = pos.y; tp.y <= pos.y + treeHeight; tp.y++)
+	for (tp.y = pos.y; tp.y <= pos.y + treeHeight + 1; tp.y++)
 	{
 		int x1 = 1;
+		if (tp.y == pos.y)
+			x1 = 0;
+
 		if (pos.y + treeHeight - 1 <= tp.y)
 			x1 = 2;
-		else if (tp.y == pos.y)
-			x1 = 0;
 
 		for (tp.x = pos.x - x1; tp.x <= pos.x + x1 && bCanPlace; tp.x++)
 		{
@@ -68,28 +69,17 @@ bool TreeFeature::place(Level* level, Random* random, const TilePos& pos)
 
 	level->setTileNoUpdate(pos.below(), Tile::dirt->m_ID);
 
-	int upperY = pos.y + treeHeight;
-	int lowerY = pos.y + treeHeight - 3;
-	int diff = lowerY - upperY;
+	for (tp.y = pos.y - 3 + treeHeight; tp.y <= pos.y + treeHeight; ++tp.y) {
+		int var10 = tp.y - (pos.y + treeHeight);
+		int var11 = 1 - var10 / 2;
 
-	for (tp.y = lowerY; tp.y <= upperY; tp.y++, diff = tp.y - upperY)
-	{
-		int c1 = 1 - diff / 2;
-		int c2 = diff / 2 - 1;
-		for (tp.x = pos.x - c1; tp.x <= pos.x + c1; tp.x++)
-		{
-			int c3 = c2;
-			int c4 = diff / 2 - 1;
-			if (c2 < 0)
-				c3 = -c2;
+		for (tp.x = pos.x - var11; tp.x <= pos.x + var11; ++tp.x) {
+			int var13 = tp.x - pos.x;
 
-			//int c5 = c3;
-
-			for (tp.z = pos.z - c1; tp.z <= pos.z + c1; tp.z++, c4++)
-			{
-                if ((abs(tp.x - pos.x) != c1 || abs(tp.z - pos.z) != c1 || (random->nextInt(2) != 0 && diff != 0)) && !Tile::solid[level->getTile(tp)])
-				{
-					level->setTileNoUpdate(tp, Tile::leaves->m_ID);
+			for (tp.z = pos.z - var11; tp.z <= pos.z + var11; ++tp.z) {
+				int var15 = tp.z - pos.z;
+				if ((Mth::abs(var13) != var11 || Mth::abs(var15) != var11 || random->nextInt(2) != 0 && var10 != 0) && !Tile::solid[level->getTile(tp)]) {
+					level->setTileAndDataNoUpdate(tp, Tile::leaves->m_ID, 2);
 				}
 			}
 		}

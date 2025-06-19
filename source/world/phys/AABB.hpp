@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "Vec3.hpp"
+#include "Vec3T.hpp"
 #include "HitResult.hpp"
 
 class AABB
@@ -18,13 +18,21 @@ public:
 
 	AABB();
 	AABB(Vec3 min, Vec3 max);
-	AABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
+	AABB(real minX, real minY, real minZ, real maxX, real maxY, real maxZ);
 
 public:
 	HitResult clip(const Vec3&, const Vec3&);
-	float clipXCollide(const AABB& bud, float f) const;
-	float clipYCollide(const AABB& bud, float f) const;
-	float clipZCollide(const AABB& bud, float f) const;
+	real clipXCollide(const AABB& bud, real f) const;
+	real clipYCollide(const AABB& bud, real f) const;
+	real clipZCollide(const AABB& bud, real f) const;
+
+	real clipCollide(const AABB& bud, real f, Axis axis) const {
+		switch (axis) {
+		case Axis::X: return clipXCollide(bud, f);
+		case Axis::Y: return clipYCollide(bud, f);
+		case Axis::Z: return clipZCollide(bud, f);
+		}
+	}
 
 	bool containsX(Vec3* pVec);
 	bool containsY(Vec3* pVec);
@@ -33,15 +41,29 @@ public:
 	bool intersect(const AABB& other) const;
 
 	// @NOTE: Names for `move`, `grow` and `expand` were taken from really early minecraft (rd-132211 to be exact).
+	// @NOTE: Why not use the leaked verson of b1.2? lol
 	void move(const Vec3& vec);
-	void move(float x, float y, float z);
+	void move(real x, real y, real z);
+	AABB cloneMove(const Vec3& vec);
+	AABB cloneMove(real x, real y, real z);
 	// same thing
 	void grow(const Vec3& vec);
-	void grow(float x, float y, float z);
+	void grow(real x, real y, real z);
 	// same thing
-	void grow(float x);
-	void expand(float x, float y, float z);
+	void grow(real x);
+	void expand(real x, real y, real z);
 	void expand(const Vec3& vec);
 	bool contains(const Vec3& v) const;
+	float byIndex(int index) {
+		switch (index) {
+			case 0: return min.x;
+			case 1: return min.y;
+			case 2: return min.z;
+			case 3: return max.x;
+			case 4: return max.y;
+			case 5: return max.z;
+		}
+		return 0;
+	}
 };
 

@@ -13,18 +13,19 @@
 Mob::Mob(Level* pLevel) : Entity(pLevel)
 {
 	field_DC = 10;
-	field_E8 = 0.0f;
-	field_EC = 0.0f;
+	m_yBodyRot = 0.0f;
+	m_yBodyRotO = 0.0f;
 	field_F0 = 0;
 	m_oAttackAnim = 0.0f;
 	m_attackAnim = 0.0f;
 	m_health = 10;
-	field_100 = 20;
+	m_lastHealth = 20;
+	m_ambientSoundTime = 0;
 	m_hurtTime = 0;
 	m_hurtDuration = 0;
 	m_hurtDir = 0.0f;
-	field_110 = 0;
-	field_114 = 0;
+	m_deathTime = 0;
+	m_attackTime = 0;
     m_oTilt = 0.0f;
     m_tilt = 0.0f;
 	field_120 = 0;
@@ -41,8 +42,8 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	field_B48 = 0;
 	field_B4C = 0.0f;
 	field_B50 = 0.0f;
-	field_B54 = 0.0f;
-	field_B58 = 0.0f;
+	m_animStep = 0.0f;
+	m_animStepO = 0.0f;
 	m_rotOffs = 0.0f;
 	field_B60 = 1.0f;
 	field_B64 = 0;
@@ -56,16 +57,16 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	m_bSwinging = false;
 	m_swingTime = 0;
 
-	m_texture = "/mob/pig.png";
-	m_class = "";
+	m_skinUrl = "";
+	m_texture = "/mob/char.png";
 
     m_bBlocksBuilding = true;
 
 	field_E4 = (Mth::random() + 1.0f) * 0.01f;
 	setPos(m_pos);
 	field_E0 = Mth::random() * 12398.0f;
-	m_rot.x = float(Mth::random() * M_PI);
-	field_A8 = 0.5f;
+	m_rot.y = float(Mth::random() * M_PI);
+	m_footSize = 0.5f;
 }
 
 Mob::~Mob()
@@ -99,12 +100,12 @@ void Mob::tick()
 
 		// Similar to rotlerp
 		// I'm pretty sure this is super inefficient and its trying to do what I have it doing in setRot already.
-		float ang = m_lRot.x - m_rot.x;
+		float ang = m_lRot.y - m_rot.y;
 		while (ang < -180.0f) ang += 360.0f;
 		while (ang >= 180.0f) ang -= 360.0f;
 
-		setRot(Vec2(m_rot.x + ((m_lRot.x - m_rot.x) / float(m_lSteps)),
-			        m_rot.y + ((m_lRot.y - m_rot.y) / float(m_lSteps))));
+		setRot(Vec2(m_rot.y + ((m_lRot.y - m_rot.y) / float(m_lSteps)),
+			        m_rot.x + ((m_lRot.x - m_rot.x) / float(m_lSteps))));
 
 		m_lSteps--;
 	}
@@ -118,7 +119,7 @@ void Mob::tick()
 
 	Vec3 delta = m_pos - m_oPos;
 	dist = Mth::sqrt(delta.z * delta.z + delta.x * delta.x);
-	field_E8_2 = field_E8;
+	field_E8_2 = m_yBodyRot;
 	x1 = field_E8_2;
 
 	field_B4C = field_B50;
@@ -129,7 +130,7 @@ void Mob::tick()
 		v36 = Mth::atan2(delta.z, delta.x);
 		x3 = 1.0f;
 		x1 = ((v36 * 180.0f) / float(M_PI)) - 90.0f;
-		field_E8_2 = this->field_E8;
+		field_E8_2 = this->m_yBodyRot;
 	}
 	else
 	{
@@ -139,9 +140,9 @@ void Mob::tick()
 
 	x4 = m_attackAnim;
 	if (x4 <= 0.0f)
-		x4 = m_rot.x;
+		x4 = m_rot.y;
 	else
-		x4 = x1 = m_rot.x;
+		x4 = x1 = m_rot.y;
 
 	if (!m_onGround)
 		x3 = 0.0f;
@@ -158,7 +159,7 @@ void Mob::tick()
 		x5 -= 360.0f;
 
 	field_E8_new = field_E8_2 + (float)(x5 * 0.3);
-	this->field_E8 = field_E8_new;
+	this->m_yBodyRot = field_E8_new;
 
 	x6 = x4 - field_E8_new;
 
@@ -177,21 +178,21 @@ void Mob::tick()
 	{
 		x7 = x4 + 75.0f;
 		x6 = -75.0f;
-		field_E8 = x4 + 75.0f;
+		m_yBodyRot = x4 + 75.0f;
 		goto LABEL_30;
 	}
 	if (x6 >= 75.0f)
 	{
 		x7 = x4 - 75.0f;
 		x6 = 75.0f;
-		field_E8 = x4 - 75.0f;
+		m_yBodyRot = x4 - 75.0f;
 	LABEL_30:
-		field_E8 = x7 + (x6 * 0.2f);
+		m_yBodyRot = x7 + (x6 * 0.2f);
 		goto LABEL_31;
 	}
 
 	x7 = x4 - x6;
-	field_E8 = x4 - x6;
+	m_yBodyRot = x4 - x6;
 	if (x6 * x6 > 2500.0f)
 		goto LABEL_30;
 
@@ -201,31 +202,38 @@ LABEL_31:
 
 	// Similar to rotlerp
 	// I'm pretty sure this is super inefficient and its trying to do what I have it doing in setRot already.
-	while (x4 - m_rotPrev.x < -180.0f)
-		m_rotPrev.x -= 360.0f;
-
-	while (x4 - m_rotPrev.x >= 180.0f)
-		m_rotPrev.x += 360.0f;
-
-	while (field_E8 - field_EC < -180.0f)
-		field_EC -= 360.0f;
-
-	while (field_E8 - field_EC >= 180.0f)
-		field_EC += 360.0f;
-	
-	while (m_rot.y - m_rotPrev.y < -180.0f)
+	while (x4 - m_rotPrev.y < -180.0f)
 		m_rotPrev.y -= 360.0f;
 
-	while (m_rot.y - m_rotPrev.y >= 180.0f)
+	while (x4 - m_rotPrev.y >= 180.0f)
 		m_rotPrev.y += 360.0f;
 
-	field_B54 += x2;
+	while (m_yBodyRot - m_yBodyRotO < -180.0f)
+		m_yBodyRotO -= 360.0f;
+
+	while (m_yBodyRot - m_yBodyRotO >= 180.0f)
+		m_yBodyRotO += 360.0f;
+	
+	while (m_rot.x - m_rotPrev.x < -180.0f)
+		m_rotPrev.x -= 360.0f;
+
+	while (m_rot.x - m_rotPrev.x >= 180.0f)
+		m_rotPrev.x += 360.0f;
+
+	m_animStep += x2;
 }
 
 void Mob::baseTick()
 {
 	m_oAttackAnim = m_attackAnim;
 	Entity::baseTick();
+	if (m_random.nextInt(1000) < m_ambientSoundTime++) {
+		m_ambientSoundTime = -getAmbientSoundInterval();
+		std::string var1 = getAmbientSound();
+		if (!var1.empty()) {
+			m_pLevel->playSound(this, var1, getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+		}
+	}
 
 	if (isAlive() && isInWall())
 		hurt(nullptr, 1);
@@ -259,14 +267,14 @@ void Mob::baseTick()
 
     m_oTilt = m_tilt;
 
-	if (field_114 > 0) field_114--;
+	if (m_attackTime > 0) m_attackTime--;
 	if (m_hurtTime > 0) m_hurtTime--;
-	if (field_B8  > 0) field_B8--;
+	if (m_invulnerableTime  > 0) m_invulnerableTime--;
 
 	if (m_health <= 0)
 	{
-		field_110++;
-		if (field_110 > 20)
+		m_deathTime++;
+		if (m_deathTime > 20)
 		{
 			beforeRemove();
 			remove();
@@ -288,8 +296,8 @@ void Mob::baseTick()
 		}
 	}
 
-	field_B58 = field_B54;
-	field_EC = field_E8;
+	m_animStepO = m_animStep;
+	m_yBodyRotO = m_yBodyRot;
 	m_rotPrev = m_rot;
 }
 
@@ -303,7 +311,7 @@ bool Mob::isAlive() const
 
 bool Mob::hurt(Entity *pAttacker, int damage)
 {
-	if (m_pLevel->m_bIsMultiplayer)
+	if (m_pLevel->m_bIsOnline)
 		return false;
 
 	m_noActionTime = 0;
@@ -311,17 +319,18 @@ bool Mob::hurt(Entity *pAttacker, int damage)
 	if (m_health <= 0)
 		return false;
 
+	bool var3 = true;
+
 	field_12C = 1.5f;
-	if (float(field_B8) <= float(field_DC) * 0.5f)
+	if (float(m_invulnerableTime) <= float(field_DC) * 0.5f)
 	{
-		field_100 = m_health;
-		field_B8 = field_DC;
+		m_lastHealth = m_health;
+		m_invulnerableTime = field_DC;
 		field_B84 = damage;
 		actuallyHurt(damage);
 		m_hurtDuration = 10;
 		m_hurtTime = 10;
-
-		// not in 0.1
+		
 		markHurt();
 
 		if (pAttacker)
@@ -336,7 +345,7 @@ bool Mob::hurt(Entity *pAttacker, int damage)
 			}
 
 			float ang = atan2f(zd, xd);
-			v020_field_104 = ang * (180.0f / float(M_PI)) - m_rot.x;
+			v020_field_104 = ang * (180.0f / float(M_PI)) - m_rot.y;
 
 			knockback(pAttacker, damage, xd, zd);
 		}
@@ -348,12 +357,22 @@ bool Mob::hurt(Entity *pAttacker, int damage)
 
 		actuallyHurt(damage - field_B84);
 		field_B84 = damage;
+
+		var3 = false;;
 	}
 
 	m_hurtDir = 0;
 	if (m_health <= 0)
-		die(pAttacker);
+	{
+		if (var3) 
+			m_pLevel->playSound(this, getDeathSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
 
+		die(pAttacker);
+	}
+	else if (var3) 
+	{
+		m_pLevel->playSound(this, getHurtSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+	}
 	return true;
 }
 
@@ -412,12 +431,7 @@ void Mob::knockback(Entity* pEnt, int a, float x, float z)
 
 bool Mob::onLadder() const
 {
-	TilePos tilePos = TilePos(m_pos.x, m_hitbox.min.y, m_pos.z);
-
-	//@INFO: Pre Beta 1.5 stair behaviour
-	return
-		m_pLevel->getTile(tilePos) == Tile::ladder->m_ID || 
-		m_pLevel->getTile(tilePos.above()) == Tile::ladder->m_ID;
+	return m_pLevel->getTile(TilePos(m_pos.x, m_hitbox.min.y, m_pos.z)) == Tile::ladder->m_ID;
 }
 
 void Mob::spawnAnim()
@@ -449,7 +463,7 @@ void Mob::heal(int health)
 	if (m_health > C_MAX_MOB_HEALTH)
 		m_health = C_MAX_MOB_HEALTH;
 
-	field_B8 = field_DC / 2;
+	m_invulnerableTime = field_DC / 2;
 }
 
 HitResult Mob::pick(float f1, float f2)
@@ -466,14 +480,14 @@ void Mob::travel(const Vec2& pos)
 	float x1, x2, dragFactor, oldYPos = m_pos.y;
 	if (isInWater())
 	{
-		moveRelative(Vec3(pos.x, 0.02f, pos.y));
+		moveRelative(Vec3(pos.y, 0.02f, pos.x));
 		move(m_vel);
 		x1 = 0.8f;
 		goto label_3;
 	}
 	if (isInLava())
 	{
-		moveRelative(Vec3(pos.x, 0.02f, pos.y));
+		moveRelative(Vec3(pos.y, 0.02f, pos.x));
 		move(m_vel);
 		x1 = 0.5f;
 	label_3:
@@ -498,20 +512,18 @@ void Mob::travel(const Vec2& pos)
 	else
 	{
 		float _x1;
-		TilePos tilePos(m_pos.x, m_hitbox.min.y, m_pos.z);;
-		tilePos.y -= 1;
-		TileID tile = m_pLevel->getTile(tilePos);
+		TileID tile = m_pLevel->getTile(TilePos(m_pos.x, m_hitbox.min.y - 1, m_pos.z));
 		if (tile <= 0)
 			_x1 = 0.546f;
 		else
-			_x1 = Tile::tiles[tile]->field_30 * 0.91f;
+			_x1 = Tile::tiles[tile]->friction * 0.91f;
 
 		assert(_x1 != 0.0f);
 
-		x2 = (0.16277f / (_x1 * _x1 * _x1)) * 0.1f;
+		x2 = (0.16277136f / (_x1 * _x1 * _x1)) * 0.1f;
 	}
 
-	moveRelative(Vec3(pos.x, x2, pos.y));
+	moveRelative(Vec3(pos.y, x2, pos.x));
 
 	if (!m_onGround)
 	{
@@ -519,18 +531,28 @@ void Mob::travel(const Vec2& pos)
 	}
 	else
 	{
-		//@HUH: repeated code. Could be an inlined function?
-		TilePos tilePos = TilePos(m_pos);
-		tilePos.y -= 1;
-		TileID tile = m_pLevel->getTile(tilePos);
+
+		TileID tile = m_pLevel->getTile(TilePos(m_pos.x, m_hitbox.min.y - 1, m_pos.z));
 		if (tile <= 0)
 			dragFactor = 0.546f;
 		else
-			dragFactor = Tile::tiles[tile]->field_30 * 0.91f;
+			dragFactor = Tile::tiles[tile]->friction * 0.91f;
 	}
 
 	if (onLadder())
 	{
+		if (m_vel.x < -0.15f)
+			m_vel.x = -0.15f;
+
+		if (m_vel.x > 0.15f)
+			m_vel.x = 0.15f;
+
+		if (m_vel.z < -0.15f)
+			m_vel.z = -0.15f;
+
+		if (m_vel.z > 0.15f)
+			m_vel.z = 0.15f;
+
 		m_distanceFallen = 0.0f;
 
 		if (m_vel.y < -0.15f)
@@ -559,7 +581,7 @@ void Mob::die(Entity* pCulprit)
 
 	field_B69 = true;
 
-	if (!m_pLevel->m_bIsMultiplayer)
+	if (!m_pLevel->m_bIsOnline)
 		dropDeathLoot();
 }
 
@@ -609,8 +631,8 @@ void Mob::aiStep()
 			jumpFromGround();
 	}
 
-	field_B00.x *= 0.98f;
 	field_B00.y *= 0.98f;
+	field_B00.x *= 0.98f;
 	field_B08 *= 0.9f;
 
 	travel(field_B00);
@@ -618,13 +640,29 @@ void Mob::aiStep()
 	AABB aabb = m_hitbox;
 	aabb.grow(0.2f, 0.2f, 0.2f);
 
-	EntityVector ents = m_pLevel->getEntities(this, aabb);
+	EntityVector ents = m_pLevel->getEntities(shared_from_this(), aabb);
 	for (EntityVector::iterator it = ents.begin(); it != ents.end(); it++)
 	{
-		Entity* pEnt = *it;
+		auto& pEnt = *it;
 		if (pEnt->isPushable())
 			pEnt->push(this);
 	}
+}
+
+void Mob::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+	tag->putShort("Health", m_health);
+	tag->putShort("HurtTime", m_hurtTime);
+	tag->putShort("DeathTime", m_deathTime);
+	tag->putShort("AttackTime", m_attackTime);
+}
+
+void Mob::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+	if (!tag->contains("Health")) m_health = 10;
+	else m_health = tag->getShort("Health");
+
+	m_hurtTime = tag->getShort("HurtTime");
+	m_deathTime = tag->getShort("DeathTime");
+	m_attackTime = tag->getShort("AttackTime");
 }
 
 void Mob::lookAt(Entity* pEnt, float a3, float a4)
@@ -638,11 +676,11 @@ void Mob::lookAt(Entity* pEnt, float a3, float a4)
 	float x1 = atan2f(diffZ, diffX);
 	float x2 = atan2f(q1, p1);
 
-	setRot(Vec2(-rotlerp(m_rot.y, x2 * 180.0f / float(M_PI), a4),
-	              rotlerp(m_rot.x, x1 * 180.0f / float(M_PI) - 90.0f, a3)));
+	setRot(Vec2(-rotlerp(m_rot.x, x2 * 180.0f / float(M_PI), a4),
+	              rotlerp(m_rot.y, x1 * 180.0f / float(M_PI) - 90.0f, a3)));
 }
 
-bool Mob::canSpawn() const
+bool Mob::canSpawn()
 {
 	return m_pLevel->getCubes(this, m_hitbox)->empty();
 }
@@ -676,15 +714,15 @@ Vec3 Mob::getViewVector(float f) const
 	
 	if (f == 1.0)
 	{
-		Vec3 x(Mth::cos(-(m_rot.x * C_180_OVER_PI) - C_PI),
-			   Mth::sin(-(m_rot.x * C_180_OVER_PI) - C_PI),
-			   -Mth::cos(-(m_rot.y * C_180_OVER_PI)));
+		Vec3 x(Mth::cos(-(m_rot.y * C_180_OVER_PI) - C_PI),
+			   Mth::sin(-(m_rot.y * C_180_OVER_PI) - C_PI),
+			   -Mth::cos(-(m_rot.x * C_180_OVER_PI)));
 
-		return Vec3(x.x * x.z, Mth::sin(-(m_rot.y * C_180_OVER_PI)), x.y * x.z);
+		return Vec3(x.x * x.z, Mth::sin(-(m_rot.x * C_180_OVER_PI)), x.y * x.z);
 	}
 
-	float x1 = m_rotPrev.y + (m_rot.y - m_rotPrev.y) * f;
-	float x2 = -((m_rotPrev.x + (m_rot.x - m_rotPrev.x) * f) * C_180_OVER_PI) - C_PI;
+	float x1 = m_rotPrev.x + (m_rot.x - m_rotPrev.x) * f;
+	float x2 = -((m_rotPrev.y + (m_rot.y - m_rotPrev.y) * f) * C_180_OVER_PI) - C_PI;
 	float x3 = Mth::cos(x2);
 	float x4 = Mth::sin(x2);
 	float x5 = -(x1 * C_180_OVER_PI);
@@ -756,8 +794,8 @@ void Mob::updateAi()
 		if (m_random.nextFloat() < 0.05f)
 			field_B08 = (m_random.nextFloat() - 0.5f) * 20.0f;
 
-		m_rot.x += field_B08;
-		m_rot.y = field_B10;
+		m_rot.y += field_B08;
+		m_rot.x = field_B10;
 	}
 
 	if (isInWater() || isInLava())

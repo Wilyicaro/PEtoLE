@@ -40,6 +40,7 @@
     <ProjectGuid>{a6e03dca-99f6-45b8-800d-73060ae407fc}</ProjectGuid>
     <RootNamespace>Client</RootNamespace>
     <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -51,6 +52,16 @@
     <Import Project="../Directory.Build.props" Condition="'$(MC_GLOBAL_PROPS)'==''" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_SDL2|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\GameMods.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\app\App.hpp" />
@@ -152,7 +163,6 @@
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\UnifiedTurnBuild.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\FoliageColor.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\GrassColor.hpp" />
-    <ClInclude Include="$(MC_ROOT)\source\client\gui\components\OptionList.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\model\ChickenModel.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\model\CowModel.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\model\CreeperModel.hpp" />
@@ -171,11 +181,22 @@
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\entity\SkeletonRenderer.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\entity\SpiderRenderer.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\entity\ZombieRenderer.hpp" />
-    <ClInclude Include="$(MC_ROOT)\source\client\renderer\entity\RocketRenderer.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\ControllerMoveInput.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\Lighting.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\BuildActionIntention.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\CraftingScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\locale\Language.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\HttpTexture.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\TextureProcessor.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\app\App.cpp" />
@@ -278,7 +299,6 @@
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\UnifiedTurnBuild.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\FoliageColor.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\GrassColor.cpp" />
-    <ClCompile Include="$(MC_ROOT)\source\client\gui\components\OptionList.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\model\ChickenModel.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\model\CowModel.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\model\CreeperModel.cpp" />
@@ -297,9 +317,20 @@
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\SkeletonRenderer.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\SpiderRenderer.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\ZombieRenderer.cpp" />
-    <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\RocketRenderer.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Lighting.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\CraftingScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\locale\Language.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\ClockTexture.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\CompassTexture.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\HttpTexture.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">

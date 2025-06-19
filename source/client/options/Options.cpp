@@ -58,9 +58,9 @@ void Options::_initDefaultValues()
 	m_playerName = "Steve";
 	m_bServerVisibleDefault = true;
 	m_bDebugText = false;
-	m_bBlockOutlines = false;
-	m_bFancyGrass = false;
-	m_bBiomeColors = false;
+	m_bBlockOutlines = true;
+	m_bFancyGrass = true;
+	m_bBiomeColors = true;
 	m_bSplitControls = false;
 	m_bUseController = false;
 	m_bDynamicHand = false;
@@ -121,19 +121,9 @@ void Options::_load()
 		else if (key == "gfx_blockoutlines")
 			m_bBlockOutlines = readBool(value);
 		else if (key == "gfx_fancygrass")
-		{
-			if (!(GetPatchManager()->IsGrassSidesTinted()))
-				m_bFancyGrass = false;
-			else
-				m_bFancyGrass = readBool(value);
-		}
+			m_bFancyGrass = readBool(value);
 		else if (key == "gfx_biomecolors")
-		{
-			if (!GrassColor::isAvailable() && !FoliageColor::isAvailable())
-				m_bBiomeColors = false;
-			else
-				m_bBiomeColors = readBool(value);
-		}
+			m_bBiomeColors = readBool(value);
 		else if (key == "gfx_hidegui")
 			m_bDontRenderGui = readBool(value);
 		else if (key == "gfx_thirdperson")
@@ -288,7 +278,8 @@ void Options::loadControls()
 	KM(KM_BACKWARD,     "key.back",          'S');
 	KM(KM_RIGHT,        "key.right",         'D');
 	KM(KM_JUMP,         "key.jump",          ' ');
-	KM(KM_INVENTORY,    "key.inventory",     'E');
+	KM(KM_CRAFTING,     "key.crafting",      'E');
+	KM(KM_INVENTORY,    "key.inventory",     'I');
 	KM(KM_DROP,         "key.drop",          'Q');
 	KM(KM_CHAT,         "key.chat",          'T');
 	KM(KM_FOG,          "key.fog",           'F');
@@ -338,7 +329,8 @@ void Options::loadControls()
 	KM(KM_DROP,          SDLVK_q);
 	KM(KM_CHAT,          SDLVK_t);
 	KM(KM_FOG,           SDLVK_f);
-	KM(KM_INVENTORY,     SDLVK_e);
+	KM(KM_CRAFTING,      SDLVK_e);
+	KM(KM_INVENTORY,     SDLVK_i);
 	KM(KM_SNEAK,         SDLVK_LSHIFT);
 	KM(KM_SLOT_1,        SDLVK_1);
 	KM(KM_SLOT_2,        SDLVK_2);

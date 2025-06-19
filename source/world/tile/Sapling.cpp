@@ -15,7 +15,8 @@ Sapling::Sapling(int id, int texture) : Bush(id, texture)
 
 int Sapling::getTexture(Facing::Name face, int data) const
 {
-	return TEXTURE_SAPLING; // we don't have the other saplings' textures...
+	data &= 3;
+	return data == 1 ? 63 : (data == 2 ? 79 : Bush::getTexture(face, data));
 }
 
 void Sapling::tick(Level* level, const TilePos& pos, Random* random)
@@ -35,25 +36,25 @@ void Sapling::tick(Level* level, const TilePos& pos, Random* random)
 
 bool Sapling::maybeGrowTree(Level* level, const TilePos& pos, Random* random)
 {
-	// this is fine... these are not heavy at all
-	TreeFeature treeFeature;
-	BirchFeature birchFeature;
-	SpruceFeature spruceFeature;
-
-	Feature* pFeature = &treeFeature;
+	Feature* pFeature;
 
 	int data = level->getData(pos);
 	switch (data)
 	{
+		default:
+			if (random->nextInt() == 10)
+				pFeature = new FancyTreeFeature;
+			else pFeature = new TreeFeature;
+			break;
 		case 1:
-			pFeature = &birchFeature;
+			pFeature = new BirchFeature;
 			break;
 		case 2:
-			pFeature = &spruceFeature;
+			pFeature = new SpruceFeature;
 			break;
 	}
 
-	return treeFeature.place(level, random, pos);
+	return pFeature->place(level, random, pos);
 }
 
 void Sapling::growTree(Level* level, const TilePos& pos, Random* random)
@@ -62,4 +63,9 @@ void Sapling::growTree(Level* level, const TilePos& pos, Random* random)
 
 	if (!maybeGrowTree(level, pos, random))
 		level->setTileNoUpdate(pos, m_ID);
+}
+
+int Sapling::getSpawnResourcesAuxValue(int x) const
+{
+	return x & 3;
 }

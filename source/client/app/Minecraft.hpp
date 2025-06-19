@@ -28,6 +28,7 @@
 #include "world/gamemode/GameMode.hpp"
 #include "world/gamemode/GameType.hpp"
 #include "world/particle/ParticleEngine.hpp"
+#include <stdint.h>
 
 class Screen; // in case we're included from Screen.hpp
 
@@ -46,8 +47,8 @@ public:
 	void saveOptions();
 	void handleBuildAction(const BuildActionIntention& action);
 	bool isLevelGenerated() const;
-	void selectLevel(const std::string&, const std::string&, int);
-	void setLevel(Level*, const std::string&, LocalPlayer*);
+	void selectLevel(const std::string&, const std::string&, int64_t seed);
+	void setLevel(Level*, const std::string&, std::shared_ptr<LocalPlayer>);
 	bool pauseGame();
 	bool resumeGame();
 	void leaveGame(bool bCopyMap);
@@ -59,8 +60,8 @@ public:
 	void handleCharInput(char chr);
 	void resetInput();
 	void sendMessage(const std::string& message);
-	void resetPlayer(Player* player);
-	void respawnPlayer(Player* player);
+	void resetPlayer(std::shared_ptr<Player> player);
+	void respawnPlayer(std::shared_ptr<Player> player);
 	std::string getVersionString() const;
 	bool isTouchscreen() const;
 	bool useSplitControls() const;
@@ -84,7 +85,7 @@ public:
 
 	const char* getProgressMessage();
 	LevelStorageSource* getLevelSource();
-	ItemInstance* getSelectedItem();
+	std::shared_ptr<ItemInstance> getSelectedItem();
 	Options* getOptions() const { return m_options; }
 	
 private:
@@ -127,8 +128,8 @@ public:
 	int field_2B8;
 	User* m_pUser;
 	Level* m_pLevel;
-	LocalPlayer* m_pLocalPlayer;
-	Mob* m_pMobPersp; // why is there a duplicate?
+	std::shared_ptr<LocalPlayer> m_pLocalPlayer;
+	std::shared_ptr<Mob> m_pMobPersp;
 	Gui m_gui;
 	int field_D0C;
 	CThread* m_pPrepThread;

@@ -1,5 +1,4 @@
 #include "TilePos.hpp"
-#include "world/phys/Vec3.hpp"
 #include "world/level/levelgen/chunk/ChunkPos.hpp"
 
 void TilePos::_init(int _x, int _y, int _z)
@@ -19,14 +18,24 @@ TilePos::TilePos(int _x, int _y, int _z)
     _init(_x, _y < 0 ? 0 : _y, _z);
 }
 
+TilePos::TilePos(int* xyz)
+{
+	_init(xyz[0], xyz[1], xyz[2]);
+}
+
 TilePos::TilePos(float _x, float _y, float _z)
 {
-    _init((int)floorf(_x), (uint8_t)floorf(_y), (int)floorf(_z));
+    _init(Mth::floor(_x), Mth::floor(_y), Mth::floor(_z));
+}
+
+TilePos::TilePos(double _x, double _y, double _z)
+{
+	_init(Mth::floor(_x), Mth::floor(_y), Mth::floor(_z));
 }
 
 TilePos::TilePos(const Vec3& pos)
 {
-    _init(pos.x, pos.y, pos.z);
+    _init(Mth::floor(pos.x), Mth::floor(pos.y), Mth::floor(pos.z));
 }
 
 TilePos::TilePos(const ChunkPos& pos, int y)
@@ -46,6 +55,11 @@ TilePos TilePos::relative(Facing::Name facing, int steps) const
 	case Facing::EAST:  return TilePos(x + steps, y,         z);
 	default:            return TilePos(*this);
 	}
+}
+
+
+Vec3 TilePos::center() const {
+	return Vec3(x + 0.5, y + 0.5, z + 0.5);
 }
 
 bool TilePos::operator<(const TilePos& b) const
@@ -166,4 +180,26 @@ bool TilePos::operator!=(const TilePos& b) const
 	// Dunno if the top is more optimal than the bottom when compiled
 	//return x != b.x || z != b.z;
 	return !(*this == b);
+}
+
+int TilePos::operator[](uint8_t index) const
+{
+	switch (index)
+	{
+	case 0: return x;
+	case 1: return y;
+	case 2: return z;
+	default: throw std::out_of_range("TilePos index out of range");
+	}
+}
+
+int& TilePos::operator[](uint8_t index)
+{
+	switch (index)
+	{
+	case 0: return x;
+	case 1: return y;
+	case 2: return z;
+	default: throw std::out_of_range("TilePos index out of range");
+	}
 }

@@ -19,7 +19,7 @@
 #include "world/level/levelgen/chunk/LevelChunk.hpp"
 #include "world/Facing.hpp"
 #include "world/level/TilePos.hpp"
-#include "world/phys/Vec3.hpp"
+#include "world/phys/Vec3T.hpp"
 #include "world/phys/HitResult.hpp"
 
 class Level;
@@ -34,9 +34,12 @@ public: // structs
 	struct SoundType
 	{
 		std::string m_name;
+		std::string m_destroy;
 		float volume, pitch;
 
-		SoundType(const std::string& name, float volume, float pitch) : m_name(name), volume(volume), pitch(pitch) {}
+		SoundType(const std::string& name, float volume, float pitch) : m_name(name), m_destroy(name), volume(volume), pitch(pitch) {}
+
+		SoundType(const std::string& name, const std::string& destroy, float volume, float pitch) : m_name(name), m_destroy(destroy), volume(volume), pitch(pitch) {}
 	};
 
 public: // virtual functions
@@ -57,7 +60,9 @@ public: // virtual functions
 	virtual AABB getTileAABB(const Level*, const TilePos& pos);
 	virtual bool isSolidRender() const;
 	virtual bool mayPick() const;
+	virtual bool hasTileEntity() const;
 	virtual bool mayPick(int, bool) const;
+	virtual bool mayPlace(const Level*, const TilePos& pos, Facing::Name face) const;
 	virtual bool mayPlace(const Level*, const TilePos& pos) const;
 	virtual int getTickDelay() const;
 	virtual void tick(Level*, const TilePos& pos, Random*);
@@ -76,14 +81,15 @@ public: // virtual functions
 	virtual HitResult clip(const Level*, const TilePos& pos, Vec3, Vec3);
 	virtual void wasExploded(Level*, const TilePos& pos);
 	virtual int getRenderLayer() const;
-	virtual int use(Level*, const TilePos& pos, Player*);
+	virtual bool use(Level*, const TilePos& pos, Player*);
 	virtual void stepOn(Level*, const TilePos& pos, Entity*);
 	virtual void setPlacedOnFace(Level*, const TilePos& pos, Facing::Name face);
-	virtual void setPlacedBy(Level*, const TilePos& pos, Mob*);
+	virtual void setPlacedBy(Level*, const TilePos& pos, Mob*, Facing::Name face);
 	virtual void prepareRender(Level*, const TilePos& pos);
 	virtual void attack(Level*, const TilePos& pos, Player*);
 	virtual void handleEntityInside(Level*, const TilePos& pos, const Entity*, Vec3&);
-	virtual int getColor(const LevelSource*, const TilePos& pos) const;
+	virtual int getColor(const LevelSource*, const TilePos& pos, Facing::Name facing = Facing::UP, int texture = -1) const;
+	virtual int getColor(int type, Facing::Name facing = Facing::UP, int texture = -1) const;
 	virtual bool isSignalSource() const;
 	virtual int getSignal(const LevelSource*, const TilePos& pos) const;
 	virtual int getSignal(const LevelSource*, const TilePos& pos, Facing::Name face) const;
@@ -103,6 +109,7 @@ public: // virtual functions
 	virtual Tile* setDestroyTime(float);
 	virtual Tile* setTicking(bool);
 	virtual int getSpawnResourcesAuxValue(int) const;
+	virtual std::shared_ptr<TileEntity> newTileEntity();
 
 private:
 	void _init();
@@ -143,85 +150,88 @@ public: // static variables
 	static bool  translucent  [C_MAX_TILES];
 	static bool  isEntityTile [C_MAX_TILES];
 
-	// TODO
-	static Tile
-		* sand,
-		* sandStone,
-		* stoneBrick,
-		* redBrick,
-		* wood,
-		* glass,
-		* calmWater,
-		* calmLava,
-		* gravel,
-		* rock,
-		* unbreakable,
-		* dirt,
-		* grass,
-		* ice,
-		* snow,
-		* clay,
-		* farmland,
-		* stoneSlab,
-		* stoneSlabHalf,
-		* cloth,
-		* cloth_00,
-		* cloth_10,
-		* cloth_20,
-		* cloth_30,
-		* cloth_40,
-		* cloth_50,
-		* cloth_60,
-		* cloth_70,
-		* cloth_01,
-		* cloth_11,
-		* cloth_21,
-		* cloth_31,
-		* cloth_41,
-		* cloth_51,
-		* cloth_61,
-		* flower,
-		* rose,
-		* mushroom1,
-		* mushroom2,
-		* topSnow,
-		* treeTrunk,
-		* leaves,
-		* leaves_carried,
-		* info_reserved6,
-		* emeraldOre, //! actually diamond ore
-		* redStoneOre,
-		* redStoneOre_lit,
-		* goldOre,
-		* ironOre,
-		* coalOre,
-		* lapisOre,
-		* reeds,
-		* ladder,
-		* obsidian,
-		* tnt,
-		* torch,
-		* water,
-		* lava,
-		* fire,
-		* invisible_bedrock,
-		* goldBlock,
-		* ironBlock,
-		* emeraldBlock, //! actually diamond block
-		* stairs_wood,
-		* stairs_stone,
-		* door_wood,
-		* door_iron,
-		* info_updateGame1,
-		* info_updateGame2,
-		// custom additions here
-		* sapling,
-		* sponge,
-		* lapisBlock,
-		* bookshelf,
-		* mossStone,
-		* cryingObsidian,
-		* rocketLauncher;
+	static Tile* sand;
+	static Tile* sandStone;
+	static Tile* cobblestone;
+	static Tile* brick;
+	static Tile* wood;
+	static Tile* glass;
+	static Tile* calmWater;
+	static Tile* calmLava;
+	static Tile* gravel;
+	static Tile* stone;
+	static Tile* bedrock;
+	static Tile* dirt;
+	static Tile* grass;
+	static Tile* button;
+	static Tile* ice;
+	static Tile* snow;
+	static Tile* clay;
+	static Tile* cactus;
+	static Tile* farmland;
+	static Tile* stoneSlab;
+	static Tile* stoneSlabHalf;
+	static Tile* tallGrass;
+	static Tile* deadBush;
+	static Tile* cloth;
+	static Tile* flower;
+	static Tile* rose;
+	static Tile* mushroom1;
+	static Tile* mushroom2;
+	static Tile* topSnow;
+	static Tile* treeTrunk;
+	static Tile* leaves;
+	static Tile* diamondOre;
+	static Tile* redstoneOre;
+	static Tile* redstoneOreLit;
+	static Tile* redstoneTorch;
+	static Tile* redstoneTorchLit;
+	static Tile* goldOre;
+	static Tile* ironOre;
+	static Tile* coalOre;
+	static Tile* lapisOre;
+	static Tile* reeds;
+	static Tile* fence;
+	static Tile* ladder;
+	static Tile* rail;
+	static Tile* poweredRail;
+	static Tile* detectorRail;
+	static Tile* lever;
+	static Tile* obsidian;
+	static Tile* tnt;
+	static Tile* torch;
+	static Tile* water;
+	static Tile* lava;
+	static Tile* pumpkin;
+	static Tile* netherrack;
+	static Tile* soulSand;
+	static Tile* glowstone;
+	static Tile* pumpkinLantern;
+	static Tile* fire;
+	static Tile* mobSpawner;
+	static Tile* chest;
+	static Tile* redstoneDust;
+	static Tile* goldBlock;
+	static Tile* ironBlock;
+	static Tile* diamondBlock;
+	static Tile* stairsWood;
+	static Tile* stairsStone;
+	static Tile* sign;
+	static Tile* wallSign;
+	static Tile* doorWood;
+	static Tile* doorIron;
+	static Tile* sapling;
+	static Tile* sponge;
+	static Tile* bed;
+	static Tile* web;
+	static Tile* lapisBlock;
+	static Tile* bookshelf;
+	static Tile* mossStone;
+	static Tile* craftingTable;
+	static Tile* crops;
+	static Tile* furnace;
+	static Tile* furnaceLit;
+	static Tile* cake;
 
 public:
 	int m_TextureFrame;
@@ -230,7 +240,7 @@ public:
 	const SoundType* m_pSound;
 	float field_28;
 	Material* m_pMaterial;
-	float field_30;
+	float friction;
 	float m_hardness;
 	float m_blastResistance;
 	AABB m_aabbReturned;

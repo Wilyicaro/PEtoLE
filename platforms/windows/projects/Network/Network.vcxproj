@@ -23,7 +23,8 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{e43f7c6a-a099-48c9-9d37-b56cd8d6d785}</ProjectGuid>
     <RootNamespace>Network</RootNamespace>
-	<ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -35,6 +36,11 @@
     <Import Project="../Directory.Build.props" Condition="'$(MC_GLOBAL_PROPS)'==''" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\network\MinecraftPackets.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\NetEventCallback.cpp" />
@@ -57,6 +63,7 @@
     <ClCompile Include="$(MC_ROOT)\source\network\RakNetInstance.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\ServerSideNetworkHandler.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\PacketUtil.cpp" />
+    <ClCompile Include="..\..\..\..\source\network\packets\AddMobPacket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\network\MinecraftPackets.hpp" />

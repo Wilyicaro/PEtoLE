@@ -27,12 +27,6 @@ struct GuiMessage
 class Gui : public GuiComponent
 {
 private:
-	static bool _isVignetteAvailable;
-public:
-	static bool isVignetteAvailable() { return _isVignetteAvailable; }
-	static void setIsVignetteAvailable(bool value) { _isVignetteAvailable = value; }
-
-private:
 	void renderPumpkin(int, int);
 	void renderVignette(float, int, int);
 
@@ -45,7 +39,6 @@ public:
 	void render(float f, bool bHaveScreen, int mouseX, int mouseY);
 	void tick();
 	void renderSlot(int slot, int x, int y, float f);
-	void renderSlotOverlay(int slot, int x, int y, float f);
 	int  getSlotIdAt(int mx, int my);
 	bool isInside(int mx, int my);
 	void handleClick(int id, int mx, int my);
@@ -59,7 +52,7 @@ public:
 	static float InvGuiScale;
 
 public:
-	float field_8;
+	float m_progress;
 	std::string field_C;
 	std::vector<GuiMessage> m_guiMessages;
 	int field_24;
