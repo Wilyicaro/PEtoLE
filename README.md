@@ -8,6 +8,7 @@ My thanks to the contributors of ReMinecraftPE, without them this project would 
 **Why PEtoLE?**
 
 Well, this project was born out of curiosity regarding the proximity of the Minecraft Pocket Edition codebase to Java Edition, which ended up giving me the idea of ​​trying to make it accurate with TU0 of [Legacy Edition](https://minecraft.wiki/w/Legacy_Console_Edition), but why not first make it accurate with b1.7.3? Since this would be necessary anyway, this project came about, and with this name (Pocket Edition to Legacy Edition)
+
 Eventually there will be a branch that lives up to this name, but one step at a time, right?
 
 **Why is the goal b1.7.3 instead of b1.6.6, since TU0 is based on it?**
