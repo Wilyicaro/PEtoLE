@@ -501,13 +501,13 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataP
 	}
 
 	// All chunks are loaded. Also flush all the updates we've buffered.
-	m_chunksRequested = C_MAX_CHUNKS;;
+	m_chunksRequested = 256;
 	flushAllBufferedUpdates();
 }
 
 bool ClientSideNetworkHandler::areAllChunksLoaded()
 {
-	return m_chunksRequested >= C_MAX_CHUNKS;
+	return m_chunksRequested > 255;
 }
 
 void ClientSideNetworkHandler::arrangeRequestChunkOrder()

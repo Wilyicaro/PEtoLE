@@ -11,7 +11,6 @@
 #include "Vec3T.hpp"
 #include "world/level/TilePos.hpp"
 #include "world/Facing.hpp"
-#include <memory>
 
 class Entity;
 

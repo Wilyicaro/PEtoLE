@@ -23,7 +23,7 @@ void ChunkDataPacket::write(RakNet::BitStream* bs)
 	// Well, we first have to prepare the data.
 	m_data.Reset();
 
-	for (int i = 0; i < C_MAX_CHUNKS; i++)
+	for (int i = 0; i < 256; i++)
 	{
 		m_data.Write(m_pChunk->m_updateMap[i]);
 
