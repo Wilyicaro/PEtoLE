@@ -166,12 +166,14 @@ static void handle_events()
 			case SDL_MOUSEMOTION:
 			{
 				if (event.button.which != SDL_TOUCH_MOUSEID) {
-					float scale = g_fPointToPixelScale * 3;
+					float scale = g_fPointToPixelScale;
 					float x = event.motion.x * scale;
 					float y = event.motion.y * scale;
 					Multitouch::feed(BUTTON_NONE, false, x, y, 0);
 					Mouse::feed(BUTTON_NONE, false, x, y);
-					g_pAppPlatform->setMouseDiff(event.motion.xrel * scale, event.motion.yrel * scale);
+					int xrel = 0, yrel = 0;
+					g_pAppPlatform->getMouseDiff(xrel, yrel);
+					g_pAppPlatform->setMouseDiff(xrel + event.motion.xrel * scale, yrel + event.motion.yrel * scale);
 				}
 				break;
 			}
