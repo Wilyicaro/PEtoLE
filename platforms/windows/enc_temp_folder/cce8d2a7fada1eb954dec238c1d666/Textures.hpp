@@ -42,11 +42,11 @@ public:
 	int loadAndBindTerrain()
 	{
 	
-#ifndef USE_GLES
+#ifndef ANDROID
 		setMipmap(true);
 #endif
 		int id = loadAndBindTexture(C_TERRAIN_NAME);
-#ifndef USE_GLES
+#ifndef ANDROID
 		loadTexture(C_TERRAIN_MIPMAP2_NAME, true, 1, false);
 		loadTexture(C_TERRAIN_MIPMAP3_NAME, true, 2, false);
 		setMipmap(false);
