@@ -12,7 +12,6 @@
 #include "world/level/TilePos.hpp"
 #include <array>
 #include <vector>
-#include <memory>
 
 class Level;
 
