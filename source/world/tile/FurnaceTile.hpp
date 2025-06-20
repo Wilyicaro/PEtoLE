@@ -17,6 +17,8 @@ public:
 	static void setLit(bool var0, Level* level, const TilePos& pos);
 	bool hasTileEntity() const override;
 	std::shared_ptr<TileEntity> newTileEntity() override;
+	int getResource(int, Random*) const override;
+
 
 private:
 	Random m_furnaceRandom;

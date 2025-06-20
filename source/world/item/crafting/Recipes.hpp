@@ -125,6 +125,10 @@ public:
         m_recipes.push_back(recipe.build());
     }
 
+    void addTools(std::shared_ptr<ItemInstance> material, Item* sword, Item* pickaxe, Item* axe, Item* shovel, Item* hoe);
+
+    void addArmour(std::shared_ptr<ItemInstance> material, Item* helmet, Item* chestplate, Item* leggings, Item* boots);
+
     std::shared_ptr<ItemInstance> getItemFor(CraftingContainer* container) {
         for (auto& recipe : m_recipes) {
             if (recipe->matches(container)) {

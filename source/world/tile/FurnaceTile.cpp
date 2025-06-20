@@ -138,3 +138,8 @@ std::shared_ptr<TileEntity> FurnaceTile::newTileEntity()
 {
 	return std::make_shared<FurnaceTileEntity>();
 }
+
+int FurnaceTile::getResource(int, Random*) const
+{
+	return Tile::furnace->m_ID;
+}

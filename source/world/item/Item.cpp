@@ -204,7 +204,7 @@ void Item::initItems()
 		->setIcon(3, 4)
 		->setDescriptionId("swordDiamond");
 
-	Item::goldPickaxe = NEW_X_ITEM(PickaxeItem, ITEM_PICKAXE_DIAMOND, Tier::DIAMOND)
+	Item::diamondPickaxe = NEW_X_ITEM(PickaxeItem, ITEM_PICKAXE_DIAMOND, Tier::DIAMOND)
 		->setIcon(3, 6)
 		->setDescriptionId("pickaxeDiamond");
 
