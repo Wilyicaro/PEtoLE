@@ -18,6 +18,7 @@ public:
 	void updateShape(const LevelSource* level, const TilePos& pos) override;
 	void updateDefaultShape() override;
 	bool canSurvive(const Level* level, const TilePos& pos) const override;
-
+	int getResource(int, Random*) const override;
+	int getResourceCount(Random*) const override;
 };
 

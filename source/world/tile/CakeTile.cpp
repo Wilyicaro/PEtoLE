@@ -100,3 +100,13 @@ bool CakeTile::canSurvive(const Level* level, const TilePos& pos) const
 {
 	return level->getMaterial(pos.below())->isSolid();
 }
+
+int CakeTile::getResource(int, Random*) const
+{
+	return 0;
+}
+
+int CakeTile::getResourceCount(Random*) const
+{
+	return 0;
+}

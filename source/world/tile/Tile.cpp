@@ -797,7 +797,7 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(0.5f)
 		->setSoundType(Tile::SOUND_CLOTH)
-		->setDescriptionId("notGate");
+		->setDescriptionId("cake");
 
 	Item::items[Tile::cloth->m_ID] = (new ClothItem(Tile::cloth->m_ID - C_MAX_TILES))
 		->setDescriptionId("cloth");
