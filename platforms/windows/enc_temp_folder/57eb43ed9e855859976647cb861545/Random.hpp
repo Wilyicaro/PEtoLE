@@ -9,7 +9,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <atomic>
 #include "common/Utils.hpp"
 
 
