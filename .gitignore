@@ -134,6 +134,7 @@ xcuserdata/
 
 /game/assets/*
 !/game/assets/gui/touchscreen.png
+!/game/assets/lang/
 !/game/assets/lang/*
 
 # Ignore keep directory - where you can keep files for later use

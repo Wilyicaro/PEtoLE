@@ -31,7 +31,6 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a, const s
 	createFolderIfNotExists((m_levelDirPath+"/region").c_str());
 
 	std::string datLevel  = m_levelDirPath + "/" + "level.dat";
-	std::string datPlayer = m_levelDirPath + "/" + "player.dat";
 
 	m_pLevelData = new LevelData;
 	if (!readLevelData(datLevel, m_pLevelData))
@@ -40,8 +39,6 @@ ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& a, const s
 		m_pLevelData = nullptr;
 		return;
 	}
-
-	readPlayerData(datPlayer, m_pLevelData);
 }
 
 ExternalFileLevelStorage::~ExternalFileLevelStorage()
@@ -192,8 +189,6 @@ bool ExternalFileLevelStorage::readLevelData(const std::string& path, LevelData*
 		throw std::runtime_error("invalid root tag in level.dat");
 
 	pLevelData->deserialize(std::dynamic_pointer_cast<CompoundTag>(tag)->getOrMakeCompound("Data"));
-
-	fclose(pFile);
 
 	return true;
 }

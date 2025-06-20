@@ -186,6 +186,7 @@ void AppPlatform_sdl_base::recenterMouse()
 
 void AppPlatform_sdl_base::setMouseGrabbed(bool b)
 {
+	if (b) clearDiff();
 	SDL_SetWindowGrab(_window, b ? SDL_TRUE : SDL_FALSE);
 	/**
 	 * @NOTE: There is a bug with older versions of SDL2 (ex: 2.0.4) where disabling RelativeMouseMode will cause a mouse event to be fired
