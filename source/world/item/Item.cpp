@@ -121,7 +121,7 @@ void Item::initItems()
 
 	g_bInittedItems = true;
 
-	Item::bow = NEW_X_ITEM(BowItem, ITEM_BOW)
+	Item::bow = NEW_X_ITEMN(BowItem, ITEM_BOW)
 		->setIcon(5, 1)
 		->setDescriptionId("bow");
 
