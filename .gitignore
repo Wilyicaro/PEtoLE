@@ -133,6 +133,8 @@ xcuserdata/
 #-- The 'game' directory is the default working directory for Minecraft PE if running from VS directly.
 
 /game/assets/*
+!/game/assets/gui/
+/game/assets/gui/*
 !/game/assets/gui/touchscreen.png
 !/game/assets/lang/
 !/game/assets/lang/*
