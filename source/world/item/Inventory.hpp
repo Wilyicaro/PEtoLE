@@ -30,6 +30,7 @@ public:
         setItem(m_selected, item);
     }
     std::shared_ptr<ItemInstance> removeItem(int index, int count) override;
+    bool removeResource(int id);
 	void addTestItem(int itemID, int amount = 1, int auxValue = 0);
 
 	void clear();
@@ -144,6 +145,7 @@ private:
     int getSlotWithRemainingSpace(std::shared_ptr<ItemInstance> item);
     int getFreeSlot();
     int addResource(std::shared_ptr<ItemInstance> item);
+    int getSlot(int id);
 
 
     std::shared_ptr<ItemInstance> m_carried = nullptr;

@@ -24,6 +24,7 @@
 #include "ArmorItem.hpp"
 #include "FlintAndSteelItem.hpp"
 #include "CoalItem.hpp"
+#include "BowItem.hpp"
 
 #define ITEM(x) ((x) - 256)
 
@@ -119,6 +120,10 @@ void Item::initItems()
 		return;
 
 	g_bInittedItems = true;
+
+	Item::bow = NEW_X_ITEM(BowItem, ITEM_BOW)
+		->setIcon(5, 1)
+		->setDescriptionId("bow");
 
 	Item::woodSword = NEW_X_ITEM(WeaponItem, ITEM_SWORD_WOOD, Tier::WOOD)
 		->setIcon(0, 4)

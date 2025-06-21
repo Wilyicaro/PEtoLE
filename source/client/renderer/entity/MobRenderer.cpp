@@ -116,7 +116,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	bindHttpTexture(pMob->m_skinUrl, pMob->getTexture());
 	glEnable(GL_ALPHA_TEST);
 
-	m_pModel->setBrightness(entity->getBrightness(1.0f));
+	m_pModel->setBrightness(getBrightness(entity, 1.0f));
 	m_pModel->prepareMobModel(pMob, x2, x1, f);
 	m_pModel->render(x2, x1, fBob, aYaw - fSmth, aPitch, fScale); // last float here (scale) was set to "0.059375f" for some reason
 
@@ -132,7 +132,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 
 	additionalRendering(pMob, f);
 	
-	float fBright = pMob->getBrightness(f);
+	float fBright = getBrightness(pMob, f);
 	int iOverlayColor = getOverlayColor(pMob, fBright, f);
 
 	if (GET_ALPHA(iOverlayColor) || pMob->m_hurtTime > 0 || pMob->m_deathTime > 0)

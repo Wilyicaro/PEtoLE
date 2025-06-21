@@ -1,19 +1,19 @@
 #include "DeathScreen.hpp"
+#include <client/locale/Language.hpp>
 
 DeathScreen::DeathScreen() :
-	m_btnRespawn(1, "Respawn!"),
-	m_btnTitle  (2, "Main menu")
+	m_btnRespawn(1, Language::getInstance()->get("guiGameOver.respawn")),
+	m_btnTitle(2, Language::getInstance()->get("guiGameOver.titleMenu"))
 {
 	m_tickCounter = 0;
 }
 
 void DeathScreen::init()
 {
-	m_btnRespawn.m_width = m_btnTitle.m_width = m_width / 4;
-	m_btnRespawn.m_xPos  = m_width / 2 - 10 - m_btnRespawn.m_width;
-	m_btnTitle.m_xPos    = m_width / 2 + 10;
+	m_btnRespawn.m_xPos = m_btnTitle.m_xPos = m_width / 2 - (m_btnRespawn.m_width = m_btnTitle.m_width = 200) / 2;
 
-	m_btnRespawn.m_yPos = m_btnTitle.m_yPos = m_height / 2;
+	m_btnRespawn.m_yPos = m_height / 4 + 72;
+	m_btnTitle.m_yPos = m_height / 4 + 96;
 
 	m_buttons.push_back(&m_btnRespawn);
 	m_buttons.push_back(&m_btnTitle);
@@ -49,15 +49,13 @@ void DeathScreen::render(int x, int y, float f)
 
 	glPushMatrix();
 	glScalef(2.0f, 2.0f, 2.0f);
-	drawCenteredString(m_pFont, "You died!", m_width / 4, m_height / 8, 0xFFFFFF);
+	drawCenteredString(m_pFont, Language::getInstance()->get("guiGameOver.death"), m_width / 4, m_height / 8, 0xFFFFFF);
 	glPopMatrix();
 
-	// render the buttons after 1.5 seconds
-	if (m_tickCounter >= 30)
-		Screen::render(x, y, f);
+	Screen::render(x, y, f);
 }
 
 bool DeathScreen::isPauseScreen()
 {
-	return true;
+	return false;
 }

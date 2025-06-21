@@ -172,6 +172,31 @@ std::shared_ptr<ItemInstance> Inventory::removeItem(int index, int count)
 	}
 }
 
+int Inventory::getSlot(int id) {
+	for (int i = 0; i < m_items.size(); ++i) {
+		if (m_items[i] && m_items[i]->m_itemID == id) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+bool Inventory::removeResource(int id)
+{
+	int var2 = getSlot(id);
+	if (var2 < 0) {
+		return false;
+	}
+	else {
+		if (--m_items[var2]->m_count <= 0) {
+			m_items[var2] = nullptr;
+		}
+
+		return true;
+	}
+}
+
 void Inventory::addTestItem(int itemID, int amount, int auxValue)
 {
 	std::shared_ptr<ItemInstance> inst = std::make_shared<ItemInstance>(itemID, amount, auxValue);

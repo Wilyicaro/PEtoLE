@@ -25,7 +25,8 @@ EntityRenderDispatcher::EntityRenderDispatcher() :
 	m_SheepRenderer(new SheepModel(false), new SheepModel(true), 0.7f),
 	m_CowRenderer(new CowModel, 0.7f),
 	m_ChickenRenderer(new ChickenModel, 0.3f),
-	m_CreeperRenderer(new CreeperModel, 0.5f)
+	m_CreeperRenderer(new CreeperModel, 0.5f),
+	m_arrowRenderer()
 {
 	m_pItemInHandRenderer = nullptr;
 	m_pTextures = nullptr;
@@ -42,6 +43,7 @@ EntityRenderDispatcher::EntityRenderDispatcher() :
 	m_CowRenderer.init(this);
 	m_ChickenRenderer.init(this);
 	m_CreeperRenderer.init(this);
+	m_arrowRenderer.init(this);
 	
 	// TODO
 
@@ -93,6 +95,8 @@ EntityRenderer* EntityRenderDispatcher::getRenderer(int renderType)
 			return &m_CreeperRenderer;
 		case RENDER_FALLING_TILE:
 			return &m_FallingTileRenderer;
+		case RENDER_ARROW:
+			return &m_arrowRenderer;
 	}
 
 	return nullptr;

@@ -93,7 +93,7 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 					0.2f * (m_random.nextFloat() * 2.0f - 1.0f) / scale);
 			}
 
-			tileRenderer->renderTile(Tile::tiles[itemID], pItemInstance->getAuxValue(), pItemEntity->getBrightness(1.0f));
+			tileRenderer->renderTile(Tile::tiles[itemID], pItemInstance->getAuxValue(), getBrightness(pItemEntity, 1.0f));
 			glPopMatrix();
 		}
 	}
@@ -121,7 +121,7 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 			t.begin();
 
 #ifdef ENH_SHADE_HELD_TILES
-			float bright = pItemEntity->getBrightness(1.0f);
+			float bright = getBrightness(pItemEntity, 1.0f);
 			t.color(bright, bright, bright);
 #endif
 			t.normal(0.0f, 1.0f, 0.0f);

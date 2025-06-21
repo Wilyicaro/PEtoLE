@@ -19,12 +19,14 @@ void Recipes::addArmour(std::shared_ptr<ItemInstance> material, Item* helmet, It
 
 Recipes::Recipes()
 {
-    //ToolRecipes
+    //Weapon/ToolRecipes
     addTools(std::make_shared<ItemInstance>(Tile::wood), Item::woodSword, Item::woodPickaxe, Item::woodAxe, Item::woodShovel, Item::woodHoe);
-    addTools(std::make_shared<ItemInstance>(Tile::stone), Item::stoneSword, Item::stonePickaxe, Item::stoneAxe, Item::stoneShovel, Item::stoneHoe);
+    addTools(std::make_shared<ItemInstance>(Tile::cobblestone), Item::stoneSword, Item::stonePickaxe, Item::stoneAxe, Item::stoneShovel, Item::stoneHoe);
     addTools(std::make_shared<ItemInstance>(Item::ironIngot), Item::ironSword, Item::ironPickaxe, Item::ironAxe, Item::ironShovel, Item::ironHoe);
     addTools(std::make_shared<ItemInstance>(Item::goldIngot), Item::goldSword, Item::goldPickaxe, Item::goldAxe, Item::goldShovel, Item::goldHoe);
     addTools(std::make_shared<ItemInstance>(Item::diamond), Item::diamondSword, Item::diamondPickaxe, Item::diamondAxe, Item::diamondShovel, Item::diamondHoe);
+    add(ShapedRecipeBuilder({ " #X", "# X", " #X" }, std::make_shared<ItemInstance>(Item::bow)).add('X', Item::string).add('#', Item::stick));
+    add(ShapedRecipeBuilder({ "X", "#", "Y" }, std::make_shared<ItemInstance>(Item::arrow, 4)).add('Y', Item::feather).add('X', Item::flint).add('#', Item::stick));
 
     //ArmorRecipes
     addArmour(std::make_shared<ItemInstance>(Item::leather), Item::clothHelmet, Item::clothChestplate, Item::clothLeggings, Item::clothBoots);
@@ -190,10 +192,10 @@ Recipes::Recipes()
     add(ShapedRecipeBuilder({ "#" }, std::make_shared<ItemInstance>(Tile::button, 1))
         .add('#', Tile::stone));
 
-    //add(ShapedRecipeBuilder({"###"}, std::make_shared<ItemInstance>(Tile::pressurePlate_stone, 1))
+    //add(ShapedRecipeBuilder({"###"}, std::make_shared<ItemInstance>(Tile::stonePressurePlate, 1))
     //    .add('#', Tile::stone));
 
-    //add(ShapedRecipeBuilder({"###"}, std::make_shared<ItemInstance>(Tile::pressurePlate_wood, 1))
+    //add(ShapedRecipeBuilder({"###"}, std::make_shared<ItemInstance>(Tile::woodPressurePlate, 1))
     //    .add('#', Tile::wood));
 
     //add(ShapedRecipeBuilder({"###", "#X#", "#R#"}, std::make_shared<ItemInstance>(Tile::dispenser, 1))

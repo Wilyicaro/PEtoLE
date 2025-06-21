@@ -111,6 +111,12 @@
     <Filter Include="Source Files\Item\Inventory">
       <UniqueIdentifier>{3ec77aa3-52a0-4d72-a478-3022237665fc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Entity\Projectile">
+      <UniqueIdentifier>{b595955a-7ecf-44ee-80c5-c73b4b1c0935}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Entity\Projectile">
+      <UniqueIdentifier>{58c6d1e9-6bf9-4fdb-8c4b-1427dbee455e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\world\entity\Entity.cpp">
@@ -689,6 +695,12 @@
     <ClCompile Include="..\..\..\..\source\world\tile\CakeTile.cpp">
       <Filter>Source Files\Tile</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\projectile\Arrow.cpp">
+      <Filter>Source Files\Entity\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\BowItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\world\entity\Entity.hpp">
@@ -1227,6 +1239,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\source\world\tile\CakeTile.hpp">
       <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\projectile\Arrow.hpp">
+      <Filter>Header Files\Entity\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\BowItem.hpp">
+      <Filter>Header Files\Item</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

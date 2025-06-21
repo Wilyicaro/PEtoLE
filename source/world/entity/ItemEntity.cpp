@@ -67,7 +67,7 @@ void ItemEntity::playerTouch(Player* player)
 	if (m_pLevel->m_bIsOnline || m_throwTime || !pInventory->add(m_itemInstance))
 		return;
 
-	m_pLevel->playSound(this, "random.pop", 0.3f, (((sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.7f) + 1.0f) + (((sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.7f) + 1.0f));
+	m_pLevel->playSound(this, "random.pop", 0.3f, (((m_random.nextFloat() - m_random.nextFloat()) * 0.7f) + 1.0f) + (((m_random.nextFloat() - m_random.nextFloat()) * 0.7f) + 1.0f));
 	player->take(this, oldCount);
 	remove();
 }
@@ -86,9 +86,9 @@ void ItemEntity::tick()
 	{
 		// give it a small bounce upwards
 		m_vel.y = 0.2;
-		m_vel.x = 0.2 * (sharedRandom.nextFloat() - sharedRandom.nextFloat());
-		m_vel.z = 0.2 * (sharedRandom.nextFloat() - sharedRandom.nextFloat());
-		m_pLevel->playSound(this, "random.fizz", 0.4, 2.0 + sharedRandom.nextFloat() * 0.4);
+		m_vel.x = 0.2 * (m_random.nextFloat() - m_random.nextFloat());
+		m_vel.z = 0.2 * (m_random.nextFloat() - m_random.nextFloat());
+		m_pLevel->playSound(this, "random.fizz", 0.4, 2.0 + m_random.nextFloat() * 0.4);
 	}
 
 	checkInTile(Vec3(m_pos.x, (m_hitbox.min.y + m_hitbox.max.y) / 2, m_pos.z));

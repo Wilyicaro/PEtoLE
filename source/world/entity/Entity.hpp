@@ -43,6 +43,7 @@ enum eEntityRenderType
 	RENDER_SKELETON,
 	RENDER_SPIDER,
 	RENDER_CREEPER,
+	RENDER_ARROW,
 
 	// custom
 	RENDER_FALLING_TILE = 50,
@@ -179,7 +180,7 @@ public:
 
 public:
 	static int entityCounter;
-	static Random sharedRandom;
+	Random m_random;
 
 	Vec3 m_pos;
 	bool m_bInAChunk;
@@ -218,7 +219,7 @@ public:
 	float m_ySlideOffset;
 	float m_footSize;
 	bool m_bNoPhysics;
-	float field_B0;
+	float m_pushThrough;
 	int m_tickCount;
 	int m_invulnerableTime;
 	int m_airCapacity;
@@ -231,6 +232,7 @@ public:
 	bool m_bFireImmune;
 	bool m_bFirstTick;
 	int m_nextStep;
+	float m_minBrightness;
 
 	protected:
 		SynchedEntityData m_entityData;

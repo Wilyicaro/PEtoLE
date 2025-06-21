@@ -71,6 +71,12 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addLocalSound("random.pop", "newsound/random/pop.ogg");
 	addLocalSound("random.door_close", "newsound/random/door_close.ogg");
 	addLocalSound("random.door_open", "newsound/random/door_open.ogg");
+	addLocalSound("random.drr", "newsound/random/drr.ogg");
+	addLocalSound("random.bow", "newsound/random/bow.ogg");
+	addLocalSound("random.bowhit", "newsound/random/bowhit1.ogg");
+	addLocalSound("random.bowhit", "newsound/random/bowhit2.ogg");
+	addLocalSound("random.bowhit", "newsound/random/bowhit3.ogg");
+	addLocalSound("random.bowhit", "newsound/random/bowhit4.ogg");
 
 	addLocalSound("random.hurt", "newsound/random/hurt.ogg");
 

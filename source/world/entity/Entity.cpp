@@ -14,10 +14,10 @@
 #define TOTAL_AIR_SUPPLY (300)
 
 int Entity::entityCounter;
-Random Entity::sharedRandom;
 
 void Entity::_init()
 {
+	m_random = Random();
 	m_bInAChunk = false;
 	m_chunkPos = ChunkPos(0, 0);
 	field_20 = 0;
@@ -45,7 +45,7 @@ void Entity::_init()
 	m_ySlideOffset = 0.0f;
 	m_footSize = 0.0f;
 	m_bNoPhysics = false;
-	field_B0 = 0.0f;
+	m_pushThrough = 0.0f;
     m_tickCount = 0;
 	m_invulnerableTime = 0;
 	m_airCapacity = TOTAL_AIR_SUPPLY;
@@ -59,6 +59,7 @@ void Entity::_init()
 	m_bFireImmune = false;
 	m_bFirstTick = true;
 	m_nextStep = 1;
+	m_minBrightness = 0.0f;
 	m_entityData = SynchedEntityData();
 	m_pEntityType = EntityType::unknown;
 }
@@ -339,7 +340,7 @@ int Entity::move(const Vec3& pos)
 
 		if (bIsInWater && m_fireTicks > 0)
 		{
-			m_pLevel->playSound(this, "random.fizz", 0.7f, 1.6f + (sharedRandom.nextFloat() - sharedRandom.nextFloat()) * 0.4f);
+			m_pLevel->playSound(this, "random.fizz", 0.7f, 1.6f + (m_random.nextFloat() - m_random.nextFloat()) * 0.4f);
 			m_fireTicks = -m_flameTime;
 		}
 
@@ -473,7 +474,7 @@ void Entity::baseTick()
 			if (dist > 1.0f)
 				dist = 1.0f;
 
-			m_pLevel->playSound(this, "random.splash", dist, 1.0f + 0.4f * (sharedRandom.nextFloat() - sharedRandom.nextFloat()));
+			m_pLevel->playSound(this, "random.splash", dist, 1.0f + 0.4f * (m_random.nextFloat() - m_random.nextFloat()));
 
 			float f1 = floorf(m_hitbox.min.y);
 
@@ -482,13 +483,13 @@ void Entity::baseTick()
 				m_pLevel->addParticle(
 					"bubble",
 					Vec3(
-						m_pos.x + m_bbWidth * (sharedRandom.nextFloat() * 2.0f - 1.0f),
+						m_pos.x + m_bbWidth * (m_random.nextFloat() * 2.0f - 1.0f),
 						f1 + 1.0f,
-						m_pos.z + m_bbWidth * (sharedRandom.nextFloat() * 2.0f - 1.0f)
+						m_pos.z + m_bbWidth * (m_random.nextFloat() * 2.0f - 1.0f)
 					),
 					Vec3(
 						m_vel.x,
-						m_vel.y - 0.2f * sharedRandom.nextFloat(),
+						m_vel.y - 0.2f * m_random.nextFloat(),
 						m_vel.z
 					)
 				);
@@ -499,13 +500,13 @@ void Entity::baseTick()
 				m_pLevel->addParticle(
 					"splash",
 					Vec3(
-						m_pos.x + m_bbWidth * (sharedRandom.nextFloat() * 2.0f - 1.0f),
+						m_pos.x + m_bbWidth * (m_random.nextFloat() * 2.0f - 1.0f),
 						f1 + 1.0f,
-						m_pos.z + m_bbWidth * (sharedRandom.nextFloat() * 2.0f - 1.0f)
+						m_pos.z + m_bbWidth * (m_random.nextFloat() * 2.0f - 1.0f)
 					),
 					Vec3(
 						m_vel.x,
-						m_vel.y - 0.2f * sharedRandom.nextFloat(),
+						m_vel.y - 0.2f * m_random.nextFloat(),
 						m_vel.z
 					)
 				);
@@ -641,7 +642,7 @@ float Entity::getBrightness(float f) const
 	if (!m_pLevel->hasChunksAt(tileMin, tileMax))
 		return 0;
 
-	return m_pLevel->getBrightness(tilePos);
+	return Mth::Max(m_minBrightness, m_pLevel->getBrightness(tilePos));
 }
 
 float Entity::distanceTo(Entity* pEnt) const
@@ -691,7 +692,7 @@ void Entity::push(Entity* bud)
 	real x2 = 1.0f / x1;
 	if (x2 > 1.0f)
 		x2 = 1.0f;
-	real x3 = 1.0f - this->field_B0;
+	real x3 = 1.0f - this->m_pushThrough;
 	real x4 = x3 * diffX / x1 * x2 * 0.05f;
 	real x5 = x3 * diffZ / x1 * x2 * 0.05f;
 
@@ -954,7 +955,7 @@ void Entity::checkInTile(const Vec3& pos)
 	if (!solidZP && 1.0f - diff.z < mindist) mindist = 1.0f - diff.z, mindir = 5;
 
 	// the -1 case will be handled accordingly
-	float force = 0.1f + 0.2f * sharedRandom.nextFloat();
+	float force = 0.1f + 0.2f * m_random.nextFloat();
 	switch (mindir)
 	{
 	case 0: m_vel.x = -force; break;

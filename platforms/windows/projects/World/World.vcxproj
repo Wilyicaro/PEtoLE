@@ -150,8 +150,10 @@
     <ClCompile Include="$(MC_ROOT)\source\world\tile\TorchTile.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\tile\TransparentTile.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\tile\TreeTile.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\entity\projectile\Arrow.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\ArmorItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\AxeItem.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\item\BowItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\CoalItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\CraftingMenu.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\crafting\FurnaceRecipes.cpp" />
@@ -328,8 +330,10 @@
     <ClInclude Include="$(MC_ROOT)\source\world\tile\TorchTile.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\tile\TransparentTile.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\tile\TreeTile.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\entity\projectile\Arrow.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\ArmorItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\AxeItem.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\item\BowItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\CoalItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\CraftingMenu.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\crafting\FurnaceRecipes.hpp" />

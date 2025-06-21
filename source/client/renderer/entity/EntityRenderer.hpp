@@ -38,6 +38,7 @@ public:
 
 	virtual void render(Entity*, float, float, float, float, float) = 0;
 	virtual void onGraphicsReset();
+	virtual float getBrightness(Entity* e, float g);
 
 public:
 	float m_shadowRadius;

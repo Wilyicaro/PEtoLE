@@ -36,7 +36,7 @@ void TripodCameraRenderer::render(Entity* entity, float x, float y, float z, flo
 	//Tesselator& t = Tesselator::instance;
 	//t.color(1.0f, 1.0f, 1.0f);
 
-	float brightness = entity->getBrightness(1.0f);
+	float brightness = getBrightness(entity, 1.0f);
 
 	bindTexture("gui/items.png");
 	//t.begin();

@@ -66,7 +66,21 @@ public:
 	inline static EntityType* unknown;
 	inline static EntityType* player;
 
+	inline static EntityType* arrow;
+	//inline static EntityType* snowball;
 	inline static EntityType* item;
+	//inline static EntityType* painting;
+	inline static EntityType* mob;
+	//inline static EntityType* monster;
+	//inline static EntityType* creeper;
+	//inline static EntityType* skeleton;
+	//inline static EntityType* spider;
+	//inline static EntityType* giant;
+	//inline static EntityType* zombie;
+	//inline static EntityType* slime;
+	//inline static EntityType* monster;
+	//inline static EntityType* ghast;
+	//inline static EntityType* pigZombie;
 	inline static EntityType* pig;
 	inline static EntityType* sheep;
 	inline static EntityType* cow;
@@ -74,6 +88,8 @@ public:
 	//inline static EntityType* squid;
 	inline static EntityType* primedTnt;
 	inline static EntityType* fallingTile;
+	//inline static EntityType* minecart;
+	//inline static EntityType* boat;
 
 
 

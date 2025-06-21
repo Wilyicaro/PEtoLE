@@ -26,7 +26,7 @@ void FallingTileRenderer::render(Entity* entity, float x, float y, float z, floa
 	bindTexture(C_TERRAIN_NAME);
 	// Render the base
 #ifdef ENH_SHADE_HELD_TILES
-#define ARGPATCH , entity->getBrightness(0.0f)
+#define ARGPATCH , getBrightness(entity, 0.0f)
 #else
 #define ARGPATCH
 #endif

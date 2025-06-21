@@ -41,6 +41,11 @@ void EntityRenderer::onGraphicsReset()
 
 }
 
+float EntityRenderer::getBrightness(Entity* e, float g)
+{
+	return e->getBrightness(g);
+}
+
 void EntityRenderer::renderFlame(Entity* e, const Vec3& pos, float a)
 {
 	glDisable(GL_LIGHTING);

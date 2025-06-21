@@ -126,7 +126,7 @@ void HumanoidMobRenderer::onGraphicsReset()
 void HumanoidMobRenderer::renderHand()
 {
 	m_pHumanoidModel->m_attackTime = 0;
-	m_pHumanoidModel->setBrightness(m_pDispatcher->m_pMinecraft->m_pMobPersp->getBrightness(1.0f));
+	m_pHumanoidModel->setBrightness(getBrightness(m_pDispatcher->m_pMinecraft->m_pMobPersp.get(), 1.0f));
 	m_pHumanoidModel->setupAnim(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0625f);
 	m_pHumanoidModel->m_arm1.render(0.0625f);
 }
