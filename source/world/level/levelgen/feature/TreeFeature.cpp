@@ -79,7 +79,7 @@ bool TreeFeature::place(Level* level, Random* random, const TilePos& pos)
 			for (tp.z = pos.z - var11; tp.z <= pos.z + var11; ++tp.z) {
 				int var15 = tp.z - pos.z;
 				if ((Mth::abs(var13) != var11 || Mth::abs(var15) != var11 || random->nextInt(2) != 0 && var10 != 0) && !Tile::solid[level->getTile(tp)]) {
-					level->setTileAndDataNoUpdate(tp, Tile::leaves->m_ID, 2);
+					level->setTileNoUpdate(tp, Tile::leaves->m_ID);
 				}
 			}
 		}

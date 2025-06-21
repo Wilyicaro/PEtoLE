@@ -22,10 +22,11 @@ enum eOptionsButton
 	OB_VIEW_DIST,
 	OB_DYNAMIC_HAND,
 	OB_FLY_HAX,
+	OB_SPLIT_CONTR,
+	OB_BLOCK_OUT
 };
 
 OptionsScreen::OptionsScreen()
-#ifndef ORIGINAL_CODE
 	:m_BackButton(1, 0, 0, 200, 20, "Done"),
 	m_AOButton(2, 0, 0, 150, 20, ""),
 	m_srvVisButton(3, 0, 0, 150, 20, ""),
@@ -35,8 +36,9 @@ OptionsScreen::OptionsScreen()
 	m_viewBobButton(7, 0, 0, 150, 20, ""),
 	m_viewDistButton(8, 0, 0, 150, 20, ""),
 	m_dynamicHandButton(9, 0, 0, 150, 20, ""),
-	m_flightHaxButton(10, 0, 0, 150, 20, "")
-#endif
+	m_flightHaxButton(10, 0, 0, 150, 20, ""),
+	m_splitControlsButton(11, 0, 0, 150, 20, ""),
+	m_blockOutlinesButton(12, 0, 0, 150, 20, "")
 {
 }
 
@@ -75,6 +77,8 @@ void OptionsScreen::UpdateTexts()
 	m_flightHaxButton.m_text = "Flight hax: " + BoolOptionStr(o->m_bFlyCheat);
 	m_viewDistButton.m_text = "View distance: " + ViewDistanceStr(o->m_iViewDistance);
 	m_dynamicHandButton.m_text = "Dynamic Hand: " + BoolOptionStr(o->m_bDynamicHand);
+	m_splitControlsButton.m_text = "Split Controls: " + BoolOptionStr(o->m_bSplitControls);
+	m_blockOutlinesButton.m_text = "Block Outlines: " + BoolOptionStr(o->m_bBlockOutlines);
 	m_srvVisButton.m_text = "Server " + std::string(o->m_bServerVisibleDefault ? "visible" : "invisible") + " by default";
 }
 #endif
@@ -83,28 +87,10 @@ void OptionsScreen::init()
 {
 	m_pMinecraft->platform()->showDialog(AppPlatform::DLG_OPTIONS);
 	m_pMinecraft->platform()->createUserInput();
-
-#ifndef ORIGINAL_CODE
 	m_BackButton.m_xPos = m_width / 2 - m_BackButton.m_width / 2;
 	m_BackButton.m_yPos = m_height - 33;
 	m_BackButton.m_height = 20;
 	m_buttons.push_back(&m_BackButton);
-
-	m_AOButton.m_xPos =
-		m_srvVisButton.m_xPos =
-		m_fancyGfxButton.m_xPos =
-		m_viewDistButton.m_xPos = m_width / 2 - m_AOButton.m_width - 5;
-
-	m_invertYButton.m_xPos =
-		m_anaglyphsButton.m_xPos =
-		m_viewBobButton.m_xPos =
-		m_flightHaxButton.m_xPos = m_width / 2 + 5;
-
-	int yPos = 40;
-	m_AOButton.m_yPos = m_invertYButton.m_yPos = yPos; yPos += 25;
-	m_srvVisButton.m_yPos = m_anaglyphsButton.m_yPos = yPos; yPos += 25;
-	m_fancyGfxButton.m_yPos = m_viewBobButton.m_yPos = yPos; yPos += 25;
-	m_viewDistButton.m_yPos = m_flightHaxButton.m_yPos = yPos; yPos += 25;
 
 	m_buttons.push_back(&m_AOButton);
 	m_buttons.push_back(&m_srvVisButton);
@@ -114,6 +100,8 @@ void OptionsScreen::init()
 	m_buttons.push_back(&m_viewBobButton);
 	m_buttons.push_back(&m_viewDistButton);
 	m_buttons.push_back(&m_flightHaxButton);
+	m_buttons.push_back(&m_splitControlsButton);
+	m_buttons.push_back(&m_blockOutlinesButton);
 
 	m_buttonTabList.push_back(&m_AOButton);
 	m_buttonTabList.push_back(&m_srvVisButton);
@@ -123,11 +111,19 @@ void OptionsScreen::init()
 	m_buttonTabList.push_back(&m_anaglyphsButton);
 	m_buttonTabList.push_back(&m_viewBobButton);
 	m_buttonTabList.push_back(&m_flightHaxButton);
+	m_buttonTabList.push_back(&m_splitControlsButton);
+	m_buttonTabList.push_back(&m_blockOutlinesButton);
+
+	for (int i = 0; i < m_buttonTabList.size(); i++)
+	{
+		m_buttonTabList[i]->m_xPos = m_width / 2 - 155 + i % 2 * 160;
+		m_buttonTabList[i]->m_yPos = m_height / 6 + 24 * (i >> 1);
+	}
+
 
 	m_buttonTabList.push_back(&m_BackButton);
 
 	UpdateTexts();
-#endif
 }
 
 void OptionsScreen::render(int a, int b, float c)
@@ -139,11 +135,9 @@ void OptionsScreen::render(int a, int b, float c)
 		m_pMinecraft->setScreen(new StartMenuScreen);
 	}
 
-#ifndef ORIGINAL_CODE
 	drawCenteredString(m_pFont, "Options", m_width / 2, 20, 0xFFFFFF);
 
 	Screen::render(a, b, c);
-#endif
 }
 
 void OptionsScreen::removed()
@@ -199,6 +193,12 @@ void OptionsScreen::buttonClicked(Button* pButton)
 		break;
 	case OB_FLY_HAX:
 		o->m_bFlyCheat ^= 1;
+		break;
+	case OB_SPLIT_CONTR:
+		o->m_bSplitControls ^= 1;
+		break;
+	case OB_BLOCK_OUT:
+		o->m_bBlockOutlines ^= 1;
 		break;
 	}
 	UpdateTexts();
