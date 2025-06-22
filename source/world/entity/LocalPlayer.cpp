@@ -54,6 +54,7 @@ LocalPlayer::~LocalPlayer()
 
 void LocalPlayer::aiStep()
 {
+	bool wasJumping = m_pMoveInput->m_bJumping;
 	m_pMoveInput->tick(this);
 	if (m_pMoveInput->m_bSneaking && m_ySlideOffset < 0.47f)
 		m_ySlideOffset = 0.47f;
@@ -66,8 +67,36 @@ void LocalPlayer::aiStep()
 	checkInTile(Vec3(m_pos.x - m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z - m_bbWidth * 0.35f));
 	checkInTile(Vec3(m_pos.x + m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z - m_bbWidth * 0.35f));
 	checkInTile(Vec3(m_pos.x + m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z + m_bbWidth * 0.35f));
+
+	if (getAbilities().m_mayFly && m_pMoveInput->m_bJumping && !wasJumping)
+	{
+		if (m_jumpTriggerTime == 0) {
+			m_jumpTriggerTime = 7;
+		}
+		else {
+			getAbilities().m_flying = !getAbilities().m_flying;
+			m_jumpTriggerTime = 0;
+		}
+	}
+
+	if (getAbilities().m_flying)
+	{
+		int yd = 0;
+		if (m_pMoveInput->m_bJumping)
+			yd++;
+
+		if (m_pMoveInput->m_bSneaking)
+			yd--;
+
+		if (yd)
+			m_vel.y += yd * 0.15;
+	}
+
 	Mob::aiStep();
 	Player::aiStep();
+
+	if (getAbilities().m_flying && m_onGround)
+		getAbilities().m_flying = false;
 }
 
 void LocalPlayer::take(Entity* itemEntity, int)

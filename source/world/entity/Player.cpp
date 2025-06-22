@@ -59,7 +59,7 @@ void Player::reset()
 
 bool Player::hurt(Entity* pEnt, int damage)
 {
-	if (isCreative())
+	if (getAbilities().m_invulnerable)
 		return false;
 
 	m_noActionTime = 0;
@@ -148,6 +148,9 @@ void Player::die(Entity* pCulprit)
 
 void Player::aiStep()
 {
+	if (m_jumpTriggerTime > 0)
+		m_jumpTriggerTime--;
+
     if (m_pLevel->m_difficulty == 0 &&
         m_health < 20 &&
         m_tickCount % 20 * 12 == 0)
@@ -291,6 +294,20 @@ void Player::removeSelectedItem()
 	m_pInventory->setSelectedItem(nullptr);
 }
 
+void Player::travel(const Vec2& pos)
+{
+	if (getAbilities().m_flying)
+	{
+		real yd = m_vel.y;
+		float oldFlyingFriction = m_flyingFriction;
+		m_flyingFriction = 0.05f;
+		Mob::travel(pos);
+		m_flyingFriction = oldFlyingFriction;
+		m_vel.y = yd * 0.6;
+	}
+	else Mob::travel(pos);
+}
+
 void Player::displayClientMessage(const std::string& msg)
 {
 
@@ -392,6 +409,11 @@ void Player::setRespawnPos(const TilePos& pos)
 
 	m_bHaveRespawnPos = true;
 	m_respawnPos = pos;
+}
+
+Abilities& Player::getAbilities()
+{
+	return m_abilities;
 }
 
 void Player::startCrafting(const TilePos& pos)

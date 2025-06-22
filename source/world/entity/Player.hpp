@@ -20,11 +20,19 @@
 class Inventory; // in case we're included from Inventory.hpp
 class FurnaceTileEntity;
 
+struct Abilities
+{
+	bool m_invulnerable;
+	bool m_flying;
+	bool m_mayFly;
+};
+
 class Player : public Mob
 {
 private:
 	GameType _playerGameType;
 	int m_dmgSpill;
+	Abilities m_abilities;
 
 public:
 	Player(Level* pLevel, GameType gameType);
@@ -58,6 +66,7 @@ public:
 	virtual void remove() override;
 	virtual void carriedChanged(std::shared_ptr<ItemInstance> instance);
 	virtual void removeSelectedItem();
+	virtual void travel(const Vec2& pos) override;
 
 	int addResource(int);
 	void animateRespawn(Player*, Level*);
@@ -75,10 +84,16 @@ public:
 	void rideTick();
 	void setDefaultHeadHeight();
 	void setRespawnPos(const TilePos& pos);
+	Abilities& getAbilities();
 
 	void touch(Entity* pEnt);
 	GameType getPlayerGameType() const { return _playerGameType; }
-	void setPlayerGameType(GameType playerGameType) { _playerGameType = playerGameType; }
+	void setPlayerGameType(GameType playerGameType) 
+	{ 
+		_playerGameType = playerGameType; 
+		getAbilities().m_invulnerable = m_abilities.m_mayFly = playerGameType == GameType::GAME_TYPE_CREATIVE;
+		if (playerGameType == GAME_TYPE_SURVIVAL) m_abilities.m_flying = false;
+	}
 	bool isSurvival() const { return getPlayerGameType() == GAME_TYPE_SURVIVAL; }
 	bool isCreative() const { return getPlayerGameType() == GAME_TYPE_CREATIVE; }
 	std::shared_ptr<ItemInstance> getSelectedItem() const;
@@ -90,6 +105,9 @@ public:
 #pragma GCC diagnostic ignored "-Woverloaded-virtual"
 	void interact(Entity* pEnt);
 #pragma GCC diagnostic pop
+
+protected:
+	int m_jumpTriggerTime = 0;
 
 public:
 	ContainerMenu* m_containerMenu;

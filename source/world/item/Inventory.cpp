@@ -10,8 +10,15 @@ Inventory::Inventory(Player* pPlayer) : Container()
 
 void Inventory::prepareCreativeInventory()
 {
-	//@TODO b1.8 Items
-
+	addTestItem(Tile::stone->m_ID);
+	addTestItem(Tile::cobblestone->m_ID);
+	addTestItem(Tile::brick->m_ID);
+	addTestItem(Tile::dirt->m_ID);
+	addTestItem(Tile::wood->m_ID);
+	addTestItem(Tile::treeTrunk->m_ID);
+	addTestItem(Tile::leaves->m_ID);
+	addTestItem(Tile::torch->m_ID);
+	addTestItem(Tile::stoneSlab->m_ID);
 }
 
 void Inventory::prepareSurvivalInventory()
@@ -236,6 +243,10 @@ void Inventory::selectSlot(int slotNo)
 
 void Inventory::selectItemById(int itemID, int maxHotBarSlot)
 {
+	Item* selectItem = Item::items[itemID];
+
+	if (!selectItem) return;
+
 	for (int i = 0; i < m_items.size(); i++)
 	{
 		if (!m_items[i] || m_items[i]->m_itemID != itemID)
@@ -249,7 +260,14 @@ void Inventory::selectItemById(int itemID, int maxHotBarSlot)
 			setItem(m_selected, picked);
 			setItem(i, old);
 		}
-		break;
+		return;
+	}
+
+	if (m_pPlayer->isCreative())
+	{
+		auto oldSelected = getSelected();
+		setItem(m_selected, std::make_shared<ItemInstance>(selectItem));
+		if (oldSelected) addResource(oldSelected);
 	}
 }
 

@@ -125,6 +125,7 @@ public:
 	float m_animStepO;
 	float m_rotOffs;
 	float field_B60;
+	float m_flyingFriction;
 	int field_B64;
 	char field_B68;
 	char field_B69;

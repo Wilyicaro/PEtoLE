@@ -56,6 +56,7 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	m_pEntLookedAt = nullptr;
 	m_bSwinging = false;
 	m_swingTime = 0;
+	m_flyingFriction = 0.02f;
 
 	m_skinUrl = "";
 	m_texture = "/mob/char.png";
@@ -495,7 +496,7 @@ void Mob::travel(const Vec2& pos)
 
 	if (!m_onGround)
 	{
-		x2 = 0.02f;
+		x2 = m_flyingFriction;
 	}
 	else
 	{
