@@ -33,6 +33,7 @@ public:
 	virtual void setSize(float rad, float height) override;
 	virtual void outOfWorld() override;
 	virtual void causeFallDamage(float level) override;
+	virtual void handleEntityEvent(int event) override;
 
 	//virtuals
 	virtual void knockback(Entity* pEnt, int a, float x, float z);
@@ -85,12 +86,12 @@ public:
 	void updateAttackAnim();
 
 public:
-	int field_DC;
+	int m_invulnerableDuration;
 	float field_E0;
 	float field_E4;
 	float m_yBodyRot;
 	float m_yBodyRotO;
-	char field_F0;
+	char m_bInterpolateOnly;
 	float m_oAttackAnim;
 	float m_attackAnim;
 	int m_health;
@@ -106,12 +107,12 @@ public:
 	int field_120;
 	int field_124;
 	float field_128;
-	float field_12C;
+	float m_walkAnimSpeed;
 	float field_130;
 	Random m_random;
 	int m_noActionTime;
-	Vec2 field_B00;
-	float field_B08;
+	Vec2 m_moving;
+	float m_yRotA;
 	bool m_bJumping;
 	float field_B10;
 	float m_runSpeed;
@@ -130,10 +131,8 @@ public:
 	int m_lSteps;
 	Vec3 m_lPos;
 	Vec2 m_lRot;
-	int field_B84;
+	int m_lastHurt;
 	Entity* m_pEntLookedAt;
-
-	float v020_field_104;
 
 	bool m_bSwinging;
 	int m_swingTime;

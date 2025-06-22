@@ -785,7 +785,6 @@ void Minecraft::update()
 
 	for (int i = 0; i < m_timer.m_ticks; i++)
 	{
-		// @BUG?: Minecraft::tick() also calls tickInput(), so we're doing input handling potentially more than once
 		tick(); // tick(i, m_timer.m_ticks - 1); // 0.9.2
 		field_DA8++;
 	}

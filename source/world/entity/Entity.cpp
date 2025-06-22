@@ -119,6 +119,7 @@ int Entity::move(const Vec3& pos)
 		m_pos.z = (m_hitbox.min.z + m_hitbox.max.z) / 2.0;
 	}
 	else {
+		m_ySlideOffset *= 0.4;
 		Vec3 newPos(pos);
 		if (m_bInWeb) {
 			m_bInWeb = false;
@@ -257,7 +258,10 @@ int Entity::move(const Vec3& pos)
 				m_hitbox = var27;
 			}
 			else {
-				m_ySlideOffset = m_ySlideOffset + 0.5F;
+				real var40 = m_hitbox.min.y - ((int)m_hitbox.min.y);
+				if (var40 > 0.0) {
+					m_ySlideOffset = m_ySlideOffset + var40 + 0.01;
+				}
 			}
 		}
 
@@ -302,11 +306,11 @@ int Entity::move(const Vec3& pos)
 			}
 		}
 
-		TilePos minPos(m_hitbox.min);
-		TilePos maxPos(m_hitbox.max);
+		TilePos minPos(m_hitbox.min + 0.001);
+		TilePos maxPos(m_hitbox.max - 0.001);
 		TilePos tilePos;
 
-		if (m_pLevel->hasChunksAt(TilePos(m_hitbox.min), TilePos(m_hitbox.max)))
+		if (m_pLevel->hasChunksAt(minPos, TilePos(maxPos)))
 		{
 			for (tilePos.x = minPos.x; tilePos.x <= maxPos.x; tilePos.x++)
 				for (tilePos.y = minPos.y; tilePos.y <= maxPos.y; tilePos.y++)
@@ -318,9 +322,7 @@ int Entity::move(const Vec3& pos)
 					}
 		}
 
-		m_ySlideOffset *= 0.4f;
-
-		bool bIsInWater = isInWater();
+		bool bIsInWater = wasInWater();
 
 		if (m_pLevel->containsFireTile(m_hitbox))
 		{
@@ -580,7 +582,7 @@ bool Entity::isFree(const Vec3& off) const
 	aabb.move(off);
 
 	AABBVector* pCubes = m_pLevel->getCubes(this, aabb);
-	if (!pCubes)
+	if (pCubes->size() > 0)
 		return false;
 
 	return !m_pLevel->containsAnyLiquid(aabb);
@@ -593,7 +595,7 @@ bool Entity::isFree(const Vec3& off, float expand) const
 	aabb.grow(expand, expand, expand);
 
 	AABBVector* pCubes = m_pLevel->getCubes(this, aabb);
-	if (!pCubes)
+	if (pCubes->size() > 0)
 		return false;
 
 	return !m_pLevel->containsAnyLiquid(aabb);
@@ -608,7 +610,13 @@ bool Entity::isInWater()
 {
 	AABB aabb = m_hitbox;
 	aabb.grow(0, -0.4f, 0);
+	aabb.grow(-0.001, -0.001, -0.001);
 	return m_pLevel->checkAndHandleWater(aabb, Material::water, this);
+}
+
+bool Entity::wasInWater()
+{
+	return m_bWasInWater;
 }
 
 bool Entity::isInLava() const
@@ -864,6 +872,10 @@ int Entity::queryEntityRenderer()
 	return 0;
 }
 
+void Entity::handleEntityEvent(int event)
+{
+}
+
 void Entity::load(std::shared_ptr<CompoundTag> tag)
 {
 	std::shared_ptr<ListTag> var2 = tag->getList("Pos");
@@ -873,6 +885,17 @@ void Entity::load(std::shared_ptr<CompoundTag> tag)
 	m_vel.x = std::dynamic_pointer_cast<DoubleTag>(var3->getValue().at(0))->getValue();
 	m_vel.y = std::dynamic_pointer_cast<DoubleTag>(var3->getValue().at(1))->getValue();
 	m_vel.z = std::dynamic_pointer_cast<DoubleTag>(var3->getValue().at(2))->getValue();
+	if (Mth::abs(m_vel.x) > 10.0) {
+		m_vel.x = 0.0;
+	}
+
+	if (Mth::abs(m_vel.y) > 10.0) {
+		m_vel.y = 0.0;
+	}
+
+	if (Mth::abs(m_vel.z) > 10.0) {
+		m_vel.z = 0.0;
+	}
 	m_posPrev.x = m_oPos.x = m_pos.x = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(0))->getValue();
 	m_posPrev.y = m_oPos.y = m_pos.y = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(1))->getValue();
 	m_posPrev.z = m_oPos.z = m_pos.z = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(2))->getValue();
@@ -901,7 +924,7 @@ bool Entity::save(std::shared_ptr<CompoundTag> tag)
 
 void Entity::saveWithoutId(std::shared_ptr<CompoundTag> tag)
 {
-	tag->putDoubleList("Pos", { m_pos.x, m_pos.y, m_pos.z });
+	tag->putDoubleList("Pos", { m_pos.x, m_pos.y + m_ySlideOffset, m_pos.z });
 	tag->putDoubleList("Motion", { m_vel.x, m_vel.y, m_vel.z });
 	tag->putFloatList("Rotation", {m_rot.y, m_rot.x});
 	tag->putFloat("FallDistance", m_distanceFallen);

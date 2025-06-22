@@ -170,7 +170,7 @@ void PathfinderMob::updateAi()
 
 	m_bJumping = false;
 
-	bool inWater = isInWater();
+	bool inWater = wasInWater();
 	bool inLava = isInLava();
 
 	if (pCurrNode)
@@ -178,7 +178,7 @@ void PathfinderMob::updateAi()
 		float ang = Mth::atan2(nodePos.z - m_pos.z, nodePos.x - m_pos.x) * 180.0f / float(M_PI) - 90.0f;
 		float heightDiff = nodePos.y - Mth::floor(m_hitbox.min.y + 0.5f ); // +0.5f is not present on b1.2_02, but is present on 0.12.1
 
-		field_B00.x = m_runSpeed;
+		m_moving.x = m_runSpeed;
 
 		float angDiff = ang - m_rot.y;
 		while (angDiff < -180.0f) angDiff += 360.0f;
@@ -199,8 +199,8 @@ void PathfinderMob::updateAi()
 			float thing = ((((angDiff + oldYaw) - ang2) + 90.0f) * float(M_PI)) / 180.0f;
 
 			// @NOTE: Using old field_B00.y value. This is intentional and consistent with b1.2_02.
-			field_B00.y = -field_B00.x * Mth::sin(thing);
-			field_B00.x =  field_B00.x * Mth::cos(thing);
+			m_moving.y = -m_moving.x * Mth::sin(thing);
+			m_moving.x =  m_moving.x * Mth::cos(thing);
 		}
 
 		if (heightDiff > 0.0f)

@@ -6,6 +6,13 @@ CactusTile::CactusTile(int id, int texture) : Tile(id, texture, Material::cactus
 	setTicking(true);
 }
 
+AABB* CactusTile::getAABB(const Level* pLevel, const TilePos& pos)
+{
+	auto aabb = Tile::getAABB(pLevel, pos);
+	aabb->max.y -= 1.0f / 16.0f;
+	return aabb;
+}
+
 bool CactusTile::mayPlace(const Level* level, const TilePos& pos) const
 {
 	return Tile::mayPlace(level, pos) && canSurvive(level, pos);

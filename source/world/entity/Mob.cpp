@@ -12,10 +12,10 @@
 
 Mob::Mob(Level* pLevel) : Entity(pLevel)
 {
-	field_DC = 10;
+	m_invulnerableDuration = 20;
 	m_yBodyRot = 0.0f;
 	m_yBodyRotO = 0.0f;
-	field_F0 = 0;
+	m_bInterpolateOnly = 0;
 	m_oAttackAnim = 0.0f;
 	m_attackAnim = 0.0f;
 	m_health = 10;
@@ -31,11 +31,11 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	field_120 = 0;
 	field_124 = 0;
 	field_128 = 0.0f;
-	field_12C = 0.0f;
+	m_walkAnimSpeed = 0.0f;
 	field_130 = 0.0f;
 	m_noActionTime = 0;
-	field_B00 = Vec2::ZERO;
-	field_B08 = 0.0f;
+	m_moving = Vec2::ZERO;
+	m_yRotA = 0.0f;
 	m_bJumping = 0;
 	field_B10 = 0;
 	m_runSpeed = 0.7f;
@@ -52,7 +52,7 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	m_lSteps = 0;
 	m_lPos = Vec3::ZERO;
 	m_lRot = Vec2::ZERO;
-	field_B84 = 0;
+	m_lastHurt = 0;
 	m_pEntLookedAt = nullptr;
 	m_bSwinging = false;
 	m_swingTime = 0;
@@ -269,7 +269,7 @@ void Mob::baseTick()
 
 	if (m_attackTime > 0) m_attackTime--;
 	if (m_hurtTime > 0) m_hurtTime--;
-	if (m_invulnerableTime  > 0) m_invulnerableTime--;
+	if (m_invulnerableTime > 0) m_invulnerableTime--;
 
 	if (m_health <= 0)
 	{
@@ -309,71 +309,70 @@ bool Mob::isAlive() const
 	return m_health >= 0;
 }
 
-bool Mob::hurt(Entity *pAttacker, int damage)
+bool Mob::hurt(Entity* pAttacker, int damage)
 {
-	if (m_pLevel->m_bIsOnline)
+	if (m_pLevel->m_bIsOnline) {
 		return false;
+	}
+	else {
+		m_noActionTime = 0;
+		if (m_health <= 0) {
+			return false;
+		}
+		else {
+			m_walkAnimSpeed = 1.5F;
+			bool var3 = true;
+			if (m_invulnerableTime > m_invulnerableDuration / 2.0F) {
+				if (damage <= m_lastHurt) {
+					return false;
+				}
 
-	m_noActionTime = 0;
-
-	if (m_health <= 0)
-		return false;
-
-	bool var3 = true;
-
-	field_12C = 1.5f;
-	if (float(m_invulnerableTime) <= float(field_DC) * 0.5f)
-	{
-		m_lastHealth = m_health;
-		m_invulnerableTime = field_DC;
-		field_B84 = damage;
-		actuallyHurt(damage);
-		m_hurtDuration = 10;
-		m_hurtTime = 10;
-		
-		markHurt();
-
-		if (pAttacker)
-		{
-			float xd = pAttacker->m_pos.x - m_pos.x;
-			float zd = pAttacker->m_pos.z - m_pos.z;
-
-			while (zd * zd + xd * xd < 0.0001f)
-			{
-				xd = 0.01f * (Mth::random() - Mth::random());
-				zd = 0.01f * (Mth::random() - Mth::random());
+				actuallyHurt(damage - m_lastHurt);
+				m_lastHurt = damage;
+				var3 = false;
+			}
+			else {
+				m_lastHurt = damage;
+				m_lastHealth = m_health;
+				m_invulnerableTime = m_invulnerableDuration;
+				actuallyHurt(damage);
+				m_hurtTime = m_hurtDuration = 10;
 			}
 
-			float ang = atan2f(zd, xd);
-			v020_field_104 = ang * (180.0f / float(M_PI)) - m_rot.y;
+			m_hurtDir = 0.0F;
+			if (var3) {
+				//m_pLevel->broadcastEntityEvent(this, 2);
+				markHurt();
+				if (pAttacker) {
+					real var4 = pAttacker->m_pos.x - m_pos.x;
 
-			knockback(pAttacker, damage, xd, zd);
+					real var6;
+					for (var6 = pAttacker->m_pos.z - m_pos.z; var4 * var4 + var6 * var6 < 1.0E-4; var6 = (Mth::random() - Mth::random()) * 0.01) {
+						var4 = (Mth::random() - Mth::random()) * 0.01;
+					}
+
+					m_hurtDir = (Mth::atan2(var6, var4) * 180.0 / M_PI) - m_rot.y;
+					knockback(pAttacker, damage, var4, var6);
+				}
+				else {
+					m_hurtDir = (float)((int)(Mth::random() * 2.0) * 180);
+				}
+			}
+
+			if (m_health <= 0) {
+				if (var3) {
+					m_pLevel->playSound(this, getDeathSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+				}
+
+				die(pAttacker);
+			}
+			else if (var3) {
+				m_pLevel->playSound(this, getHurtSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+			}
+
+			return true;
 		}
 	}
-	else
-	{
-		if (field_B84 >= damage)
-			return 0;
-
-		actuallyHurt(damage - field_B84);
-		field_B84 = damage;
-
-		var3 = false;;
-	}
-
-	m_hurtDir = 0;
-	if (m_health <= 0)
-	{
-		if (var3) 
-			m_pLevel->playSound(this, getDeathSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
-
-		die(pAttacker);
-	}
-	else if (var3) 
-	{
-		m_pLevel->playSound(this, getHurtSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
-	}
-	return true;
 }
 
 void Mob::animateHurt()
@@ -463,7 +462,7 @@ void Mob::heal(int health)
 	if (m_health > C_MAX_MOB_HEALTH)
 		m_health = C_MAX_MOB_HEALTH;
 
-	m_invulnerableTime = field_DC / 2;
+	m_invulnerableTime = m_invulnerableDuration / 2;
 }
 
 HitResult Mob::pick(float f1, float f2)
@@ -477,30 +476,19 @@ HitResult Mob::pick(float f1, float f2)
 
 void Mob::travel(const Vec2& pos)
 {
-	float x1, x2, dragFactor, oldYPos = m_pos.y;
-	if (isInWater())
+	float x2, dragFactor;
+	real oldYPos = m_pos.y;
+	if (wasInWater() || isInLava())
 	{
-		moveRelative(Vec3(pos.y, 0.02f, pos.x));
+		moveRelative(Vec3(pos.y, 0.02, pos.x));
 		move(m_vel);
-		x1 = 0.8f;
-		goto label_3;
-	}
-	if (isInLava())
-	{
-		moveRelative(Vec3(pos.y, 0.02f, pos.x));
-		move(m_vel);
-		x1 = 0.5f;
-	label_3:
-
+		const float x1 = (wasInWater() ? 0.8f : 0.5f);
 		m_vel.y = m_vel.y * x1 - 0.02f;
 		m_vel.x *= x1;
 		m_vel.z *= x1;
 
-		if (m_bHorizontalCollision)
-		{
-			if (isFree(Vec3(m_vel.x, m_vel.y + 0.6f - m_pos.y + oldYPos, m_vel.z)))
-				m_vel.y = 0.3f;
-		}
+		if (m_bHorizontalCollision && isFree(Vec3(m_vel.x, m_vel.y + 0.6f - m_pos.y + oldYPos, m_vel.z)))
+			m_vel.y = 0.3f;
 
 		return;
 	}
@@ -597,7 +585,7 @@ bool Mob::canSee(Entity* pEnt) const
 
 void Mob::updateWalkAnim()
 {
-	field_128 = field_12C;
+	field_128 = m_walkAnimSpeed;
 
 	float diffX = m_pos.x - m_oPos.x;
 	float diffZ = m_pos.z - m_oPos.z;
@@ -606,8 +594,8 @@ void Mob::updateWalkAnim()
 	if (spd > 1.0f)
 		spd = 1.0f;
 
-	field_12C += (spd - field_12C) * 0.4f;
-	field_130 += field_12C;
+	m_walkAnimSpeed += (spd - m_walkAnimSpeed) * 0.4f;
+	field_130 += m_walkAnimSpeed;
 }
 
 void Mob::aiStep()
@@ -615,14 +603,14 @@ void Mob::aiStep()
 	if (isImmobile())
 	{
 		m_bJumping = 0;
-		field_B00 = Vec2::ZERO;
+		m_moving = Vec2::ZERO;
 	}
-	else if (!field_F0)
+	else if (!m_bInterpolateOnly)
 	{
 		updateAi();
 	}
 
-	bool bIsInWater = isInWater(), bIsInLava = isInLava();
+	bool bIsInWater = wasInWater(), bIsInLava = isInLava();
 	if (m_bJumping)
 	{
 		if (bIsInWater || bIsInLava)
@@ -631,14 +619,14 @@ void Mob::aiStep()
 			jumpFromGround();
 	}
 
-	field_B00.y *= 0.98f;
-	field_B00.x *= 0.98f;
-	field_B08 *= 0.9f;
+	m_moving.y *= 0.98f;
+	m_moving.x *= 0.98f;
+	m_yRotA *= 0.9f;
 
-	travel(field_B00);
+	travel(m_moving);
 
 	AABB aabb = m_hitbox;
-	aabb.grow(0.2f, 0.2f, 0.2f);
+	aabb.grow(0.2f, 0.0f, 0.2f);
 
 	EntityVector ents = m_pLevel->getEntities(shared_from_this(), aabb);
 	for (EntityVector::iterator it = ents.begin(); it != ents.end(); it++)
@@ -760,7 +748,7 @@ void Mob::updateAi()
 
 	checkDespawn();
 
-	field_B00 = Vec2::ZERO;
+	m_moving = Vec2::ZERO;
 
 	if (m_random.nextFloat() < 0.02f)
 	{
@@ -773,7 +761,7 @@ void Mob::updateAi()
 		}
 		else
 		{
-			field_B08 = (m_random.nextFloat() - 0.5f) * 20.0f;
+			m_yRotA = (m_random.nextFloat() - 0.5f) * 20.0f;
 		}
 	}
 
@@ -792,13 +780,13 @@ void Mob::updateAi()
 	else
 	{
 		if (m_random.nextFloat() < 0.05f)
-			field_B08 = (m_random.nextFloat() - 0.5f) * 20.0f;
+			m_yRotA = (m_random.nextFloat() - 0.5f) * 20.0f;
 
-		m_rot.y += field_B08;
+		m_rot.y += m_yRotA;
 		m_rot.x = field_B10;
 	}
 
-	if (isInWater() || isInLava())
+	if (wasInWater() || isInLava())
 	{
 		m_bJumping = m_random.nextFloat() < 0.8f;
 	}
@@ -837,6 +825,29 @@ void Mob::swing()
 	{
 		m_swingTime = -1;
 		m_bSwinging = true;
+	}
+}
+
+void Mob::handleEntityEvent(int event)
+{
+	switch (event)
+	{
+	case 2: 
+		m_walkAnimSpeed = 1.5F;
+		m_invulnerableTime = m_invulnerableDuration;
+		m_hurtTime = m_hurtDuration = 10;
+		m_hurtDir = 0.0F;
+		m_pLevel->playSound(this, getHurtSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+		hurt(nullptr, 0);
+		break;
+	case 3: 
+		m_pLevel->playSound(this, getDeathSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+		m_health = 0;
+		die(nullptr);
+		break;
+	default:
+		Entity::handleEntityEvent(event);
+		break;
 	}
 }
 

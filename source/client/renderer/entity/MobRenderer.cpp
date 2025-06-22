@@ -108,10 +108,10 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	scale(pMob, f);
 	glTranslatef(0.0f, -24.0f * fScale - (1.0f / 128.0f), 0.0f);
 
-	float x1 = pMob->field_128 + (pMob->field_12C - pMob->field_128) * f;
+	float x1 = pMob->field_128 + (pMob->m_walkAnimSpeed - pMob->field_128) * f;
 	if (x1 > 1.0f)
 		x1 = 1.0f;
-	float x2 = pMob->field_130 - pMob->field_12C * (1.0f - f);
+	float x2 = pMob->field_130 - pMob->m_walkAnimSpeed * (1.0f - f);
 
 	bindHttpTexture(pMob->m_skinUrl, pMob->getTexture());
 	glEnable(GL_ALPHA_TEST);

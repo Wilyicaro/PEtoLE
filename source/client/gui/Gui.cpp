@@ -29,7 +29,7 @@ Gui::Gui(Minecraft* pMinecraft)
 	field_24 = 0;
 	field_28 = 0;
 	field_2C = 0;
-	field_9FC = 0;
+	m_tickCount = 0;
 	field_A00 = "";
 	field_A18 = 0;
 	field_A1C = false;
@@ -290,15 +290,9 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 	if (mc->m_pGameMode->canHurtPlayer())
 	{
 		// why??
-		m_random.setSeed(312871 * field_9FC);
+		m_random.setSeed(312871L * m_tickCount);
 
-		int emptyHeartX = 16;
-		bool b1 = false;
-		if (player->m_invulnerableTime < 10)
-		{
-			b1 = player->m_invulnerableTime / 3 % 2;
-			emptyHeartX += 9 * b1;
-		}
+		bool b1 = player->m_invulnerableTime >= 10 && player->m_invulnerableTime / 3 % 2;
 
 		int heartX = cenX - hotbarWidth / 2;
 		int heartYStart = height - 32;
@@ -328,10 +322,10 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 			armorX -= 8;
 
-			if (playerHealth <= 4 && m_random.nextInt() % 2)
-				heartY++;
+			if (playerHealth <= 4)
+				heartY += m_random.nextInt(2);
 
-			blit(heartX, heartY, emptyHeartX, 0, 9, 9, 256, 256);
+			blit(heartX, heartY, 16 + b1 * 9, 0, 9, 9, 256, 256);
 
 			if (b1)
 			{
@@ -398,7 +392,7 @@ void Gui::tick()
 	if (field_A18 > 0)
 		field_A18--;
 
-	field_9FC++;
+	m_tickCount++;
 
 	for (int i = 0; i < int(m_guiMessages.size()); i++)
 	{

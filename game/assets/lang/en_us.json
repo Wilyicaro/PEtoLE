@@ -7,7 +7,7 @@
   "inGameMenu.saveAndQuitToTitle": "Save and quit to title",
   "inGameMenu.disconnect": "Disconnect",
   "inGameMenu.gameMenu": "Game menu",
-  "guiGameOver.death": "You Died!",
+  "guiGameOver.death": "Game over!",
   "guiGameOver.respawn": "Respawn",
   "guiGameOver.titleMenu": "Title Menu",
   "guiGameOver.score": "Score: {}",

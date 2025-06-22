@@ -189,7 +189,7 @@ void Arrow::tick()
     m_rot.y = m_rotPrev.y + (m_rot.y - m_rotPrev.y) * 0.2F;
     float var18 = 0.99F;
     var10 = 0.03F;
-    if (isInWater()) {
+    if (wasInWater()) {
         for (int var19 = 0; var19 < 4; ++var19) {
             m_pLevel->addParticle("bubble", m_pos - (m_vel * 0.25), m_vel);
         }

@@ -54,7 +54,7 @@ bool ItemEntity::hurt(Entity* pCulprit, int damage)
 	return false;
 }
 
-bool ItemEntity::isInWater()
+bool ItemEntity::wasInWater()
 {
 	return m_pLevel->checkAndHandleWater(m_hitbox, Material::water, this);
 }

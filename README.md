@@ -18,9 +18,9 @@ Well, basically the difference between these two versions is just the scissors, 
 Currently the platforms originally from the ReMinecraftPE are:
 * Windows 11 (older versions have not been tested, most of the newer ones should work)
 * Android (thanks to [Stom](https://github.com/Stommm) for the help)
+* Linux (thanks to [Beyond 5D](https://gitlab.com/Beyond_5D) for help with testing)
 
 These are the ports that have not been tested, but could certainly work with some fixes:
-* Linux
 * WebGL
 * Mac OS (port by [BrentDaMage](https://github.com/BrentDaMage))
 * iOS (3.0 and above; port by [BrentDaMage](https://github.com/BrentDaMage))

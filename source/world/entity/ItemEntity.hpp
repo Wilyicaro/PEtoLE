@@ -21,7 +21,7 @@ public:
 
 	void burn(int damage) override;
 	bool hurt(Entity* pCulprit, int damage) override;
-	bool isInWater() override;
+	bool wasInWater() override;
 	void playerTouch(Player*) override;
 	void tick() override;
 

@@ -13,6 +13,7 @@
 #include "world/level/levelgen/chunk/ChunkCache.hpp"
 #include "Explosion.hpp"
 #include "Region.hpp"
+#include "world/tile/LiquidTile.hpp"
 
 Level::Level(LevelStorage* pStor, const std::string& str, int64_t seed, int storageVersion, Dimension *pDimension)
 {
@@ -934,9 +935,7 @@ bool Level::checkAndHandleWater(const AABB& aabb, const Material* pMtl, Entity* 
 				if (!pTile || pTile->m_pMaterial != pMtl)
 					continue;
 
-				int data = getData(pos);
-				int level = data <= 7 ? data + 1 : 1;
-				if (float(max.y) >= float(pos.y + 1) - float(level) / 9.0f)
+				if (max.y >= (pos.y + 1 - LiquidTile::getWaterVolume(getData(pos))))
 				{
 					pTile->handleEntityInside(this, pos, pEnt, v);
 					bInWater = true;
@@ -945,9 +944,10 @@ bool Level::checkAndHandleWater(const AABB& aabb, const Material* pMtl, Entity* 
 		}
 	}
 
-	if (v.length() > 0.0f)
+	if (v.length() > 0.0)
 	{
-		pEnt->m_vel += v * 0.004f;
+		Vec3 norm = v.normalize() * 0.014;
+		pEnt->m_vel += norm;
 	}
 
 	return bInWater;

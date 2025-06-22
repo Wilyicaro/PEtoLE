@@ -55,8 +55,8 @@ LocalPlayer::~LocalPlayer()
 void LocalPlayer::aiStep()
 {
 	m_pMoveInput->tick(this);
-	if (m_pMoveInput->m_bSneaking && m_ySlideOffset < 0.2f)
-		m_ySlideOffset = 0.2f;
+	if (m_pMoveInput->m_bSneaking && m_ySlideOffset < 0.47f)
+		m_ySlideOffset = 0.47f;
 
 	m_lastRenderArmRot = m_renderArmRot;
 	m_renderArmRot.y = Mth::Lerp(m_renderArmRot.y, m_rot.y, 0.5f);
@@ -284,8 +284,8 @@ void LocalPlayer::updateAi()
 {
 	Player::updateAi();
 
-	field_B00.y = m_pMoveInput->m_horzInput;
-	field_B00.x = m_pMoveInput->m_vertInput;
+	m_moving.y = m_pMoveInput->m_horzInput;
+	m_moving.x = m_pMoveInput->m_vertInput;
 
 	m_bJumping = m_pMoveInput->m_bJumping || m_nAutoJumpFrames > 0;
 }

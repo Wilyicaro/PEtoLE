@@ -6,6 +6,7 @@ class CactusTile : public Tile
 {
 public:
 	CactusTile(int id, int texture);
+	AABB* getAABB(const Level* pLevel, const TilePos& pos) override;
 	bool mayPlace(const Level*, const TilePos& pos) const override;
 	bool canSurvive(const Level* level, const TilePos& pos) const override;
 	void neighborChanged(Level* level, const TilePos& pos, TileID tile) override;

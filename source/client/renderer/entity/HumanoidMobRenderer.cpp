@@ -112,7 +112,7 @@ void HumanoidMobRenderer::render(Entity* entity, float x, float y, float z, floa
 		m_armorParts1->m_bHoldingRightHand = m_armorParts2->m_bHoldingRightHand = m_pHumanoidModel->m_bHoldingRightHand = item != nullptr;
 	}
 	m_armorParts1->m_bSneaking = m_armorParts2->m_bSneaking = m_pHumanoidModel->m_bSneaking = entity->isSneaking();
-	if (entity->isSneaking()) y -= 0.125;
+	if (entity->isSneaking() && entity != m_pDispatcher->m_pMinecraft->m_pLocalPlayer.get()) y -= 0.125;
 	MobRenderer::render(entity, x, y, z, unused, f);
 	m_armorParts1->m_bSneaking = m_armorParts2->m_bSneaking = m_pHumanoidModel->m_bSneaking = false;
 	m_armorParts1->m_bHoldingRightHand = m_armorParts2->m_bHoldingRightHand = m_pHumanoidModel->m_bHoldingRightHand = false;

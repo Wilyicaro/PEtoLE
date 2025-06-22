@@ -48,8 +48,8 @@ public:
 
 	Vec3T normalize() const 
 	{
-		T dist = Mth::sqrt(x * x + y * y + z * z);
-		if (dist < 0.0001f)
+		T dist = length();
+		if (dist < 0.0001)
 			return ZERO;
 
 		return Vec3T(x / dist, y / dist, z / dist);

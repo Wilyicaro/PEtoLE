@@ -88,7 +88,7 @@ int LiquidTileDynamic::getSlopeDistance(Level* level, const TilePos& pos, int de
 			level->getData(check) == 0)
 			continue;
 
-		if (!isWaterBlocking(level, TilePos(check.x, check.y - 1, check.z)))
+		if (!isWaterBlocking(level, check.below()))
 			return depth;
 
 		if (depth >= 4)

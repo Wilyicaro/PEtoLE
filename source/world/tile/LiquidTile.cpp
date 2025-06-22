@@ -75,7 +75,7 @@ int LiquidTile::getRenderedDepth(const LevelSource* level, const TilePos& pos) c
 		return -1;
 
 	int res = level->getData(pos);
-	if (res > 7)
+	if (res >= 8)
 		res = 0;
 
 	return res;
@@ -102,21 +102,18 @@ Vec3 LiquidTile::getFlow(const LevelSource* level, const TilePos& pos) const
 			if (level->getMaterial(check)->blocksMotion())
 				continue;
 
-			depthCheck = getRenderedDepth(level, TilePos(check.x, check.y - 1, check.z));
+			depthCheck = getRenderedDepth(level, check.below());
 			if (depthCheck >= 0)
 			{
 				int mult = depthCheck - (depthLocal - 8);
-				// Not sure what the difference is between these two, but the top one breaks flow
-				//result += Vec3((check - pos) * mult);
-				result += Vec3(float((check.x - pos.x) * mult), float((check.y - pos.y) * mult), float((check.z - pos.z) * mult));
+				result += (check - pos) * mult;
 			}
 			continue;
 		}
 		else
 		{
 			int mult = depthCheck - depthLocal;
-			//result += Vec3((check - pos) * mult);
-			result += Vec3(float((check.x - pos.x) * mult), float((check.y - pos.y) * mult), float((check.z - pos.z) * mult));
+			result += (check - pos) * mult;
 		}
 	}
 
@@ -131,7 +128,7 @@ Vec3 LiquidTile::getFlow(const LevelSource* level, const TilePos& pos) const
 			shouldRenderFace(level, pos.above().west(), Facing::WEST) ||
 			shouldRenderFace(level, pos.above().east(), Facing::EAST))
 		{
-			result = result.normalize() + Vec3(0, -6, 0);
+			result = result.normalize().add(0, -6, 0);
 		}
 	}
 
@@ -169,7 +166,7 @@ float LiquidTile::getSlopeAngle(const LevelSource* level, const TilePos& pos, co
 	if (vec.x == 0 && vec.z == 0)
 		return -1000.0f;
 
-	return atan2f(vec.z, vec.x) + float(-0.5f * 3.1416f);
+	return atan2f(vec.z, vec.x) + float(-0.5f * M_PI);
 }
 
 int LiquidTile::getTexture(Facing::Name face) const

@@ -159,7 +159,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 
 		if (pointerId == 100 + INPUT_SNEAK) // Unused
 		{
-			if (pPlayer->isInWater())
+			if (pPlayer->wasInWater())
 				m_bJumping = true;
 			else
 				bJumpPressed = true;
@@ -169,7 +169,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 
 		if (pointerId == 100 + INPUT_JUMP) // jump
 		{
-			if (pPlayer->isInWater())
+			if (pPlayer->wasInWater())
 				m_bJumping = true;
 			else if (Multitouch::isPressed(finger))
 				m_bJumping = true;
@@ -184,7 +184,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 		switch (pointerId)
 		{
 			case 100 + INPUT_FORWARD:
-				if (pPlayer->isInWater())
+				if (pPlayer->wasInWater())
 					m_bJumping = true;
 				else
 					bForwardPressed = true;

@@ -109,6 +109,7 @@ public:
 	virtual bool isFree(const Vec3& off, float expand) const;
 	virtual bool isInWall() const;
 	virtual bool isInWater();
+	virtual bool wasInWater();
 	virtual bool isInLava() const;
 	virtual bool isUnderLiquid(Material*) const;
 	virtual float getHeadHeight() const { return 0.0f; }
@@ -152,6 +153,7 @@ public:
 	virtual void burn(int);
 	virtual void lavaHurt();
 	virtual int queryEntityRenderer();
+	virtual void handleEntityEvent(int event);
 	void load(std::shared_ptr<CompoundTag> tag);
 	bool save(std::shared_ptr<CompoundTag> tag);
 	void saveWithoutId(std::shared_ptr<CompoundTag> tag);
