@@ -47,7 +47,7 @@
   "tile.stoneSlab.brick": "Brick Slab",
   "tile.stoneSlab.cobble": "Cobblestone Slab",
   "tile.doubleStoneSlab": "Double Stone Slab",
-  "tile.woodSlab": "Wooden Slab",
+  "tile.stoneSlab.wood": "Wooden Slab",
   "tile.doubleWoodSlab": "Double Wooden Slab",
   "tile.brick": "Bricks",
   "tile.tnt": "TNT",

@@ -451,7 +451,17 @@ void Player::touch(Entity* pEnt)
 
 void Player::interact(Entity* pEnt)
 {
-	pEnt->interact(this);
+	if (!pEnt->interact(this))
+	{
+		auto var2 = getSelectedItem();
+		if (var2 && pEnt->getType().getCategory().contains(EntityCategories::MOB)) {
+			var2->interactEnemy((Mob*) pEnt);
+			if (var2->m_count <= 0) {
+				var2->snap(this);
+				m_pInventory->setItem(m_pInventory->m_selected, nullptr);
+			}
+		}
+	}
 }
 
 std::shared_ptr<ItemInstance> Player::getSelectedItem() const

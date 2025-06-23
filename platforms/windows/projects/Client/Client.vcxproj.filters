@@ -500,6 +500,9 @@
     <ClInclude Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.hpp">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\CreativeScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.cpp">
@@ -900,6 +903,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.cpp">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\CreativeScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -10,6 +10,7 @@ public:
     int index;
     int x;
     int y;
+    Container* container;
 
     Slot(Container* container, int slot, int x, int y);
 
@@ -58,5 +59,4 @@ public:
 
 protected:
     int slot;
-    Container* container;
 };

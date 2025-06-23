@@ -106,9 +106,14 @@ void ContainerScreen::slotClicked(int mouseX, int mouseY, int button) {
         if (slot) index = slot->index;
         if (outside) index = -999;
         if (index != -1) {
-            m_pMinecraft->m_pGameMode->handleInventoryMouseClick(menu->containerId, index, button - 1, m_pMinecraft->m_pLocalPlayer.get());
+            slotClicked(slot, index, button - 1, index != -999 && m_pMinecraft->m_pPlatform->shiftPressed());
         }
     }
+}
+
+void ContainerScreen::slotClicked(Slot* slot, int index, int button, bool quick)
+{
+    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(menu->containerId, index, button, m_pMinecraft->m_pLocalPlayer.get());
 }
 
 

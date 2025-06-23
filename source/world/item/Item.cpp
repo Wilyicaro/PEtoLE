@@ -507,10 +507,6 @@ void Item::initItems()
 	Item::record_02 = NEW_ITEM(ITEM_RECORD_02)
 		->setIcon(1, 15)
 		->setDescriptionId("record");
-
-	Item::camera = NEW_X_ITEMN(CameraItem, ITEM_CAMERA)
-		->setIcon(2, 15)
-		->setDescriptionId("camera");
 }
 
 int Item::getIcon(const ItemInstance* pInstance) const
@@ -751,4 +747,3 @@ Item* Item::bed;
 Item* Item::diode;
 Item* Item::record_01;
 Item* Item::record_02;
-Item* Item::camera;

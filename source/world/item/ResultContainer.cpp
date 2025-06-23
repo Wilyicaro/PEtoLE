@@ -13,7 +13,7 @@ std::shared_ptr<ItemInstance> ResultContainer::getItem(int index) {
     return items[index];
 }
 
-std::string ResultContainer::getName() {
+const std::string& ResultContainer::getName() {
     return "Result";
 }
 

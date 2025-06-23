@@ -20,5 +20,4 @@ public:
 	int getSpawnResourcesAuxValue(int x) const override;
 
 	void growTree(Level*, const TilePos& pos, Random*);
-	bool maybeGrowTree(Level*, const TilePos& pos, Random*);
 };

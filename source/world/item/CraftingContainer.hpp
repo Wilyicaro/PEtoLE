@@ -22,7 +22,7 @@ public:
     std::shared_ptr<ItemInstance> getItem(int index) override;
     std::shared_ptr<ItemInstance> getItem(int x, int y);
 
-    std::string getName() override;
+    const std::string& getName() override;
 
     std::shared_ptr<ItemInstance> removeItem(int index, int amount) override;
     void setItem(int index, std::shared_ptr<ItemInstance> item) override;

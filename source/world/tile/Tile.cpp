@@ -10,6 +10,7 @@
 #include "world/item/TileItem.hpp"
 #include "world/item/ClothItem.hpp"
 #include "world/item/AuxTileItem.hpp"
+#include "world/item/SlabItem.hpp"
 #include "world/entity/ItemEntity.hpp"
 
 // Include tile definitions here
@@ -801,6 +802,9 @@ void Tile::initTiles()
 
 	Item::items[Tile::cloth->m_ID] = (new ClothItem(Tile::cloth->m_ID - C_MAX_TILES))
 		->setDescriptionId("cloth");
+
+	Item::items[Tile::stoneSlabHalf->m_ID] = (new SlabItem(Tile::stoneSlabHalf->m_ID - C_MAX_TILES))
+		->setDescriptionId("stoneSlab");
 
 	Item::items[Tile::treeTrunk->m_ID] = (new AuxTileItem(Tile::treeTrunk->m_ID - C_MAX_TILES))
 		->setDescriptionId("log");

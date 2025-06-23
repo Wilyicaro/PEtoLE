@@ -34,34 +34,29 @@ void Sapling::tick(Level* level, const TilePos& pos, Random* random)
 	}
 }
 
-bool Sapling::maybeGrowTree(Level* level, const TilePos& pos, Random* random)
-{
-	Feature* pFeature;
-
-	int data = level->getData(pos);
-	switch (data)
-	{
-		default:
-			if (random->nextInt() == 10)
-				pFeature = new FancyTreeFeature;
-			else pFeature = new TreeFeature;
-			break;
-		case 1:
-			pFeature = new BirchFeature;
-			break;
-		case 2:
-			pFeature = new SpruceFeature;
-			break;
-	}
-
-	return pFeature->place(level, random, pos);
-}
-
 void Sapling::growTree(Level* level, const TilePos& pos, Random* random)
 {
+	int data = level->getData(pos) & 3;
 	level->setTileNoUpdate(pos, TILE_AIR);
 
-	if (!maybeGrowTree(level, pos, random))
+	Feature* pFeature;
+
+	switch (data)
+	{
+	default:
+		if (random->nextInt() == 10)
+			pFeature = new FancyTreeFeature;
+		else pFeature = new TreeFeature;
+		break;
+	case 1:
+		pFeature = new SpruceFeature;
+		break;
+	case 2:
+		pFeature = new BirchFeature;
+		break;
+	}
+
+	if (!pFeature->place(level, random, pos))
 		level->setTileNoUpdate(pos, m_ID);
 }
 

@@ -59,6 +59,7 @@ public:
 	virtual void onTextBoxUpdated(int id) {};
 	virtual void buttonClicked(Button* pButton) {};
 	virtual void mouseDragged(double x, double y, int button, double deltaX, double deltaY);
+	virtual void mouseScrolled(double x, double y, int scroll);
 	virtual void mouseClicked(int, int, int);
 	virtual void mouseReleased(int, int, int);
 	virtual void keyPressed(int);

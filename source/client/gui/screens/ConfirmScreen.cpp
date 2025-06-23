@@ -48,7 +48,6 @@ void ConfirmScreen::init()
 	m_btnCancel.m_yPos = m_btnOK.m_yPos = m_height / 6 + 72;
 
 	m_btnOK.m_width  = m_btnCancel.m_width = 120;
-	m_btnOK.m_height = m_btnCancel.m_height = 24;
 
 	m_buttons.push_back(&m_btnOK);
 	m_buttons.push_back(&m_btnCancel);

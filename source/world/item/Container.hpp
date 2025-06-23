@@ -15,7 +15,7 @@ public:
 
 	virtual void setItem(int index, std::shared_ptr<ItemInstance> item) = 0;
 
-	virtual std::string getName() = 0;
+	virtual const std::string& getName() = 0;
 
 	virtual int getMaxStackSize() = 0;
 

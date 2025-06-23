@@ -19,7 +19,7 @@ public:
         return m_c1->getContainerSize() + m_c2->getContainerSize();
     }
 
-    std::string getName() override {
+    const std::string& getName() override {
         return m_name;
     }
 

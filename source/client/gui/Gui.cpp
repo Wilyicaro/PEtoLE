@@ -7,7 +7,7 @@
  ********************************************************************/
 
 #include "client/app/Minecraft.hpp"
-#include "client/gui/screens/IngameBlockSelectionScreen.hpp"
+#include "client/gui/screens/inventory/CreativeScreen.hpp"
 #include "client/gui/screens/inventory/InventoryScreen.hpp"
 #include "client/gui/screens/ChatScreen.hpp"
 #include "client/renderer/entity/ItemRenderer.hpp"
@@ -465,7 +465,7 @@ void Gui::handleClick(int clickID, int mouseX, int mouseY)
 
 	if (m_pMinecraft->isTouchscreen() && slot == getNumSlots() - 1)
 		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
-		else m_pMinecraft->setScreen(new IngameBlockSelectionScreen);
+		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pLocalPlayer->m_pInventory));
 	else
 		m_pMinecraft->m_pLocalPlayer->m_pInventory->selectSlot(slot);
 }
@@ -476,7 +476,8 @@ void Gui::handleKeyPressed(int keyCode)
 
 	if (options->isKey(KM_CRAFTING, keyCode))
 	{
-		m_pMinecraft->setScreen(new IngameBlockSelectionScreen);
+		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
+		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pLocalPlayer->m_pInventory));
 		return;
 	}
 

@@ -2,72 +2,18 @@
 #include "world/item/crafting/FurnaceRecipes.hpp"
 #include <world/tile/FurnaceTile.hpp>
 
-FurnaceTileEntity::FurnaceTileEntity() {
-    m_items.fill(nullptr);
-}
-
-int FurnaceTileEntity::getContainerSize() {
-    return m_items.size();
-}
-
-std::shared_ptr<ItemInstance> FurnaceTileEntity::getItem(int index) {
-    return m_items[index];
-}
-
-std::shared_ptr<ItemInstance> FurnaceTileEntity::removeItem(int index, int count) 
+FurnaceTileEntity::FurnaceTileEntity() : SimpleContainer(3, "Furnace")
 {
-    if (m_items[index] != nullptr) {
-        std::shared_ptr<ItemInstance> result;
-        if (m_items[index]->m_count <= count) {
-            result = m_items[index];
-            m_items[index] = nullptr;
-            setChanged();
-            return result;
-        } else {
-            result = m_items[index]->remove(count);
-            if (m_items[index]->m_count == 0) {
-                m_items[index] = nullptr;
-            }
-            setChanged();
-            return result;
-        }
-    }
-    return nullptr;
-}
-
-void FurnaceTileEntity::setItem(int index, std::shared_ptr<ItemInstance> item) 
-{
-    m_items[index] = item;
-    if (item && item->m_count > getMaxStackSize()) {
-        item->m_count = getMaxStackSize();
-    }
-    setChanged();
-}
-
-std::string FurnaceTileEntity::getName() 
-{
-    return "Furnace";
 }
 
 void FurnaceTileEntity::load(std::shared_ptr<CompoundTag> tag) 
 {
     TileEntity::load(tag);
-    auto list = tag->getList("Items");
-    m_items.fill(nullptr);
-
-    for (const auto& element : list->getValue()) {
-        auto itemTag = std::dynamic_pointer_cast<CompoundTag>(element);
-        if (itemTag) {
-            int slot = itemTag->getByte("Slot") & 255;
-            if (slot >= 0 && slot < static_cast<int>(m_items.size())) {
-                m_items[slot] = std::make_shared<ItemInstance>(itemTag);
-            }
-        }
-    }
+    SimpleContainer::load(tag);
 
     m_litTime = tag->getShort("BurnTime");
     m_tickCount = tag->getShort("CookTime");
-    m_litDuration = FurnaceRecipes::getInstance().getBurnDuration(m_items[1]);
+    m_litDuration = FurnaceRecipes::getInstance().getBurnDuration(getItem(1));
 }
 
 void FurnaceTileEntity::save(std::shared_ptr<CompoundTag> tag) 
@@ -75,19 +21,7 @@ void FurnaceTileEntity::save(std::shared_ptr<CompoundTag> tag)
     TileEntity::save(tag);
     tag->putShort("BurnTime", m_litTime);
     tag->putShort("CookTime", m_tickCount);
-
-    auto list = std::make_shared<ListTag>();
-
-    for (int i = 0; i < static_cast<int>(m_items.size()); ++i) {
-        if (m_items[i]) {
-            auto itemTag = std::make_shared<CompoundTag>();
-            itemTag->putByte("Slot", static_cast<uint8_t>(i));
-            m_items[i]->save(itemTag);
-            list->add(itemTag);
-        }
-    }
-
-    tag->put("Items", list);
+    SimpleContainer::save(tag);
 }
 
 void FurnaceTileEntity::tick()
@@ -100,13 +34,13 @@ void FurnaceTileEntity::tick()
 
     if (!m_pLevel->m_bIsOnline) {
         if (m_litTime == 0 && canBurn()) {
-            m_litDuration = m_litTime = FurnaceRecipes::getInstance().getBurnDuration(m_items[1]);
+            m_litDuration = m_litTime = FurnaceRecipes::getInstance().getBurnDuration(getItem(1));
             if (m_litTime > 0) {
                 var2 = true;
-                if (m_items[1]) {
-                    --m_items[1]->m_count;
-                    if (!m_items[1]->m_count) {
-                        m_items[1] = nullptr;
+                if (getItem(1)) {
+                    --getItem(1)->m_count;
+                    if (!getItem(1)->m_count) {
+                        getItem(1) = nullptr;
                     }
                 }
             }
@@ -137,7 +71,7 @@ void FurnaceTileEntity::tick()
 
 bool FurnaceTileEntity::canBurn()
 {
-    if (!m_items[0]) {
+    if (!getItem(0)) {
         return false;
     }
     else {
@@ -145,17 +79,17 @@ bool FurnaceTileEntity::canBurn()
         if (!result) {
             return false;
         }
-        else if (!m_items[2]) {
+        else if (!getItem(2)) {
             return true;
         }
-        else if (!m_items[2]->sameItem(result)) {
+        else if (!getItem(2)->sameItem(result)) {
             return false;
         }
-        else if (m_items[2]->m_count < getMaxStackSize() && m_items[2]->m_count < m_items[2]->getMaxStackSize()) {
+        else if (getItem(2)->m_count < getMaxStackSize() && getItem(2)->m_count < getItem(2)->getMaxStackSize()) {
             return true;
         }
         else {
-            return m_items[2]->m_count < result->getMaxStackSize();
+            return getItem(2)->m_count < result->getMaxStackSize();
         }
     }
 }
@@ -163,24 +97,19 @@ bool FurnaceTileEntity::canBurn()
 void FurnaceTileEntity::burn() {
     if (canBurn()) {
         auto result = FurnaceRecipes::getInstance().getItemFor(this);
-        if (!m_items[2]) {
-            m_items[2] = result;
+        if (!getItem(2)) {
+            getItem(2) = result;
         }
-        else if (m_items[2]->sameItem(result)) {
-            ++m_items[2]->m_count;
+        else if (getItem(2)->sameItem(result)) {
+            ++getItem(2)->m_count;
         }
 
-        --m_items[0]->m_count;
-        if (m_items[0]->m_count <= 0) {
-            m_items[0] = nullptr;
+        --getItem(0)->m_count;
+        if (getItem(0)->m_count <= 0) {
+            getItem(0) = nullptr;
         }
 
     }
-}
-
-int FurnaceTileEntity::getMaxStackSize()
-{
-    return 64;
 }
 
 int FurnaceTileEntity::getBurnProgress(int height) 

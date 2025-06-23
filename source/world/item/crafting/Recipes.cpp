@@ -82,6 +82,15 @@ Recipes::Recipes()
         .add('#', Tile::sand));
 
     add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Tile::stoneSlabHalf, 3))
+        .add('#', Tile::stone));
+
+    add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Tile::stoneSlabHalf, 3, 1))
+        .add('#', Tile::sandStone));
+
+    add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Tile::stoneSlabHalf, 3, 2))
+        .add('#', Tile::wood));
+
+    add(ShapedRecipeBuilder({ "###" }, std::make_shared<ItemInstance>(Tile::stoneSlabHalf, 3, 3))
         .add('#', Tile::cobblestone));
 
     add(ShapedRecipeBuilder({ "# #", "###", "# #" }, std::make_shared<ItemInstance>(Tile::ladder, 2))

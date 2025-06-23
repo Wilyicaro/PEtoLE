@@ -201,6 +201,9 @@ void Screen::mouseDragged(double x, double y, int button, double deltaX, double 
 {
 }
 
+void Screen::mouseScrolled(double x, double y, int scroll)
+{
+}
 
 void Screen::mouseClicked(int xPos, int yPos, int d)
 {
@@ -411,6 +414,10 @@ void Screen::mouseEvent()
 			mouseClicked(m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height + getYOffset(), Mouse::getEventButton());
 		else
 			mouseReleased(m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height + getYOffset(), Mouse::getEventButton());
+	} 
+	else
+	{
+		mouseScrolled(m_width * pAction->_posX / Minecraft::width, m_height * pAction->_posY / Minecraft::height + getYOffset(), Mouse::getEventButtonState() ? -1 : 1);
 	}
 }
 

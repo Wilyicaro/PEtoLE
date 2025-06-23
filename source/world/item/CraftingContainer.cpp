@@ -21,7 +21,7 @@ std::shared_ptr<ItemInstance> CraftingContainer::getItem(int x, int y) {
     return nullptr;
 }
 
-std::string CraftingContainer::getName() {
+const std::string& CraftingContainer::getName() {
     return "Crafting";
 }
 

@@ -28,6 +28,7 @@ public:
     virtual void mouseReleased(int mouseX, int mouseY, int button) override;
     virtual void mouseDragged(double x, double y, int button, double deltaX, double deltaY) override;
     virtual void slotClicked(int mouseX, int mouseY, int button);
+    virtual void slotClicked(Slot* slot, int index, int button, bool quick);
     virtual void keyPressed(int key) override;
 
 protected:

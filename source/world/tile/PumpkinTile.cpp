@@ -6,21 +6,12 @@ PumpkinTile::PumpkinTile(int id, bool lantern) : Tile(id, TEXTURE_PUMPKIN_TOP, M
 	this->lantern = lantern;
 }
 
-int PumpkinTile::getTexture(const LevelSource* level, const TilePos& pos, Facing::Name face) const
+int PumpkinTile::getTexture(Facing::Name face, int data) const
 {
 	switch (face) {
 	case Facing::UP: case Facing::DOWN: return m_TextureFrame;
 	default: 
-		int meta = level->getData(pos);
-		int dir = 4;
-
-		switch (meta)
-		{
-		case 0: dir = 2; break;
-		case 1: dir = 5; break;
-		case 2: dir = 3; break;
-		}
-		return face != dir ? m_TextureFrame + 16 : m_TextureFrame + (lantern ? 18 : 17);
+		return face == 2 && data == 2 || face == 5 && data == 3 || face == 3 && data == 0 || face == 4 && data == 1 ? m_TextureFrame + (lantern ? 18 : 17) : m_TextureFrame + 16;
 	}
 }
 
@@ -35,7 +26,7 @@ int PumpkinTile::getTexture(Facing::Name face) const
 
 void PumpkinTile::setPlacedBy(Level* level, const TilePos& pos, Mob* mob, Facing::Name face)
 {
-	int rot = Mth::floor(0.5f + (mob->m_rot.y * 4.0f / 360.0f)) & 3;
+	int rot = Mth::floor(2.5f + (mob->m_rot.y * 4.0f / 360.0f)) & 3;
 
 	level->setData(pos, rot);
 }

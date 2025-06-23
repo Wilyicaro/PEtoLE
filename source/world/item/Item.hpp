@@ -238,5 +238,4 @@ public: // Static declarations
 	static Item* diode;
 	static Item* record_01;
 	static Item* record_02;
-	static Item* camera;
 };

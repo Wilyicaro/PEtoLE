@@ -161,6 +161,7 @@
     <ClCompile Include="..\..\..\..\source\world\item\crafting\ShapedRecipe.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\crafting\ShapelessRecipe.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\crafting\SingleInputRecipe.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\item\CreativeMenu.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\DiggerItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\FlintAndSteelItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\FurnaceMenu.cpp" />
@@ -168,6 +169,8 @@
     <ClCompile Include="..\..\..\..\source\world\item\HoeItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\PickaxeItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\ShovelItem.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\item\SimpleContainer.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\item\SlabItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\WeaponItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\tile\CakeTile.cpp" />
     <ClCompile Include="..\..\..\..\source\world\tile\entity\FurnaceTileEntity.cpp" />
@@ -342,6 +345,7 @@
     <ClInclude Include="..\..\..\..\source\world\item\crafting\ShapedRecipe.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\crafting\ShapelessRecipe.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\crafting\SingleInputRecipe.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\item\CreativeMenu.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\DiggerItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\FlintAndSteelItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\FurnaceMenu.hpp" />
@@ -349,6 +353,8 @@
     <ClInclude Include="..\..\..\..\source\world\item\HoeItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\PickaxeItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\ShovelItem.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\item\SimpleContainer.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\item\SlabItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\WeaponItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\tile\CakeTile.hpp" />
     <ClInclude Include="..\..\..\..\source\world\tile\entity\FurnaceTileEntity.hpp" />

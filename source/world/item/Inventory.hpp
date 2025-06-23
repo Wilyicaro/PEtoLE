@@ -67,7 +67,7 @@ public:
         return getSelectedItem();
     }
 
-    std::string getName() override 
+    const std::string& getName() override
     {
         return "Inventory";
     }
