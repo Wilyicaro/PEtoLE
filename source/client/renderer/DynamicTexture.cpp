@@ -20,7 +20,10 @@ DynamicTexture::DynamicTexture(int a2) : m_textureIndex(a2)
 void DynamicTexture::bindTexture(Textures* pTextures)
 {
 	if (m_textureId == 0)
-		pTextures->loadAndBindTexture(C_TERRAIN_NAME);
+	{
+		pTextures->loadAndBindTerrain();
+		pTextures->setMipmap(true);
+	}
 	else if (m_textureId == 1)
 		pTextures->loadAndBindTexture("gui/items.png");
 }

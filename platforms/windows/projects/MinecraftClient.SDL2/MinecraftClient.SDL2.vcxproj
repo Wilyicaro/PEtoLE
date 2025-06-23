@@ -63,6 +63,9 @@
     <ClCompile>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug_SDL2|x64'">stdcpp20</LanguageStandard>
     </ClCompile>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release_SDL2|x64'">stdcpp17</LanguageStandard>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\platforms\openal\SoundSystemAL.cpp" />

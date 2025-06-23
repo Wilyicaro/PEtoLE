@@ -43,13 +43,19 @@ public:
 	{
 	
 #ifndef USE_GLES
-		setMipmap(true);
+		if (m_bHasTerrainMipmap && m_pOptions->m_bMipmaps)
+		{
+			setMipmap(true);
+		}
 #endif
 		int id = loadAndBindTexture(C_TERRAIN_NAME);
 #ifndef USE_GLES
-		loadTexture(C_TERRAIN_MIPMAP2_NAME, true, 1, false);
-		loadTexture(C_TERRAIN_MIPMAP3_NAME, true, 2, false);
-		setMipmap(false);
+		if (m_bHasTerrainMipmap && m_pOptions->m_bMipmaps)
+		{
+			loadTexture(C_TERRAIN_MIPMAP2_NAME, true, 1, false);
+			loadTexture(C_TERRAIN_MIPMAP3_NAME, true, 2, false);
+			setMipmap(false);
+		}
 #endif
 		return id;
 	}
@@ -83,6 +89,11 @@ public:
 		m_bMipmap = b;
 	}
 
+	bool hasTerrainMipmap() const
+	{
+		return m_bHasTerrainMipmap;
+	}
+
 	Textures(Options*, AppPlatform*);
 	~Textures();
 
@@ -99,6 +110,7 @@ protected:
 	bool m_bClamp;
 	bool m_bBlur;
 	bool m_bMipmap;
+	bool m_bHasTerrainMipmap;
 	std::unordered_map<GLuint, TextureData> m_textureData;
 	std::vector<DynamicTexture*> m_dynamicTextures;
 	std::unordered_map<std::string, HttpTexture*> m_httpTextures;

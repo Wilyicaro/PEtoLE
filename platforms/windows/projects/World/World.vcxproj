@@ -41,6 +41,11 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\world\entity\Entity.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\entity\FallingTile.cpp" />

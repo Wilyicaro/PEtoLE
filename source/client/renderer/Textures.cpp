@@ -176,6 +176,7 @@ Textures::Textures(Options* pOptions, AppPlatform* pAppPlatform)
 	m_bClamp = false;
 	m_bBlur = false;
 	m_bMipmap = false;
+	m_bHasTerrainMipmap = pAppPlatform->doesTextureExist(C_TERRAIN_MIPMAP2_NAME) && pAppPlatform->doesTextureExist(C_TERRAIN_MIPMAP3_NAME);
 
 	m_pPlatform = pAppPlatform;
 	m_pOptions = pOptions;
@@ -197,31 +198,68 @@ Textures::~Textures()
 
 void Textures::tick()
 {
-	// tick dynamic textures here
-	for (std::vector<DynamicTexture*>::iterator it = m_dynamicTextures.begin(); it < m_dynamicTextures.end(); it++)
+	for (DynamicTexture* pDynaTex : m_dynamicTextures)
 	{
-		DynamicTexture* pDynaTex = *it;
-
 		pDynaTex->bindTexture(this);
 		pDynaTex->m_anaglyph3d = m_pOptions->m_bAnaglyphs;
 		pDynaTex->tick();
 
-		for (int x = 0; x < pDynaTex->m_textureSize; x++)
+		uint8_t* basePixels = pDynaTex->m_pixels;
+
+		glTexSubImage2D(
+			GL_TEXTURE_2D,
+			0,
+			(pDynaTex->m_textureIndex % 16) * 16,
+			(pDynaTex->m_textureIndex / 16) * 16,
+			16, 16,
+			GL_RGBA,
+			GL_UNSIGNED_BYTE,
+			basePixels
+		);
+
+		if (m_bMipmap)
 		{
-			for (int y = 0; y < pDynaTex->m_textureSize; y++)
+			const int maxLevels = 4;
+			std::vector<uint8_t> src(1024);
+			std::vector<uint8_t> dst(1024);
+			memcpy(src.data(), basePixels, 1024);
+
+			for (int level = 1; level <= maxLevels; ++level)
 			{
-				// texture is already bound so this is fine:
+				int prevSize = 16 >> (level - 1);
+				int size = 16 >> level;
+
+				for (int y = 0; y < size; ++y)
+				{
+					for (int x = 0; x < size; ++x)
+					{
+						uint8_t* p0 = &src[((x * 2 + 0) + (y * 2 + 0) * prevSize) * 4];
+						uint8_t* p1 = &src[((x * 2 + 1) + (y * 2 + 0) * prevSize) * 4];
+						uint8_t* p2 = &src[((x * 2 + 1) + (y * 2 + 1) * prevSize) * 4];
+						uint8_t* p3 = &src[((x * 2 + 0) + (y * 2 + 1) * prevSize) * 4];
+
+						uint8_t* out = &dst[(x + y * size) * 4];
+						for (int c = 0; c < 4; ++c)
+						{
+							out[c] = (p0[c] + p1[c] + p2[c] + p3[c]) / 4;
+						}
+					}
+				}
+
 				glTexSubImage2D(
 					GL_TEXTURE_2D,
-					0,
-					16 * (x + pDynaTex->m_textureIndex % 16),
-					16 * (y + pDynaTex->m_textureIndex / 16),
-					16, 16,
+					level,
+					(pDynaTex->m_textureIndex % 16) * size,
+					(pDynaTex->m_textureIndex / 16) * size,
+					size, size,
 					GL_RGBA,
 					GL_UNSIGNED_BYTE,
-					pDynaTex->m_pixels
+					dst.data()
 				);
+
+				src.swap(dst);
 			}
+			setMipmap(false);
 		}
 	}
 }

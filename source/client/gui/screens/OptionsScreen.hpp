@@ -36,5 +36,6 @@ private:
 	Button m_flightHaxButton;
 	Button m_splitControlsButton;
 	Button m_blockOutlinesButton;
+	Button m_mipmapsButton;
 #endif
 };

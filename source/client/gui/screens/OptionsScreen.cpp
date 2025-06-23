@@ -23,7 +23,8 @@ enum eOptionsButton
 	OB_DYNAMIC_HAND,
 	OB_FLY_HAX,
 	OB_SPLIT_CONTR,
-	OB_BLOCK_OUT
+	OB_BLOCK_OUT,
+	OB_MIPMAPS
 };
 
 OptionsScreen::OptionsScreen()
@@ -38,7 +39,8 @@ OptionsScreen::OptionsScreen()
 	m_dynamicHandButton(9, 0, 0, 150, 20, ""),
 	m_flightHaxButton(10, 0, 0, 150, 20, ""),
 	m_splitControlsButton(11, 0, 0, 150, 20, ""),
-	m_blockOutlinesButton(12, 0, 0, 150, 20, "")
+	m_blockOutlinesButton(12, 0, 0, 150, 20, ""),
+	m_mipmapsButton(13, 0, 0, 150, 20, "")
 {
 }
 
@@ -79,6 +81,7 @@ void OptionsScreen::UpdateTexts()
 	m_dynamicHandButton.m_text = "Dynamic Hand: " + BoolOptionStr(o->m_bDynamicHand);
 	m_splitControlsButton.m_text = "Split Controls: " + BoolOptionStr(o->m_bSplitControls);
 	m_blockOutlinesButton.m_text = "Block Outlines: " + BoolOptionStr(o->m_bBlockOutlines);
+	m_mipmapsButton.m_text = "Mipmaps: " + BoolOptionStr(o->m_bMipmaps);
 	m_srvVisButton.m_text = "Server " + std::string(o->m_bServerVisibleDefault ? "visible" : "invisible") + " by default";
 }
 #endif
@@ -102,6 +105,8 @@ void OptionsScreen::init()
 	m_buttons.push_back(&m_flightHaxButton);
 	m_buttons.push_back(&m_splitControlsButton);
 	m_buttons.push_back(&m_blockOutlinesButton);
+	if (m_pMinecraft->m_pTextures->hasTerrainMipmap())
+		m_buttons.push_back(&m_mipmapsButton);
 
 	m_buttonTabList.push_back(&m_AOButton);
 	m_buttonTabList.push_back(&m_srvVisButton);
@@ -113,6 +118,8 @@ void OptionsScreen::init()
 	m_buttonTabList.push_back(&m_flightHaxButton);
 	m_buttonTabList.push_back(&m_splitControlsButton);
 	m_buttonTabList.push_back(&m_blockOutlinesButton);
+	if (m_pMinecraft->m_pTextures->hasTerrainMipmap())
+		m_buttonTabList.push_back(&m_mipmapsButton);
 
 	for (int i = 0; i < m_buttonTabList.size(); i++)
 	{
@@ -200,7 +207,12 @@ void OptionsScreen::buttonClicked(Button* pButton)
 	case OB_BLOCK_OUT:
 		o->m_bBlockOutlines ^= 1;
 		break;
+	case OB_MIPMAPS:
+		o->m_bMipmaps ^= 1;
+		m_pMinecraft->m_pLevelRenderer->allChanged();
+		break;
 	}
+
 	UpdateTexts();
 }
 
