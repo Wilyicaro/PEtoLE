@@ -1,16 +1,16 @@
 #pragma once
 #include "EntityCategories.hpp"
+#include <vector>
 
 class Material;
 
 class MobCategory
 {
 public:
-	static MobCategory monster;
-	static MobCategory creature;
-	static MobCategory waterCreature;
-	static const MobCategory values[];
-	static const int numValues;
+	static MobCategory* monster;
+	static MobCategory* creature;
+	static MobCategory* waterCreature;
+	static std::vector<MobCategory*> values;
 
 private:
 	MobCategory(const EntityCategories&, int, int, const Material*, bool);

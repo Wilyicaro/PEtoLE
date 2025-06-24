@@ -14,6 +14,7 @@
 #include "Explosion.hpp"
 #include "Region.hpp"
 #include "world/tile/LiquidTile.hpp"
+#include "world/entity/MobSpawner.hpp"
 
 Level::Level(LevelStorage* pStor, const std::string& str, int64_t seed, int storageVersion, Dimension *pDimension)
 {
@@ -988,6 +989,16 @@ int Level::getTopSolidBlock(const TilePos& tilePos) const
 	return -1;
 }
 
+int Level::countWithCategory(EntityCategories::CategoriesMask category)
+{
+	int count = 0;
+	for (auto& entity : m_entities)
+	{
+		if (entity->getType().getCategory().contains(category)) count++;
+	}
+	return count;
+}
+
 void Level::validateSpawn()
 {
 	m_levelData.setYSpawn(C_MAX_Y / 2);
@@ -1353,6 +1364,7 @@ int LASTTICKED = 0;
 
 void Level::tick()
 {
+	MobSpawner::tick(this, m_difficulty > 0, true);
 	m_pChunkSource->tick();
 
 #ifdef ENH_RUN_DAY_NIGHT_CYCLE

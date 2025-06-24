@@ -292,7 +292,7 @@ int Entity::move(const Vec3& pos)
 			TilePos tp(m_pos.x, m_pos.y - real(0.2) - m_heightOffset, m_pos.z);
 			var28 = m_pLevel->getTile(tp);
 			if (m_walkDist > m_nextStep && var28 > 0) {
-				++m_nextStep;
+				m_nextStep = m_walkDist + 1;
 				if (m_pLevel->getTile(tp.above()) == Tile::topSnow->m_ID) {
 					auto sound = Tile::topSnow->m_pSound;
 					m_pLevel->playSound(this, sound->m_name, sound->volume * 0.15F, sound->pitch);

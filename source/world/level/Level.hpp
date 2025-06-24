@@ -111,6 +111,7 @@ public:
 	TileID getTopTile(const TilePos& pos) const;
 	int getTopTileY(const TilePos& pos) const;
 	int getTopSolidBlock(const TilePos& tilePos) const;
+	int countWithCategory(EntityCategories::CategoriesMask category);
 	void loadPlayer(std::shared_ptr<Player>);
 	bool addEntity(std::shared_ptr<Entity>);
 	bool removeEntity(std::shared_ptr<Entity>);

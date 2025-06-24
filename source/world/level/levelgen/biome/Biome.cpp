@@ -84,6 +84,9 @@ Biome::Biome()
 	m_LeafColor = 0;
 	topBlock = Tile::grass->m_ID;
 	fillerBlock = Tile::dirt->m_ID;
+	//setMobs(MobCategory::monster, { EntityType::spider, EntityType::zombie, EntityType::skeleton, EntityType::creeper });
+	setMobs(MobCategory::creature, { EntityType::sheep, EntityType::pig, EntityType::chicken, EntityType::cow });
+	//setMobs(MobCategory::waterCreature, { EntityType::squid });
 }
 
 Biome::~Biome()
@@ -107,6 +110,30 @@ Biome* Biome::setNoRain()
 {
 	hasRain = false;
 	return this;
+}
+
+void Biome::setMobs(const MobCategory* category, std::vector<EntityType*> vector)
+{
+	m_mobSpawns[category] = vector;
+}
+
+void Biome::addMobs(const MobCategory* category, std::vector<EntityType*> vector)
+{
+	auto match = m_mobSpawns.find(category);
+	if (match != m_mobSpawns.end())
+	{
+		for (auto& type : vector)
+			match->second.push_back(type);
+	}
+	else
+	{
+		setMobs(category, vector);
+	}
+}
+
+const std::vector<EntityType*>& Biome::getMobs(const MobCategory* category)
+{
+	return m_mobSpawns[category];
 }
 
 Biome* Biome::setColor(int color)

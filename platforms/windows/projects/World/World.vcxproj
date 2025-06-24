@@ -338,6 +338,7 @@
     <ClInclude Include="$(MC_ROOT)\source\world\tile\TorchTile.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\tile\TransparentTile.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\tile\TreeTile.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\entity\MobSpawner.hpp" />
     <ClInclude Include="..\..\..\..\source\world\entity\projectile\Arrow.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\ArmorItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\AxeItem.hpp" />

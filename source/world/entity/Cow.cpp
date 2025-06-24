@@ -7,6 +7,7 @@
  ********************************************************************/
 #include "Cow.hpp"
 #include "common/Utils.hpp"
+#include "world/entity/Player.hpp"
 
 Cow::Cow(Level* pLevel) : Animal(pLevel)
 {
@@ -14,4 +15,16 @@ Cow::Cow(Level* pLevel) : Animal(pLevel)
 	m_renderType = RENDER_COW;
 	m_texture = "mob/cow.png";
 	setSize(0.9f, 1.3f);
+}
+
+bool Cow::interact(Player* player)
+{
+	auto var2 = player->m_pInventory->getSelected();
+	if (var2 && var2->m_itemID == Item::emptyBucket->m_itemID) {
+		player->m_pInventory->setSelectedItem(std::make_shared<ItemInstance>(Item::milk));
+		return true;
+	}
+	else {
+		return false;
+	}
 }

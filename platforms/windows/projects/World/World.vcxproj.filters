@@ -1264,5 +1264,8 @@
     <ClInclude Include="..\..\..\..\source\world\item\SlabItem.hpp">
       <Filter>Header Files\Item</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\MobSpawner.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

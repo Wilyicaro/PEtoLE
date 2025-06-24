@@ -48,7 +48,7 @@ Entity* Animal::findAttackTarget()
 
 int Animal::getAmbientSoundInterval() const
 {
-	return 240;
+	return 120;
 }
 
 float Animal::getWalkTargetValue(const TilePos& pos) const
