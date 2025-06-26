@@ -798,7 +798,7 @@ std::shared_ptr<Player> Level::getNearestPlayer(const Vec3& pos, float maxDist) 
 	float dist = -1.0f;
 	std::shared_ptr<Player> pPlayer = nullptr;
 
-	for (auto& it = m_players.begin(); it != m_players.end(); it++)
+	for (auto it = m_players.begin(); it != m_players.end(); it++)
 	{
 		std::shared_ptr<Player> player = *it;
 		float ldist = player->distanceToSqr(pos);
