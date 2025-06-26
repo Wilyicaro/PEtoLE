@@ -6,6 +6,7 @@
 #include "Container.hpp"
 #include "common/ListTag.hpp"
 #include "common/CompoundTag.hpp"
+#include "client/locale/Language.hpp"
 
 class Entity;
 class Player; // in case we're included from Player.hpp
@@ -69,7 +70,7 @@ public:
 
     const std::string& getName() override
     {
-        return "Inventory";
+        return Language::getInstance()->get("gui.inventory.inventory");
     }
 
     int getMaxStackSize() override

@@ -35,6 +35,7 @@ private:
 	Button m_dynamicHandButton;
 	Button m_flightHaxButton;
 	Button m_splitControlsButton;
+	Button m_autoJumpButton;
 	Button m_blockOutlinesButton;
 	Button m_mipmapsButton;
 #endif

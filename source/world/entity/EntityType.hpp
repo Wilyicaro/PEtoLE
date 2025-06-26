@@ -63,33 +63,33 @@ public:
 	static void initTypes();
 	static void teardownTypes();
 
-	inline static EntityType* unknown;
-	inline static EntityType* player;
+	static EntityType* unknown;
+	static EntityType* player;
 
-	inline static EntityType* arrow;
-	//inline static EntityType* snowball;
-	inline static EntityType* item;
-	//inline static EntityType* painting;
-	inline static EntityType* mob;
-	//inline static EntityType* monster;
-	//inline static EntityType* creeper;
-	//inline static EntityType* skeleton;
-	//inline static EntityType* spider;
-	//inline static EntityType* giant;
-	//inline static EntityType* zombie;
-	//inline static EntityType* slime;
-	//inline static EntityType* monster;
-	//inline static EntityType* ghast;
-	//inline static EntityType* pigZombie;
-	inline static EntityType* pig;
-	inline static EntityType* sheep;
-	inline static EntityType* cow;
-	inline static EntityType* chicken;
-	//inline static EntityType* squid;
-	inline static EntityType* primedTnt;
-	inline static EntityType* fallingTile;
-	//inline static EntityType* minecart;
-	//inline static EntityType* boat;
+	static EntityType* arrow;
+	//static EntityType* snowball;
+	static EntityType* item;
+	//static EntityType* painting;
+	static EntityType* mob;
+	//static EntityType* monster;
+	//static EntityType* creeper;
+	//static EntityType* skeleton;
+	//static EntityType* spider;
+	//static EntityType* giant;
+	//static EntityType* zombie;
+	//static EntityType* slime;
+	//static EntityType* monster;
+	//static EntityType* ghast;
+	//static EntityType* pigZombie;
+	static EntityType* pig;
+	static EntityType* sheep;
+	static EntityType* cow;
+	static EntityType* chicken;
+	//static EntityType* squid;
+	static EntityType* primedTnt;
+	static EntityType* fallingTile;
+	//static EntityType* minecart;
+	//static EntityType* boat;
 
 
 

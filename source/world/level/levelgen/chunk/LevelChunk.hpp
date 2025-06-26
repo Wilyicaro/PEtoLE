@@ -108,12 +108,12 @@ public:
 	uint8_t m_updateMap[256];
 	int m_minHeight;
 	ChunkPos m_chunkPos;
-	uint8_t m_bIsTerrainPopulated;
+	bool m_bIsTerrainPopulated;
 	bool m_bUnsaved;
 	bool m_bFakeChunk;
 	uint8_t field_237;
 	int m_lastSaveHadEntities;
-	int m_lastSaveTime;
+	int64_t m_lastSaveTime;
 	TileID* m_pBlockData;
 	std::vector<std::shared_ptr<Entity>> m_entities[128 / 16];
 	std::unordered_map<ChunkTilePos, std::shared_ptr<TileEntity>> m_tileEntities;

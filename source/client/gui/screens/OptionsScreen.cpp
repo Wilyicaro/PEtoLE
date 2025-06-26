@@ -23,24 +23,26 @@ enum eOptionsButton
 	OB_DYNAMIC_HAND,
 	OB_FLY_HAX,
 	OB_SPLIT_CONTR,
+	OB_AUTOJUMP,
 	OB_BLOCK_OUT,
 	OB_MIPMAPS
 };
 
 OptionsScreen::OptionsScreen()
-	:m_BackButton(1, 0, 0, 200, 20, "Done"),
-	m_AOButton(2, 0, 0, 150, 20, ""),
-	m_srvVisButton(3, 0, 0, 150, 20, ""),
-	m_fancyGfxButton(4, 0, 0, 150, 20, ""),
-	m_invertYButton(5, 0, 0, 150, 20, ""),
-	m_anaglyphsButton(6, 0, 0, 150, 20, ""),
-	m_viewBobButton(7, 0, 0, 150, 20, ""),
-	m_viewDistButton(8, 0, 0, 150, 20, ""),
-	m_dynamicHandButton(9, 0, 0, 150, 20, ""),
-	m_flightHaxButton(10, 0, 0, 150, 20, ""),
-	m_splitControlsButton(11, 0, 0, 150, 20, ""),
-	m_blockOutlinesButton(12, 0, 0, 150, 20, ""),
-	m_mipmapsButton(13, 0, 0, 150, 20, "")
+	:m_BackButton(OB_BACK, 0, 0, 200, 20, "Done"),
+	m_AOButton(OB_AO, 0, 0, 150, 20, ""),
+	m_srvVisButton(OB_SRV_VIS, 0, 0, 150, 20, ""),
+	m_fancyGfxButton(OB_FANCY_GFX, 0, 0, 150, 20, ""),
+	m_invertYButton(OB_INVERT_Y, 0, 0, 150, 20, ""),
+	m_anaglyphsButton(OB_ANAGLYPHS, 0, 0, 150, 20, ""),
+	m_viewBobButton(OB_VIEW_BOB, 0, 0, 150, 20, ""),
+	m_viewDistButton(OB_VIEW_DIST, 0, 0, 150, 20, ""),
+	m_dynamicHandButton(OB_DYNAMIC_HAND, 0, 0, 150, 20, ""),
+	m_flightHaxButton(OB_FLY_HAX, 0, 0, 150, 20, ""),
+	m_splitControlsButton(OB_SPLIT_CONTR, 0, 0, 150, 20, ""),
+	m_autoJumpButton(OB_AUTOJUMP, 0, 0, 150, 20, ""),
+	m_blockOutlinesButton(OB_BLOCK_OUT, 0, 0, 150, 20, ""),
+	m_mipmapsButton(OB_MIPMAPS, 0, 0, 150, 20, "")
 {
 }
 
@@ -82,6 +84,7 @@ void OptionsScreen::UpdateTexts()
 	m_splitControlsButton.m_text = "Split Controls: " + BoolOptionStr(o->m_bSplitControls);
 	m_blockOutlinesButton.m_text = "Block Outlines: " + BoolOptionStr(o->m_bBlockOutlines);
 	m_mipmapsButton.m_text = "Mipmaps: " + BoolOptionStr(o->m_bMipmaps);
+	m_autoJumpButton.m_text = "Auto-Jump: " + BoolOptionStr(o->m_bAutoJump);
 	m_srvVisButton.m_text = "Server " + std::string(o->m_bServerVisibleDefault ? "visible" : "invisible") + " by default";
 }
 #endif
@@ -104,6 +107,7 @@ void OptionsScreen::init()
 	m_buttons.push_back(&m_viewDistButton);
 	m_buttons.push_back(&m_flightHaxButton);
 	m_buttons.push_back(&m_splitControlsButton);
+	m_buttons.push_back(&m_autoJumpButton);
 	m_buttons.push_back(&m_blockOutlinesButton);
 	if (m_pMinecraft->m_pTextures->hasTerrainMipmap())
 		m_buttons.push_back(&m_mipmapsButton);
@@ -117,6 +121,7 @@ void OptionsScreen::init()
 	m_buttonTabList.push_back(&m_viewBobButton);
 	m_buttonTabList.push_back(&m_flightHaxButton);
 	m_buttonTabList.push_back(&m_splitControlsButton);
+	m_buttonTabList.push_back(&m_autoJumpButton);
 	m_buttonTabList.push_back(&m_blockOutlinesButton);
 	if (m_pMinecraft->m_pTextures->hasTerrainMipmap())
 		m_buttonTabList.push_back(&m_mipmapsButton);
@@ -203,6 +208,9 @@ void OptionsScreen::buttonClicked(Button* pButton)
 		break;
 	case OB_SPLIT_CONTR:
 		o->m_bSplitControls ^= 1;
+		break;
+	case OB_AUTOJUMP:
+		o->m_bAutoJump ^= 1;
 		break;
 	case OB_BLOCK_OUT:
 		o->m_bBlockOutlines ^= 1;

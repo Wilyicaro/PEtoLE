@@ -190,7 +190,7 @@ public:
 class SetTimePacket : public Packet
 {
 public:
-	SetTimePacket(int32_t time = 0)
+	SetTimePacket(int64_t time = 0)
 	{
 		m_time = time;
 	}
@@ -199,7 +199,7 @@ public:
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
-	int32_t m_time;
+	int64_t m_time;
 };
 
 class StartGamePacket : public Packet

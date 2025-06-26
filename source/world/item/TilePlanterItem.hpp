@@ -12,10 +12,11 @@
 class TilePlanterItem : public Item
 {
 public:
-	TilePlanterItem(int id, int place);
+	TilePlanterItem(int id, int place, bool placeSound = false);
 
 	virtual bool useOn(ItemInstance*, Player*, Level*, const TilePos& pos, Facing::Name face);
 
 public:
 	int m_tile;
+	bool m_placeSound;
 };

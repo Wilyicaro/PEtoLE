@@ -428,7 +428,7 @@ void Level::setBrightness(const LightLayer& ll, const TilePos& pos, int brightne
 	}
 }
 
-void Level::setTime(int32_t time)
+void Level::setTime(int64_t time)
 {
 	_setTime(time);
 
@@ -788,23 +788,23 @@ std::vector<LightUpdate>* Level::getLightsToUpdate()
 	return &m_lightUpdates;
 }
 
-Player* Level::getNearestPlayer(const Entity* entity, float f) const
+std::shared_ptr<Player> Level::getNearestPlayer(const Entity* entity, float f) const
 {
 	return getNearestPlayer(entity->m_pos, f);
 }
 
-Player* Level::getNearestPlayer(const Vec3& pos, float maxDist) const
+std::shared_ptr<Player> Level::getNearestPlayer(const Vec3& pos, float maxDist) const
 {
 	float dist = -1.0f;
-	Player* pPlayer = nullptr;
+	std::shared_ptr<Player> pPlayer = nullptr;
 
-	for (std::vector<std::shared_ptr<Player>>::const_iterator it = m_players.begin(); it != m_players.end(); it++)
+	for (auto& it = m_players.begin(); it != m_players.end(); it++)
 	{
 		std::shared_ptr<Player> player = *it;
 		float ldist = player->distanceToSqr(pos);
 		if ((maxDist < 0.0f || ldist < maxDist * maxDist) && (dist == -1.0f || dist > ldist))
 		{
-			pPlayer = player.get();
+			pPlayer = player;
 			dist = ldist;
 		}
 	}
@@ -1370,7 +1370,7 @@ void Level::tick()
 #ifdef ENH_RUN_DAY_NIGHT_CYCLE
 	bool skyColorChanged = updateSkyBrightness();
 
-	int time = getTime() + 1;
+	int64_t time = getTime() + 1;
 	_setTime(time); // Bypasses the normally-required update to LevelListeners
 
 	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)

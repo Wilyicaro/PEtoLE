@@ -52,3 +52,31 @@ void EntityType::teardownTypes()
 	entityTypeNameMap.clear();
 	entityTypes.clear();
 }
+
+EntityType* EntityType::unknown;
+EntityType* EntityType::player;
+
+EntityType* EntityType::arrow;
+//EntityType* EntityType::snowball;
+EntityType* EntityType::item;
+//EntityType* EntityType::painting;
+EntityType* EntityType::mob;
+//EntityType* EntityType::monster;
+//EntityType* EntityType::creeper;
+//EntityType* EntityType::skeleton;
+//EntityType* EntityType::spider;
+//EntityType* EntityType::giant;
+//EntityType* EntityType::zombie;
+//EntityType* EntityType::slime;
+//EntityType* EntityType::monster;
+//EntityType* EntityType::ghast;
+//EntityType* EntityType::pigZombie;
+EntityType* EntityType::pig;
+EntityType* EntityType::sheep;
+EntityType* EntityType::cow;
+EntityType* EntityType::chicken;
+//EntityType* EntityType::squid;
+EntityType* EntityType::primedTnt;
+EntityType* EntityType::fallingTile;
+//EntityType* EntityType::minecart;
+//EntityType* EntityType::boat;

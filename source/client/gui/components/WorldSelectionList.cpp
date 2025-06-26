@@ -183,7 +183,7 @@ void WorldSelectionList::commit()
 
 		std::vector<std::string> vs;
 		vs.push_back(item.m_levelName);
-		vs.push_back(m_pMinecraft->platform()->getDateString(item.m_lastPlayed));
+		vs.push_back(getFormattedDate(item.m_lastPlayed));
 		vs.push_back(item.m_fileName);
 		m_vvs.push_back(vs);
 	}

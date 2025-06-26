@@ -63,7 +63,7 @@ bool FarmTile::isSolidRender() const
 
 bool FarmTile::isNearWater(Level* level, const TilePos& pos)
 {
-	TilePos waterPos = TilePos();
+	TilePos waterPos;
 
 	for (waterPos.x = pos.x - 4; waterPos.x <= pos.x + 4; waterPos.x++)
 	{
@@ -80,6 +80,11 @@ bool FarmTile::isNearWater(Level* level, const TilePos& pos)
 	return false;
 }
 
+bool FarmTile::isUnderCrops(Level* level, const TilePos& pos)
+{
+	return level->getTile(pos.above()) == Tile::crops->m_ID;
+}
+
 void FarmTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 {
 	if (level->getMaterial(pos.above())->isSolid())
@@ -88,16 +93,13 @@ void FarmTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 
 void FarmTile::stepOn(Level* level, const TilePos& pos, Entity* pEnt)
 {
-	if (level->m_random.nextInt() % 4 == 0)
+	if (level->m_random.nextInt(4) == 0)
 		level->setTile(pos, Tile::dirt->m_ID);
 }
 
 void FarmTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	int val = random->nextInt();
-
-	//@HUH: weird way of saying val % 5 == 0
-	if (val != 5 * (val / 5))
+	if (random->nextInt(5) != 0)
 		return;
 
 	if (isNearWater(level, pos))
@@ -108,9 +110,9 @@ void FarmTile::tick(Level* level, const TilePos& pos, Random* random)
 	{
 		int data = level->getData(pos);
 
-		if (data <= 0)
-			level->setTile(pos, Tile::dirt->m_ID);
-		else
+		if (data < 0)
 			level->setData(pos, data - 1);
+		else if (!isUnderCrops(level, pos))
+			level->setTile(pos, Tile::dirt->m_ID);
 	}
 }

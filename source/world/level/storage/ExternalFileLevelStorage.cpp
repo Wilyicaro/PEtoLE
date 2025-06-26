@@ -129,7 +129,6 @@ LevelChunk* ExternalFileLevelStorage::load(Level* level, const ChunkPos& pos)
 	chunk->deserialize(levelTag);
 	chunk->recalcHeightmap();
 	chunk->m_bUnsaved = false;
-	chunk->m_bIsTerrainPopulated = true;
 	chunk->field_237 = true;
 
 	return chunk;

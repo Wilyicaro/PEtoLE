@@ -25,6 +25,7 @@
 #include "FlintAndSteelItem.hpp"
 #include "CoalItem.hpp"
 #include "BowItem.hpp"
+#include "SeedItem.hpp"
 
 #define ITEM(x) ((x) - 256)
 
@@ -350,8 +351,7 @@ void Item::initItems()
 		->setIcon(8, 2)
 		->setDescriptionId("sulphur");
 
-	//@TODO SeedItem
-	Item::seeds = NEW_X_ITEM(TilePlanterItem, ITEM_SEEDS, TILE_WHEAT)
+	Item::seeds = NEW_X_ITEM(SeedItem, ITEM_SEEDS, TILE_WHEAT)
 		->setIcon(9, 0)
 		->setDescriptionId("seeds");
 
@@ -409,12 +409,12 @@ void Item::initItems()
 		->setIcon(12, 2)
 		->setDescriptionId("doorIron");
 
-	//@TODO RedStoneItem
-	Item::redStone = NEW_X_ITEM(TilePlanterItem, ITEM_REDSTONE, TILE_WIRE)
+	//@TODO RedStoneItem (maybe not)
+	Item::redStone = NEW_X_ITEM(TilePlanterItem, ITEM_REDSTONE, TILE_WIRE, false)
 		->setIcon(8, 3)
 		->setDescriptionId("redstone");
 
-	//@TODO ProjectileItem
+	//@TODO SnowballItem
 	Item::snowBall = NEW_ITEM(ITEM_SNOWBALL)
 		->setIcon(14, 0)
 		->setDescriptionId("snowball");

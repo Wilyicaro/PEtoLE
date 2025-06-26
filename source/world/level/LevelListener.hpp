@@ -27,7 +27,7 @@ public:
 	virtual void entityAdded(Entity*);
 	virtual void entityRemoved(Entity*);
 	virtual void skyColorChanged();
-	virtual void timeChanged(uint32_t time);
+	virtual void timeChanged(int64_t time);
 	virtual void playStreamingMusic(const std::string&, int, int, int);
 };
 

@@ -37,11 +37,13 @@ public:
 	void renderDown(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void renderUp(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void tesselateCrossTexture(Tile* tile, int data, const Vec3& pos);
+	void tesselateRowTexture(Tile* tile, int data, const Vec3& pos);
 	void tesselateTorch(Tile*, const Vec3& pos, float a, float b);
 	
 	bool tesselateBlockInWorld(Tile*, const TilePos& pos, float r, float g, float b);
 	bool tesselateBlockInWorld(Tile*, const TilePos& pos);
 	bool tesselateCrossInWorld(Tile*, const TilePos& pos);
+	bool tesselateRowInWorld(Tile*, const TilePos& pos);
 	bool tesselateWaterInWorld(Tile*, const TilePos& pos);
 	bool tesselateStairsInWorld(Tile*, const TilePos& pos);
 	bool tesselateFenceInWorld(Tile*, const TilePos& pos);

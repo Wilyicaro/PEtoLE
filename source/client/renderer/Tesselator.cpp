@@ -396,3 +396,50 @@ void Tesselator::voidBeginAndEndCalls(bool b)
 {
 	field_28 = b;
 }
+
+void drawArrayVT(GLuint buffer, int count)
+{
+	xglBindBuffer(GL_ARRAY_BUFFER, buffer);
+	xglTexCoordPointer(2, GL_FLOAT, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_u));
+	xglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	xglVertexPointer(3, GL_FLOAT, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_x));
+	xglEnableClientState(GL_VERTEX_ARRAY);
+	xglDrawArrays(GL_TRIANGLES, 0, count);
+	xglDisableClientState(GL_VERTEX_ARRAY);
+	xglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+void drawArrayVTC(GLuint buffer, int count)
+{
+	xglBindBuffer(GL_ARRAY_BUFFER, buffer);
+	xglVertexPointer(3, GL_FLOAT, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_x));
+	xglTexCoordPointer(2, GL_FLOAT, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_u));
+	xglColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_color));
+	xglEnableClientState(GL_VERTEX_ARRAY);
+	xglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	xglEnableClientState(GL_COLOR_ARRAY);
+	xglDrawArrays(GL_TRIANGLES, 0, count);
+	xglDisableClientState(GL_VERTEX_ARRAY);
+	xglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	xglDisableClientState(GL_COLOR_ARRAY);
+}
+
+void drawArrayVTN(GLuint buffer, int count)
+{
+#ifdef USE_GL_NORMAL_LIGHTING
+	xglBindBuffer(GL_ARRAY_BUFFER, buffer);
+	xglTexCoordPointer(2, GL_FLOAT, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_u));
+	xglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	xglVertexPointer(3, GL_FLOAT, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_x));
+	xglEnableClientState(GL_VERTEX_ARRAY);
+	xglNormalPointer(GL_BYTE, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_normal));
+	xglEnableClientState(GL_NORMAL_ARRAY);
+	xglDrawArrays(GL_TRIANGLES, 0, count);
+	xglDisableClientState(GL_NORMAL_ARRAY);
+	xglDisableClientState(GL_VERTEX_ARRAY);
+	xglDisableClientState(GL_TEXTURE_COORD_ARRAY);
+#else
+	drawArrayVT(buffer, count);
+#endif
+}
+

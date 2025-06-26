@@ -576,11 +576,14 @@ typedef uint8_t TileID;
 		( std::ostringstream() << std::dec << x ) ).str()
 
 // functions from Mojang
+int64_t getMillis();
 time_t getEpochTimeS();
 time_t getRawTimeS();
 double getTimeS();
 int getTimeMs();
 int64_t getTimeNano();
+
+std::string getFormattedDate(int64_t time);
 
 void sleepMs(int ms);
 

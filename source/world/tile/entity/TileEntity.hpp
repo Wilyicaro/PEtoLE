@@ -46,7 +46,7 @@ public:
 
     Tile* getTile() const;
 
-    Level* m_pLevel;
+    Level* m_pLevel = nullptr;
     TilePos m_pos;
 
 protected:

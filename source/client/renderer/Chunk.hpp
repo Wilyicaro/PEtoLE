@@ -21,7 +21,6 @@ class Chunk
 {
 public:
 	Chunk(Level*, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int, int, GLuint*);
-	~Chunk();
 
 	float distanceToSqr(const Entity*) const;
 	float squishedDistanceToSqr(const Entity*) const;

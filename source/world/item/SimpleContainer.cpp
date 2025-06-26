@@ -1,4 +1,5 @@
 #include "SimpleContainer.hpp"
+#include "client/locale/Language.hpp"
 
 SimpleContainer::SimpleContainer(int size, const std::string& name) : m_name(name), m_items(size)
 {
@@ -47,7 +48,7 @@ void SimpleContainer::setItem(int index, std::shared_ptr<ItemInstance> item)
 
 const std::string& SimpleContainer::getName()
 {
-    return m_name;
+    return Language::getInstance()->get(m_name);
 }
 
 int SimpleContainer::getMaxStackSize()

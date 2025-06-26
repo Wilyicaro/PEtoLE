@@ -8,8 +8,9 @@ CraftingScreen::CraftingScreen(Inventory* inventory, const TilePos& tilePos, Lev
 
 void CraftingScreen::renderLabels()
 {
-	m_pFont->draw("Crafting", 28, 6, 0x404040);
-    m_pFont->draw("Inventory", 8, m_imageHeight - 96 + 2, 0x404040);
+    CraftingMenu* craftingMenu = (CraftingMenu*)m_menu;
+	m_pFont->draw(craftingMenu->craftSlots->getName(), 28, 6, 0x404040);
+    m_pFont->draw(m_pMinecraft->m_pLocalPlayer->m_pInventory->getName(), 8, m_imageHeight - 96 + 2, 0x404040);
 }
 
 void CraftingScreen::renderBg(int mouseX, int mouseY, float partialTick)

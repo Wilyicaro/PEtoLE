@@ -13,7 +13,7 @@ protected:
     int m_topPos;
 
 public:
-    ContainerMenu* menu;
+    ContainerMenu* m_menu;
 
     ContainerScreen(ContainerMenu* menu);
 

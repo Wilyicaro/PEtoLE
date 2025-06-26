@@ -68,8 +68,8 @@ public:
 	void setBrightness(const LightLayer&, const TilePos& pos, int brightness);
 	int getSeaLevel() const { return 63; }
 	int64_t getSeed() const { return m_levelData.getSeed(); }
-	int32_t getTime() const { return m_levelData.getTime(); }
-	void setTime(int32_t time);
+	int64_t getTime() const { return m_levelData.getTime(); }
+	void setTime(int64_t time);
 	GameType getDefaultGameType() { return m_levelData.getGameType(); }
 	int getHeightmap(const TilePos& pos);
 	bool isDay() const;
@@ -169,8 +169,8 @@ public:
 	const LevelData* getLevelData() const { return &m_levelData; }
 	AABBVector* getCubes(const Entity* pEnt, const AABB& aabb);
 	std::vector<LightUpdate>* getLightsToUpdate();
-	Player* getNearestPlayer(const Entity*, float) const;
-	Player* getNearestPlayer(const Vec3& pos, float) const;
+	std::shared_ptr<Player> getNearestPlayer(const Entity*, float) const;
+	std::shared_ptr<Player> getNearestPlayer(const Vec3& pos, float) const;
 
 	// unused redstone stuff
 	int getSignal(const TilePos& pos, Facing::Name face) const;

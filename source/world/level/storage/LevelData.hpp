@@ -28,7 +28,7 @@ private:
 	std::string m_levelName;
 
 private:
-	void _init(int64_t seed = 0, int x = 0);
+	void _init(int64_t seed = 0, int x = 19132);
 	void _init(int64_t seed, int storageVersion, const std::string& name);
 
 public:

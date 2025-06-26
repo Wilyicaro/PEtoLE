@@ -285,6 +285,64 @@ void TileRenderer::tesselateCrossTexture(Tile* tile, int data, const Vec3& pos)
 	t.vertexUV(x1, newY + 1, z2, texU_r, texV_u);
 }
 
+void TileRenderer::tesselateRowTexture(Tile* tile, int data, const Vec3& pos)
+{
+	static constexpr float C_RATIO = 1.0f / 256.0f;
+
+	int texture = m_textureOverride;
+	if (texture < 0)
+		texture = tile->getTexture(Facing::DOWN, data);
+
+	float texX = float(16 * (texture % 16));
+	float texY = float(16 * (texture / 16));
+
+	// calculate U and V coordinates
+	float u0 = texX * C_RATIO, u1 = (texX + 15.99f) * C_RATIO;
+	float v0 = texY * C_RATIO, v1 = (texY + 15.99f) * C_RATIO;
+
+
+	float x0 = pos.x + 0.25f, x1 = pos.x + 0.75f;
+	float z0 = pos.z, z1 = pos.z + 1.0f;
+
+	Tesselator& t = Tesselator::instance;
+	t.vertexUV(x0, pos.y + 1.0, z0, u0, v0);
+	t.vertexUV(x0, pos.y + 0.0, z0, u0, v1);
+	t.vertexUV(x0, pos.y + 0.0, z1, u1, v1);
+	t.vertexUV(x0, pos.y + 1.0, z1, u1, v0);
+	t.vertexUV(x0, pos.y + 1.0, z1, u0, v0);
+	t.vertexUV(x0, pos.y + 0.0, z1, u0, v1);
+	t.vertexUV(x0, pos.y + 0.0, z0, u1, v1);
+	t.vertexUV(x0, pos.y + 1.0, z0, u1, v0);
+	t.vertexUV(x1, pos.y + 1.0, z1, u0, v0);
+	t.vertexUV(x1, pos.y + 0.0, z1, u0, v1);
+	t.vertexUV(x1, pos.y + 0.0, z0, u1, v1);
+	t.vertexUV(x1, pos.y + 1.0, z0, u1, v0);
+	t.vertexUV(x1, pos.y + 1.0, z0, u0, v0);
+	t.vertexUV(x1, pos.y + 0.0, z0, u0, v1);
+	t.vertexUV(x1, pos.y + 0.0, z1, u1, v1);
+	t.vertexUV(x1, pos.y + 1.0, z1, u1, v0);
+	x0 = pos.x + 0.5 - 0.5;
+	x1 = pos.x + 0.5 + 0.5;
+	z0 = pos.z + 0.5 - 0.25;
+	z1 = pos.z + 0.5 + 0.25;
+	t.vertexUV(x0, pos.y + 1.0, z0, u0, v0);
+	t.vertexUV(x0, pos.y + 0.0, z0, u0, v1);
+	t.vertexUV(x1, pos.y + 0.0, z0, u1, v1);
+	t.vertexUV(x1, pos.y + 1.0, z0, u1, v0);
+	t.vertexUV(x1, pos.y + 1.0, z0, u0, v0);
+	t.vertexUV(x1, pos.y + 0.0, z0, u0, v1);
+	t.vertexUV(x0, pos.y + 0.0, z0, u1, v1);
+	t.vertexUV(x0, pos.y + 1.0, z0, u1, v0);
+	t.vertexUV(x1, pos.y + 1.0, z1, u0, v0);
+	t.vertexUV(x1, pos.y + 0.0, z1, u0, v1);
+	t.vertexUV(x0, pos.y + 0.0, z1, u1, v1);
+	t.vertexUV(x0, pos.y + 1.0, z1, u1, v0);
+	t.vertexUV(x0, pos.y + 1.0, z1, u0, v0);
+	t.vertexUV(x0, pos.y + 0.0, z1, u0, v1);
+	t.vertexUV(x1, pos.y + 0.0, z1, u1, v1);
+	t.vertexUV(x1, pos.y + 1.0, z1, u1, v0);
+}
+
 inline void computeColor(int color, float& red, float& grn, float& blu, float bright) {
 	red = float(GET_RED(color)) / 255.0f * bright;
 	grn = float(GET_GREEN(color)) / 255.0f * bright;
@@ -371,6 +429,20 @@ bool TileRenderer::tesselateCrossInWorld(Tile* tile, const TilePos& pos)
 	t.color(r, g, b);
 
 	tesselateCrossTexture(tile, m_pLevelSource->getData(pos), pos);
+
+	return true;
+}
+
+bool TileRenderer::tesselateRowInWorld(Tile* tile, const TilePos& pos)
+{
+	float r, g, b;
+	computeColor(getTileColor(tile, pos), r, g, b, tile->getBrightness(m_pLevelSource, pos));
+
+	Tesselator& t = Tesselator::instance;
+
+	t.color(r, g, b);
+
+	tesselateRowTexture(tile, m_pLevelSource->getData(pos), pos);
 
 	return true;
 }
@@ -1343,6 +1415,8 @@ bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos)
 		case SHAPE_CROSS:
 		case SHAPE_RANDOM_CROSS:
 			return tesselateCrossInWorld(tile, pos);
+		case SHAPE_CROPS:
+			return tesselateRowInWorld(tile, pos);
 		case SHAPE_TORCH:
 			return tesselateTorchInWorld(tile, pos);
 		case SHAPE_FIRE:
@@ -1434,6 +1508,14 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 		t.begin();
 		t.normal(0.0f, -1.0f, 0.0f);
 		tesselateCrossTexture(tile, data, Vec3(-0.5f, -0.5f, -0.5f));
+		t.draw();
+		break;
+	}
+	case SHAPE_CROPS:
+	{
+		t.begin();
+		t.normal(0.0f, -1.0f, 0.0f);
+		tesselateRowTexture(tile, data, Vec3(-0.5f, -0.5f, -0.5f));
 		t.draw();
 		break;
 	}

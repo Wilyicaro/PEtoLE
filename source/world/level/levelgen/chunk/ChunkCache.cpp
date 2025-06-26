@@ -159,7 +159,7 @@ void ChunkCache::postProcess(ChunkSource* pChkSrc, const ChunkPos& pos)
 	LevelChunk* pChunk = getChunk(pos);
 	if (!pChunk->m_bIsTerrainPopulated)
 	{
-		pChunk->m_bIsTerrainPopulated = 1;
+		pChunk->m_bIsTerrainPopulated = true;
 		if (m_pChunkSource)
 		{
 			m_pChunkSource->postProcess(m_pChunkSource, pos);

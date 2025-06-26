@@ -4,6 +4,7 @@
 #include <string>
 #include "Container.hpp"
 #include "ItemInstance.hpp"
+#include "client/locale/Language.hpp"
 
 class CompoundContainer : public Container {
 private:
@@ -20,7 +21,7 @@ public:
     }
 
     const std::string& getName() override {
-        return m_name;
+        return Language::getInstance()->get(m_name);
     }
 
     std::shared_ptr<ItemInstance> getItem(int index) override {

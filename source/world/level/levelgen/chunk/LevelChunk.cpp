@@ -45,8 +45,8 @@ void LevelChunk::_init()
 	m_lightSkyCnt = 0;
 	m_lightBlk = nullptr;
 	m_lightBlkCnt = 0;
-	m_chunkPos = TilePos(0, 0, 0);
-	m_bIsTerrainPopulated = 0;
+	m_chunkPos = ChunkPos(0, 0);
+	m_bIsTerrainPopulated = false;
 	m_bUnsaved = false;
 	m_bFakeChunk = 0;
 	field_237 = 0;
@@ -55,7 +55,8 @@ void LevelChunk::_init()
 	m_pBlockData = nullptr;
 }
 
-std::shared_ptr<CompoundTag> LevelChunk::serialize() {
+std::shared_ptr<CompoundTag> LevelChunk::serialize() 
+{
 	auto levelTag = std::make_shared<CompoundTag>();
 
 	levelTag->putByteArray("Blocks", m_pBlockData, 32768);
@@ -67,7 +68,7 @@ std::shared_ptr<CompoundTag> LevelChunk::serialize() {
 	levelTag->putLong("LastUpdate", m_pLevel->getTime());
 	levelTag->putInt("xPos", m_chunkPos.x);
 	levelTag->putInt("zPos", m_chunkPos.z);
-	levelTag->putByte("TerrainPopulated", 1);
+	levelTag->putBoolean("TerrainPopulated", m_bIsTerrainPopulated);
 
 	auto entities = std::make_shared<ListTag>(TagType::TAG_Compound);
 	for (auto& p : m_entities)
@@ -92,7 +93,8 @@ std::shared_ptr<CompoundTag> LevelChunk::serialize() {
 	return levelTag;
 }
 
-void LevelChunk::deserialize(std::shared_ptr<CompoundTag> tag) {
+void LevelChunk::deserialize(std::shared_ptr<CompoundTag> tag) 
+{
 	memcpy(m_pBlockData, tag->getByteArray("Blocks").data(), 32768);
 	memcpy(m_tileData, tag->getByteArray("Data").data(), 16384);
 
@@ -110,14 +112,7 @@ void LevelChunk::deserialize(std::shared_ptr<CompoundTag> tag) {
 
 	if (updateLight) lightLava();
 
-	auto entities = tag->getList("Entities");
 
-	for (auto& entityTag : entities->getValue())
-	{
-		auto entity = EntityIO::loadStatic(std::dynamic_pointer_cast<CompoundTag>(entityTag), m_pLevel);
-		m_lastSaveHadEntities = true;
-		if (entity) addEntity(entity);
-	}
 
 	auto tileEntities = tag->getList("TileEntities");
 
@@ -126,6 +121,13 @@ void LevelChunk::deserialize(std::shared_ptr<CompoundTag> tag) {
 		auto tileEntity = TileEntity::loadStatic(std::dynamic_pointer_cast<CompoundTag>(entityTag));
 		if (tileEntity) addTileEntity(tileEntity);
 	}
+
+	int savedX = tag->getInt("xPos");
+	int savedZ = tag->getInt("zPos");
+
+	if (savedX != m_chunkPos.x || savedZ != m_chunkPos.z)
+		LOG_I("Chunk file at %d,%d is in the wrong location; relocating. (Expected %d, %d, got %d, %d)", m_chunkPos.x, m_chunkPos.z, m_chunkPos.x, m_chunkPos.z, savedX, savedZ);
+	m_bIsTerrainPopulated = tag->getBoolean("TerrainPopulated");
 }
 
 LevelChunk::LevelChunk(Level* pLevel, const ChunkPos& pos)
@@ -133,7 +135,7 @@ LevelChunk::LevelChunk(Level* pLevel, const ChunkPos& pos)
 	_init();
 
 	m_pLevel = pLevel;
-	m_chunkPos = TilePos(pos, 0);
+	m_chunkPos = pos;
 
 	init();
 }
@@ -172,7 +174,7 @@ LevelChunk::LevelChunk(Level* pLevel, TileID* pData, const ChunkPos& pos)
 
 void LevelChunk::init()
 {
-	m_bIsTerrainPopulated = 0;
+	m_bIsTerrainPopulated = false;
 	m_bUnsaved = false;
 	field_237 = 0;
 	m_lastSaveHadEntities = 0;
@@ -1019,19 +1021,19 @@ int LevelChunk::setBlocksAndData(uint8_t* pData, int a3, int a4, int a5, int a6,
 
 std::shared_ptr<TileEntity> LevelChunk::getTileEntity(const ChunkTilePos& pos)
 {
-	std::shared_ptr<TileEntity> var5 = m_tileEntities[pos];
-	if (!var5) {
+	auto var5 = m_tileEntities.find(pos);
+	if (var5 == m_tileEntities.end()) {
 		int var6 = getTile(pos);
-		if (!Tile::isEntityTile[var6]) {
+		if (!var6 || !Tile::isEntityTile[var6]) {
 			return nullptr;
 		}
 
 		Tile* var7 = Tile::tiles[var6];
 		var7->onPlace(m_pLevel, pos.toTilePos(m_chunkPos));
-		var5 = m_tileEntities[pos];
+		return m_tileEntities[pos];
 	}
 
-	return var5;
+	return var5->second;
 }
 
 // This function appears to be unused, and is completely removed as of 0.9.2

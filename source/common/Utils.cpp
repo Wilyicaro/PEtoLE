@@ -37,6 +37,11 @@
 // cant get zlib to build on android, they include prebuilt one anyways. using that one
 #include "zlib.h"
 
+#include <chrono>
+#include <ctime>
+#include <iostream>
+#include <iomanip>
+
 int g_TimeSecondsOnInit = 0;
 
 #if (!defined(USE_SDL) || defined(_WIN32)) && !defined(ANDROID) && !MC_PLATFORM_MAC
@@ -270,6 +275,15 @@ int64_t getTimeNano()
 	return int64_t(getTimeS() * 1000.0);
 }
 
+std::string getFormattedDate(int64_t time)
+{
+	std::time_t seconds = time / 1000;
+	std::tm* tm_ptr = std::gmtime(&seconds);
+	std::ostringstream a;
+	a << std::put_time(tm_ptr, "%m/%d/%Y %I:%M %p");
+	return a.str();
+}
+
 time_t getRawTimeS()
 {
 	timeval tv;
@@ -281,6 +295,24 @@ time_t getRawTimeS()
 time_t getEpochTimeS()
 {
 	return time(0);
+}
+
+int64_t getMillis() {
+#ifdef _WIN32
+	// Windows version using GetSystemTimeAsFileTime
+	FILETIME ft;
+	GetSystemTimeAsFileTime(&ft);
+
+	uint64_t time = ((uint64_t)ft.dwLowDateTime) | ((uint64_t)ft.dwHighDateTime << 32);
+
+	// Convert from 100-nanosecond intervals since Jan 1, 1601 to milliseconds since Jan 1, 1970
+	return (int64_t)((time - 116444736000000000ULL) / 10000ULL);
+#else
+	// POSIX version
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (int64_t)tv.tv_sec * 1000 + (int64_t)(tv.tv_usec / 1000);
+#endif
 }
 
 #ifdef _WIN32
@@ -581,8 +613,8 @@ void writeIntBE(FILE* file, int value) {
 }
 
 int readIntBE(FILE* file) {
-	uint8_t bytes[4];
-	fread(bytes, 1, 4, file);
+	uint8_t bytes[4] = { 0, 0, 0, 0 };
+	if (fread(bytes, 1, 4, file) != 4) return 0;
 	return (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
 }
 

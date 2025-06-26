@@ -4,11 +4,11 @@
 #include <client/renderer/Lighting.hpp>
 
 ContainerScreen::ContainerScreen(ContainerMenu* menu)
-    : menu(menu) {}
+    : m_menu(menu) {}
 
 void ContainerScreen::init() {
     Screen::init();
-    m_pMinecraft->m_pLocalPlayer->m_containerMenu = menu;
+    m_pMinecraft->m_pLocalPlayer->m_containerMenu = m_menu;
     m_leftPos = (m_width - m_imageWidth) / 2;
     m_topPos = (m_height - m_imageHeight) / 2;
 
@@ -31,7 +31,7 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks) {
 
     Slot* hoveredSlot = nullptr;
 
-    for (auto& slot : menu->slots) {
+    for (auto& slot : m_menu->slots) {
         renderSlot(slot.get());
         if (isHovering(slot.get(), mouseX, mouseY)) {
             hoveredSlot = slot.get();
@@ -113,7 +113,7 @@ void ContainerScreen::slotClicked(int mouseX, int mouseY, int button) {
 
 void ContainerScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 {
-    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(menu->containerId, index, button, m_pMinecraft->m_pLocalPlayer.get());
+    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(m_menu->containerId, index, button, m_pMinecraft->m_pLocalPlayer.get());
 }
 
 
@@ -123,7 +123,7 @@ void ContainerScreen::keyPressed(int keyCode) {
 
 void ContainerScreen::removed() {
     if (m_pMinecraft->m_pLocalPlayer) {
-        m_pMinecraft->m_pGameMode->handleCloseInventory(menu->containerId, m_pMinecraft->m_pLocalPlayer.get());
+        m_pMinecraft->m_pGameMode->handleCloseInventory(m_menu->containerId, m_pMinecraft->m_pLocalPlayer.get());
     }
 }
 
@@ -134,7 +134,7 @@ bool ContainerScreen::isPauseScreen() {
 }
 
 Slot* ContainerScreen::findSlot(int mouseX, int mouseY) {
-    for (auto& slot : menu->slots) {
+    for (auto& slot : m_menu->slots) {
         if (isHovering(slot.get(), mouseX, mouseY)) return slot.get();
     }
     return nullptr;

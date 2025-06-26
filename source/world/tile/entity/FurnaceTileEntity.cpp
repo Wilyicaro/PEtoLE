@@ -2,7 +2,7 @@
 #include "world/item/crafting/FurnaceRecipes.hpp"
 #include <world/tile/FurnaceTile.hpp>
 
-FurnaceTileEntity::FurnaceTileEntity() : SimpleContainer(3, "Furnace")
+FurnaceTileEntity::FurnaceTileEntity() : SimpleContainer(3, "gui.furnace")
 {
 }
 

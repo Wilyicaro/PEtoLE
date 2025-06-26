@@ -2,10 +2,6 @@
 
 #include "thirdparty/GL/GL.hpp"
 
-void drawArrayVT(GLuint buffer, int count, int stride);
-void drawArrayVTC(GLuint buffer, int count, int stride);
-void drawArrayVTN(GLuint buffer, int count, int stride);
-
 int glhInvertMatrixf2(float* m, float* out);
 int glhProjectf(float objx, float objy, float objz, float* modelview, float* projection, int* viewport, float* windowCoordinate);
 int glhUnProjectf(float winx, float winy, float winz, float* modelview, float* projection, int* viewport, float* objectCoordinate);

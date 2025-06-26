@@ -1,6 +1,6 @@
 #include "ChestTileEntity.hpp"
 
-ChestTileEntity::ChestTileEntity() : SimpleContainer(27, "Chest")
+ChestTileEntity::ChestTileEntity() : SimpleContainer(27, "gui.chest")
 {
 }
 

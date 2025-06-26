@@ -173,6 +173,7 @@
     <ClCompile Include="..\..\..\..\source\world\item\FurnaceResultSlot.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\HoeItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\PickaxeItem.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\item\SeedItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\ShovelItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\SimpleContainer.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\SlabItem.cpp" />
@@ -358,6 +359,7 @@
     <ClInclude Include="..\..\..\..\source\world\item\FurnaceResultSlot.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\HoeItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\PickaxeItem.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\item\SeedItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\ShovelItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\SimpleContainer.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\SlabItem.hpp" />

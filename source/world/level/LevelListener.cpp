@@ -67,7 +67,7 @@ void LevelListener::skyColorChanged()
 
 }
 
-void LevelListener::timeChanged(uint32_t time)
+void LevelListener::timeChanged(int64_t time)
 {
 
 }

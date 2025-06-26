@@ -36,6 +36,7 @@ void LevelData::deserialize(std::shared_ptr<CompoundTag> tag)
 	m_lastPlayed = tag->getLong("LastPlayed");
 	m_sizeOnDisk = tag->getLong("SizeOnDisk");
 	m_levelName = tag->getString("LevelName");
+	m_storageVersion = tag->getInt("version");
 	m_LocalPlayerData = tag->getCompound("Player");
 }
 
@@ -47,9 +48,10 @@ std::shared_ptr<CompoundTag> LevelData::serialize()
 	tag->putInt("SpawnY", m_spawnPos.y);
 	tag->putInt("SpawnZ", m_spawnPos.z);
 	tag->putLong("Time", m_time);
-	tag->putLong("LastPlayed", getEpochTimeS());
+	tag->putLong("LastPlayed", getMillis());
 	tag->putLong("SizeOnDisk", m_sizeOnDisk);
 	tag->putString("LevelName", m_levelName);
+	tag->putInt("version", 19132);
 	if (m_LocalPlayerData) tag->put("Player", m_LocalPlayerData);
 	return tag;
 }

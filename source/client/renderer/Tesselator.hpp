@@ -130,3 +130,8 @@ private:
 	std::map<uint32_t, uint32_t> m_VboIdxToRenderChunkID;
 };
 
+void drawArrayVT(GLuint buffer, int count);
+
+void drawArrayVTC(GLuint buffer, int count);
+
+void drawArrayVTN(GLuint buffer, int count);

@@ -1,5 +1,6 @@
 #include "CraftingContainer.hpp"
 #include "ItemInstance.hpp"
+#include "client/locale/Language.hpp"
 
 CraftingContainer::CraftingContainer(ContainerMenu* menu, int width, int height)
     : items(width * height, nullptr), width(width), menu(menu) {}
@@ -22,7 +23,7 @@ std::shared_ptr<ItemInstance> CraftingContainer::getItem(int x, int y) {
 }
 
 const std::string& CraftingContainer::getName() {
-    return "Crafting";
+    return Language::getInstance()->get("gui.inventory.crafting");
 }
 
 std::shared_ptr<ItemInstance> CraftingContainer::removeItem(int index, int count) {

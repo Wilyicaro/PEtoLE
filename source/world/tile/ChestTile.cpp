@@ -170,9 +170,9 @@ bool ChestTile::use(Level* level, const TilePos& pos, Player* player)
             if (level->getTile(pos.relative((Facing::Name)rel)) == m_ID)
             {
                 if (rel % 2 == 0)
-                    container = new CompoundContainer("Large chest", std::dynamic_pointer_cast<Container>(level->getTileEntity(relPos)).get(), container);
+                    container = new CompoundContainer("gui.bigChest", std::dynamic_pointer_cast<Container>(level->getTileEntity(relPos)).get(), container);
                 else 
-                    container = new CompoundContainer("Large chest", container, std::dynamic_pointer_cast<Container>(level->getTileEntity(relPos)).get());
+                    container = new CompoundContainer("gui.bigChest", container, std::dynamic_pointer_cast<Container>(level->getTileEntity(relPos)).get());
                 break;
             }
         }

@@ -14,7 +14,7 @@ std::shared_ptr<ItemInstance> ResultContainer::getItem(int index) {
 }
 
 const std::string& ResultContainer::getName() {
-    return "Result";
+    return Util::EMPTY_STRING;
 }
 
 std::shared_ptr<ItemInstance> ResultContainer::removeItem(int index, int) {

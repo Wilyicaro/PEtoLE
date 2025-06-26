@@ -16,14 +16,6 @@
 
 int Chunk::updates;
 
-Chunk::~Chunk() {
-	for (int i = 0; i < 2; ++i) {
-		if (!empty[i]) {
-			xglDeleteBuffers(1, &m_renderChunks[i].field_0);
-		}
-	}
-}
-
 float Chunk::distanceToSqr(const Entity* pEnt) const
 {
 	float dX = pEnt->m_pos.x - float(m_pos2.x);

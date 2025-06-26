@@ -86,25 +86,20 @@ void ModelPart::clear()
 
 void ModelPart::compile(float scale)
 {
+	if (m_buffer != 0) {
+		xglDeleteBuffers(1, &m_buffer);
+		m_buffer = 0;
+	}
+
 	Tesselator& t = Tesselator::instance;
 	xglGenBuffers(1, &m_buffer);
 	t.begin();
 	t.color(255, 255, 255, 255);
 
-	// @HUH: Recompiling every cube six times??
-#ifdef ORIGINAL_CODE
-	for (int i = 0; i < 6; i++)
-	{
-#endif
-
 	for (size_t i = 0; i < m_pCubes.size(); i++)
 	{
 		m_pCubes[i]->compile(t, scale);
 	}
-
-#ifdef ORIGINAL_CODE
-	}
-#endif
 
 	t.end(m_buffer);
 	m_bCompiled = true;
@@ -114,7 +109,7 @@ void ModelPart::draw()
 {
 	// We are not using drawArrayVTC here since that would use the color that's compiled initially into the ModelPart
 	// and would therefore not allow for on-the-fly coloring.
-	drawArrayVTN(this->m_buffer, 36 * (int)m_pCubes.size(), sizeof(Tesselator::Vertex));
+	drawArrayVTN(this->m_buffer, 36 * (int)m_pCubes.size());
 }
 
 void ModelPart::drawSlow(float scale)

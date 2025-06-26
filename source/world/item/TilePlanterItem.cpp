@@ -10,9 +10,8 @@
 #include "world/level/Level.hpp"
 #include "world/tile/Tile.hpp"
 
-TilePlanterItem::TilePlanterItem(int id, int place) : Item(id)
+TilePlanterItem::TilePlanterItem(int id, int place, bool placeSound) : Item(id), m_tile(place), m_placeSound(placeSound)
 {
-	m_tile = Tile::tiles[place]->m_ID;
 }
 
 bool TilePlanterItem::useOn(ItemInstance* instance, Player* player, Level* level, const TilePos& pos, Facing::Name face)
@@ -46,7 +45,7 @@ bool TilePlanterItem::useOn(ItemInstance* instance, Player* player, Level* level
 	auto tile = Tile::tiles[m_tile];
 	tile->setPlacedOnFace(level, tp, face);
 	tile->setPlacedBy(level, tp, player, face);
-	level->playSound(pos.center(), tile->m_pSound->m_name, (tile->m_pSound->volume + 1.0F) / 2.0F, tile->m_pSound->pitch * 0.8F);
+	if (m_placeSound) level->playSound(pos.center(), tile->m_pSound->m_name, (tile->m_pSound->volume + 1.0F) / 2.0F, tile->m_pSound->pitch * 0.8F);
 
 	instance->m_count--;
 	return true;

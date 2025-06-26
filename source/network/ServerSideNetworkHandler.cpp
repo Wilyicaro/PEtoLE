@@ -350,7 +350,7 @@ void ServerSideNetworkHandler::tileChanged(const TilePos& pos)
 	m_pRakNetPeer->Send(&bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::AddressOrGUID(), true);
 }
 
-void ServerSideNetworkHandler::timeChanged(uint32_t time)
+void ServerSideNetworkHandler::timeChanged(int64_t time)
 {
 	m_pRakNetInstance->send(new SetTimePacket(time));
 }

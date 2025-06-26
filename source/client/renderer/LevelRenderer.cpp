@@ -1148,7 +1148,7 @@ void LevelRenderer::renderSky(float alpha)
 	glEnable(GL_FOG);
 	glColor4f(sc.x, sc.y, sc.z, 1.0f);
 
-	drawArrayVT(m_skyBuffer, m_skyBufferCount, sizeof(Tesselator::Vertex));
+	drawArrayVT(m_skyBuffer, m_skyBufferCount);
 
 	glDisable(GL_FOG);
 	glDisable(GL_ALPHA_TEST);
@@ -1223,7 +1223,7 @@ void LevelRenderer::renderSky(float alpha)
 	if (a > 0.0f)
 	{
 		glColor4f(a, a, a, a);
-		drawArrayVT(m_starBuffer, m_starBufferCount, sizeof(Tesselator::Vertex));
+		drawArrayVT(m_starBuffer, m_starBufferCount);
 	}
 
 	// Dark plane
@@ -1235,7 +1235,7 @@ void LevelRenderer::renderSky(float alpha)
 
 	glColor4f(sc.x * 0.2f + 0.04f, sc.y * 0.2f + 0.04f, sc.z * 0.6f + 0.1f, 1.0f);
 	glDisable(GL_TEXTURE_2D);
-	drawArrayVT(m_darkBuffer, m_darkBufferCount, sizeof(Tesselator::Vertex));
+	drawArrayVT(m_darkBuffer, m_darkBufferCount);
 	glEnable(GL_TEXTURE_2D);
 
 	glDepthMask(true);

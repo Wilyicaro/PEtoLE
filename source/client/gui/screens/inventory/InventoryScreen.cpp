@@ -7,7 +7,8 @@ InventoryScreen::InventoryScreen(Player* player) : ContainerScreen(player->m_inv
 
 void InventoryScreen::renderLabels()
 {
-	m_pFont->draw("Crafting", 86, 16, 0x404040);
+    InventoryMenu* craftingMenu = (InventoryMenu*)m_menu;
+	m_pFont->draw(craftingMenu->craftSlots->getName(), 86, 16, 0x404040);
 }
 
 void InventoryScreen::renderBg(int mouseX, int mouseY, float partialTick)
