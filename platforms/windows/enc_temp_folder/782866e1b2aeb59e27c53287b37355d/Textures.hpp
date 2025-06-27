@@ -43,14 +43,14 @@ public:
 	{
 	
 #ifndef USE_GLES
-		if (hasMipmaps())
+		if (m_bHasTerrainMipmap && m_pOptions->m_bMipmaps)
 		{
 			setMipmap(true);
 		}
 #endif
 		int id = loadAndBindTexture(C_TERRAIN_NAME);
 #ifndef USE_GLES
-		if (hasMipmaps())
+		if (m_bHasTerrainMipmap && m_pOptions->m_bMipmaps)
 		{
 			loadTexture(C_TERRAIN_MIPMAP2_NAME, true, 1, false);
 			loadTexture(C_TERRAIN_MIPMAP3_NAME, true, 2, false);
@@ -92,11 +92,6 @@ public:
 	bool hasTerrainMipmap() const
 	{
 		return m_bHasTerrainMipmap;
-	}
-
-	bool hasMipmaps() const
-	{
-		return hasTerrainMipmap() && m_pOptions->m_bMipmaps;
 	}
 
 	Textures(Options*, AppPlatform*);

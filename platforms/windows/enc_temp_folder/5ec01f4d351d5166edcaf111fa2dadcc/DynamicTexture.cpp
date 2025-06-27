@@ -22,8 +22,7 @@ void DynamicTexture::bindTexture(Textures* pTextures)
 	if (m_textureId == 0)
 	{
 		pTextures->loadAndBindTerrain();
-		if (pTextures->hasMipmaps())
-			pTextures->setMipmap(true);
+		pTextures->setMipmap(true);
 	}
 	else if (m_textureId == 1)
 		pTextures->loadAndBindTexture("gui/items.png");

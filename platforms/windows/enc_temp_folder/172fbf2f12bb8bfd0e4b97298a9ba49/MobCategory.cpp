@@ -1,14 +1,15 @@
 #include "MobCategory.hpp"
 #include "world/level/Material.hpp"
 
-MobCategory* MobCategory::monster       = new MobCategory(EntityCategories(EntityCategories::MONSTER), 70, nullptr, false);
-MobCategory* MobCategory::creature      = new MobCategory(EntityCategories(EntityCategories::ANIMAL), 15, nullptr, true);
-MobCategory* MobCategory::waterCreature = new MobCategory(EntityCategories(EntityCategories::WATER_ANIMAL), 5, nullptr, true);
+MobCategory* MobCategory::monster       = new MobCategory(EntityCategories(EntityCategories::MONSTER),      10, 20, nullptr, false);
+MobCategory* MobCategory::creature      = new MobCategory(EntityCategories(EntityCategories::ANIMAL),       10, 15, nullptr, true);
+MobCategory* MobCategory::waterCreature = new MobCategory(EntityCategories(EntityCategories::WATER_ANIMAL), 5,  10, nullptr, true);
 std::vector<MobCategory*> MobCategory::values;
-MobCategory::MobCategory(const EntityCategories& baseType, int max, const Material* material, bool friendly)
+MobCategory::MobCategory(const EntityCategories& baseType, int unknown, int max, const Material* material, bool friendly)
 	: m_baseType(baseType)
 {
 	m_maxInstancesPerChunk = max;
+	field_4 = unknown;
 	m_pSpawnPositionMaterial = material;
 	m_bIsFriendly = friendly;
 }

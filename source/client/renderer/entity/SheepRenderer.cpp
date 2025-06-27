@@ -14,7 +14,7 @@ bool SheepRenderer::prepareArmor(Mob* mob, int layer, float a)
     Sheep* pSheep = (Sheep*)mob;
     if (layer == 0 && !pSheep->isSheared())
     {
-        bindTexture("/mob/sheep_fur.png");
+        bindTexture("mob/sheep_fur.png");
         float brightness = pSheep->getBrightness(a);
         int color = pSheep->getColor();
         glColor4f(brightness * Sheep::COLOR[color][0], brightness * Sheep::COLOR[color][1], brightness * Sheep::COLOR[color][2], 1.0f);

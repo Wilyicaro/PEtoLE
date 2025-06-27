@@ -42,7 +42,7 @@ public:
 
         for (auto category : MobCategory::values) {
             if ((!category->isFriendly() || allowFriendly) && (category->isFriendly() || allowHostile) &&
-                level->countWithCategory(category->getBaseType().getCategoryMask()) <= (category->getMaxInstancesPerChunk() * (int)chunksToPoll.size() / 256)) {
+                level->countWithCategory(category->getBaseType().getCategoryMask()) <= category->getMaxInstancesPerChunk() * (int)chunksToPoll.size() / 256) {
 
                 for (const ChunkPos& pos : chunksToPoll) {
                     Biome* biome = level->getBiomeSource()->getBiome(pos);

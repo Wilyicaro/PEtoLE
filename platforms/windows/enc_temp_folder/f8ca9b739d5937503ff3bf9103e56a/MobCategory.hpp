@@ -13,7 +13,7 @@ public:
 	static std::vector<MobCategory*> values;
 
 private:
-	MobCategory(const EntityCategories&, int, const Material*, bool);
+	MobCategory(const EntityCategories&, int, int, const Material*, bool);
 
 public:
 	static void initMobCategories();
@@ -26,6 +26,7 @@ public:
 
 private:
 	const EntityCategories& m_baseType;
+	int field_4;
 	int m_maxInstancesPerChunk;
 	const Material* m_pSpawnPositionMaterial;
 	bool m_bIsFriendly;

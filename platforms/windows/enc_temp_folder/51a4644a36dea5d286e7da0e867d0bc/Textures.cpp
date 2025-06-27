@@ -220,7 +220,7 @@ void Textures::tick()
 					basePixels
 				);
 
-				if (m_bMipmap)
+				if (m_bMipmap && m_bHasTerrainMipmap)
 				{
 					const int maxLevels = 2;
 					std::vector<uint8_t> src(1024);
