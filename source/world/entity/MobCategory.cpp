@@ -1,9 +1,6 @@
 #include "MobCategory.hpp"
 #include "world/level/Material.hpp"
 
-MobCategory* MobCategory::monster       = new MobCategory(EntityCategories(EntityCategories::MONSTER), 70, nullptr, false);
-MobCategory* MobCategory::creature      = new MobCategory(EntityCategories(EntityCategories::ANIMAL), 15, nullptr, true);
-MobCategory* MobCategory::waterCreature = new MobCategory(EntityCategories(EntityCategories::WATER_ANIMAL), 5, nullptr, true);
 std::vector<MobCategory*> MobCategory::values;
 MobCategory::MobCategory(const EntityCategories& baseType, int max, const Material* material, bool friendly)
 	: m_baseType(baseType)
@@ -11,14 +8,16 @@ MobCategory::MobCategory(const EntityCategories& baseType, int max, const Materi
 	m_maxInstancesPerChunk = max;
 	m_pSpawnPositionMaterial = material;
 	m_bIsFriendly = friendly;
+	values.push_back(this);
 }
 
 void MobCategory::initMobCategories()
 {
-	values.push_back(monster);
-	values.push_back(creature);
-	values.push_back(waterCreature);
-	MobCategory::monster->m_pSpawnPositionMaterial       = Material::air;
-	MobCategory::creature->m_pSpawnPositionMaterial      = Material::air;
-	MobCategory::waterCreature->m_pSpawnPositionMaterial = Material::water;
+	monster = new MobCategory(EntityCategories(EntityCategories::MONSTER), 70, Material::air, false);
+	creature = new MobCategory(EntityCategories(EntityCategories::ANIMAL), 15, Material::air, true);
+	waterCreature = new MobCategory(EntityCategories(EntityCategories::WATER_ANIMAL), 5, Material::water, true);
 }
+
+MobCategory* MobCategory::monster;
+MobCategory* MobCategory::creature;
+MobCategory* MobCategory::waterCreature;

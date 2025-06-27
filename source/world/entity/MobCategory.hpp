@@ -25,7 +25,7 @@ public:
 	bool isFriendly() const { return m_bIsFriendly; }
 
 private:
-	const EntityCategories& m_baseType;
+	EntityCategories m_baseType;
 	int m_maxInstancesPerChunk;
 	const Material* m_pSpawnPositionMaterial;
 	bool m_bIsFriendly;
