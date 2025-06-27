@@ -40,7 +40,7 @@ void FurnaceTileEntity::tick()
                 if (getItem(1)) {
                     --getItem(1)->m_count;
                     if (!getItem(1)->m_count) {
-                        getItem(1) = nullptr;
+                        setItem(1, nullptr);
                     }
                 }
             }
@@ -98,7 +98,7 @@ void FurnaceTileEntity::burn() {
     if (canBurn()) {
         auto result = FurnaceRecipes::getInstance().getItemFor(this);
         if (!getItem(2)) {
-            getItem(2) = result;
+           setItem(2, result);
         }
         else if (getItem(2)->sameItem(result)) {
             ++getItem(2)->m_count;
@@ -106,7 +106,7 @@ void FurnaceTileEntity::burn() {
 
         --getItem(0)->m_count;
         if (getItem(0)->m_count <= 0) {
-            getItem(0) = nullptr;
+            setItem(0, nullptr);
         }
 
     }

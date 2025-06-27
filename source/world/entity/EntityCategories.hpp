@@ -1,11 +1,9 @@
 #pragma once
 
-#include <stdio.h> 
-
 class EntityCategories
 {
 public:
-	enum CategoriesMask : uint32_t
+	enum CategoriesMask
 	{
 		ENTITY = 0,
 		MOB = 1 << 0,
