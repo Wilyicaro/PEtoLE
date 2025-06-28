@@ -10,7 +10,6 @@
 
 #include <string>
 #include <unordered_map>
-#include <vector>
 #include "common/Utils.hpp"
 #include "world/level/levelgen/synth/PerlinNoise.hpp"
 #include "world/level/levelgen/feature/Feature.hpp"
@@ -43,11 +42,11 @@ public: // Instance Functions
 		return !hasSnow && hasRain;
 	}
 
-	void setMobs(const MobCategory* category, std::vector<EntityType*> vector);
+	void setMobs(const MobCategory* category, std::unordered_map<EntityType*, int> spawns);
 
-	void addMobs(const MobCategory* category, std::vector<EntityType*> vector);
+	void addMobs(const MobCategory* category, std::unordered_map<EntityType*, int> spawns);
 
-	const std::vector<EntityType*>& getMobs(const MobCategory* category);
+	const std::unordered_map<EntityType*, int>& getMobs(const MobCategory* category);
 
 public: // Static Variables
 	static Biome
@@ -67,7 +66,7 @@ public: // Static Variables
 private: // Private Functions
 	static Biome* _getBiome(float hum, float temp);
 	static void recalc();
-	std::unordered_map<const MobCategory*, std::vector<EntityType*>> m_mobSpawns;
+	std::unordered_map<const MobCategory*, std::unordered_map<EntityType*, int>> m_mobSpawns;
 
 public: // Instance Variables
 	std::string m_name;

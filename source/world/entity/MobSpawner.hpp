@@ -49,6 +49,26 @@ public:
                     auto& spawnList = biome->getMobs(category);
                     if (spawnList.empty()) continue;
                
+                    EntityType* type = spawnList.begin()->first;
+
+                    int spawnWeight = 0;
+
+                    for (auto it = spawnList.begin(); it != spawnList.end(); spawnWeight += it->second, ++it) {
+                    }
+
+              
+                    int randomRate = level->m_random.nextInt(spawnWeight);
+
+                    for (auto it = spawnList.begin(); it != spawnList.end(); ++it) {
+                        randomRate -= it->second;
+                        if (randomRate < 0) {
+                            type = it->first;
+                            break;
+                        }
+                        ++it;
+                    }
+
+                    if (!type->getCategory().contains(EntityCategories::MOB)) continue;
 
                     int idx = level->m_random.nextInt((int)spawnList.size());
                     TilePos tpos = getRandomPosWithin(level, pos.x * 16, pos.z * 16);
@@ -71,8 +91,8 @@ public:
                                 if (!level->getNearestPlayer(pPos, 24.0f)) {
                                     Vec3 dPos = pPos - level->getSharedSpawnPos();
                                     if (dPos.lengthSqr() >= 576.0f) {
-                                        auto entity = spawnList[idx]->newEntity(level);
-                                        if (!entity || !entity->getType().getCategory().contains(EntityCategories::MOB)) break;
+                                        auto entity = type->newEntity(level);
+                                        if (!entity) break;
                                         auto mob = std::dynamic_pointer_cast<Mob>(entity);
 
                                         mob->moveTo(pPos, Vec2(level->m_random.nextFloat() * 360.0f, 0.0f));

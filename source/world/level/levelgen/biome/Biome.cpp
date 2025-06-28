@@ -84,9 +84,9 @@ Biome::Biome()
 	m_LeafColor = 0;
 	topBlock = Tile::grass->m_ID;
 	fillerBlock = Tile::dirt->m_ID;
-	//setMobs(MobCategory::monster, { EntityType::spider, EntityType::zombie, EntityType::skeleton, EntityType::creeper });
-	setMobs(MobCategory::creature, { EntityType::sheep, EntityType::pig, EntityType::chicken, EntityType::cow });
-	//setMobs(MobCategory::waterCreature, { EntityType::squid });
+	//setMobs(MobCategory::monster, { { EntityType::spider, 10 }, { EntityType::zombie, 10 }, { EntityType::skeleton, 10 }, { EntityType::creeper, 10 } });
+	setMobs(MobCategory::creature, { { EntityType::sheep, 12 }, { EntityType::pig, 10 }, { EntityType::chicken, 10 }, { EntityType::cow, 8 }});
+	//setMobs(MobCategory::waterCreature, { { EntityType::squid , 10 }});
 }
 
 Biome::~Biome()
@@ -112,26 +112,26 @@ Biome* Biome::setNoRain()
 	return this;
 }
 
-void Biome::setMobs(const MobCategory* category, std::vector<EntityType*> vector)
+void Biome::setMobs(const MobCategory* category, std::unordered_map<EntityType*, int> spawns)
 {
-	m_mobSpawns[category] = vector;
+	m_mobSpawns[category] = spawns;
 }
 
-void Biome::addMobs(const MobCategory* category, std::vector<EntityType*> vector)
+void Biome::addMobs(const MobCategory* category, std::unordered_map<EntityType*, int> spawns)
 {
 	auto match = m_mobSpawns.find(category);
 	if (match != m_mobSpawns.end())
 	{
-		for (auto& type : vector)
-			match->second.push_back(type);
+		for (auto& type : spawns)
+			match->second.insert(type);
 	}
 	else
 	{
-		setMobs(category, vector);
+		setMobs(category, spawns);
 	}
 }
 
-const std::vector<EntityType*>& Biome::getMobs(const MobCategory* category)
+const std::unordered_map<EntityType*, int>& Biome::getMobs(const MobCategory* category)
 {
 	return m_mobSpawns[category];
 }
