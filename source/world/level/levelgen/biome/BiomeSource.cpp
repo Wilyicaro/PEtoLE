@@ -11,9 +11,10 @@
 
 BiomeSource* BiomeSource::init()
 {
-	temperatures = nullptr;
-	downfalls = nullptr;
-	noises = nullptr;
+	//@NOTE: Temporary fix
+	temperatures = new real[256];
+	downfalls = new real[256];
+	noises = new real[256];
 	field_10 = 0;
 	field_14 = 0;
 	field_18 = 0;

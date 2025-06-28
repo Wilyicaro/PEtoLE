@@ -1047,6 +1047,7 @@ void Minecraft::generateLevel(const std::string& unused, Level* pLevel)
 
 	pLevel->validateSpawn();
 	pLevel->loadPlayer(m_pLocalPlayer);
+	if (m_pGameMode->isCreativeType() != m_pLocalPlayer->getPlayerGameType()) setGameMode(m_pLocalPlayer->getPlayerGameType());
 
 	m_pMobPersp = m_pLocalPlayer;
 	m_pLevel = pLevel;

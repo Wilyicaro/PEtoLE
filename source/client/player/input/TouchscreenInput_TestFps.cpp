@@ -171,7 +171,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 		{
 			if (pPlayer->wasInWater())
 				m_bJumping = true;
-			else if (Multitouch::isPressed(finger))
+			else if (Multitouch::isPressed(finger) || pPlayer->getAbilities().m_flying)
 				m_bJumping = true;
 			else if (field_40)
 			{

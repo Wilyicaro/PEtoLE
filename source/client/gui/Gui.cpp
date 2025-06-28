@@ -273,6 +273,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 	{
 		textures->loadAndBindTexture("gui/touchscreen.png");
 		blit(cenX + hotbarWidth / 2 - 19, height - 19, 0, 0, 16, 16, 256, 256);
+		blit(cenX - 8, 0, 16, 0, 16, 16, 256, 256);
 	}
 #ifndef ENH_TRANSPARENT_HOTBAR
 	//glEnable(GL_BLEND);
@@ -459,6 +460,14 @@ void Gui::handleClick(int clickID, int mouseX, int mouseY)
 	if (clickID != 1)
 		return;
 
+	int width = int(ceilf(Minecraft::width * InvGuiScale)),
+		height = int(ceilf(Minecraft::height * InvGuiScale));
+
+	int cenX = width / 2;
+
+	if (m_pMinecraft->isTouchscreen() && int(InvGuiScale * mouseX) >= cenX - 8 && int(InvGuiScale * mouseX) < cenX + 8 && int(InvGuiScale * mouseY) < 16)
+		m_pMinecraft->setScreen(new ChatScreen());
+
 	int slot = getSlotIdAt(mouseX, mouseY);
 	if (slot == -1)
 		return;
@@ -468,6 +477,7 @@ void Gui::handleClick(int clickID, int mouseX, int mouseY)
 		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pLocalPlayer->m_pInventory));
 	else
 		m_pMinecraft->m_pLocalPlayer->m_pInventory->selectSlot(slot);
+		
 }
 
 void Gui::handleKeyPressed(int keyCode)

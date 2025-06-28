@@ -472,10 +472,12 @@ std::shared_ptr<ItemInstance> Player::getSelectedItem() const
 void Player::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
 	Mob::addAdditionalSaveData(tag);
 	tag->put("Inventory", m_pInventory->save(std::make_shared<ListTag>()));
+	tag->putInt("playerGameType", getPlayerGameType());
 }
 
 void Player::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
 	Mob::readAdditionalSaveData(tag);
 	std::shared_ptr <ListTag> var2 = tag->getList("Inventory");
 	m_pInventory->load(var2);
+	setPlayerGameType((GameType)tag->getInt("playerGameType"));
 }
