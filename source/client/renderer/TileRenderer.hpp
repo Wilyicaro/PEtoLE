@@ -29,7 +29,7 @@ public:
 	bool tesselateInWorldNoCulling(Tile*, const TilePos& pos);
 	bool tesselateInWorld(Tile*, const TilePos& pos, int textureOverride);
 
-	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b);
+	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b, int rot = 0);
 	void renderEast(Tile*, const Vec3& pos, int texture, float r, float g, float b);
 	void renderWest(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void renderSouth(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
@@ -51,7 +51,9 @@ public:
 	bool tesselateTorchInWorld(Tile*, const TilePos& pos);
 	bool tesselateLeverInWorld(Tile* tt, const TilePos& pos);
 	bool tesselateFireInWorld(Tile*, const TilePos& pos);
+	bool tesselateBedInWorld(Tile*, const TilePos& pos);
 	bool tesselateDustInWorld(Tile* tile, const TilePos& pos);
+	bool tesselateRailInWorld(Tile* tile, const TilePos& pos);
 	bool tesselateBlockInWorldWithAmbienceOcclusionV2(Tile*, const TilePos& pos, float r, float g, float b);
 
 	int getTileColor(Tile*, const TilePos& pos);

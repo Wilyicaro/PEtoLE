@@ -1179,8 +1179,8 @@ bool Level::canChunkExist(const ChunkPos& pos) {
 
     for (const auto& player : m_players) {
 
-        int dx = std::abs(pos.x - player->m_chunkPos.x);
-        int dz = std::abs(pos.z - player->m_chunkPos.z);
+        int dx = Mth::abs(pos.x - player->m_chunkPos.x);
+        int dz = Mth::abs(pos.z - player->m_chunkPos.z);
 
         if (dx <= viewDistance && dz <= viewDistance)
             return true;

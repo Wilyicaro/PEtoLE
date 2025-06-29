@@ -27,6 +27,7 @@ void CreativeScreen::mouseScrolled(double x, double y, int scroll)
 
 void CreativeScreen::mouseReleased(int x, int y, int button)
 {
+	ContainerScreen::mouseReleased(x, y, button);
     m_bIsScrolling = false;
 }
 

@@ -71,13 +71,17 @@ public:
 		{ {0, 1}, {1, 1}, {1, 0}, {0, 0} }
 	};
 
-	static constexpr const int UV_CHECKERS[6][2] = {
-		{0, 2},
-		{0, 2},
-		{0, 1},
-		{0, 1},
-		{2, 1},
-		{2, 1}
+	static constexpr const int UV_CHECKERS[3][4] = {
+		{0, 3, 2, 5},
+		{0, 3, 1, 4},
+		{2, 5, 1, 4}
+	};
+
+	static constexpr const int ROTATED_INDEX[4][4] = {
+		{0, 1, 2, 3}, // 0°
+		{1, 2, 3, 0}, // 90°
+		{3, 0, 1, 2},  // 270°
+		{ 2, 3, 0, 1 } // 180°
 	};
 
 	static constexpr const float LIGHT[] = { 0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f };

@@ -234,7 +234,7 @@ bool ButtonTile::isSignalSource() const
 
 void ButtonTile::updateShape(const LevelSource* level, const TilePos& pos)
 {
-	int var5 = level->getData(pos) & 7;
+	int var5 = level->getData(pos);
 	int var6 = var5 & 7;
 	bool var7 = (var5 & 8) > 0;
 	const constexpr float var8 = 0.375F;

@@ -287,7 +287,7 @@ void LevelRenderer::allChanged()
 			std::sort(&m_sortedChunks[0], &m_sortedChunks[m_chunksLength], DistanceChunkSorter(pMob.get()));
 		}
 
-		m_pLevel->viewDistance = x1;
+		m_pLevel->viewDistance = x1 / 16 + 1;
 	}
 
 	m_noEntityRenderFrames = 2;

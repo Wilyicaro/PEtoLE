@@ -139,7 +139,6 @@ bool ChunkCache::hasChunk(const ChunkPos& pos)
 	if (!pChunk)
 		return false;
 
-
 	return pChunk->isAt(pos);
 }
 
@@ -205,7 +204,6 @@ void ChunkCache::saveUnsaved(bool limited)
 		if (chunk->shouldSave(limited)) {
 			savedChunks++;
 			m_pChunkStorage->save(m_pLevel, chunk);
-			chunk->m_bUnsaved = false;
 		}
 
 		if (!m_pLevel->canChunkExist(chunk->m_chunkPos)) {
@@ -249,12 +247,22 @@ ChunkCache::~ChunkCache()
 
 	for (auto it = m_chunkMap.begin(); it != m_chunkMap.end(); ) {
 		if (!it->second) {
-			it++;
+			++it;
 			continue;
 		}
 		it->second->deleteBlockData();
 		SAFE_DELETE(it->second);
 		it = m_chunkMap.erase(it);
+	}
+
+	for (auto it = m_fakeChunkMap.begin(); it != m_fakeChunkMap.end(); ) {
+		if (!it->second) {
+			++it;
+			continue;
+		}
+		it->second->deleteBlockData();
+		SAFE_DELETE(it->second);
+		it = m_fakeChunkMap.erase(it);
 	}
 }
 

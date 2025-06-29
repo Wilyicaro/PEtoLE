@@ -10,6 +10,7 @@ public:
 	void neighborChanged(Level* level, const TilePos& pos, TileID tile) override;
 	bool isSolidRender() const override;
 	bool isCubeShaped() const override;
+	virtual AABB* getAABB(const Level*, const TilePos& pos) override;
 	int getRenderShape() const override;
 	void updateShape(const LevelSource* level, const TilePos& pos) override;
 	void setPlacedBy(Level*, const TilePos& pos, Mob*, Facing::Name face) override;

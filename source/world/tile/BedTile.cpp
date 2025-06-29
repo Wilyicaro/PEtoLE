@@ -3,21 +3,27 @@
 
 BedTile::BedTile(int a, int b) : Tile(a, b, Material::wood)
 {
+	updateDefaultShape();
 }
 
 int BedTile::getTexture(Facing::Name face, int data) const
 {
-	if (data != 1 && data != 0) {
+	if (Facing::isHorizontal(face)) {
 		int var3 = getDirectionFromData(data);
-		int var4 = bedDirection[var3][data];
-		return isBlockHeadOfBed(data) ? (var4 == 2 ? m_TextureFrame + 2 + 16 : (var4 != 5 && var4 != 4 ? m_TextureFrame + 1 : m_TextureFrame + 1 + 16)) : (var4 == 3 ? m_TextureFrame - 1 + 16 : (var4 != 5 && var4 != 4 ? m_TextureFrame : m_TextureFrame + 16));
+		int var4 = bedDirection[var3][face];
+		return isHead(data) ? (var4 == 2 ? m_TextureFrame + 2 + 16 : (var4 != 5 && var4 != 4 ? m_TextureFrame + 1 : m_TextureFrame + 1 + 16)) : (var4 == 3 ? m_TextureFrame - 1 + 16 : (var4 != 5 && var4 != 4 ? m_TextureFrame : m_TextureFrame + 16));
 	}
 	else {
-		return isBlockHeadOfBed(data) ? m_TextureFrame + 1 : m_TextureFrame;
+		return isHead(data) ? m_TextureFrame + 1 : m_TextureFrame;
 	}
 }
 
 void BedTile::updateShape(const LevelSource* level, const TilePos& pos)
+{
+	updateDefaultShape();
+}
+
+void BedTile::updateDefaultShape()
 {
 	setShape(0, 0, 0, 1, 9 / 16.0f, 1);
 }
@@ -42,7 +48,7 @@ void BedTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 {
 	int data = level->getData(pos);
 	int dir = getDirectionFromData(data);
-	if (isBlockHeadOfBed(data)) {
+	if (isHead(data)) {
 		if (level->getTile(pos.offset(-headBlockToFootBlockMap[dir][0], 0, -headBlockToFootBlockMap[dir][1])) != m_ID) {
 			level->setTile(pos, 0);
 		}

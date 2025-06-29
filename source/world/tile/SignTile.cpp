@@ -54,6 +54,11 @@ bool SignTile::isCubeShaped() const
 	return false;
 }
 
+AABB* SignTile::getAABB(const Level* level, const TilePos& pos)
+{
+	return nullptr;
+}
+
 int SignTile::getRenderShape() const
 {
 	return -1;
