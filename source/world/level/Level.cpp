@@ -414,7 +414,7 @@ bool Level::isRainingAt(const TilePos& pos) const
 	else
 	{
 		Biome* biome = getBiomeSource()->getBiome(pos);
-		return biome->hasSnow ? false : biome->hasRain;
+		return biome->m_bHasSnow ? false : biome->m_bHasRain;
 	}
 }
 
@@ -1666,7 +1666,7 @@ void Level::tickTiles()
 			int rand = m_randValue >> 2;
 			TilePos tp(tPos.x + (rand & 15), 0, tPos.z + (rand >> 8 & 15));
 			tp.y = getTopSolidBlock(tp);
-			if (getBiomeSource()->getBiome(tp)->hasSnow && tp.y >= 0 && tp.y < 128 && getBrightness(LightLayer::Block, tp) < 10)
+			if (getBiomeSource()->getBiome(tp)->m_bHasSnow && tp.y >= 0 && tp.y < 128 && getBrightness(LightLayer::Block, tp) < 10)
 			{
 				TileID belowTop = pChunk->getTile(tp.below());
 				TileID top = pChunk->getTile(tp);

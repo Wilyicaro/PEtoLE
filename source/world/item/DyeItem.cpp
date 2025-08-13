@@ -35,10 +35,13 @@ int DyeItem::getIcon(const ItemInstance* item) const
 
 bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const TilePos& pos, Facing::Name face)
 {
-	if (item->getAuxValue() == 15) {
+	if (item->getAuxValue() == 15)
+	{
 		TileID var8 = level->getTile(pos);
-		if (var8 == Tile::sapling->m_ID) {
-			if (!level->m_bIsOnline) {
+		if (var8 == Tile::sapling->m_ID)
+		{
+			if (!level->m_bIsOnline)
+			{
 				Tile::sapling->growTree(level, pos, &level->m_random);
 				--item->m_count;
 			}
@@ -46,8 +49,10 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 			return true;
 		}
 
-		if (var8 == Tile::crops->m_ID) {
-			if (!level->m_bIsOnline) {
+		if (var8 == Tile::crops->m_ID)
+		{
+			if (!level->m_bIsOnline)
+			{
 				((CropsTile*)Tile::crops)->fertilize(level, pos);
 				--item->m_count;
 			}
@@ -55,15 +60,19 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 			return true;
 		}
 
-		if (var8 == Tile::grass->m_ID) {
-			if (!level->m_bIsOnline) {
+		if (var8 == Tile::grass->m_ID)
+		{
+			if (!level->m_bIsOnline)
+			{
 				--item->m_count;
 
-			
-				for (int var9 = 0; var9 < 128; ++var9) {
+
+				for (int var9 = 0; var9 < 128; ++var9)
+				{
 					TilePos tp = pos.above();
 
-					for (int var13 = 0; var13 < var9 / 16; ++var13) {
+					for (int var13 = 0; var13 < var9 / 16; ++var13)
+					{
 						tp.x += itemRand.nextInt(3) - 1;
 						tp.y += (itemRand.nextInt(3) - 1) * itemRand.nextInt(3) / 2;
 						tp.z += itemRand.nextInt(3) - 1;
@@ -72,16 +81,14 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 						}
 					}
 
-					if (level->getTile(tp) == TILE_AIR) {
-						if (itemRand.nextInt(10) != 0) {
+					if (level->getTile(tp) == TILE_AIR)
+					{
+						if (itemRand.nextInt(10) != 0)
 							level->setTileAndData(tp, Tile::tallGrass->m_ID, 1);
-						}
-						else if (itemRand.nextInt(3) != 0) {
+						else if (itemRand.nextInt(3) != 0)
 							level->setTile(tp, Tile::flower->m_ID);
-						}
-						else {
+						else
 							level->setTile(tp, Tile::rose->m_ID);
-						}
 					}
 				label53:;
 				}
@@ -90,14 +97,17 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 			return true;
 		}
 	}
+	return false;
 }
 
 void DyeItem::interactEnemy(ItemInstance* var1, Mob* var2)
 {
-	if (var2->getType() == EntityType::sheep) {
+	if (var2->getType() == EntityType::sheep)
+	{
 		Sheep* sheep = (Sheep*)var2;
 		int var4 = ClothTile::getColorFromData(var1->getAuxValue());
-		if (!sheep->isSheared() && sheep->getColor() != var4) {
+		if (!sheep->isSheared() && sheep->getColor() != var4)
+		{
 			sheep->setColor(var4);
 			--var1->m_count;
 		}

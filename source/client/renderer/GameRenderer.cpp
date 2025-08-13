@@ -916,7 +916,7 @@ void GameRenderer::renderSnowAndRain(float f)
 		{
 			Biome* biome = biomes[i++];
 
-			if (!biome->hasSnow && !biome->hasRain) continue;
+			if (!biome->m_bHasSnow && !biome->m_bHasRain) continue;
 			int tsb = pLevel->getTopSolidBlock(tp);
 			if (tsb < 0)
 				tsb = 0;
@@ -941,7 +941,7 @@ void GameRenderer::renderSnowAndRain(float f)
 			float f3 = Mth::sqrt(f1 * f1 + f2 * f2) / float(range);
 			float f4 = pLevel->getBrightness(tp);
 
-			if (biome->hasSnow)
+			if (biome->m_bHasSnow)
 			{
 				float x1 = float(m_ticks) + f;
 				float x2 = (float(m_ticks & 511) + f) / 512.0f;

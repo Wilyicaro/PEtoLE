@@ -6,7 +6,7 @@ class DispenserTile : public Tile
 {
 public:
 	DispenserTile(int id, int texture);
-	int getTickDelay() const;
+	int getTickDelay() const override;
 	int getTexture(const LevelSource*, const TilePos& pos, Facing::Name face) const override;
 	int getTexture(Facing::Name face) const override;
 	void onPlace(Level* level, const TilePos& pos) override;

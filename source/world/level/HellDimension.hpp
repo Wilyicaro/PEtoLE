@@ -7,7 +7,7 @@ class HellDimension : public Dimension
 {
 public:
 	Vec3f getFogColor(float, float) override;
-	float getTimeOfDay(int64_t, float);
+	float getTimeOfDay(int64_t, float) override;
 	void init() override;
 	bool mayRespawn() override;
 	bool isValidSpawn(const TilePos& pos) override;

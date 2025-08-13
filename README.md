@@ -5,6 +5,7 @@ My thanks to the contributors of ReMinecraftPE, without them this project would 
 
 ## TO-DO List
 * Make screens accurate, like Options and Select World screens
+* Texture Packs System
 * Completely functional integrated servers
 * Optimization in general, mainly RAM Usage
 * Audio Streaming Implementation (helps with less RAM Usage and faster initial loading)

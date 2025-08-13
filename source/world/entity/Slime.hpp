@@ -24,8 +24,8 @@ public:
 	bool canSpawn() override;
 
 public:
-	int m_oSquish;
-	int m_squish;
+	float m_oSquish;
+	float m_squish;
 	int m_size;
 
 private:

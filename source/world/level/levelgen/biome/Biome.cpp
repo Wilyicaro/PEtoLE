@@ -78,7 +78,7 @@ void Biome::recalc()
 	iceDesert->topBlock = iceDesert->fillerBlock = Tile::sand->m_ID;
 }
 
-Biome::Biome()
+Biome::Biome() : m_bHasRain(true), m_bHasSnow(false)
 {
 	m_name = "";
 	m_Color = 0;
@@ -103,13 +103,13 @@ Feature* Biome::getTreeFeature(Random* pRandom)
 
 Biome* Biome::setSnowCovered()
 {
-	hasSnow = true;
+	m_bHasSnow = true;
 	return this;
 }
 
 Biome* Biome::setNoRain()
 {
-	hasRain = false;
+	m_bHasRain = false;
 	return this;
 }
 
@@ -192,7 +192,8 @@ void Biome::initBiomes()
 
 	desert = (new FlatBiome)
 		->setColor(0xFA9418)
-		->setName("Desert");
+		->setName("Desert")
+		->setNoRain();
 
 	plains = (new FlatBiome)
 		->setColor(0xFFD910)
@@ -202,6 +203,7 @@ void Biome::initBiomes()
 		->setColor(0xFFED93)
 		->setName("Ice Desert")
 		->setSnowCovered()
+		->setNoRain()
 		->setLeafColor(0xC4D339);
 
 	tundra = (new Biome)
@@ -212,7 +214,8 @@ void Biome::initBiomes()
 
 	hell = (new HellBiome)
 		->setColor(0xFF0000)
-		->setName("Hell");
+		->setName("Hell")
+		->setNoRain();
 
 	recalc();
 }

@@ -39,7 +39,7 @@ public: // Instance Functions
 	Biome* setNoRain();
 	bool canOnlyRain() const
 	{
-		return !hasSnow && hasRain;
+		return !m_bHasSnow && m_bHasRain;
 	}
 
 	void setMobs(const MobCategory* category, std::unordered_map<EntityType*, int> spawns);
@@ -75,8 +75,8 @@ public: // Instance Variables
 	TileID topBlock;
 	TileID fillerBlock;
 	int m_LeafColor;
-	bool hasSnow;
-	bool hasRain = true;
+	bool m_bHasSnow;
+	bool m_bHasRain;
 };
 
 class RainforestBiome : public Biome
