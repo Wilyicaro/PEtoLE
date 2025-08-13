@@ -18,12 +18,12 @@ RedStoneOreTile::RedStoneOreTile(int id, int texture, bool bLit) : Tile(id, text
 
 int RedStoneOreTile::getResource(int x, Random* random) const
 {
-	return 0;
+	return Item::redStone->m_itemID;
 }
 
 int RedStoneOreTile::getResourceCount(Random* random) const
 {
-	return random->nextInt() % 2 + 4;
+	return random->nextInt(2) + 4;
 }
 
 int RedStoneOreTile::getSpawnResourcesAuxValue(int x) const
