@@ -143,13 +143,11 @@ const char* GetGUIBlocksName();
 #define C_BLOCKS_NAME  "gui/gui_blocks.png"
 #endif
 
-#define C_MIN_CHUNKS_X (-27)
-#define C_MIN_CHUNKS_Z (-27)
+#define C_MIN_CHUNKS_X (-2000000)
+#define C_MIN_CHUNKS_Z (-2000000)
 
-#define C_MAX_CHUNKS_X (27)
-#define C_MAX_CHUNKS_Z (27)
-
-#define C_MAX_CHUNKS (2916)
+#define C_MAX_CHUNKS_X (2000000)
+#define C_MAX_CHUNKS_Z (2000000)
 
 // 9 chunks around a player things will tick
 #define C_TICK_DISTANCE_CHKS (9)

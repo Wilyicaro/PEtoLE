@@ -162,7 +162,7 @@ void ChunkCache::postProcess(ChunkSource* pChkSrc, const ChunkPos& pos)
 		if (m_pChunkSource)
 		{
 			m_pChunkSource->postProcess(m_pChunkSource, pos);
-			pChunk->clearUpdateMap();
+			pChunk->markUnsaved();
 		}
 	}
 }

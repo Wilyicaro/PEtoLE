@@ -51,7 +51,6 @@ public:
 
 	std::shared_ptr<Entity> getEntity(int);
 	
-	bool areAllChunksLoaded();
 	void arrangeRequestChunkOrder();
 	void clearChunksLoaded();
 	void requestNextChunk();

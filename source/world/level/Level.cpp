@@ -30,6 +30,9 @@ void Level::init(Dimension* pDimension)
 
 	m_pDimension->init(this);
 	m_pChunkSource = createChunkSource();
+
+	if (m_bIsNew)
+		setInitialSpawn();
 	updateSkyBrightness();
 }
 

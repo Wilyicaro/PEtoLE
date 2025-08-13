@@ -212,10 +212,6 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlaceBl
 
 	pPlayer->swing();
 
-	// @BUG: Not buffering the update.
-	if (!areAllChunksLoaded())
-		return;
-
 	const TilePos& pos = pPlaceBlockPkt->m_pos;
 	TileID tile = pPlaceBlockPkt->m_tile;
 	Facing::Name face = (Facing::Name)pPlaceBlockPkt->m_face;
@@ -247,10 +243,6 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveB
 
 	pPlayer->swing();
 
-	// @BUG: Not buffering the update.
-	if (!areAllChunksLoaded())
-		return;
-
 	const TilePos& pos = pRemoveBlockPkt->m_pos;
 
 	Tile* pTile = Tile::tiles[m_pLevel->getTile(pos)];
@@ -268,12 +260,6 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveB
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, UpdateBlockPacket* pkt)
 {
-	if (!areAllChunksLoaded())
-	{
-		m_bufferedBlockUpdates.push_back(SBufferedBlockUpdate(pkt->m_pos, pkt->m_tile, pkt->m_data));
-		return;
-	}
-
 	m_pLevel->doSetTileAndDataNoUpdate(pkt->m_pos, pkt->m_tile, pkt->m_data);
 }
 
@@ -414,7 +400,6 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataP
 	}
 
 	// All chunks are loaded. Also flush all the updates we've buffered.
-	m_chunksRequested = C_MAX_CHUNKS;;
 	flushAllBufferedUpdates();
 }
 
@@ -434,11 +419,6 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, SignUpdatePacke
 			te->setChanged();
 		}
 	}
-}
-
-bool ClientSideNetworkHandler::areAllChunksLoaded()
-{
-	return m_chunksRequested >= C_MAX_CHUNKS;
 }
 
 void ClientSideNetworkHandler::arrangeRequestChunkOrder()

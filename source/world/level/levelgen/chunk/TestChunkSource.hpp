@@ -33,7 +33,7 @@ public:
 public:
 	Level* m_pLevel;
 
-	LevelChunk* m_chunkMap[C_MAX_CHUNKS_Z][C_MAX_CHUNKS_X];
+	LevelChunk* m_chunkMap[27][27];
 	LevelChunk* m_pEmptyChunk;
 	LevelChunk* m_pLastChunk;
 	ChunkPos m_lastChunkPos;

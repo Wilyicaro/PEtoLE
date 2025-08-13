@@ -13,7 +13,6 @@
 TestChunkSource::TestChunkSource(Level* pLevel)
 {
 	m_pLevel = pLevel;
-	memset(m_chunkMap, 0, sizeof m_chunkMap);
 
 	m_pEmptyChunk = new FakeLevelChunk(pLevel, nullptr, ChunkPos(0,0), FakeLevelChunk::NONE);
 
