@@ -79,7 +79,7 @@ void Ghast::updateAi()
             --m_charge;
     }
 
-    m_texture = m_charge > 10 ? "/mob/ghast_fire.png" : "/mob/ghast.png";
+    m_texture = m_charge > 10 ? "mob/ghast_fire.png" : "mob/ghast.png";
 }
 
 bool Ghast::canSpawn()
