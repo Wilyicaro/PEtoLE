@@ -39,7 +39,7 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 		TileID var8 = level->getTile(pos);
 		if (var8 == Tile::sapling->m_ID) {
 			if (!level->m_bIsOnline) {
-				((Sapling*)Tile::sapling)->growTree(level, pos, &level->m_random);
+				Tile::sapling->growTree(level, pos, &level->m_random);
 				--item->m_count;
 			}
 
@@ -94,7 +94,7 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 
 void DyeItem::interactEnemy(ItemInstance* var1, Mob* var2)
 {
-	if (var2->getType() == *EntityType::sheep) {
+	if (var2->getType() == EntityType::sheep) {
 		Sheep* sheep = (Sheep*)var2;
 		int var4 = ClothTile::getColorFromData(var1->getAuxValue());
 		if (!sheep->isSheared() && sheep->getColor() != var4) {

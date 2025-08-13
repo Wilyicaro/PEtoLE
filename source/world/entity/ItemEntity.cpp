@@ -9,10 +9,9 @@
 #include "ItemEntity.hpp"
 #include "world/level/Level.hpp"
 
-void ItemEntity::_init(const ItemInstance* itemInstance)
+ItemEntity::ItemEntity(Level* level) : Entity(level)
 {
-	m_renderType = RENDER_ITEM;
-	m_pEntityType = EntityType::item;
+	m_pType = EntityType::item;
 	m_age = 0;
 	m_throwTime = 0;
 	m_tickCount = 0;
@@ -22,14 +21,11 @@ void ItemEntity::_init(const ItemInstance* itemInstance)
 	m_bobOffs = 2 * float(M_PI) * Mth::random();
 	setSize(0.25f, 0.25f);
 	m_heightOffset = m_bbHeight * 0.5f;
-	m_itemInstance = itemInstance ? itemInstance->copy() : nullptr;
-
 }
 
-void ItemEntity::_init(const ItemInstance* itemInstance, const Vec3& pos)
+ItemEntity::ItemEntity(Level* level, const Vec3& pos, std::shared_ptr<ItemInstance> itemInstance) : ItemEntity(level)
 {
-	_init(itemInstance);
-
+	m_itemInstance = itemInstance;
 	setPos(pos);
 
 	m_rot.y = 360.0f * Mth::random();
@@ -97,19 +93,19 @@ void ItemEntity::tick()
 
 	float dragFactor = 0.98;
 
-	if (m_onGround)
+	if (m_bOnGround)
 	{
 		dragFactor = 0.588;
 		TileID tile = m_pLevel->getTile(TilePos(m_pos.x, m_hitbox.min.y - 1, m_pos.z));
 		if (tile > 0)
-			dragFactor = Tile::tiles[tile]->friction * 0.98;
+			dragFactor = Tile::tiles[tile]->m_friction * 0.98;
 	}
 
 	m_vel.x *= dragFactor;
 	m_vel.z *= dragFactor;
 	m_vel.y *= 0.98;
 
-	if (m_onGround)
+	if (m_bOnGround)
 		m_vel.y *= -0.5;
 
 	m_tickCount++;

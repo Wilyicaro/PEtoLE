@@ -643,6 +643,7 @@ void LevelRenderer::setLevel(Level* level)
 
 	EntityRenderDispatcher::getInstance()->setLevel(level);
 	EntityRenderDispatcher::getInstance()->setMinecraft(m_pMinecraft);
+	TileEntityRenderDispatcher::getInstance()->setLevel(level);
 
 	m_pLevel = level;
 
@@ -947,6 +948,70 @@ void LevelRenderer::tileChanged(const TilePos& pos)
 	setDirty(pos - 1, pos + 1);
 }
 
+void LevelRenderer::playStreamingMusic(const std::string& record, const TilePos& pos)
+{
+	if (!record.empty())
+		m_pMinecraft->m_gui.setNowPlaying("C418 - " + record);
+
+	m_pMinecraft->m_pSoundEngine->playStreaming(record, pos, 1.0F, 1.0F);
+}
+
+void LevelRenderer::levelEvent(Player*, int event, const TilePos& pos, int info)
+{
+	Random& random = m_pLevel->m_random;
+	switch (event) {
+	case 1000:
+		m_pLevel->playSound(pos, "random.click", 1.0F, 1.0F);
+		break;
+	case 1001:
+		m_pLevel->playSound(pos, "random.click", 1.0F, 1.2F);
+		break;
+	case 1002:
+		m_pLevel->playSound(pos, "random.bow", 1.0F, 1.2F);
+		break;
+	case 1003:
+		if (Mth::random() < 0.5)
+			m_pLevel->playSound(pos.center(), "random.door_open", 1.0F, random.nextFloat() * 0.1F + 0.9F);
+		else
+			m_pLevel->playSound(pos.center(), "random.door_close", 1.0F, random.nextFloat() * 0.1F + 0.9F);
+		break;
+	case 1004:
+		m_pLevel->playSound(pos.center(), "random.fizz", 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
+		break;
+	case 1005:
+		m_pLevel->playStreamingMusic(info ? Item::items[info]->getStreamingMusic() : Util::EMPTY_STRING, pos);
+		break;
+	case 2000:
+	{
+		int var8 = info % 3 - 1;
+		int var9 = info / 3 % 3 - 1;
+		real var10 = pos.x + var8 * 0.6 + 0.5;
+		real var12 = pos.y + 0.5;
+		real var14 = pos.z + var9 * 0.6 + 0.5;
+
+		for (int var16 = 0; var16 < 10; ++var16) {
+			real var31 = random.nextDouble() * 0.2 + 0.01;
+			real var19 = var10 + var8 * 0.01 + (random.nextDouble() - 0.5) * var9 * 0.5;
+			real var21 = var12 + (random.nextDouble() - 0.5) * 0.5;
+			real var23 = var14 + var9 * 0.01 + (random.nextDouble() - 0.5) * var8 * 0.5;
+			real var25 = var8 * var31 + random.nextGaussian() * 0.01;
+			real var27 = -0.03 + random.nextGaussian() * 0.01;
+			real var29 = var9 * var31 + random.nextGaussian() * 0.01;
+			addParticle("smoke", Vec3(var19, var21, var23), Vec3(var25, var27, var29));
+		}
+	}
+		break;
+	case 2001:
+		int var16 = info & 255;
+		if (var16 > 0) {
+			auto var17 = Tile::tiles[var16]->m_pSound;
+			m_pMinecraft->m_pSoundEngine->play(var17->m_name, pos.center(), (var17->volume + 1.0F) / 2.0F, var17->pitch * 0.8F);
+		}
+		m_pMinecraft->m_pParticleEngine->crack(pos, (TileID)info & 255, (Facing::Name)(info >> 8 & 255));
+		break;
+	}
+}
+
 void LevelRenderer::renderEntities(Vec3 pos, Culler* culler, float f)
 {
 	if (m_noEntityRenderFrames > 0)
@@ -976,10 +1041,10 @@ void LevelRenderer::renderEntities(Vec3 pos, Culler* culler, float f)
 		if (!pEnt->shouldRender(pos))
 			continue;
 
-		if (!culler->isVisible(pEnt->m_hitbox))
+		if (!pEnt->m_bIgnoreFrustum && !culler->isVisible(pEnt->m_hitbox))
 			continue;
 
-		if (m_pMinecraft->m_pMobPersp == pEnt && !m_pMinecraft->getOptions()->m_bThirdPerson)
+		if (m_pMinecraft->m_pMobPersp == pEnt && (!m_pMinecraft->getOptions()->m_bThirdPerson || m_pMinecraft->m_pMobPersp->isSleeping()))
 			continue;
 
 		if (m_pLevel->hasChunkAt(pEnt->m_pos))
@@ -1035,7 +1100,7 @@ void LevelRenderer::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* p
 
 void LevelRenderer::addParticle(const std::string& name, const Vec3& pos, const Vec3& dir)
 {
-	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum?
+	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum? (Mojang :3)
 	float maxDist = 256.0f;
 	if (name == "explodeColor")
 		maxDist = 16384.0f;
@@ -1052,6 +1117,16 @@ void LevelRenderer::addParticle(const std::string& name, const Vec3& pos, const 
 	if (name == "smoke")
 	{
 		pe->add(new SmokeParticle(m_pLevel, pos, dir, 1.0f));
+		return;
+	}
+	if (name == "note")
+	{
+		pe->add(new NoteParticle(m_pLevel, pos, dir));
+		return;
+	}
+	if (name == "portal")
+	{
+		pe->add(new PortalParticle(m_pLevel, pos, dir));
 		return;
 	}
 	if (name == "explode")
@@ -1087,6 +1162,11 @@ void LevelRenderer::addParticle(const std::string& name, const Vec3& pos, const 
 		pe->add(new LavaParticle(m_pLevel, pos));
 		return;
 	}
+	if (name == "splash")
+	{
+		pe->add(new SplashParticle(m_pLevel, pos, dir));
+		return;
+	}
 	if (name == "largesmoke")
 	{
 		pe->add(new SmokeParticle(m_pLevel, pos, dir, 2.5f));
@@ -1097,13 +1177,23 @@ void LevelRenderer::addParticle(const std::string& name, const Vec3& pos, const 
 		pe->add(new RedDustParticle(m_pLevel, pos, dir));
 		return;
 	}
+	if (name == "snowballpoof")
+	{
+		pe->add(new BreakingItemParticle(m_pLevel, pos, Item::snowBall));
+		return;
+	}
+	if (name == "slime")
+	{
+		pe->add(new BreakingItemParticle(m_pLevel, pos, Item::slimeBall));
+		return;
+	}
 
 	LOG_W("Unknown particle type: %s", name.c_str());
 }
 
 void LevelRenderer::playSound(const std::string& name, const Vec3& pos, float volume, float pitch)
 {
-	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum?
+	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum? (also Mojang)
 	float mult = 1.0f, maxDist = 16.0f;
 	float playerDist = m_pMinecraft->m_pMobPersp->distanceToSqr(pos);
 
@@ -1243,6 +1333,8 @@ void LevelRenderer::renderSky(float alpha)
 
 void LevelRenderer::renderClouds(float partialTick)
 {
+	if (m_pMinecraft->m_pLevel->m_pDimension->m_bFoggy) return;
+
 	if (m_pMinecraft->getOptions()->m_bFancyGraphics)
 	{
 		renderAdvancedClouds(partialTick);

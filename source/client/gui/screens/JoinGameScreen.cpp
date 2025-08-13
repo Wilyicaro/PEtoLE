@@ -31,7 +31,6 @@ void JoinGameScreen::buttonClicked(Button* pButton)
 		if (isIndexValid(m_pAvailableGamesList->m_selectedIndex))
 		{
 			m_pMinecraft->joinMultiplayer(m_pAvailableGamesList->m_games[m_pAvailableGamesList->m_selectedIndex]);
-			m_pMinecraft->setScreen(new ProgressScreen);
 
 			m_btnJoin.m_bEnabled = false;
 			m_btnDirectConnect.m_bEnabled = false;

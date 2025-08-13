@@ -27,6 +27,12 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -69,6 +75,8 @@
     <ClCompile Include="$(MC_ROOT)\source\network\ServerSideNetworkHandler.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\PacketUtil.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\AddMobPacket.cpp" />
+    <ClCompile Include="..\..\..\..\source\network\packets\SignUpdatePacket.cpp" />
+    <ClCompile Include="..\..\..\..\source\network\ServerLevelListener.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\network\MinecraftPackets.hpp" />
@@ -78,6 +86,7 @@
     <ClInclude Include="$(MC_ROOT)\source\network\RakNetInstance.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\network\ServerSideNetworkHandler.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\network\PacketUtil.hpp" />
+    <ClInclude Include="..\..\..\..\source\network\ServerLevelListener.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">

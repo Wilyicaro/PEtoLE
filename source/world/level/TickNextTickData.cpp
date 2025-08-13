@@ -13,8 +13,8 @@ int TickNextTickData::last;
 TickNextTickData::TickNextTickData(const TilePos& tilePos, int d)
 {
 	m_ID = ++last;
-	field_4 = tilePos;
-	field_10 = d;
+	m_pos = tilePos;
+	m_tileId = d;
 
 #ifndef ORIGINAL_CODE
 	m_delay = 0;
@@ -23,7 +23,7 @@ TickNextTickData::TickNextTickData(const TilePos& tilePos, int d)
 
 int TickNextTickData::hashCode() const
 {
-	return field_10 + ((field_4.y + ((field_4.z + (field_4.x << 10)) << 7)) << 8);
+	return m_tileId + ((m_pos.y + ((m_pos.z + (m_pos.x << 10)) << 7)) << 8);
 }
 
 bool TickNextTickData::operator<(const TickNextTickData& other) const
@@ -39,8 +39,8 @@ bool TickNextTickData::operator<(const TickNextTickData& other) const
 bool TickNextTickData::operator==(const TickNextTickData& other) const
 {
 	return
-		field_4  == other.field_4  &&
-		field_10 == other.field_10;
+		m_pos  == other.m_pos  &&
+		m_tileId == other.m_tileId;
 }
 
 void TickNextTickData::setDelay(int32_t l)

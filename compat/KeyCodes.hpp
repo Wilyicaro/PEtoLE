@@ -33,9 +33,63 @@ enum eSDLVirtualKeys
     #define AKEYCODE_ENTER       0x24
 #endif
 
+#ifdef USE_SDL
+// See https://www.libsdl.org/release/SDL-1.2.15/docs/html/sdlkey.html
+#define AKEYCODE_FORWARD_DEL   SDLVK_DELETE
+#define AKEYCODE_ARROW_LEFT    SDLVK_LEFT
+#define AKEYCODE_ARROW_RIGHT   SDLVK_RIGHT
+#define AKEYCODE_ARROW_DOWN    SDLVK_DOWN
+#define AKEYCODE_ARROW_UP      SDLVK_UP
+#define AKEYCODE_DEL	       SDLVK_BACKSPACE
+#define AKEYCODE_ENTER         SDLVK_RETURN
+#define AKEYCODE_A             SDLVK_a
+#define AKEYCODE_Z             SDLVK_z
+#define AKEYCODE_0             SDLVK_0
+#define AKEYCODE_9             SDLVK_9
+#define AKEYCODE_SPACE         SDLVK_SPACE
+#define AKEYCODE_COMMA         SDLVK_COMMA
+#define AKEYCODE_PERIOD        SDLVK_PERIOD
+#define AKEYCODE_PLUS          SDLVK_PLUS
+#define AKEYCODE_MINUS         SDLVK_MINUS
+#define AKEYCODE_SEMICOLON     SDLVK_SEMICOLON
+#define AKEYCODE_SLASH         SDLVK_SLASH
+#define AKEYCODE_GRAVE         SDLVK_BACKQUOTE
+#define AKEYCODE_BACKSLASH     SDLVK_BACKSLASH
+#define AKEYCODE_APOSTROPHE    SDLVK_QUOTE
+#define AKEYCODE_LEFT_BRACKET  SDLVK_LEFTBRACKET
+#define AKEYCODE_RIGHT_BRACKET SDLVK_RIGHTBRACKET
+#elif defined(_WIN32)
+// See https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+#define AKEYCODE_FORWARD_DEL   VK_DELETE
+#define AKEYCODE_ARROW_LEFT    VK_LEFT
+#define AKEYCODE_ARROW_RIGHT   VK_RIGHT
+#define AKEYCODE_ARROW_DOWN    VK_DOWN
+#define AKEYCODE_ARROW_UP	   VK_UP
+#define AKEYCODE_DEL	       VK_BACK
+#define AKEYCODE_ENTER         VK_RETURN
+#define AKEYCODE_A             'A'
+#define AKEYCODE_Z             'Z'
+#define AKEYCODE_0             '0'
+#define AKEYCODE_9             '9'
+#define AKEYCODE_SPACE         VK_SPACE
+#define AKEYCODE_COMMA         VK_OEM_COMMA
+#define AKEYCODE_PERIOD        VK_OEM_PERIOD
+#define AKEYCODE_PLUS          VK_OEM_PLUS
+#define AKEYCODE_MINUS         VK_OEM_MINUS
+#define AKEYCODE_SEMICOLON     VK_OEM_1
+#define AKEYCODE_SLASH         VK_OEM_2
+#define AKEYCODE_GRAVE         VK_OEM_3
+#define AKEYCODE_BACKSLASH     VK_OEM_5
+#define AKEYCODE_APOSTROPHE    VK_OEM_7
+#define AKEYCODE_LEFT_BRACKET  VK_OEM_4
+#define AKEYCODE_RIGHT_BRACKET VK_OEM_6
+#endif
+
 #ifdef USE_NATIVE_ANDROID
     #include <android/keycodes.h>
 
     #define AKEYCODE_ARROW_LEFT  AKEYCODE_DPAD_LEFT
     #define AKEYCODE_ARROW_RIGHT AKEYCODE_DPAD_RIGHT
+    #define AKEYCODE_ARROW_UP  AKEYCODE_DPAD_UP
+    #define AKEYCODE_ARROW_DOWN AKEYCODE_DPAD_DOWN
 #endif

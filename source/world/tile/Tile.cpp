@@ -66,11 +66,19 @@
 #include "SnowTile.hpp"
 #include "SignTile.hpp"
 #include "LeverTile.hpp"
+#include "PressurePlateTile.hpp"
 #include "RailTile.hpp"
+#include "DetectorRailTile.hpp"
 #include "ButtonTile.hpp"
 #include "MobSpawnerTile.hpp"
 #include "RedstoneTorchTile.hpp"
 #include "CakeTile.hpp"
+#include "DispenserTile.hpp"
+#include "MusicTile.hpp"
+#include "RecordPlayerTile.hpp"
+#include "TrapDoorTile.hpp"
+#include "PortalTile.hpp"
+#include "RepeaterTile.hpp"
 
 std::string Tile::TILE_DESCRIPTION_PREFIX = "tile.";
 
@@ -87,8 +95,8 @@ void Tile::_init()
 {
 	m_TextureFrame = 1;
 	m_pSound = nullptr;
-	field_28 = 1.0f;
-	friction = 0.6f;
+	m_gravity = 1.0f;
+	m_friction = 0.6f;
 	m_hardness = 0.0f;
 	m_blastResistance = 0.0f;
 	m_descriptionID = "";
@@ -575,11 +583,23 @@ void Tile::initTiles()
 		->setSoundType(Tile::SOUND_METAL)
 		->setDescriptionId("goldenRail");
 
-	Tile::detectorRail = (new RailTile(TILE_RAIL_ACTIVATOR, TEXTURE_DETECTOR_RAIL, true))
+	Tile::detectorRail = (new DetectorRailTile(TILE_RAIL_ACTIVATOR, TEXTURE_DETECTOR_RAIL))
 		->init()
 		->setDestroyTime(0.7f)
 		->setSoundType(Tile::SOUND_METAL)
 		->setDescriptionId("detectorRail");
+
+	Tile::stonePressurePlate = (new PressurePlateTile(TILE_PLATE_STONE, TEXTURE_STONE, PressurePlateTile::mobs))
+		->init()
+		->setDestroyTime(0.5f)
+		->setSoundType(Tile::SOUND_STONE)
+		->setDescriptionId("pressurePlate");
+
+	Tile::woodPressurePlate = (new PressurePlateTile(TILE_PLATE_WOOD, TEXTURE_PLANKS, PressurePlateTile::players))
+		->init()
+		->setDestroyTime(0.5f)
+		->setSoundType(Tile::SOUND_WOOD)
+		->setDescriptionId("pressurePlate");
 
 	Tile::lever = (new LeverTile(TILE_LEVER, TEXTURE_LEVER))
 		->init()
@@ -709,7 +729,7 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(0.3f)
 		->setLightEmission(1.0f)
-		->setSoundType(Tile::SOUND_STONE)
+		->setSoundType(Tile::SOUND_GLASS)
 		->setDescriptionId("lightGem");
 
 	Tile::pumpkinLantern = (new PumpkinTile(TILE_PUMPKIN_LIT, true))
@@ -725,6 +745,26 @@ void Tile::initTiles()
 		->setLightEmission(1.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("fire");
+
+	Tile::dispenser = (new DispenserTile(TILE_DISPENSER, TEXTURE_FURNACE_SIDE))
+		->init()
+		->setDestroyTime(3.5f)
+		->setSoundType(Tile::SOUND_STONE)
+		->setDescriptionId("dispenser");
+
+	Tile::musicBlock = (new MusicTile(TILE_NOTE_BLOCK, TEXTURE_JUKEBOX_SIDE))
+		->init()
+		->setSoundType(Tile::SOUND_WOOD)
+		->setDestroyTime(0.8f)
+		->setDescriptionId("musicBlock");
+
+	Tile::recordPlayer = new RecordPlayerTile(TILE_JUKEBOX, TEXTURE_JUKEBOX_SIDE);
+	recordPlayer
+		->init()
+		->setSoundType(Tile::SOUND_WOOD)
+		->setDestroyTime(2.0f)
+		->setExplodeable(10.0f)
+		->setDescriptionId("jukebox");
 
 	Tile::mobSpawner = (new MobSpawnerTile(TILE_SPAWNER, TEXTURE_SPAWNER))
 		->init()
@@ -744,7 +784,8 @@ void Tile::initTiles()
 		->setSoundType(Tile::SOUND_NORMAL)
 		->setDescriptionId("redstoneDust");
 
-	Tile::sapling = (new Sapling(TILE_SAPLING, TEXTURE_SAPLING))
+	Tile::sapling = (new Sapling(TILE_SAPLING, TEXTURE_SAPLING));
+	Tile::sapling
 		->init()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_GRASS)
@@ -799,6 +840,32 @@ void Tile::initTiles()
 		->setDestroyTime(0.5f)
 		->setSoundType(Tile::SOUND_CLOTH)
 		->setDescriptionId("cake");
+
+	Tile::repeater = (new RepeaterTile(TILE_REPEATER_OFF, false))
+		->init()
+		->setDestroyTime(0.0f)
+		->setSoundType(Tile::SOUND_WOOD)
+		->setDescriptionId("diode");
+
+	Tile::repeaterLit = (new RepeaterTile(TILE_REPEATER_ON, true))
+		->init()
+		->setDestroyTime(0.0f)
+		->setLightEmission(0.625f)
+		->setSoundType(Tile::SOUND_WOOD)
+		->setDescriptionId("diode");
+
+	Tile::trapDoor = (new TrapDoorTile(TILE_TRAPDOOR, Material::wood))
+		->init()
+		->setDestroyTime(3.0f)
+		->setSoundType(Tile::SOUND_WOOD)
+		->setDescriptionId("trapdoor");
+
+	Tile::portal = new PortalTile(TILE_PORTAL, TEXTURE_PORTAL);
+	portal->init()
+		->setDestroyTime(-1.0f)
+		->setSoundType(Tile::SOUND_GLASS)
+		->setLightEmission(0.75f)
+		->setDescriptionId("portal");
 
 	Item::items[Tile::cloth->m_ID] = (new ClothItem(Tile::cloth->m_ID - C_MAX_TILES))
 		->setDescriptionId("cloth");
@@ -1118,7 +1185,7 @@ void Tile::spawnResources(Level* pLevel, const TilePos& pos, int data, float fCh
 			   (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f,
 			   (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f);
 
-		auto pEntity = std::make_shared<ItemEntity>(pLevel, o + pos, new ItemInstance(id, 1, getSpawnResourcesAuxValue(data)));
+		auto pEntity = std::make_shared<ItemEntity>(pLevel, o + pos, std::make_shared<ItemInstance>(id, 1, getSpawnResourcesAuxValue(data)));
 		pEntity->m_throwTime = 10;
 
 		pLevel->addEntity(pEntity);
@@ -1239,6 +1306,8 @@ Tile* Tile::rail;
 Tile* Tile::poweredRail;
 Tile* Tile::detectorRail;
 Tile* Tile::lever;
+Tile* Tile::stonePressurePlate;
+Tile* Tile::woodPressurePlate;
 Tile* Tile::obsidian;
 Tile* Tile::tnt;
 Tile* Tile::torch;
@@ -1250,6 +1319,9 @@ Tile* Tile::soulSand;
 Tile* Tile::glowstone;
 Tile* Tile::pumpkinLantern;
 Tile* Tile::fire;
+Tile* Tile::dispenser;
+Tile* Tile::musicBlock;
+RecordPlayerTile* Tile::recordPlayer;
 Tile* Tile::mobSpawner;
 Tile* Tile::chest;
 Tile* Tile::redstoneDust;
@@ -1262,7 +1334,7 @@ Tile* Tile::sign;
 Tile* Tile::wallSign;
 Tile* Tile::doorWood;
 Tile* Tile::doorIron;
-Tile* Tile::sapling;
+Sapling* Tile::sapling;
 Tile* Tile::sponge;
 Tile* Tile::bed;
 Tile* Tile::web;
@@ -1274,3 +1346,7 @@ Tile* Tile::crops;
 Tile* Tile::furnace;
 Tile* Tile::furnaceLit;
 Tile* Tile::cake;
+Tile* Tile::repeater;
+Tile* Tile::repeaterLit;
+Tile* Tile::trapDoor;
+PortalTile* Tile::portal;

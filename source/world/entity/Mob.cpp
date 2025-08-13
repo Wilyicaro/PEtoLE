@@ -15,11 +15,11 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	m_invulnerableDuration = 20;
 	m_yBodyRot = 0.0f;
 	m_yBodyRotO = 0.0f;
-	m_bInterpolateOnly = 0;
+	m_bInterpolateOnly = false;
 	m_oAttackAnim = 0.0f;
 	m_attackAnim = 0.0f;
 	m_health = 10;
-	m_lastHealth = 20;
+	m_lastHealth = 0;
 	m_ambientSoundTime = 0;
 	m_hurtTime = 0;
 	m_hurtDuration = 0;
@@ -28,11 +28,11 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	m_attackTime = 0;
     m_oTilt = 0.0f;
     m_tilt = 0.0f;
-	field_120 = 0;
+	m_lookTime = 0;
 	field_124 = 0;
-	field_128 = 0.0f;
+	m_walkAnimSpeedO = 0.0f;
 	m_walkAnimSpeed = 0.0f;
-	field_130 = 0.0f;
+	m_walkAnimPos = 0.0f;
 	m_noActionTime = 0;
 	m_moving = Vec2::ZERO;
 	m_yRotA = 0.0f;
@@ -40,8 +40,8 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	field_B10 = 0;
 	m_runSpeed = 0.7f;
 	field_B48 = 0;
-	field_B4C = 0.0f;
-	field_B50 = 0.0f;
+	m_oRun = 0.0f;
+	m_run = 0.0f;
 	m_animStep = 0.0f;
 	m_animStepO = 0.0f;
 	m_rotOffs = 0.0f;
@@ -92,25 +92,6 @@ void Mob::lerpTo(const Vec3& pos, const Vec2& rot, int steps)
 void Mob::tick()
 {
 	superTick();
-
-	if (m_lSteps > 0)
-	{
-		setPos(Vec3(m_pos.x + ((m_lPos.x - m_pos.x) / (float)m_lSteps),
-			        m_pos.y + ((m_lPos.y - m_pos.y) / (float)m_lSteps),
-			        m_pos.z + ((m_lPos.z - m_pos.z) / (float)m_lSteps)));
-
-		// Similar to rotlerp
-		// I'm pretty sure this is super inefficient and its trying to do what I have it doing in setRot already.
-		float ang = m_lRot.y - m_rot.y;
-		while (ang < -180.0f) ang += 360.0f;
-		while (ang >= 180.0f) ang -= 360.0f;
-
-		setRot(Vec2(m_rot.y + ((m_lRot.y - m_rot.y) / float(m_lSteps)),
-			        m_rot.x + ((m_lRot.x - m_rot.x) / float(m_lSteps))));
-
-		m_lSteps--;
-	}
-
 	aiStep();
 	updateWalkAnim();
 
@@ -123,7 +104,7 @@ void Mob::tick()
 	field_E8_2 = m_yBodyRot;
 	x1 = field_E8_2;
 
-	field_B4C = field_B50;
+	m_oRun = m_run;
 
 	if (dist > 0.05f)
 	{
@@ -145,10 +126,10 @@ void Mob::tick()
 	else
 		x4 = x1 = m_rot.y;
 
-	if (!m_onGround)
+	if (!m_bOnGround)
 		x3 = 0.0f;
 
-	field_B50 += (x3 - field_B50) * 0.3f;
+	m_run += (x3 - m_run) * 0.3f;
 	
 
 	// Similar to rotlerp
@@ -494,7 +475,7 @@ void Mob::travel(const Vec2& pos)
 		return;
 	}
 
-	if (!m_onGround)
+	if (!m_bOnGround)
 	{
 		x2 = m_flyingFriction;
 	}
@@ -505,7 +486,7 @@ void Mob::travel(const Vec2& pos)
 		if (tile <= 0)
 			_x1 = 0.546f;
 		else
-			_x1 = Tile::tiles[tile]->friction * 0.91f;
+			_x1 = Tile::tiles[tile]->m_friction * 0.91f;
 
 		assert(_x1 != 0.0f);
 
@@ -514,7 +495,7 @@ void Mob::travel(const Vec2& pos)
 
 	moveRelative(Vec3(pos.y, x2, pos.x));
 
-	if (!m_onGround)
+	if (!m_bOnGround)
 	{
 		dragFactor = 0.91f;
 	}
@@ -525,7 +506,7 @@ void Mob::travel(const Vec2& pos)
 		if (tile <= 0)
 			dragFactor = 0.546f;
 		else
-			dragFactor = Tile::tiles[tile]->friction * 0.91f;
+			dragFactor = Tile::tiles[tile]->m_friction * 0.91f;
 	}
 
 	if (onLadder())
@@ -586,7 +567,7 @@ bool Mob::canSee(Entity* pEnt) const
 
 void Mob::updateWalkAnim()
 {
-	field_128 = m_walkAnimSpeed;
+	m_walkAnimSpeedO = m_walkAnimSpeed;
 
 	float diffX = m_pos.x - m_oPos.x;
 	float diffZ = m_pos.z - m_oPos.z;
@@ -596,14 +577,29 @@ void Mob::updateWalkAnim()
 		spd = 1.0f;
 
 	m_walkAnimSpeed += (spd - m_walkAnimSpeed) * 0.4f;
-	field_130 += m_walkAnimSpeed;
+	m_walkAnimPos += m_walkAnimSpeed;
 }
 
 void Mob::aiStep()
 {
+	if (m_lSteps > 0)
+	{
+		setPos(m_pos + ((m_lPos - m_pos) / (float)m_lSteps));
+
+		// Similar to rotlerp
+		// I'm pretty sure this is super inefficient and its trying to do what I have it doing in setRot already.
+		float ang = m_lRot.y - m_rot.y;
+		while (ang < -180.0f) ang += 360.0f;
+		while (ang >= 180.0f) ang -= 360.0f;
+
+		setRot(m_rot + ((m_lRot - m_rot) / float(m_lSteps)));
+
+		m_lSteps--;
+	}
+
 	if (isImmobile())
 	{
-		m_bJumping = 0;
+		m_bJumping = false;
 		m_moving = Vec2::ZERO;
 	}
 	else if (!m_bInterpolateOnly)
@@ -616,7 +612,7 @@ void Mob::aiStep()
 	{
 		if (bIsInWater || bIsInLava)
 			m_vel.y += 0.04f;
-		else if (m_onGround)
+		else if (m_bOnGround)
 			jumpFromGround();
 	}
 
@@ -629,7 +625,7 @@ void Mob::aiStep()
 	AABB aabb = m_hitbox;
 	aabb.grow(0.2f, 0.0f, 0.2f);
 
-	EntityVector ents = m_pLevel->getEntities(shared_from_this(), aabb);
+	EntityVector ents = m_pLevel->getEntities(this, aabb);
 	for (EntityVector::iterator it = ents.begin(); it != ents.end(); it++)
 	{
 		auto& pEnt = *it;
@@ -665,8 +661,7 @@ void Mob::lookAt(Entity* pEnt, float a3, float a4)
 	float x1 = atan2f(diffZ, diffX);
 	float x2 = atan2f(q1, p1);
 
-	setRot(Vec2(-rotlerp(m_rot.x, x2 * 180.0f / float(M_PI), a4),
-	              rotlerp(m_rot.y, x1 * 180.0f / float(M_PI) - 90.0f, a3)));
+	setRot(Vec2(rotlerp(m_rot.y, x1 * 180.0f / float(M_PI) - 90.0f, a3), -rotlerp(m_rot.x, x2 * 180.0f / float(M_PI), a4)));
 }
 
 bool Mob::canSpawn()
@@ -699,19 +694,18 @@ Vec3 Mob::getPos(float f) const
 Vec3 Mob::getViewVector(float f) const
 {
 	constexpr float C_180_OVER_PI = 0.017453f;
-	constexpr float C_PI = 3.1416f;
 	
 	if (f == 1.0)
 	{
-		Vec3 x(Mth::cos(-(m_rot.y * C_180_OVER_PI) - C_PI),
-			   Mth::sin(-(m_rot.y * C_180_OVER_PI) - C_PI),
+		Vec3 x(Mth::cos(-(m_rot.y * C_180_OVER_PI) - M_PI),
+			   Mth::sin(-(m_rot.y * C_180_OVER_PI) - M_PI),
 			   -Mth::cos(-(m_rot.x * C_180_OVER_PI)));
 
-		return Vec3(x.x * x.z, Mth::sin(-(m_rot.x * C_180_OVER_PI)), x.y * x.z);
+		return Vec3(x.y * x.z, Mth::sin(-(m_rot.x * C_180_OVER_PI)), x.x * x.z);
 	}
 
 	float x1 = m_rotPrev.x + (m_rot.x - m_rotPrev.x) * f;
-	float x2 = -((m_rotPrev.y + (m_rot.y - m_rotPrev.y) * f) * C_180_OVER_PI) - C_PI;
+	float x2 = -((m_rotPrev.y + (m_rot.y - m_rotPrev.y) * f) * C_180_OVER_PI) - M_PI;
 	float x3 = Mth::cos(x2);
 	float x4 = Mth::sin(x2);
 	float x5 = -(x1 * C_180_OVER_PI);
@@ -753,12 +747,12 @@ void Mob::updateAi()
 
 	if (m_random.nextFloat() < 0.02f)
 	{
-		Entity* nearestPlayer = m_pLevel->getNearestPlayer(this, 8.0f).get();
+		auto nearestPlayer = m_pLevel->getNearestPlayer(this, 8.0f);
 		if (nearestPlayer)
 		{
 			m_pEntLookedAt = nearestPlayer;
 
-			field_120 = m_random.nextInt(20) + 10;
+			m_lookTime = m_random.nextInt(20) + 10;
 		}
 		else
 		{
@@ -768,13 +762,13 @@ void Mob::updateAi()
 
 	if (m_pEntLookedAt)
 	{
-		lookAt(m_pEntLookedAt, 10.0f, getMaxHeadXRot());
+		lookAt(m_pEntLookedAt.get(), 10.0f, getMaxHeadXRot());
 
 		// gaze timer
-		field_120--;
+		m_lookTime--;
 
 		// if the entity was removed, or we're too far away, or our gaze timer is up
-		if (field_120 < 0 || m_pEntLookedAt->m_bRemoved || m_pEntLookedAt->distanceToSqr(this) > 64.0f)
+		if (m_lookTime < 0 || m_pEntLookedAt->m_bRemoved || m_pEntLookedAt->distanceToSqr(this) > 64.0f)
 			// stop staring
 			m_pEntLookedAt = nullptr;
 	}
@@ -793,11 +787,16 @@ void Mob::updateAi()
 	}
 }
 
+bool Mob::canDespawn() const
+{
+	return true;
+}
+
 void Mob::checkDespawn(Mob* nearestMob)
 {
 	// if we need to remove ourselves when far away, and there's a player around
 	// (if there's no players, we're on a headless server)
-	if (nearestMob)
+	if (canDespawn() && nearestMob)
 	{
 		float distSqr = nearestMob->distanceToSqr_inline(m_pos);
 		bool remWhenFar = removeWhenFarAway();
@@ -828,6 +827,16 @@ void Mob::swing()
 	}
 }
 
+std::shared_ptr<ItemInstance> Mob::getCarriedItem()
+{
+	return nullptr;
+}
+
+int Mob::getItemIcon(ItemInstance* instance)
+{
+	return instance->getIcon();
+}
+
 void Mob::handleEntityEvent(int event)
 {
 	switch (event)
@@ -849,6 +858,13 @@ void Mob::handleEntityEvent(int event)
 		Entity::handleEntityEvent(event);
 		break;
 	}
+}
+
+void Mob::rideTick()
+{
+	Entity::rideTick();
+	m_oRun = m_run;
+	m_run = 0.0F;
 }
 
 float Mob::rotlerp(float a2, float a3, float a4)

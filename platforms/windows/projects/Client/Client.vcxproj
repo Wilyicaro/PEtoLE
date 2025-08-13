@@ -43,6 +43,18 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug_SDL2|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release_SDL2|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -190,17 +202,37 @@
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\Lighting.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\BuildActionIntention.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\IntroScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\CraftingScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\CreativeScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\locale\Language.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\model\BoatModel.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\model\GhastModel.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\model\MinecartModel.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\model\SignModel.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\model\SquidModel.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\model\WolfModel.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\BoatRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\FishingHookRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\GhastRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\GiantMobRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\LightningBoltRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\MinecartRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\PaintingRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\SlimeRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\SquidRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\WolfRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\HttpTexture.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\SignRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TextureProcessor.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderer.hpp" />
@@ -326,19 +358,41 @@
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\ZombieRenderer.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Lighting.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\IntroScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\CraftingScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\CreativeScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\locale\Language.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\BoatModel.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\GhastModel.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\MinecartModel.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\SignModel.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\SlimeModel.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\SquidModel.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\model\WolfModel.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\ClockTexture.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\CompassTexture.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\BoatRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\FishingHookRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\GhastRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\GiantMobRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\LightningBoltRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\MinecartRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\PaintingRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\SlimeRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\SquidRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\WolfRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\HttpTexture.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\PortalTexture.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\SignRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.cpp" />
   </ItemGroup>
   <ItemGroup>

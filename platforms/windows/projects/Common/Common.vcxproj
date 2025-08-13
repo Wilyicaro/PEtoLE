@@ -43,6 +43,18 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug_SDL2|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release_SDL2|x64'">
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -84,6 +96,7 @@
     <ClCompile Include="$(MC_ROOT)\source\common\ShortTag.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\common\StringTag.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\common\Tag.cpp" />
+    <ClCompile Include="..\..\..\..\source\common\ProgressListener.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\common\CThread.hpp" />
@@ -110,6 +123,7 @@
     <ClInclude Include="$(MC_ROOT)\source\common\ShortTag.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\StringTag.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\Tag.hpp" />
+    <ClInclude Include="..\..\..\..\source\common\ProgressListener.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

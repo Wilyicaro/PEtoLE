@@ -86,7 +86,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	glDisable(GL_CULL_FACE);
 
 	m_pModel->m_attackTime = getAttackAnim(pMob, f);
-	m_pModel->m_bRiding = false;
+	m_pModel->m_bRiding = pMob->isRiding();
 	m_pModel->m_bIsBaby = pMob->isBaby();
 
 	if (m_pArmorModel != nullptr)
@@ -104,14 +104,15 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	setupRotations(pMob, fBob, fSmth, f);
 
 	float fScale = 0.0625f; // the scale variable according to b1.2_02
+	glEnable(GL_RESCALE_NORMAL);
 	glScalef(-1.0f, -1.0f, 1.0f);
 	scale(pMob, f);
 	glTranslatef(0.0f, -24.0f * fScale - (1.0f / 128.0f), 0.0f);
 
-	float x1 = pMob->field_128 + (pMob->m_walkAnimSpeed - pMob->field_128) * f;
+	float x1 = pMob->m_walkAnimSpeedO + (pMob->m_walkAnimSpeed - pMob->m_walkAnimSpeedO) * f;
 	if (x1 > 1.0f)
 		x1 = 1.0f;
-	float x2 = pMob->field_130 - pMob->m_walkAnimSpeed * (1.0f - f);
+	float x2 = pMob->m_walkAnimPos - pMob->m_walkAnimSpeed * (1.0f - f);
 
 	bindHttpTexture(pMob->m_skinUrl, pMob->getTexture());
 	glEnable(GL_ALPHA_TEST);
@@ -184,7 +185,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_ALPHA_TEST);
 	}
-	
+	glDisable(GL_RESCALE_NORMAL);
 	glEnable(GL_CULL_FACE);
 	glPopMatrix();
 	renderName(pMob, x, y, z);
@@ -196,7 +197,7 @@ void MobRenderer::renderName(Mob* mob, float x, float y, float z)
 		return;
 
 	Player* player = (Player*)mob;
-	if (player == m_pDispatcher->m_pMinecraft->m_pLocalPlayer.get())
+	if (player == m_pDispatcher->m_pMinecraft->m_pPlayer.get())
 		return;
 
 	// @TODO: don't know why but I have to add this correction. look into it and fix it!

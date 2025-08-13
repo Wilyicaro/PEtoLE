@@ -13,7 +13,7 @@
 
 ChunkCache::ChunkCache(Level* pLevel, ChunkStorage* pStor, ChunkSource* pSrc)
 {
-	m_chunkMap.reserve(C_MAX_CHUNKS);
+	m_chunkMap.reserve(1024);
 	field_4 = true;
 	m_pLevel = nullptr;
 	m_pLastChunk = nullptr;
@@ -185,14 +185,14 @@ void ChunkCache::saveAll()
 	}
 }
 
-void ChunkCache::saveUnsaved(bool limited)
+void ChunkCache::save(bool force)
 {
 	if (!m_pChunkStorage) return;
 
 	int savedChunks = 0;
 
 	for (auto it = m_chunkMap.begin(); it != m_chunkMap.end(); ) {
-		if (limited && savedChunks == 24)
+		if (!force && savedChunks == 24)
 			return;
 
 		LevelChunk* chunk = it->second;
@@ -201,7 +201,7 @@ void ChunkCache::saveUnsaved(bool limited)
 			continue;
 		}
 
-		if (chunk->shouldSave(limited)) {
+		if (chunk->shouldSave(force)) {
 			savedChunks++;
 			m_pChunkStorage->save(m_pLevel, chunk);
 		}
@@ -216,6 +216,47 @@ void ChunkCache::saveUnsaved(bool limited)
 			++it;
 		}
 	}
+}
+
+bool ChunkCache::save(bool force, ProgressListener& progress)
+{
+	int var3 = 0;
+	int totalChunksToSave = 0;
+
+	for (auto& it : m_chunkMap)
+	{
+		if (it.second && it.second->shouldSave(force))
+			++totalChunksToSave;
+	}
+
+	int chunksSaved = 0;
+
+	for (auto it = m_chunkMap.begin(); it != m_chunkMap.end(); ++it)
+	{
+		LevelChunk* chunk = it->second;
+
+		if (chunk && chunk->shouldSave(force))
+		{
+			save(chunk);
+			chunk->m_bUnsaved = false;
+			++var3;
+			if (var3 == 2 && !force)
+				return false;
+
+			++chunksSaved;
+			if (chunksSaved % 10 == 0)
+				progress.progressStagePercentage(chunksSaved * 100 / totalChunksToSave);
+		}
+	}
+
+	if (force) {
+		if (!m_pChunkStorage)
+			return true;
+
+		m_pChunkStorage->flush();
+	}
+
+	return true;
 }
 
 void ChunkCache::unloadChunk(std::pair< uint64_t, LevelChunk*> p)
@@ -234,7 +275,7 @@ bool ChunkCache::shouldSave()
 
 std::string ChunkCache::gatherStats()
 {
-	return "ChunkCache: 1024";
+	return "ChunkCache: " + std::to_string(m_chunkMap.size());
 }
 
 ChunkCache::~ChunkCache()

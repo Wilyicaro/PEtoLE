@@ -99,7 +99,7 @@ void PauseScreen::buttonClicked(Button* pButton)
 		m_pMinecraft->resumeGame();
 
 	if (pButton->m_buttonId == m_btnQuit.m_buttonId)
-		m_pMinecraft->leaveGame(false);
+		m_pMinecraft->leaveGame();
 
 	if (pButton->m_buttonId == m_btnVisible.m_buttonId)
 	{

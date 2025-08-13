@@ -337,6 +337,11 @@ void AppPlatform_win32::updateFocused(bool focused)
 	setMouseGrabbed(m_bGrabbedMouse);
 }
 
+void AppPlatform_win32::swapBuffers()
+{
+	SwapBuffers(_deviceContext);
+}
+
 MouseButtonType AppPlatform_win32::GetMouseButtonType(UINT iMsg)
 {
 	switch (iMsg)

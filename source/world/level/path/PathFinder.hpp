@@ -24,6 +24,7 @@ typedef std::map <int, Node*> NodeMap;
 class PathFinder
 {
 public:
+	PathFinder(LevelSource*);
 	PathFinder();
 	~PathFinder();
 

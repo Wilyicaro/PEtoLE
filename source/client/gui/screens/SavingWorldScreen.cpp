@@ -44,18 +44,18 @@ void SavingWorldScreen::tick()
 		Level* pLevel = m_pMinecraft->m_pLevel;
 		if (pLevel)
 		{
-			pLevel->saveUnsavedChunks();
+			pLevel->save();
 			pLevel->saveLevelData();
 			pLevel->savePlayerData();
 
-			LevelStorage* pStorage = pLevel->getLevelStorage();
-			SAFE_DELETE(pStorage);
+			SAFE_DELETE(pLevel->getManager());
 			SAFE_DELETE(pLevel);
 
 			m_pMinecraft->m_pLevel = nullptr;
+			m_pMinecraft->m_pLevelManager = nullptr;
 		}
 
-		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pLocalPlayer = nullptr;
+		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer = nullptr;
 
 
 		m_pMinecraft->m_bUsingScreen = true;

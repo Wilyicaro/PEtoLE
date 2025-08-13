@@ -131,9 +131,6 @@ void SelectWorldScreen::tick()
 		}
 
 		m_pMinecraft->selectLevel(levelUniqueName, levelNickname, seed);
-		m_pMinecraft->hostMultiplayer();
-		m_pMinecraft->setScreen(new ProgressScreen);
-
 		// @BUG: Use of deallocated memory. SetScreen frees us
 #ifdef ORIGINAL_CODE
 		field_130 = 0;
@@ -147,8 +144,6 @@ void SelectWorldScreen::tick()
 	{
 		LevelSummary& ls = m_pWorldSelectionList->m_levelSummary;
 		m_pMinecraft->selectLevel(ls.m_fileName, ls.m_levelName, 0);
-		m_pMinecraft->hostMultiplayer();
-		m_pMinecraft->setScreen(new ProgressScreen);
 		return;
 	}
 

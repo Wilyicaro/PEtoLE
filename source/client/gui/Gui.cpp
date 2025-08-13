@@ -11,6 +11,7 @@
 #include "client/gui/screens/inventory/InventoryScreen.hpp"
 #include "client/gui/screens/ChatScreen.hpp"
 #include "client/renderer/entity/ItemRenderer.hpp"
+#include "world/tile/PortalTile.hpp"
 
 #ifdef _WIN32
 #pragma warning(disable : 4244)
@@ -30,10 +31,10 @@ Gui::Gui(Minecraft* pMinecraft)
 	field_28 = 0;
 	field_2C = 0;
 	m_tickCount = 0;
-	field_A00 = "";
-	field_A18 = 0;
-	field_A1C = false;
-	field_A20 = 1.0f;
+	m_overlayMessage = "";
+	m_overlayMessageDuration = 0;
+	m_bHasOverlayMessage = false;
+	m_tbr = 1.0f;
 	field_A3C = true;
 	m_bRenderMessages = true;
 
@@ -84,9 +85,9 @@ void Gui::addMessage(const std::string& s)
 
 void Gui::setNowPlaying(const std::string& str)
 {
-	field_A00 = "Now playing: " + str;
-	field_A18 = 60;
-	field_A1C = true;
+	m_overlayMessage = "Now playing: " + str;
+	m_overlayMessageDuration = 60;
+	m_bHasOverlayMessage = true;
 }
 
 void Gui::renderPumpkin(int var1, int var2)
@@ -116,7 +117,7 @@ void Gui::renderPumpkin(int var1, int var2)
 }
 
 
-void Gui::renderVignette(float a2, int a3, int a4)
+void Gui::renderVignette(float a2, int width, int height)
 {
 	a2 = 1.0f - a2;
 	if (a2 > 1.0f)
@@ -124,11 +125,11 @@ void Gui::renderVignette(float a2, int a3, int a4)
 	if (a2 < 0.0f)
 		a2 = 0.0f;
 
-	field_A20 += ((a2 - field_A20) * 0.01f);
+	m_tbr += ((a2 - m_tbr) * 0.01f);
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(false);
 	glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-	glColor4f(field_A20, field_A20, field_A20, 1.0f);
+	glColor4f(m_tbr, m_tbr, m_tbr, 1.0f);
 
 	//! @BUG: No misc/vignette.png to be found in the original.
 	//! This function is unused anyways
@@ -138,9 +139,9 @@ void Gui::renderVignette(float a2, int a3, int a4)
 
 	Tesselator& t = Tesselator::instance;
 	t.begin();
-	t.vertexUV(0.0f, a4,   -90.0f, 0.0f, 1.0f);
-	t.vertexUV(a3,   a4,   -90.0f, 1.0f, 1.0f);
-	t.vertexUV(a3,   0.0f, -90.0f, 1.0f, 0.0f);
+	t.vertexUV(0.0f, height,   -90.0f, 0.0f, 1.0f);
+	t.vertexUV(width,   height,   -90.0f, 1.0f, 1.0f);
+	t.vertexUV(width,   0.0f, -90.0f, 1.0f, 0.0f);
 	t.vertexUV(0.0f, 0.0f, -90.0f, 0.0f, 0.0f);
 	t.draw();
 
@@ -148,6 +149,34 @@ void Gui::renderVignette(float a2, int a3, int a4)
 	glEnable(GL_DEPTH_TEST);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void Gui::renderTp(float progress, int width, int height)
+{
+	progress *= progress;
+	progress *= progress;
+	progress = progress * 0.8F + 0.2F;
+	glDisable(3008);
+	glDisable(2929);
+	glDepthMask(false);
+	glBlendFunc(770, 771);
+	glColor4f(1.0F, 1.0F, 1.0F, progress);
+	m_pMinecraft->m_pTextures->loadAndBindTexture(C_TERRAIN_NAME);
+	float var4 = (Tile::portal->m_TextureFrame % 16) / 16.0F;
+	float var5 = (Tile::portal->m_TextureFrame / 16) / 16.0F;
+	float var6 = (Tile::portal->m_TextureFrame % 16 + 1) / 16.0F;
+	float var7 = (Tile::portal->m_TextureFrame / 16 + 1) / 16.0F;
+	Tesselator& t = Tesselator::instance;
+	t.begin();
+	t.vertexUV(0.0, height, -90.0, var4, var7);
+	t.vertexUV(width, height, -90.0, var6, var7);
+	t.vertexUV(width, 0.0, -90.0, var6, var5);
+	t.vertexUV(0.0, 0.0, -90.0, var4, var5);
+	t.draw();
+	glDepthMask(true);
+	glEnable(2929);
+	glEnable(3008);
+	glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 }
 
 void Gui::inventoryUpdated()
@@ -162,7 +191,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 	renderer->setupGuiScreen();
 
-	auto& player = mc->m_pLocalPlayer;
+	auto& player = mc->m_pPlayer;
 
 	if (!mc->m_pLevel || !player || mc->getOptions()->m_bDontRenderGui)
 		return;
@@ -180,6 +209,10 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 	if (!mc->getOptions()->m_bThirdPerson && headGear && headGear->m_itemID == Tile::pumpkin->m_ID)
 		renderPumpkin(width, height);
+
+	float var10 = m_pMinecraft->m_pPlayer->m_oPortalTime + (m_pMinecraft->m_pPlayer->m_portalTime - m_pMinecraft->m_pPlayer->m_oPortalTime) * f;
+	if (var10 > 0.0F)
+		renderTp(var10, width, height);
 
 	Textures* textures = mc->m_pTextures;
 
@@ -377,6 +410,25 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 		slotX += 20;
 	}
 
+	if (m_overlayMessageDuration > 0 && m_bHasOverlayMessage) {
+		float var25 = m_overlayMessageDuration - f;
+		int var16 = (int)(var25 * 256.0F / 20.0F);
+		if (var16 > 255) {
+			var16 = 255;
+		}
+
+		if (var16 > 0) {
+			glPushMatrix();
+			glTranslatef(cenX, (float)(height - 48), 0.0F);
+			glEnable(3042);
+			glBlendFunc(770, 771);
+			m_pMinecraft->m_pFont->draw(m_overlayMessage, -(m_pMinecraft->m_pFont->width(m_overlayMessage)) / 2, -4, Mth::HSBtoRGB(var25 / 50.0F, 0.7F, 0.6F) & 16777215 + (var16 << 24));
+			glDisable(3042);
+			glPopMatrix();
+		}
+	}
+	else m_bHasOverlayMessage = false;
+
 #undef DIFF
 
 	field_A3C = false;
@@ -390,8 +442,8 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 void Gui::tick()
 {
-	if (field_A18 > 0)
-		field_A18--;
+	if (m_overlayMessageDuration > 0)
+		m_overlayMessageDuration--;
 
 	m_tickCount++;
 
@@ -404,7 +456,7 @@ void Gui::tick()
 
 void Gui::renderSlot(int slot, int x, int y, float f)
 {
-	Inventory* pInv = m_pMinecraft->m_pLocalPlayer->m_pInventory;
+	Inventory* pInv = m_pMinecraft->m_pPlayer->m_pInventory;
 
 	std::shared_ptr<ItemInstance> pInst = pInv->getItem(slot);
 	if (!pInst || pInst->m_itemID <= 0)
@@ -473,10 +525,10 @@ void Gui::handleClick(int clickID, int mouseX, int mouseY)
 		return;
 
 	if (m_pMinecraft->isTouchscreen() && slot == getNumSlots() - 1)
-		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
-		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pLocalPlayer->m_pInventory));
+		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pPlayer.get()));
+		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pPlayer->m_pInventory));
 	else
-		m_pMinecraft->m_pLocalPlayer->m_pInventory->selectSlot(slot);
+		m_pMinecraft->m_pPlayer->m_pInventory->selectSlot(slot);
 		
 }
 
@@ -486,14 +538,14 @@ void Gui::handleKeyPressed(int keyCode)
 
 	if (options->isKey(KM_CRAFTING, keyCode))
 	{
-		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
-		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pLocalPlayer->m_pInventory));
+		if (m_pMinecraft->m_pGameMode->isSurvivalType()) m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pPlayer.get()));
+		else m_pMinecraft->setScreen(new CreativeScreen(m_pMinecraft->m_pPlayer->m_pInventory));
 		return;
 	}
 
 	if (options->isKey(KM_INVENTORY, keyCode))
 	{
-		m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
+		m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pPlayer.get()));
 		return;
 	}
 
@@ -504,7 +556,7 @@ void Gui::handleKeyPressed(int keyCode)
 		int maxItems = getNumSlots() - 1;
 		if (m_pMinecraft->isTouchscreen())
 			maxItems--;
-		int* slot = &m_pMinecraft->m_pLocalPlayer->m_pInventory->m_selected;
+		int* slot = &m_pMinecraft->m_pPlayer->m_pInventory->m_selected;
 
 		if (slotR)
 		{

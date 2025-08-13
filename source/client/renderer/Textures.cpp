@@ -201,7 +201,7 @@ void Textures::tick()
 	for (DynamicTexture* pDynaTex : m_dynamicTextures)
 	{
 		pDynaTex->bindTexture(this);
-		pDynaTex->m_anaglyph3d = m_pOptions->m_bAnaglyphs;
+		pDynaTex->m_bAnaglyph3d = m_pOptions->m_bAnaglyphs;
 		pDynaTex->tick();
 
 		uint8_t* basePixels = pDynaTex->m_pixels;

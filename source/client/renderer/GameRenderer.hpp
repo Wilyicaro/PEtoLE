@@ -44,7 +44,8 @@ public:
 	void pick(float);
 	void renderItemInHand(float, int);
 	void prepareAndRenderClouds(LevelRenderer* pLR, float f);
-	void renderWeather(float f);
+	void renderSnowAndRain(float f);
+	void tickRain();
 
 	float getFov(float f);
 
@@ -53,7 +54,8 @@ public:
 	Minecraft* m_pMinecraft;
 
 	float m_renderDistance;
-	int field_C;
+	int m_ticks;
+	int m_rainSoundTime;
 	std::shared_ptr<Entity> m_hovered;
 	float field_14;
 	float field_18;

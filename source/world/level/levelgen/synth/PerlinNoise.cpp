@@ -73,11 +73,9 @@ real PerlinNoise::getValue(real x, real y, real z)
 	return result;
 }
 
-real* PerlinNoise::getRegion(real* pMem, real a3, real a4, real a5, int a6, int a7, int a8, real a9, real a10, real a11)
+const std::vector<real>& PerlinNoise::getRegion(std::vector<real>& pMem, real a3, real a4, real a5, int a6, int a7, int a8, real a9, real a10, real a11)
 {
-	int amt = a6 * a7 * a8;
-	if (!pMem) pMem = new real[amt];
-	std::fill(pMem, pMem + amt, 0.0);
+	pMem.assign(a6 * a7 * a8, 0.0);
 	
 	real x = 1.0;
 	for (int i = 0; i < m_nOctaves; i++)
@@ -90,13 +88,11 @@ real* PerlinNoise::getRegion(real* pMem, real a3, real a4, real a5, int a6, int 
 }
 
 
-real* PerlinNoise::getBiomeRegion(real* pMem, real a3, real a4, int a5, int a6, real a7, real a8, real a9, real a10)
+const std::vector<real>& PerlinNoise::getBiomeRegion(std::vector<real>& pMem, real a3, real a4, int a5, int a6, real a7, real a8, real a9, real a10)
 {
 	a7 /= 1.5;
 	a8 /= 1.5;
-	int amt = a5 * a6;
-	if (!pMem) pMem = new real[amt];
-	std::fill(pMem, pMem + amt, 0.0);
+	pMem.assign(a5 * a6, 0.0);
 
 	real x = 1.0, y = 1.0;
 	for (int i = 0; i < m_nOctaves; i++)

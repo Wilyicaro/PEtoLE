@@ -100,8 +100,7 @@ void CropsTile::spawnResources(Level* level, const TilePos& pos, int data, float
 				(level->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f,
 				(level->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f);
 
-			ItemInstance inst(Item::seeds, 1, getSpawnResourcesAuxValue(data));
-			auto pEntity = std::make_shared<ItemEntity>(level, o + pos, &inst);
+			auto pEntity = std::make_shared<ItemEntity>(level, o + pos, std::make_shared<ItemInstance>(Item::seeds, 1, getSpawnResourcesAuxValue(data)));
 			pEntity->m_throwTime = 10;
 
 			level->addEntity(pEntity);

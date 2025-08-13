@@ -29,7 +29,8 @@ void GameRenderer::_init()
 	//ItemInHandRenderer* m_pItemInHandRenderer = nullptr;
 
 	m_renderDistance = 0.0f;
-	field_C = 0;
+	m_ticks = 0;
+	m_rainSoundTime = 0;
 	m_hovered = nullptr;
 	field_14 = 0.0f;
 	field_18 = 0.0f;
@@ -142,8 +143,24 @@ void GameRenderer::moveCameraToPlayer(float f)
 	float posZ = Mth::Lerp(pMob->m_oPos.z, pMob->m_pos.z, f);
 
 	glRotatef(field_5C + f * (field_58 - field_5C), 0.0f, 0.0f, 1.0f);
+	
+	if (pMob->isSleeping())
+	{
+		headHeightDiff += 1;
+		glTranslatef(0.0F, 0.3F, 0.0F);
+		if (!m_pMinecraft->getOptions()->field_241) {
+			int d3 = m_pMinecraft->m_pLevel->getTile(pMob->m_pos);
+			if (d3 == Tile::bed->m_ID) {
+				int j = m_pMinecraft->m_pLevel->getData(pMob->m_pos);
+				int f5 = j & 3;
+				glRotatef(f5 * 90.0f, 0.0F, 1.0F, 0.0F);
+			}
 
-	if (m_pMinecraft->getOptions()->m_bThirdPerson)
+			glRotatef(pMob->m_rotPrev.y + (pMob->m_rot.y - pMob->m_rotPrev.y) * f + 180.0F, 0.0F, -1.0F, 0.0F);
+			glRotatef(pMob->m_rotPrev.x + (pMob->m_rot.x - pMob->m_rotPrev.x) * f, -1.0F, 0.0F, 0.0F);
+		}
+	}
+	else if (m_pMinecraft->getOptions()->m_bThirdPerson)
 	{
 		float v11 = m_noNeighborUpdate + (field_2C - m_noNeighborUpdate) * f;
 		if (m_pMinecraft->getOptions()->field_241)
@@ -252,7 +269,7 @@ void GameRenderer::bobView(float f)
 	float f1 = Mth::Lerp(player->m_oBob, player->m_bob, f);
 	float f2 = Mth::Lerp(player->m_oTilt, player->m_tilt, f);
 	// @NOTE: Multiplying by M_PI inside of the paren makes it stuttery for some reason? Anyways it works now :)
-	float f3 = -(player->m_walkDist + (player->m_walkDist - player->field_90) * f) * float(M_PI);
+	float f3 = -(player->m_walkDist + (player->m_walkDist - player->m_walkDistO) * f) * float(M_PI);
 	float f4 = Mth::sin(f3);
 	float f5 = Mth::cos(f3);
 	glTranslatef((f4 * f1) * 0.5f, -fabsf(f5 * f1), 0.0f);
@@ -402,7 +419,7 @@ void GameRenderer::renderLevel(float f)
 {
 	if (!m_pMinecraft->m_pMobPersp)
 	{
-		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pLocalPlayer;
+		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer;
 
 		if (!m_pMinecraft->m_pMobPersp)
 		{
@@ -546,15 +563,13 @@ void GameRenderer::renderLevel(float f)
 			glEnable(GL_ALPHA_TEST);
 		}
 
+		renderSnowAndRain(f);
 
 		setupFog(0);
 		glEnable(GL_FOG);
 		pLR->renderClouds(f);
 		glDisable(GL_FOG);
 		setupFog(1);
-
-		if (false) // TODO: Figure out how to enable weather
-			renderWeather(f);
 
 		if (m_zoom == 1.0f)
 		{
@@ -572,7 +587,7 @@ void GameRenderer::renderLevel(float f)
 
 void GameRenderer::render(float f)
 {
-	if (m_pMinecraft->m_pLocalPlayer && m_pMinecraft->m_bGrabbedMouse)
+	if (m_pMinecraft->m_pPlayer && m_pMinecraft->m_bGrabbedMouse)
 	{
 		Minecraft *pMC = m_pMinecraft;
 		pMC->m_mouseHandler.poll();
@@ -592,7 +607,7 @@ void GameRenderer::render(float f)
 			float yd = 4.0f * mult1 * pMC->m_mouseHandler.m_delta.y;
 
 			float old_field_84 = field_84;
-			field_84 = float(field_C) + f;
+			field_84 = float(m_ticks) + f;
 			diff_field_84 = field_84 - old_field_84;
 			m_oTex += xd;
 			field_78 += yd;
@@ -634,7 +649,7 @@ void GameRenderer::render(float f)
 		Vec2 rot(field_7C * diff_field_84,
 			     field_80 * diff_field_84 * multPitch);
 		m_pItemInHandRenderer->turn(rot);
-		pMC->m_pLocalPlayer->turn(rot);
+		pMC->m_pPlayer->turn(rot);
 	}
 
 	int mouseX = int(Mouse::getX() * Gui::InvGuiScale);
@@ -655,7 +670,7 @@ void GameRenderer::render(float f)
 		}
 	}
 
-	if (m_pMinecraft->isLevelGenerated())
+	if (m_pMinecraft->isLevelReady())
 	{
 		if (t_keepPic < 0)
 		{
@@ -674,9 +689,9 @@ void GameRenderer::render(float f)
 		setupGuiScreen();
 	}
 
-	if (m_pMinecraft->m_pLocalPlayer &&
-		m_pMinecraft->m_pLocalPlayer->m_pMoveInput)
-		m_pMinecraft->m_pLocalPlayer->m_pMoveInput->render(f);
+	if (m_pMinecraft->m_pPlayer &&
+		m_pMinecraft->m_pPlayer->m_pMoveInput)
+		m_pMinecraft->m_pPlayer->m_pMoveInput->render(f);
 
 	if (m_pMinecraft->m_pScreen)
 	{
@@ -692,10 +707,10 @@ void GameRenderer::render(float f)
 
 	if (m_pMinecraft->getOptions()->m_bDebugText)
 	{
-		if (m_pMinecraft->m_pLocalPlayer && m_pMinecraft->isLevelGenerated())
+		if (m_pMinecraft->m_pPlayer && m_pMinecraft->isLevelReady())
 		{
 			char posStr[96];
-			Vec3 pos = m_pMinecraft->m_pLocalPlayer->getPos(f);
+			Vec3 pos = m_pMinecraft->m_pPlayer->getPos(f);
 			sprintf(posStr, "%.2f / %.2f / %.2f", pos.x, pos.y, pos.z);
 
 			debugText << m_pMinecraft->m_pLevelRenderer->gatherStats1();
@@ -784,7 +799,7 @@ void GameRenderer::tick()
 		t_keepPic = -100;
 #endif
 
-	if (!m_pMinecraft->m_pLocalPlayer)
+	if (!m_pMinecraft->m_pPlayer)
 		return;
 	
 	if (--t_keepHitResult == 0)
@@ -821,13 +836,13 @@ void GameRenderer::tick()
 	auto& pMob = m_pMinecraft->m_pMobPersp;
 	if (!pMob)
 	{
-		pMob = m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pLocalPlayer;
+		pMob = m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer;
 	}
 
 	float bright = m_pMinecraft->m_pLevel->getBrightness(pMob->m_pos);
 	float x3 = float(3 - m_pMinecraft->getOptions()->m_iViewDistance);
 
-	field_C++;
+	m_ticks++;
 
 	float x4 = x3 / 3.0f;
 	float x5 = (x4 + bright * (1.0f - x4) - m_fogBr) * 0.1f;
@@ -835,6 +850,7 @@ void GameRenderer::tick()
 	m_fogBr += x5;
 
 	m_pItemInHandRenderer->tick();
+	tickRain();
 }
 
 void GameRenderer::renderItemInHand(float f, int i)
@@ -850,12 +866,12 @@ void GameRenderer::renderItemInHand(float f, int i)
 	if (m_pMinecraft->getOptions()->m_bViewBobbing)
 		bobView(f);
 
-	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->getOptions()->m_bDontRenderGui)
+	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pMobPersp->isSleeping() && !m_pMinecraft->getOptions()->m_bDontRenderGui)
 		m_pItemInHandRenderer->render(f);
 
 	glPopMatrix();
 
-	if (!m_pMinecraft->getOptions()->m_bThirdPerson)
+	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pMobPersp->isSleeping())
 	{
 		m_pItemInHandRenderer->renderScreenEffect(f);
 		bobHurt(f);
@@ -870,10 +886,13 @@ void GameRenderer::prepareAndRenderClouds(LevelRenderer* pLR, float f)
 
 }
 
-void GameRenderer::renderWeather(float f)
+void GameRenderer::renderSnowAndRain(float f)
 {
+	float rainLevel = m_pMinecraft->m_pLevel->getRainLevel(f);
 
-	auto& pLP = m_pMinecraft->m_pLocalPlayer;
+	if (rainLevel <= 0) return;
+
+	auto& pLP = m_pMinecraft->m_pPlayer;
 	int bPosX = Mth::floor(pLP->m_pos.x);
 	int bPosY = Mth::floor(pLP->m_pos.y);
 	int bPosZ = Mth::floor(pLP->m_pos.z);
@@ -884,15 +903,20 @@ void GameRenderer::renderWeather(float f)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	m_pMinecraft->m_pTextures->loadAndBindTexture("environment/snow.png");
 
 	int range = m_pMinecraft->getOptions()->m_bFancyGraphics ? 10 : 5;
+
+	auto& biomes = pLevel->getBiomeSource()->getBiomeBlock(TilePos(bPosX - range, bPosY, bPosZ - range), range * 2 + 1, range * 2 + 1);
+	int i = 0;
 
 	TilePos tp(bPosX - range, 128, bPosZ - range);
 	for (tp.x = bPosX - range; tp.x <= bPosX + range; tp.x++)
 	{
 		for (tp.z = bPosZ - range; tp.z <= bPosZ + range; tp.z++)
 		{
+			Biome* biome = biomes[i++];
+
+			if (!biome->hasSnow && !biome->hasRain) continue;
 			int tsb = pLevel->getTopSolidBlock(tp);
 			if (tsb < 0)
 				tsb = 0;
@@ -905,39 +929,121 @@ void GameRenderer::renderWeather(float f)
 			if (maxY < tsb)
 				maxY = tsb;
 
-			float offs = 2.0f;
+			float offs = 1.0f;
 			if (minY == maxY)
 				continue;
 
-			m_random.setSeed(tp.x * tp.x * 3121 + tp.x * 45238971 + tp.z * tp.z * 418711 + tp.z * 13761);
+			m_random.setSeed(static_cast<int64_t>(tp.x * tp.x * 3121 + tp.x * 45238971 + tp.z * tp.z * 418711 + tp.z * 13761));
 
-			float x1 = float(field_C) + f;
-			float x2 = (float(field_C & 0x1FF) + f) / 512.0f;
-			float x3 = m_random.nextFloat() + x1 * 0.01f * m_random.nextGaussian();
-			float x4 = m_random.nextFloat() + x1 * 0.001f * m_random.nextGaussian();
+
 			float f1 = float(tp.x + 0.5f) - pLP->m_pos.x;
 			float f2 = float(tp.z + 0.5f) - pLP->m_pos.z;
 			float f3 = Mth::sqrt(f1 * f1 + f2 * f2) / float(range);
 			float f4 = pLevel->getBrightness(tp);
-			t.begin();
-			glColor4f(f4, f4, f4, (1.0f - f3 * f3) * 0.7f);
-			t.offset(-pos.x, -pos.y, -pos.z);
-			t.vertexUV(float(tp.x + 0), float(minY), float(tp.z + 0), 0.0f * offs + x3, float(minY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 1), float(minY), float(tp.z + 1), 1.0f * offs + x3, float(minY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 1), float(maxY), float(tp.z + 1), 1.0f * offs + x3, float(maxY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 0), float(maxY), float(tp.z + 0), 0.0f * offs + x3, float(maxY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 0), float(minY), float(tp.z + 1), 0.0f * offs + x3, float(minY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 1), float(minY), float(tp.z + 0), 1.0f * offs + x3, float(minY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 1), float(maxY), float(tp.z + 0), 1.0f * offs + x3, float(maxY) * offs / 8.0f + x2 * offs + x4);
-			t.vertexUV(float(tp.x + 0), float(maxY), float(tp.z + 1), 0.0f * offs + x3, float(maxY) * offs / 8.0f + x2 * offs + x4);
-			t.offset(0.0f, 0.0f, 0.0f);
-			t.draw();
+
+			if (biome->hasSnow)
+			{
+				float x1 = float(m_ticks) + f;
+				float x2 = (float(m_ticks & 511) + f) / 512.0f;
+				float x3 = m_random.nextFloat() + x1 * 0.01f * m_random.nextGaussian();
+				float x4 = m_random.nextFloat() + x1 * 0.001f * m_random.nextGaussian();
+				m_pMinecraft->m_pTextures->loadAndBindTexture("environment/snow.png");
+				t.begin();
+				glColor4f(f4, f4, f4, ((1.0f - f3 * f3) * 0.3f + 0.5f) * rainLevel);
+				t.offset(-pos.x, -pos.y, -pos.z);
+				t.vertexUV(float(tp.x + 0), float(minY), float(tp.z + 0.5f), 0.0f * offs + x3, float(minY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 1), float(minY), float(tp.z + 0.5f), 1.0f * offs + x3, float(minY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 1), float(maxY), float(tp.z + 0.5f), 1.0f * offs + x3, float(maxY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 0), float(maxY), float(tp.z + 0.5f), 0.0f * offs + x3, float(maxY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 0.5f), float(minY), float(tp.z + 0), 0.0f * offs + x3, float(minY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 0.5f), float(minY), float(tp.z + 1), 1.0f * offs + x3, float(minY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 0.5f), float(maxY), float(tp.z + 1), 1.0f * offs + x3, float(maxY) * offs / 4.0f + x2 * offs + x4);
+				t.vertexUV(float(tp.x + 0.5f), float(maxY), float(tp.z + 0), 0.0f * offs + x3, float(maxY) * offs / 4.0f + x2 * offs + x4);
+				t.offset(0.0f, 0.0f, 0.0f);
+				t.draw();
+			}
+			if (biome->canOnlyRain())
+			{
+				float x2 = ((float)(m_ticks + tp.x * tp.x * 3121 + tp.x * 45238971 + tp.z * tp.z * 418711 + tp.z * 13761 & 31) + f) / 32.0F * (3.0F + m_random.nextFloat());
+				m_pMinecraft->m_pTextures->loadAndBindTexture("environment/rain.png");
+				t.begin();
+				f4 = f4 * 0.85f + 0.15f;
+				glColor4f(f4, f4, f4, ((1.0f - f3 * f3) * 0.5f + 0.5f) * rainLevel);
+				t.offset(-pos.x, -pos.y, -pos.z);
+				t.vertexUV(float(tp.x + 0), float(minY), float(tp.z + 0.5f), 0.0f * offs, float(minY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 1), float(minY), float(tp.z + 0.5f), 1.0f * offs, float(minY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 1), float(maxY), float(tp.z + 0.5f), 1.0f * offs, float(maxY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 0), float(maxY), float(tp.z + 0.5f), 0.0f * offs, float(maxY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 0.5f), float(minY), float(tp.z + 0), 0.0f * offs, float(minY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 0.5f), float(minY), float(tp.z + 1), 1.0f * offs, float(minY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 0.5f), float(maxY), float(tp.z + 1), 1.0f * offs, float(maxY) * offs / 4.0f + x2 * offs);
+				t.vertexUV(float(tp.x + 0.5f), float(maxY), float(tp.z + 0), 0.0f * offs, float(maxY) * offs / 4.0f + x2 * offs);
+				t.offset(0.0f, 0.0f, 0.0f);
+				t.draw();
+			}
 		}
 	}
 
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glEnable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
+}
+
+void GameRenderer::tickRain()
+{
+	float rainLevel = m_pMinecraft->m_pLevel->getRainLevel(1.0F);
+	if (!m_pMinecraft->getOptions()->m_bFancyGraphics)
+		rainLevel /= 2.0F;
+
+	if (rainLevel != 0.0F) {
+		m_random.setSeed(m_ticks * 312987231L);
+		auto& var2 = m_pMinecraft->m_pMobPersp;
+		Level* var3 = m_pMinecraft->m_pLevel;
+		int var4 = Mth::floor(var2->m_pos.x);
+		int var5 = Mth::floor(var2->m_pos.y);
+		int var6 = Mth::floor(var2->m_pos.z);
+		const uint8_t var7 = 10;
+		Vec3 rainPos;
+		int var14 = 0;
+
+		TilePos tp;
+		for (int var15 = 0; var15 < (int)(100.0F * rainLevel * rainLevel); ++var15) {
+			tp.x = var4 + m_random.nextInt(var7) - m_random.nextInt(var7);
+			tp.z = var6 + m_random.nextInt(var7) - m_random.nextInt(var7);
+			tp.y = var3->getTopSolidBlock(tp);
+			int var19 = var3->getTile(tp.below());
+			if (tp.y <= var5 + var7 && tp.y >= var5 - var7 && var3->getBiomeSource()->getBiome(tp)->canOnlyRain()) {
+				float var20 = m_random.nextFloat();
+				float var21 = m_random.nextFloat();
+				if (var19 > 0) {
+					if (Tile::tiles[var19]->m_pMaterial == Material::lava)
+						m_pMinecraft->m_pParticleEngine->add(new SmokeParticle(var3, Vec3(tp.x + var20, tp.y + 0.1F - Tile::tiles[var19]->m_aabb.min.y, tp.z + var21), Vec3::ZERO));
+					else
+					{
+						++var14;
+						if (m_random.nextInt(var14) == 0)
+						{
+							rainPos.x = tp.x + var20;
+							rainPos.y = (tp.y + 0.1F) - Tile::tiles[var19]->m_aabb.min.y;
+							rainPos.z = tp.z + var21;
+						}
+
+						m_pMinecraft->m_pParticleEngine->add(new WaterDropParticle(var3, Vec3(tp.x + var20, tp.y + 0.1F - Tile::tiles[var19]->m_aabb.min.y, tp.z + var21)));
+					}
+				}
+			}
+		}
+
+		if (var14 > 0 && m_random.nextInt(3) < m_rainSoundTime++)
+		{
+			m_rainSoundTime = 0;
+			if (rainPos.y > var2->m_pos.y + 1.0 && var3->getTopSolidBlock(var2->m_pos))
+				var3->playSound(rainPos, "ambient.weather.rain", 0.1F, 0.5F);
+			else
+				var3->playSound(rainPos, "ambient.weather.rain", 0.2F, 1.0F);
+		}
+
+	}
 }
 
 void GameRenderer::onGraphicsReset()
@@ -1062,7 +1168,7 @@ void GameRenderer::pick(float f)
 
 	scanAABB.grow(1, 1, 1);
 
-	EntityVector ents = m_pMinecraft->m_pLevel->getEntities(pMob, scanAABB);
+	EntityVector ents = m_pMinecraft->m_pLevel->getEntities(pMob.get(), scanAABB);
 
 	float fDist = 0.0f;
 	for (int i = 0; i < int(ents.size()); i++)

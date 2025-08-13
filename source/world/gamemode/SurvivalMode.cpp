@@ -101,7 +101,7 @@ bool SurvivalMode::continueDestroyBlock(Player* player, const TilePos& pos, Faci
 		return false;
 
 	Tile* pTile = Tile::tiles[tile];
-	float destroyProgress = pTile->getDestroyProgress(m_pMinecraft->m_pLocalPlayer.get());
+	float destroyProgress = pTile->getDestroyProgress(m_pMinecraft->m_pPlayer.get());
 	m_destroyProgress += getDestroyModifier() * destroyProgress;
 	m_destroyTicks++;
 

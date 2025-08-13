@@ -18,22 +18,34 @@ public:
     void setPlacedBy(Level*, const TilePos& pos, Mob*, Facing::Name face) override;
     void onPlace(Level*, const TilePos& pos) override;
 
-    static bool hasRail(Level* level, const TilePos& pos) {
+    static bool hasRail(Level* level, const TilePos& pos) 
+    {
         return isRail(level->getTile(pos));
     }
 
-    static bool isRail(int id) {
+    static bool isRail(int id) 
+    {
         return id == Tile::rail->m_ID || id == Tile::poweredRail->m_ID || id == Tile::detectorRail->m_ID;
     }
 
-    static bool isPowered(Tile* tile) {
-        return tile->m_ID == Tile::poweredRail->m_ID;
+    static bool isPoweredRail(const Tile* tile) 
+    {
+        return tile && tile->m_ID == Tile::poweredRail->m_ID;
+    }
+
+    static bool isPowered(const Tile* tile)
+    {
+        if (!tile) return false;
+        RailTile* rail = (RailTile*)tile;
+        return rail && rail->m_bIsPowered;
     }
 
 	bool m_bIsPowered;
 
 private:
     void updateDir(Level* level, const TilePos& pos, bool updateNeighbors);
+    bool applyPower(Level* level, const TilePos& pos, int data, bool var6, int var7);
+    bool canPower(Level* level, const TilePos& pos, bool var5, int var6, int var7);
 
     class Rail {
     private:
@@ -201,7 +213,15 @@ private:
                 if (RailTile::hasRail(m_level, TilePos(pos.x - 1, pos.y + 1, pos.z))) newData = 3;
             }
 
-            if (newData < 0) newData = 0;
+            if (newData < 0)
+            {
+                newData = !isRail(m_level->getTile(pos)) ? 0 : m_level->getData(pos);
+            }
+
+            if (m_powered) {
+                newData = m_level->getData(pos) & 8 | newData;
+            }
+
             m_level->setData(pos, newData);
         }
 
@@ -214,7 +234,7 @@ private:
             return canConnect;
         }
 
-        void place(bool powered, bool checkNeighbors) {
+        void place(bool hasSignal, bool checkNeighbors) {
             bool n = hasNeighborRail(pos.north());
             bool s = hasNeighborRail(pos.south());
             bool w = hasNeighborRail(pos.west());
@@ -239,7 +259,7 @@ private:
 
                 if (!m_powered)
                 {
-                    if (powered) {
+                    if (hasSignal) {
                         if (s && e) newData = 6;
                         if (w && s) newData = 7;
                         if (e && n) newData = 9;

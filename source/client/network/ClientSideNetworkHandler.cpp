@@ -10,7 +10,9 @@
 #include "ClientSideNetworkHandler.hpp"
 #include "common/Utils.hpp"
 #include "client/gui/screens/StartMenuScreen.hpp"
+#include "client/gui/screens/ProgressScreen.hpp"
 #include "client/gui/screens/DisconnectionScreen.hpp"
+#include <world/tile/entity/SignTileEntity.hpp>
 
 // This lets you make the client shut up and not log events in the debug console.
 #define VERBOSE_CLIENT
@@ -37,8 +39,6 @@ ClientSideNetworkHandler::ClientSideNetworkHandler(Minecraft* pMinecraft, RakNet
 
 void ClientSideNetworkHandler::levelGenerated(Level* level)
 {
-	m_pLevel = level;
-
 #if NETWORK_PROTOCOL_VERSION >= 3
 	ReadyPacket* pReadyPkt = new ReadyPacket(1);
 	m_pRakNetInstance->send(pReadyPkt);
@@ -56,7 +56,7 @@ void ClientSideNetworkHandler::onConnect(const RakNet::RakNetGUID& rakGuid) // s
 	m_serverGUID = rakGuid;
 
 	LoginPacket* pLoginPkt = new LoginPacket;
-	pLoginPkt->m_str = RakNet::RakString(m_pMinecraft->m_pUser->field_0.c_str());
+	pLoginPkt->m_str = RakNet::RakString(m_pMinecraft->m_pUser->m_guid.c_str());
 	pLoginPkt->m_clientNetworkVersion = NETWORK_PROTOCOL_VERSION;
 	pLoginPkt->m_clientNetworkVersion2 = NETWORK_PROTOCOL_VERSION;
 	
@@ -66,13 +66,6 @@ void ClientSideNetworkHandler::onConnect(const RakNet::RakNetGUID& rakGuid) // s
 void ClientSideNetworkHandler::onUnableToConnect()
 {
 	puts_ignorable("onUnableToConnect");
-
-	// get rid of the prepare-thread to stop preparation immediately
-	if (m_pMinecraft->m_pPrepThread)
-	{
-		delete m_pMinecraft->m_pPrepThread;
-		m_pMinecraft->m_pPrepThread = nullptr;
-	}
 
 	// On 0.2.1 this is handled in ProgressScreen::tick(), and this function is instead left blank, but I see no reason to do the same.
 	m_pMinecraft->setScreen(new DisconnectionScreen("Could not connect to server. Try again."));
@@ -122,20 +115,15 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, StartGa
 {
 	puts_ignorable("StartGamePacket");
 
-	m_pMinecraft->getLevelSource()->deleteLevel("_LastJoinedServer");
-
-	m_pLevel = new Level(
-		m_pMinecraft->getLevelSource()->selectLevel("_LastJoinedServer", true), 
-		"temp",
+	m_pLevel = new MultiPlayerLevel(
 		pStartGamePkt->m_seed,
-		pStartGamePkt->m_levelVersion);
+		Dimension::getNew(pStartGamePkt->m_dimension));
 
 	m_pLevel->m_bIsOnline = true;
 
 	GameType gameType = pStartGamePkt->m_gameType != GAME_TYPES_MAX ? pStartGamePkt->m_gameType : m_pLevel->getDefaultGameType();
 	auto pLocalPlayer = std::make_shared<LocalPlayer>(m_pMinecraft, m_pLevel, m_pMinecraft->m_pUser, gameType, m_pLevel->m_pDimension->m_ID);
 	pLocalPlayer->m_guid = ((RakNet::RakPeer*)m_pServerPeer)->GetMyGUID();
-	pLocalPlayer->m_EntityID = pStartGamePkt->m_entityId;
 	
 	pLocalPlayer->moveTo(
 		pStartGamePkt->m_pos,
@@ -150,7 +138,8 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, StartGa
 
 	m_serverProtocolVersion = pStartGamePkt->m_serverVersion;
 
-	m_pMinecraft->setLevel(m_pLevel, "ClientSideNetworkHandler -> setLevel", pLocalPlayer);
+	m_pMinecraft->setScreen(new ProgressScreen);
+	m_pMinecraft->m_delayed.emplace_back(std::bind(&Minecraft::setLevel, m_pMinecraft, m_pLevel, "Downloading terrain", pLocalPlayer));
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, AddPlayerPacket* pAddPlayerPkt)
@@ -160,8 +149,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, AddPlay
 	if (!m_pLevel) return;
 
 	auto pPlayer = std::make_shared<Player>(m_pLevel, m_pLevel->getDefaultGameType());
-	pPlayer->m_EntityID = pAddPlayerPkt->m_id;
-	m_pLevel->addEntity(pPlayer);
+	m_pLevel->putEntity(pPlayer, pAddPlayerPkt->m_id);
 
 	pPlayer->moveTo(
 		pAddPlayerPkt->m_pos,
@@ -191,7 +179,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveE
 {
 	if (!m_pLevel) return;
 
-	auto pEnt = m_pLevel->getEntity(pRemoveEntityPkt->m_id);
+	auto pEnt = getEntity(pRemoveEntityPkt->m_id);
 
 	if (pEnt)
 		m_pLevel->removeEntity(pEnt);
@@ -201,7 +189,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, MovePla
 {
 	if (!m_pLevel) return;
 
-	auto pEntity = m_pLevel->getEntity(packet->m_id);
+	auto pEntity = getEntity(packet->m_id);
 	if (!pEntity)
 	{
 		LOG_E("No player with id %d", packet->m_id);
@@ -215,7 +203,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlaceBl
 {
 	puts_ignorable("PlaceBlockPacket");
 
-	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(pPlaceBlockPkt->m_playerID));
+	auto pPlayer = std::dynamic_pointer_cast<Player>(getEntity(pPlaceBlockPkt->m_playerID));
 	if (!pPlayer)
 	{
 		LOG_E("No player with id %d", pPlaceBlockPkt->m_playerID);
@@ -250,7 +238,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, RemoveB
 {
 	puts_ignorable("RemoveBlockPacket");
 
-	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(pRemoveBlockPkt->m_playerID));
+	auto pPlayer = std::dynamic_pointer_cast<Player>(getEntity(pRemoveBlockPkt->m_playerID));
 	if (!pPlayer)
 	{
 		LOG_E("No player with id %d", pRemoveBlockPkt->m_playerID);
@@ -286,7 +274,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, UpdateB
 		return;
 	}
 
-	m_pLevel->setTileAndData(pkt->m_pos, pkt->m_tile, pkt->m_data);
+	m_pLevel->doSetTileAndDataNoUpdate(pkt->m_pos, pkt->m_tile, pkt->m_data);
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, ChunkDataPacket* pChunkDataPkt)
@@ -296,83 +284,8 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, ChunkDa
 		LOG_E("Level @ handle ChunkDataPacket is 0");
 		return;
 	}
-
-	LevelChunk* pChunk = m_pLevel->getChunkSource()->create(pChunkDataPkt->m_chunkPos);
-	if (!pChunk || pChunk->isEmpty())
-	{
-		LOG_E("Failed to find write-able chunk");
-		// @BUG: Not trying again.
-		return;
-	}
-
-	int x16 = 16 * pChunkDataPkt->m_chunkPos.x;
-	int z16 = 16 * pChunkDataPkt->m_chunkPos.z;
-
-	bool updated = false;
-
-	int minY = 128, maxY = 0;
-	int minX = 16,  minZ = 16;
-	int maxX = 0,   maxZ = 0;
-
-	for (int k = 0; k < 256; k++)
-	{
-		uint8_t updMap;
-		pChunkDataPkt->m_data.Read(updMap);
-
-		if (!updMap)
-			continue;
-
-		for (int j = 0; j < 8; j++)
-		{
-			if ((updMap >> j) & 1)
-			{
-				int yPos = j * 16;
-				TileID  tiles[16];
-				uint8_t datas[16 / 2];
-
-				pChunkDataPkt->m_data.Read((char*)tiles, 16 * sizeof(TileID));
-				pChunkDataPkt->m_data.Read((char*)datas, 16 / 2);
-
-				for (int i = 0; i < 16; i++)
-				{
-					m_pLevel->setTileNoUpdate(TilePos(x16 + (k & 0xF), yPos + i, z16 + (k >> 4)), tiles[i]);
-				}
-
-				int idx = ((k & 0xF) << 11) | ((k >> 4) << 7) + yPos;
-				memcpy(&pChunk->m_tileData[idx >> 1], datas, sizeof datas);
-			}
-
-			int ymin = 16 * (1 << j);
-			if (minY >= ymin)
-				minY = ymin;
-			if (maxY < ymin + 15)
-				maxY = ymin + 15;
-		}
-
-		if (minX >= (k & 0xF))
-			minX = k & 0xF;
-		if (minZ >= (k >> 4))
-			minZ = k >> 4;
-		if (maxX <= (k & 0xF))
-			maxX = k & 0xF;
-		if (maxZ <= (k >> 4))
-			maxZ = k >> 4;
-
-		updated = true;
-	}
-
-	if (updated)
-		m_pLevel->setTilesDirty(TilePos(minX + x16, minY, minZ), TilePos(maxX + x16, maxY, maxZ + z16));
-
-	pChunk->m_bUnsaved = true;
-
-	if (m_serverProtocolVersion < 2)
-	{
-		if (areAllChunksLoaded())
-			flushAllBufferedUpdates();
-		else
-			requestNextChunk();
-	}
+	m_pLevel->clearResetRegion(pChunkDataPkt->m_pos, TilePos(pChunkDataPkt->m_pos.x + pChunkDataPkt->m_xs - 1, pChunkDataPkt->m_pos.y + pChunkDataPkt->m_ys - 1, pChunkDataPkt->m_pos.z + pChunkDataPkt->m_zs - 1));
+	m_pLevel->setBlocksAndData(pChunkDataPkt->m_pos, pChunkDataPkt->m_xs, pChunkDataPkt->m_ys, pChunkDataPkt->m_zs, pChunkDataPkt->m_data.GetData());
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlayerEquipmentPacket* pPlayerEquipmentPkt)
@@ -380,7 +293,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlayerE
 	if (!m_pLevel)
 		return;
 
-	auto pPlayer = std::dynamic_pointer_cast<Player>(m_pLevel->getEntity(pPlayerEquipmentPkt->m_playerID));
+	auto pPlayer = std::dynamic_pointer_cast<Player>(getEntity(pPlayerEquipmentPkt->m_playerID));
 	if (!pPlayer)
 		return;
 
@@ -489,7 +402,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataP
 				goto _FAIL_BECAUSE_INVALID;
 
 			// Read the chunk data packet itself, and handle it.
-			ChunkDataPacket cdp(cp, pChunk);
+			ChunkDataPacket cdp(pChunk);
 			cdp.read(&bs2);
 
 			if (pChunk)
@@ -503,6 +416,24 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataP
 	// All chunks are loaded. Also flush all the updates we've buffered.
 	m_chunksRequested = C_MAX_CHUNKS;;
 	flushAllBufferedUpdates();
+}
+
+std::shared_ptr<Entity> ClientSideNetworkHandler::getEntity(int id)
+{
+	return id == m_pMinecraft->m_pPlayer->m_EntityID == id ? m_pMinecraft->m_pPlayer : m_pLevel->getEntity(id);
+}
+
+void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, SignUpdatePacket* packet)
+{
+	if (m_pMinecraft->m_pLevel->hasChunkAt(packet->m_pos)) {
+		auto te = std::dynamic_pointer_cast<SignTileEntity>(m_pMinecraft->m_pLevel->getTileEntity((packet->m_pos)));
+		if (te) {
+			for (int i = 0; i < packet->m_messages.size(); ++i)
+				te->m_messages[i] = packet->m_messages[i];
+
+			te->setChanged();
+		}
+	}
 }
 
 bool ClientSideNetworkHandler::areAllChunksLoaded()
@@ -523,21 +454,6 @@ void ClientSideNetworkHandler::clearChunksLoaded()
 
 void ClientSideNetworkHandler::requestNextChunk()
 {
-	if (areAllChunksLoaded())
-		return;
-
-	// @BUG: The return value of areAllChunksLoaded() is actually true even before the
-	// 256th chunk is loaded.
-
-	if (m_serverProtocolVersion < 2)
-	{
-		m_pRakNetInstance->send(new RequestChunkPacket(ChunkPos(m_chunksRequested % 16, m_chunksRequested / 16)));
-		m_chunksRequested++;
-	}
-	else
-	{
-		m_pRakNetInstance->send(new RequestChunkPacket(ChunkPos(-9999, -9999)));
-	}
 }
 
 void ClientSideNetworkHandler::flushAllBufferedUpdates()

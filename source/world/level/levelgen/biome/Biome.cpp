@@ -20,7 +20,8 @@ Biome
 * Biome::desert,
 * Biome::plains,
 * Biome::iceDesert,
-* Biome::tundra;
+* Biome::tundra,
+* Biome::hell;
 
 Biome* Biome::map[4096];
 
@@ -84,9 +85,9 @@ Biome::Biome()
 	m_LeafColor = 0;
 	topBlock = Tile::grass->m_ID;
 	fillerBlock = Tile::dirt->m_ID;
-	//setMobs(MobCategory::monster, { { EntityType::spider, 10 }, { EntityType::zombie, 10 }, { EntityType::skeleton, 10 }, { EntityType::creeper, 10 } });
-	setMobs(MobCategory::creature, { { EntityType::sheep, 12 }, { EntityType::pig, 10 }, { EntityType::chicken, 10 }, { EntityType::cow, 8 }});
-	//setMobs(MobCategory::waterCreature, { { EntityType::squid , 10 }});
+	setMobs(MobCategory::monster, { { EntityType::spider, 10 }, { EntityType::zombie, 10 }, { EntityType::skeleton, 10 }, { EntityType::creeper, 10 }, { EntityType::slime, 10 } });
+	setMobs(MobCategory::creature, { { EntityType::sheep, 12 }, { EntityType::pig, 10 }, { EntityType::chicken, 10 }, { EntityType::cow, 8 } });
+	setMobs(MobCategory::waterCreature, { { EntityType::squid, 10 } });
 }
 
 Biome::~Biome()
@@ -209,6 +210,10 @@ void Biome::initBiomes()
 		->setSnowCovered()
 		->setLeafColor(0xC4D339);
 
+	hell = (new HellBiome)
+		->setColor(0xFF0000)
+		->setName("Hell");
+
 	recalc();
 }
 
@@ -229,10 +234,21 @@ Feature* ForestBiome::getTreeFeature(Random* pRandom)
 	return new TreeFeature;
 }
 
+TaigaBiome::TaigaBiome() : Biome()
+{
+	addMobs(MobCategory::creature, { { EntityType::wolf, 2 } });
+}
+
 Feature* TaigaBiome::getTreeFeature(Random* pRandom)
 {
 	if (pRandom->nextInt(3) == 0)
 		return new PineFeature;
 	
 	return new SpruceFeature;
+}
+
+HellBiome::HellBiome() : Biome()
+{
+	setMobs(MobCategory::monster, { { EntityType::ghast, 10 }, { EntityType::pigZombie, 10} });
+	setMobs(MobCategory::creature, {});
 }

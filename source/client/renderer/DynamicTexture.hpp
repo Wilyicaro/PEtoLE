@@ -30,7 +30,7 @@ protected:
 	int m_textureSize;
 	int m_textureId;
 	uint8_t m_pixels[1024];
-	bool m_anaglyph3d = false;
+	bool m_bAnaglyph3d = false;
 
 	friend class Textures;
 };
@@ -123,13 +123,12 @@ class CompassTexture : public DynamicTexture
 {
 public:
 	CompassTexture(Minecraft* minecraft);
-	~CompassTexture();
 
 	void tick() override;
 
 private:
 	Minecraft* m_pMinecraft;
-	uint32_t* m_data;
+	uint32_t m_data[256];
 	double m_rot;
 	double m_rota;
 };
@@ -138,15 +137,25 @@ class ClockTexture : public DynamicTexture
 {
 public:
 	ClockTexture(Minecraft* minecraft);
-	~ClockTexture();
 
 	void tick() override;
 
 private:
 	Minecraft* m_pMinecraft;
-	uint32_t* m_data;
+	uint32_t m_data[256];
 	uint32_t* m_dialData;
 	double m_rot;
 	double m_rota;
 };
 
+class PortalTexture : public DynamicTexture
+{
+public:
+	PortalTexture();
+
+	void tick() override;
+
+private:
+	uint8_t m_frames[32][1024];
+	int m_time;
+};

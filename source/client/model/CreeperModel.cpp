@@ -8,7 +8,7 @@
 #include "CreeperModel.hpp"
 #include "common/Mth.hpp"
 
-CreeperModel::CreeperModel() :
+CreeperModel::CreeperModel(float g) :
 	Model(64, 32),
 	m_head(0, 0),
 	m_body(16, 16),
@@ -24,17 +24,17 @@ CreeperModel::CreeperModel() :
 	m_leg3.setModel(this);
 	m_leg4.setModel(this);
 
-	m_head.addBox(-4, -8, -4, 8, 8, 8);
+	m_head.addBox(-4, -8, -4, 8, 8, 8, g);
 	m_head.setPos(0, 4, 0);
-	m_body.addBox(-4, 0, -2, 8, 12, 4);
+	m_body.addBox(-4, 0, -2, 8, 12, 4,g);
 	m_body.setPos(0, 4, 0);
-	m_leg1.addBox(-2, 0, -2, 4, 6, 4);
+	m_leg1.addBox(-2, 0, -2, 4, 6, 4, g);
 	m_leg1.setPos(-2, 16, 4);
-	m_leg2.addBox(-2, 0, -2, 4, 6, 4);
+	m_leg2.addBox(-2, 0, -2, 4, 6, 4, g);
 	m_leg2.setPos(2, 16, 4);
-	m_leg3.addBox(-2, 0, -2, 4, 6, 4);
+	m_leg3.addBox(-2, 0, -2, 4, 6, 4, g);
 	m_leg3.setPos(-2, 16, -4);
-	m_leg4.addBox(-2, 0, -2, 4, 6, 4);
+	m_leg4.addBox(-2, 0, -2, 4, 6, 4, g);
 	m_leg4.setPos(2, 16, -4);
 }
 

@@ -12,12 +12,9 @@
 
 class ItemEntity : public Entity
 {
-private:
-	void _init(const ItemInstance* itemInstance = nullptr);
-	void _init(const ItemInstance* itemInstance, const Vec3& pos);
 public:
-	ItemEntity(Level* level) : Entity(level) { _init(); }
-	ItemEntity(Level* level, const Vec3& pos, const ItemInstance* itemInstance) : Entity(level) { _init(itemInstance, pos); }
+	ItemEntity(Level* level);
+	ItemEntity(Level* level, const Vec3& pos, std::shared_ptr<ItemInstance> itemInstance);
 
 	void burn(int damage) override;
 	bool hurt(Entity* pCulprit, int damage) override;

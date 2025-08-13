@@ -14,6 +14,7 @@
 #include "common/Utils.hpp"
 #include "common/Random.hpp"
 #include "client/renderer/LightLayer.hpp"
+#include "world/phys/AABB.hpp"
 #include "world/level/levelgen/chunk/ChunkPos.hpp"
 #include "world/level/levelgen/chunk/ChunkTilePos.hpp"
 #include <common/CompoundTag.hpp>
@@ -25,7 +26,6 @@
 #include <world/entity/EntityCategories.hpp>
 
 class Level;
-class AABB;
 class Entity;
 
 class LevelChunk
@@ -69,8 +69,29 @@ public:
 	virtual bool shouldSave(bool b = false);
 	virtual void markUnsaved();
 	virtual int  countEntities();
-	virtual void getEntities(std::shared_ptr<Entity> pEntExclude, const AABB&, std::vector<std::shared_ptr<Entity>>& out);
-	virtual void getEntitiesOfCategory(EntityCategories::CategoriesMask category, const AABB&, std::vector<std::shared_ptr<Entity>>& out);
+	const AABB& getEntityAABB(Entity*);
+	template<typename Predicate>
+	void getEntities(Predicate predicate, const AABB& aabb, std::vector<std::shared_ptr<Entity>>& out)
+	{
+		int lowerBound = Mth::floor((aabb.min.y - 2.0) / 16.0);
+		int upperBound = Mth::floor((aabb.max.y + 2.0) / 16.0);
+
+		if (lowerBound < 0) lowerBound = 0;
+		if (upperBound > 7) upperBound = 7;
+
+		for (int b = lowerBound; b <= upperBound; b++)
+		{
+			for (std::vector<std::shared_ptr<Entity>>::iterator it = m_entities[b].begin(); it != m_entities[b].end(); it++)
+			{
+				std::shared_ptr<Entity> ent = *it;
+				if (!predicate(ent.get())) continue;
+
+				if (!aabb.intersect(getEntityAABB(ent.get()))) continue;
+
+				out.push_back(ent);
+			}
+		}
+	}
 	virtual TileID getTile(const ChunkTilePos& pos);
 	virtual bool setTile(const ChunkTilePos& pos, TileID tile);
 	virtual bool setTileAndData(const ChunkTilePos& pos, TileID tile, int data);
@@ -86,7 +107,7 @@ public:
 	}
 	virtual void setTileEntity(const ChunkTilePos& pos, std::shared_ptr<TileEntity> tileEntity);
 	virtual void removeTileEntity(const ChunkTilePos& pos);
-	virtual Random getRandom(int32_t l);
+	virtual Random getRandom(int64_t l);
 	virtual void recalcHeight(const ChunkTilePos& pos);
 	virtual bool isEmpty();
 	//...
@@ -110,7 +131,7 @@ public:
 	ChunkPos m_chunkPos;
 	bool m_bIsTerrainPopulated;
 	bool m_bUnsaved;
-	bool m_bFakeChunk;
+	bool m_bDontSave;
 	uint8_t field_237;
 	int m_lastSaveHadEntities;
 	int64_t m_lastSaveTime;

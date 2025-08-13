@@ -56,32 +56,124 @@ void BedTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 	else if (level->getTile(pos.offset(headBlockToFootBlockMap[dir][0], 0, headBlockToFootBlockMap[dir][1])) != m_ID) {
 		level->setTile(pos, 0);
 		if (!level->m_bIsOnline) {
-			spawnResources(level, pos, data);
+			Tile::spawnResources(level, pos, data);
 		}
 	}
 }
 
-//int BedTile::use(Level* level, const TilePos& pos, Player* player)
-//{
-//}
+bool BedTile::use(Level* level, const TilePos& pos, Player* player)
+{
+	if (level->m_bIsOnline) {
+		return true;
+	}
+	else {
+		int var6 = level->getData(pos);
+		TilePos tp(pos);
+		if (!isHead(var6)) {
+			int var7 = getDirectionFromData(var6);
+			tp.x += headBlockToFootBlockMap[var7][0];
+			tp.z += headBlockToFootBlockMap[var7][1];
+			if (level->getTile(pos) != m_ID) {
+				return true;
+			}
 
-TilePos BedTile::getNearestEmptyChunkTilePos(const Level* level, const TilePos& pos, int steps)
+			var6 = level->getData(tp);
+		}
+
+		if (!level->m_pDimension->mayRespawn()) {
+			level->setTile(tp, 0);
+			int data = getDirectionFromData(var6);
+			tp.x += headBlockToFootBlockMap[data][0];
+			tp.z += headBlockToFootBlockMap[data][1];
+			if (level->getTile(tp) == m_ID)
+			{
+				level->setTile(tp, 0);
+			}
+
+			level->explode(nullptr, tp.center(), 5.0F, true);
+			return true;
+		}
+		else {
+			if (isBedOccupied(var6)) {
+				std::shared_ptr<Player> var14 = nullptr;
+
+				for (auto& p : level->m_players)
+				{
+					if (p->isSleeping()) {
+						if (p->m_respawnPos == tp)
+							var14 = p;
+					}
+				}
+
+				if (var14) {
+					var14->displayClientMessage("tile.bed.occupied");
+					return true;
+				}
+
+				setBedOccupied(level, tp, false);
+			}
+
+			Player::BedSleepingProblem var15 = player->sleep(tp);
+			if (var15 == Player::BedSleepingProblem::OK)
+			{
+				setBedOccupied(level, tp, true);
+				return true;
+			}
+			else
+			{
+				if (var15 == Player::BedSleepingProblem::NOT_POSSIBLE_NOW)
+					player->displayClientMessage("tile.bed.noSleep");
+
+				return true;
+			}
+		}
+	}
+}
+
+int BedTile::getResource(int data, Random* random) const
+{
+	return isHead(data) ? 0 : Item::bed->m_itemID;
+}
+
+void BedTile::spawnResources(Level* level, const TilePos& pos, int data, float chance)
+{
+	if (!isHead(data))
+	{
+		Tile::spawnResources(level, pos, data, chance);
+	}
+}
+
+void BedTile::setBedOccupied(Level* level, const TilePos& pos, bool b)
+{
+	int data = level->getData(pos);
+	if (b) {
+		data |= 4;
+	}
+	else {
+		data &= -5;
+	}
+
+	level->setData(pos, data);
+}
+
+TilePos BedTile::getRespawnTilePos(const Level* level, const TilePos& pos, int steps)
 {
 	int var5 = level->getData(pos);
 	int var6 = getDirectionFromData(var5);
 
 	for (int var7 = 0; var7 <= 1; ++var7) {
-		int var8 = pos.x - headBlockToFootBlockMap[var6][0] * var7 - 1;
-		int var9 = pos.z - headBlockToFootBlockMap[var6][1] * var7 - 1;
-		int var10 = var8 + 2;
-		int var11 = var9 + 2;
+		int startX = pos.x - headBlockToFootBlockMap[var6][0] * var7 - 1;
+		int startZ = pos.z - headBlockToFootBlockMap[var6][1] * var7 - 1;
 
-		for (int var12 = var8; var12 <= var10; ++var12) {
-			for (int var13 = var9; var13 <= var11; ++var13) {
-				if (level->isSolidTile(pos.below()) && level->isEmptyTile(pos) && level->isEmptyTile(pos.above())) {
-					if (steps <= 0) {
-						return TilePos(var12, pos.y, var13);
-					}
+		TilePos tp(pos);
+		for (tp.x = startX; tp.x <= startX + 2; ++tp.x)
+		{
+			for (tp.z = startZ; tp.z <= startZ + 2; ++tp.z)
+			{
+				if (level->isSolidTile(tp.below()) && level->isEmptyTile(tp) && level->isEmptyTile(tp.above()))
+				{
+					if (steps <= 0)
+						return tp;
 
 					--steps;
 				}
@@ -89,5 +181,5 @@ TilePos BedTile::getNearestEmptyChunkTilePos(const Level* level, const TilePos& 
 		}
 	}
 
-	return nullptr;
+	return pos;
 }

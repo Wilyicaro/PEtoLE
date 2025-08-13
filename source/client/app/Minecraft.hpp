@@ -9,7 +9,8 @@
 #pragma once
 
 #include "App.hpp"
-#include "common/CThread.hpp"
+#include <functional>
+#include <thread>
 #include "common/Mth.hpp"
 #include "common/Timer.hpp"
 #include "client/gui/Gui.hpp"
@@ -32,6 +33,45 @@
 
 class Screen; // in case we're included from Screen.hpp
 
+
+class AsyncTask {
+	std::thread t;
+	std::atomic<bool> finished;
+
+public:
+	AsyncTask(std::function<void()> func) : finished(false) {
+		t = std::thread([this, func]() {
+			func();
+			finished = true;
+			});
+	}
+
+	~AsyncTask() {
+		if (t.joinable())
+			t.join();
+	}
+
+	bool isFinished() const {
+		return finished.load();
+	}
+
+	AsyncTask(AsyncTask&& other) noexcept : t(std::move(other.t)), finished(other.finished.load()) {
+		other.finished = true;
+	}
+
+	AsyncTask& operator=(AsyncTask&& other) noexcept {
+		if (this != &other) {
+			if (t.joinable())
+				t.join();
+
+			t = std::move(other.t);
+			finished = other.finished.load();
+			other.finished = true;
+		}
+		return *this;
+	}
+};
+
 class Minecraft : public App
 {
 public:
@@ -46,12 +86,14 @@ public:
 	void tickInput();
 	void saveOptions();
 	void handleBuildAction(const BuildActionIntention& action);
-	bool isLevelGenerated() const;
+	bool isLevelReady() const;
+	void changeDimension(int dim = -1);
 	void selectLevel(const std::string&, const std::string&, int64_t seed);
 	void setLevel(Level*, const std::string&, std::shared_ptr<LocalPlayer>);
+	void toggleDimension(int dim = -1);
 	bool pauseGame();
 	bool resumeGame();
-	void leaveGame(bool bCopyMap);
+	void leaveGame();
 	void hostMultiplayer();
 	void joinMultiplayer(const PingedCompatibleServer& serverInfo);
 	void cancelLocateMultiplayer();
@@ -71,19 +113,17 @@ public:
 
 	virtual void update() override;
 	virtual void init() override;
+	virtual void initAssets();
 	virtual void onGraphicsReset();
 	virtual void sizeUpdate(int newWidth, int newHeight) override;
 	virtual int getFpsIntlCounter();
 
 	float getBestScaleForThisScreenSize(int width, int height);
-	void generateLevel(const std::string& unused, Level* pLevel);
-	void prepareLevel(const std::string& unused);
+	void prepareLevel(const std::string& text);
 	bool isOnline() const;
 	bool isOnlineClient() const;
 	bool isGamePaused() const { return m_bIsGamePaused; }
-	static void* prepareLevel_tspawn(void* pMinecraft);
 
-	const char* getProgressMessage();
 	LevelStorageSource* getLevelSource();
 	std::shared_ptr<ItemInstance> getSelectedItem();
 	Options* getOptions() const { return m_options; }
@@ -128,11 +168,13 @@ public:
 	int field_2B8;
 	User* m_pUser;
 	Level* m_pLevel;
-	std::shared_ptr<LocalPlayer> m_pLocalPlayer;
+	LevelManager* m_pLevelManager;
+	std::shared_ptr<LocalPlayer> m_pPlayer;
 	std::shared_ptr<Mob> m_pMobPersp;
 	Gui m_gui;
 	int field_D0C;
-	CThread* m_pPrepThread;
+	std::vector<std::function<void()>> m_delayed;
+	std::vector<AsyncTask> m_async;
 	Screen* m_pScreen;
 	int field_D18;
 	IInputHolder* m_pInputHolder;
@@ -140,13 +182,11 @@ public:
 	bool m_bGrabbedMouse;
 	bool m_bIsTouchscreen;
 	HitResult m_hitResult;
-	int m_progressPercent;
+	ProgressListener m_progress;
 	std::string m_externalStorageDir;
 	Timer m_timer;
-	bool m_bPreparingLevel;
 	LevelStorageSource* m_pLevelStorageSource; // TODO
-	int field_D9C;
-	int field_DA0;
+	bool m_bIsLevelLoaded;
 	int m_lastBlockBreakTime;
 	int field_DA8;
 	int field_DAC;

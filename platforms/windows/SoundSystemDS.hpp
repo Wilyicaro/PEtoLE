@@ -35,12 +35,14 @@ public:
 	virtual void load(const std::string& sound);
 	virtual void play(const std::string& sound);
 	virtual void pause(const std::string& sound);
-	virtual void stop(const std::string& sound);
-	virtual void playAt(const SoundDesc& sound, float x, float y, float z, float a, float b);
+	virtual void stop(const std::string& sound) override;
+	virtual bool playing(const std::string& sound) override;
+	virtual void playAt(const SoundDesc& sound, float x, float y, float z, float a, float b) override;
 private:
 
 	struct BufferInfo
 	{
+		std::string name;
 		LPDIRECTSOUNDBUFFER buffer;
 		LPDIRECTSOUND3DBUFFER object3d;
 	};

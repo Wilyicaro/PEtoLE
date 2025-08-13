@@ -326,7 +326,7 @@ void Inventory::dropAll()
 		std::shared_ptr<ItemInstance> item = m_items[i];
 		if (item)
 		{
-			m_pPlayer->drop(item.get(), true);
+			m_pPlayer->drop(item, true);
 			m_items[i] = nullptr;
 		}
 	}
@@ -336,7 +336,7 @@ void Inventory::dropAll()
 		std::shared_ptr<ItemInstance> item = m_armor[i];
 		if (item)
 		{
-			m_pPlayer->drop(item.get(), true);
+			m_pPlayer->drop(item, true);
 			m_armor[i] = nullptr;
 		}
 	}

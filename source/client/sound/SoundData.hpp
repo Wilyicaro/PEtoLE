@@ -21,19 +21,21 @@ struct PCMSoundHeader
 
 struct SoundDesc
 {
+	std::string m_name;
 	short* m_pData;
-	int field_4;
+	int m_size;
 	PCMSoundHeader m_header;
 
 	SoundDesc()
 	{
 		m_pData = nullptr;
-		field_4 = 0;
+		m_size = 0;
 	}
-	SoundDesc(const PCMSoundHeader& header, short* data)
+	SoundDesc(std::string name, const PCMSoundHeader& header, short* data)
 	{
+		m_name = name;
 		m_header = header;
 		m_pData = data;
-		field_4 = header.m_channels * header.m_samples * header.m_bytes_per_sample;
+		m_size = header.m_channels * header.m_samples * header.m_bytes_per_sample;
 	}
 };

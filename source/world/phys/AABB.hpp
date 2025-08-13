@@ -40,6 +40,8 @@ public:
 
 	bool intersect(const AABB& other) const;
 
+	real getSize() const;
+
 	// @NOTE: Names for `move`, `grow` and `expand` were taken from really early minecraft (rd-132211 to be exact).
 	// @NOTE: Why not use the leaked verson of b1.2? lol
 	void move(const Vec3& vec);

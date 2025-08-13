@@ -11,6 +11,8 @@
 #include "client/gui/screens/inventory/ChestScreen.hpp"
 #include "client/gui/screens/inventory/CraftingScreen.hpp"
 #include "client/gui/screens/inventory/FurnaceScreen.hpp"
+#include "client/gui/screens/inventory/TrapScreen.hpp"
+#include "client/gui/screens/inventory/TextEditScreen.hpp"
 #include <client/renderer/MobSkinTextureProcessor.hpp>
 
 int dword_250ADC, dword_250AE0;
@@ -40,7 +42,7 @@ LocalPlayer::LocalPlayer(Minecraft* pMinecraft, Level* pLevel, User* pUser, Game
 	m_lastRenderArmRot = Vec2::ZERO;
 
 	m_pMinecraft = pMinecraft;
-	m_name = pUser->field_0;
+	m_name = pUser->m_guid;
 
 	m_dimension = i;
 	field_C38 = m_pInventory->getSelectedItemId();
@@ -54,6 +56,49 @@ LocalPlayer::~LocalPlayer()
 
 void LocalPlayer::aiStep()
 {
+	m_oPortalTime = m_portalTime;
+	if (m_bIsInsidePortal)
+	{
+
+		if (!m_pLevel->m_bIsOnline && m_pRiding)
+			ride(nullptr);
+
+		if (m_portalTime == 0.0F)
+			m_pMinecraft->m_pSoundEngine->play("portal.trigger", Vec3::ZERO, 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
+
+		if (m_pMinecraft->m_pScreen)
+		{
+			closeContainer();
+		}
+
+		m_portalTime += 0.0125F;
+		if (m_portalTime >= 1.0F)
+		{
+			m_portalTime = 1.0F;
+			if (!m_pLevel->m_bIsOnline)
+			{
+				m_changingDimensionDelay = 10;
+				m_pMinecraft->m_pSoundEngine->play("portal.travel", Vec3::ZERO, 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
+				m_pMinecraft->changeDimension();
+			}
+		}
+
+		m_bIsInsidePortal = false;
+	}
+	else {
+		if (m_portalTime > 0.0F)
+			m_portalTime -= 0.05F;
+
+		if (m_portalTime < 0.0F)
+			m_portalTime = 0.0F;
+	}
+
+	if (m_changingDimensionDelay > 0)
+		--m_changingDimensionDelay;
+
+	if (!m_pLevel->m_bIsOnline && isSneaking() && m_pRiding)
+		ride(nullptr);
+	
 	bool wasJumping = m_pMoveInput->m_bJumping;
 	m_pMoveInput->tick(this);
 	if (m_pMoveInput->m_bSneaking && m_ySlideOffset < 0.47f)
@@ -92,11 +137,11 @@ void LocalPlayer::aiStep()
 			m_vel.y += yd * 0.15;
 	}
 
-	Mob::aiStep();
 	Player::aiStep();
 
-	if (getAbilities().m_flying && m_onGround)
+	if (getAbilities().m_flying && m_bOnGround)
 		getAbilities().m_flying = false;
+
 }
 
 void LocalPlayer::take(Entity* itemEntity, int)
@@ -104,7 +149,7 @@ void LocalPlayer::take(Entity* itemEntity, int)
 	m_pMinecraft->m_pParticleEngine->add(new PickupParticle(m_pLevel, itemEntity->shared_from_this(), shared_from_this(), -0.5f));
 }
 
-void LocalPlayer::drop(const ItemInstance* pItemInstance, bool b)
+void LocalPlayer::drop(std::shared_ptr<ItemInstance> pItemInstance, bool b)
 {
 	if (pItemInstance)
 	{
@@ -144,6 +189,26 @@ void LocalPlayer::openFurnace(std::shared_ptr<FurnaceTileEntity> furnace)
 void LocalPlayer::openContainer(Container* container)
 {
 	m_pMinecraft->setScreen(new ChestScreen(m_pInventory, container));
+}
+
+void LocalPlayer::openTrap(std::shared_ptr<DispenserTileEntity> tileEntity)
+{
+	m_pMinecraft->setScreen(new TrapScreen(m_pInventory, tileEntity));
+}
+
+void LocalPlayer::openTextEdit(std::shared_ptr<SignTileEntity> tileEntity)
+{
+	m_pMinecraft->setScreen(new TextEditScreen(tileEntity));
+}
+
+void LocalPlayer::displayClientMessage(const std::string& msg)
+{
+	m_pMinecraft->m_gui.addMessage(Language::getInstance()->get(msg));
+}
+
+int LocalPlayer::getItemIcon(ItemInstance* instance)
+{
+	return !m_pMinecraft->getOptions()->m_bThirdPerson && instance->m_itemID == Item::fishingRod->m_itemID && m_fishing ? instance->getIcon() + 16 : Player::getItemIcon(instance);
 }
 
 void LocalPlayer::animateRespawn()
@@ -224,7 +289,7 @@ int LocalPlayer::move(const Vec3& pos)
 
 		result = Entity::move(field_BF0);
 
-		m_onGround = true;
+		m_bOnGround = true;
 
 		m_walkDist = m_walkDist_old;
 	}

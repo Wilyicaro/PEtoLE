@@ -14,28 +14,21 @@
 const real RandomLevelSource::SNOW_CUTOFF = 0.5;
 const real RandomLevelSource::SNOW_SCALE  = 0.3;
 
-real g_timeSpentInPostProcessing = 0;
-
-RandomLevelSource::RandomLevelSource(Level* level, int64_t seed, int x) :
+RandomLevelSource::RandomLevelSource(Level* level, int64_t seed) :
 	m_random(seed),
-	m_perlinNoise1(&m_random, 16),
-	m_perlinNoise2(&m_random, 16),
-	m_perlinNoise3(&m_random, 8),
-	m_perlinNoise4(&m_random, 4),
-	m_perlinNoise5(&m_random, 4),
-	m_perlinNoise6(&m_random, 10),
-	m_perlinNoise7(&m_random, 16),
-	m_perlinNoise8(&m_random, 8),
+	m_lperlinNoise1(&m_random, 16),
+	m_lperlinNoise2(&m_random, 16),
+	m_perlinNoise1(&m_random, 8),
+	m_perlinNoise2(&m_random, 4),
+	m_perlinNoise3(&m_random, 4),
+	m_scaleNoise(&m_random, 10),
+	m_depthNoise(&m_random, 16),
+	m_forestNoise(&m_random, 8),
 	m_pLevel(level)
 {
-	field_4 = false;
-	field_19F0 = 1.0;
-	field_7280 = nullptr;
-	m_pnr = nullptr;
-	m_ar = nullptr;
-	m_br = nullptr;
-	m_sr = nullptr;
-	m_dr = nullptr;
+	m_sandBuffer.reserve(256);
+	m_gravelBuffer.reserve(256);
+	m_depthBuffer.reserve(256);
 
 	LOG_I("Generating world with seed: %d", seed);
 
@@ -59,9 +52,9 @@ LevelChunk* RandomLevelSource::getChunk(const ChunkPos& pos)
 	LevelChunk* pChunk = new LevelChunk(m_pLevel, pLevelData, pos);
 	m_chunks[key] = pChunk;
 
-	Biome** pBiomeBlock = m_pLevel->getBiomeSource()->getBiomeBlock(TilePos(pos, 0), 16, 16);
-	prepareHeights(pos, pLevelData, nullptr, m_pLevel->getBiomeSource()->temperatures);
-	buildSurfaces(pos, pLevelData, pBiomeBlock);
+	auto& biomes = m_pLevel->getBiomeSource()->getBiomeBlock(TilePos(pos, 0), 16, 16);
+	prepareHeights(pos, pLevelData, m_pLevel->getBiomeSource()->m_temperatures);
+	buildSurfaces(pos, pLevelData, biomes);
 	m_largeCaveFeature.apply(this, m_pLevel, pos.x, pos.z, pLevelData, 0);
 	pChunk->recalcHeightmap();
 
@@ -86,23 +79,20 @@ LevelChunk* RandomLevelSource::getChunkDontCreate(const ChunkPos& pos)
 	return pChunk;
 }
 
-real* RandomLevelSource::getHeights(real* fptr, int a3, int a4, int a5, int a6, int a7, int a8)
+const std::vector<real>& RandomLevelSource::getHeights(std::vector<real>& fptr, int a3, int a4, int a5, int a6, int a7, int a8)
 {
-	if (!fptr)
-	{
-		fptr = new real[a6 * a7 * a8];
-	}
+	fptr.resize(a6 * a7 * a8);
 
-	real* bsf4 = m_pLevel->getBiomeSource()->temperatures;
-	real* bsf8 = m_pLevel->getBiomeSource()->downfalls;
+	std::vector<real>& bsf4 = m_pLevel->getBiomeSource()->m_temperatures;
+	std::vector<real>& bsf8 = m_pLevel->getBiomeSource()->m_downfalls;
 
 	constexpr real C_MAGIC_1 = 684.412;
 
-	m_sr = m_perlinNoise6.getRegion(m_sr, a3, a5, a6, a8, 1.121, 1.121, 0.5);
-	m_dr = m_perlinNoise7.getRegion(m_dr, a3, a5, a6, a8, 200.0, 200.0, 0.5);
-	m_pnr = m_perlinNoise3.getRegion(m_pnr, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1 / 80, C_MAGIC_1 / 160, C_MAGIC_1 / 80);
-	m_ar = m_perlinNoise1.getRegion(m_ar, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1, C_MAGIC_1, C_MAGIC_1);
-	m_br = m_perlinNoise2.getRegion(m_br, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1, C_MAGIC_1, C_MAGIC_1);
+	m_sr = m_scaleNoise.getRegion(m_sr, a3, a5, a6, a8, 1.121, 1.121, 0.5);
+	m_dr = m_depthNoise.getRegion(m_dr, a3, a5, a6, a8, 200.0, 200.0, 0.5);
+	m_pnr = m_perlinNoise1.getRegion(m_pnr, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1 / 80, C_MAGIC_1 / 160, C_MAGIC_1 / 80);
+	m_ar = m_lperlinNoise1.getRegion(m_ar, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1, C_MAGIC_1, C_MAGIC_1);
+	m_br = m_lperlinNoise2.getRegion(m_br, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1, C_MAGIC_1, C_MAGIC_1);
 
 
 	int k1 = 0;
@@ -185,9 +175,9 @@ real* RandomLevelSource::getHeights(real* fptr, int a3, int a4, int a5, int a6, 
 	return fptr;
 }
 
-void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, void* huh, real* noise)
+void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, const std::vector<real>& noise)
 {
-	auto* heightMap = getHeights(field_7280, pos.x * 4, 0, pos.z * 4, 5, 17, 5);
+	auto& heightMap = getHeights(m_buffer, pos.x * 4, 0, pos.z * 4, 5, 17, 5);
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -257,11 +247,11 @@ void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, void*
 }
 
 
-void RandomLevelSource::buildSurfaces(const ChunkPos& pos, TileID* tiles, Biome** biomes)
+void RandomLevelSource::buildSurfaces(const ChunkPos& pos, TileID* tiles, const std::vector<Biome*> biomes)
 {
-	m_perlinNoise4.getRegion(m_sandBuffer, real(pos.x) * 16.0, real(pos.z) * 16.0, 0.0, 16, 16, 1, 1.0 / 32.0, 1.0 / 32.0, 1.0);
-	m_perlinNoise4.getRegion(m_gravelBuffer, real(pos.x) * 16.0, 109.0134, real(pos.z) * 16.0, 16, 1, 16, 1.0 / 32.0, 1.0, 1.0 / 32.0);
-	m_perlinNoise5.getRegion(m_depthBuffer, real(pos.x) * 16.0, real(pos.z) * 16.0, 0.0f, 16, 16, 1, 1.0 / 16.0, 1.0 / 16.0, 1.0 / 16.0);
+	m_perlinNoise2.getRegion(m_sandBuffer, real(pos.x) * 16.0, real(pos.z) * 16.0, 0.0, 16, 16, 1, 1.0 / 32.0, 1.0 / 32.0, 1.0);
+	m_perlinNoise2.getRegion(m_gravelBuffer, real(pos.x) * 16.0, 109.0134, real(pos.z) * 16.0, 16, 1, 16, 1.0 / 32.0, 1.0, 1.0 / 32.0);
+	m_perlinNoise3.getRegion(m_depthBuffer, real(pos.x) * 16.0, real(pos.z) * 16.0, 0.0f, 16, 16, 1, 1.0 / 16.0, 1.0 / 16.0, 1.0 / 16.0);
 
 	// @NOTE: Again, extracted from Java Beta 1.6. Probably accurate
 	constexpr int byte0 = 64;
@@ -461,7 +451,7 @@ void RandomLevelSource::postProcess(ChunkSource* src, const ChunkPos& pos)
 	// End of ore generation
 	// Start of tree generation
 
-	real t1 = m_perlinNoise8.getValue(real(tp.x) * 0.5, real(tp.z) * 0.5);
+	real t1 = m_forestNoise.getValue(real(tp.x) * 0.5, real(tp.z) * 0.5);
 	double t2 = m_random.nextDouble();
 	int t3 = int((4.0 + t2 * 4.0 + t1 / 8) / 3.0);
 
@@ -640,7 +630,7 @@ void RandomLevelSource::postProcess(ChunkSource* src, const ChunkPos& pos)
 		SpringFeature(Tile::lava->m_ID).place(m_pLevel, &m_random, TilePos(tp.x + 8 + xo, yo, tp.z + 8 + zo));
 	}
 
-	real* tempBlock = m_pLevel->getBiomeSource()->getTemperatureBlock(tp.x + 8, tp.z + 8, 16, 16);
+	const std::vector<real>& tempBlock = m_pLevel->getBiomeSource()->getTemperatureBlock(tp.x + 8, tp.z + 8, 16, 16);
 	for (int j19 = tp.x + 8; j19 < tp.x + 8 + 16; j19++)
 	{
 		for (int j22 = tp.z + 8; j22 < tp.z + 8 + 16; j22++)

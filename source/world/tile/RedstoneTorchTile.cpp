@@ -17,7 +17,7 @@ int RedstoneTorchTile::getResource(int, Random*) const
 
 int RedstoneTorchTile::getTexture(Facing::Name face, int data) const
 {
-    return data == 1 ? Tile::redstoneDust->getTexture(face, data) : TorchTile::getTexture(face, data);
+    return face == Facing::UP ? Tile::redstoneDust->getTexture(face, data) : TorchTile::getTexture(face, data);
 }
 
 bool RedstoneTorchTile::isToggledTooFrequently(Level* level, const TilePos& pos, bool addRecent) {

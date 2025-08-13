@@ -17,9 +17,14 @@ void ChunkSource::saveAll()
 
 }
 
-void ChunkSource::saveUnsaved(bool limited)
+void ChunkSource::save(bool force)
 {
 
+}
+
+bool ChunkSource::save(bool force, ProgressListener&)
+{
+	return false;
 }
 
 void ChunkSource::unloadFarChunks()

@@ -72,7 +72,12 @@ void LevelListener::timeChanged(int64_t time)
 
 }
 
-void LevelListener::playStreamingMusic(const std::string& a, int b, int c, int d)
+void LevelListener::playStreamingMusic(const std::string& a, const TilePos&)
+{
+
+}
+
+void LevelListener::levelEvent(Player*, int event, const TilePos&, int info)
 {
 
 }

@@ -16,10 +16,9 @@ public:
 	void aiStep() override;
 	bool isBaby() const override;
 	bool canSpawn() override;
-	Entity* findAttackTarget() override;
 	int getAmbientSoundInterval() const override;
 	float getWalkTargetValue(const TilePos& pos) const override;
-	bool hurt(Entity* pCulprit, int damage) override;
+	//bool hurt(Entity* pCulprit, int damage) override;
 	bool removeWhenFarAway() const override;
 
 	int getAge() const;

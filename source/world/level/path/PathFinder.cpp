@@ -24,6 +24,10 @@ constexpr int MakeNodeHash(const TilePos& pos)
 		(pos.z < 0 ? 0x8000 : 0);
 }
 
+PathFinder::PathFinder(LevelSource* level) : m_pLevel(level), m_nodeCount(0)
+{
+}
+
 PathFinder::PathFinder()
 {
 	m_pLevel = nullptr;
@@ -294,7 +298,7 @@ bool PathFinder::findPath(Path& path, Entity* pEntity, const Vec3& pos, float d)
 
 bool PathFinder::findPath(Path& path, Entity* pEntity, const Entity* pTarget, float d)
 {
-	return findPath(path, pEntity, Vec3(pTarget->m_pos.x, pTarget->m_hitbox.min.y/*bb.y0*/, pTarget->m_pos.z), d);
+	return findPath(path, pEntity, Vec3(pTarget->m_pos.x, pTarget->m_hitbox.min.y, pTarget->m_pos.z), d);
 }
 
 bool PathFinder::findPath(Path& path, Entity* pEntity, const TilePos& tilePos, float d)

@@ -15,7 +15,7 @@ enum eParticleTexture
 {
 	PT_PARTICLES,
 	PT_TERRAIN,
-	PT_PARTICLES2,
+	PT_ITEM,
 	PT_PARTICLES3,
 };
 
@@ -24,6 +24,7 @@ enum eParticleTextureIndex
 	PTI_BUBBLE = 32,
 	PTI_FLAME = 48,
 	PTI_LAVA,
+	PTI_NOTE = 64
 };
 
 class Particle : public Entity
@@ -46,13 +47,13 @@ public:
 	Particle* setPower(float);
 
 public:
-	int blockTexture;
-	float field_E0;
-	float field_E4;
-	int field_E8;
-	int field_EC;
-	float field_F0;
-	float field_F4;
+	int m_tex;
+	float m_uo;
+	float m_vo;
+	int m_age;
+	int m_lifetime;
+	float m_size;
+	float m_gravity;
 	float m_rCol;
 	float m_gCol;
 	float m_bCol;
@@ -87,12 +88,12 @@ public:
 class SmokeParticle : public Particle
 {
 public:
-	SmokeParticle(Level*, const Vec3& pos, const Vec3& dir, float a9);
+	SmokeParticle(Level*, const Vec3& pos, const Vec3& dir, float a9 = 1.0f);
 	void tick() override;
 	void render(Tesselator&, float, float, float, float, float, float) override;
 
 public:
-	float field_104;
+	float m_oSize;
 };
 
 class RedDustParticle : public Particle
@@ -103,7 +104,7 @@ public:
 	void render(Tesselator&, float, float, float, float, float, float) override;
 
 public:
-	float field_104;
+	float m_oSize;
 };
 
 class PickupParticle : public Particle
@@ -123,9 +124,6 @@ class ExplodeParticle : public Particle
 public:
 	ExplodeParticle(Level*, const Vec3& pos, const Vec3& dir);
 	void tick() override;
-
-public:
-	float field_104;
 };
 
 class FlameParticle : public Particle
@@ -137,7 +135,7 @@ public:
 	float getBrightness(float f) const override;
 
 public:
-	float field_104;
+	float m_oSize;
 };
 
 class LavaParticle : public Particle
@@ -149,5 +147,51 @@ public:
 	float getBrightness(float f) const override;
 
 public:
-	float field_104;
+	float m_oSize;
 };
+
+class NoteParticle : public Particle
+{
+public:
+	NoteParticle(Level*, const Vec3& pos, const Vec3& dir, float scale = 2.0);
+	void tick() override;
+	void render(Tesselator&, float, float, float, float, float, float) override;
+
+public:
+	float m_oSize;
+};
+
+class WaterDropParticle : public Particle
+{
+public:
+	WaterDropParticle(Level*, const Vec3& pos);
+	void tick() override;
+};
+
+class SplashParticle : public WaterDropParticle
+{
+public:
+	SplashParticle(Level*, const Vec3& pos, const Vec3& dir);
+};
+
+class PortalParticle : public Particle
+{
+public:
+	PortalParticle(Level*, const Vec3& pos, const Vec3& dir);
+	void tick() override;
+	void render(Tesselator&, float, float, float, float, float, float) override;
+	float getBrightness(float f) const override;
+
+public:
+	float m_oSize;
+	Vec3 m_startPos;
+};
+
+class BreakingItemParticle : public Particle
+{
+public:
+	BreakingItemParticle(Level* level, const Vec3& pos, Item* item);
+	int getParticleTexture() override;
+	void render(Tesselator&, float, float, float, float, float, float) override;
+};
+

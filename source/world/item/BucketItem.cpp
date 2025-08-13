@@ -86,7 +86,7 @@ std::shared_ptr<ItemInstance> BucketItem::use(std::shared_ptr<ItemInstance> item
                 }
             }
         }
-        else if (m_content == 0 && hitResult.m_pEnt->getType() == *EntityType::cow) {
+        else if (m_content == 0 && hitResult.m_pEnt->getType() == EntityType::cow) {
             return std::make_shared<ItemInstance>(Item::milk);
         }
 

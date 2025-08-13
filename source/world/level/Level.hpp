@@ -38,25 +38,38 @@ typedef std::vector<AABB> AABBVector;
 class Level : public LevelSource
 {
 private:
-	LevelData m_levelData;
+	bool m_bAllPlayersSleeping;
+	bool m_bAnyPlayersSleeping;
 
 private:
 	// @NOTE: LevelListeners do NOT get updated here
-	void _setTime(int32_t time) { m_levelData.setTime(time); }
+	void _setTime(int64_t time) { getLevelData().setTime(time); }
+
+	void resetWeatherCycle();
 
 public:
-	Level(LevelStorage* pStor, const std::string& str, int64_t seed, int version, Dimension* pDimension = nullptr);
+	virtual void init(Dimension* pDimension = nullptr);
+	Level();
+	Level(LevelManager* pStor, Dimension* pDimension = nullptr);
 	~Level();
 
 	// TODO
+
 	TileID getTile(const TilePos& pos) const override;
 	float getBrightness(const TilePos& pos) const override;
 	int getData(const TilePos& pos) const override;
 	Material* getMaterial(const TilePos& pos) const override;
 	bool isSolidTile(const TilePos& pos) const override;
 
+	float getThunderLevel(float) const;
+	void setThunderLevel(float);
+	float getRainLevel(float) const;
+	void setRainLevel(float);
+	bool isThundering() const;
+	bool isRaining() const;
+	bool isRainingAt(const TilePos&) const;
 	ChunkSource* getChunkSource() const;
-	ChunkSource* createChunkSource();
+	virtual ChunkSource* createChunkSource();
 	LevelChunk* getChunk(const ChunkPos& pos) const;
 	LevelChunk* getChunkAt(const TilePos& pos) const;
 	int getRawBrightness(const TilePos& pos) const;
@@ -67,11 +80,11 @@ public:
 	int getBrightness(const LightLayer&, const TilePos& pos) const;
 	void setBrightness(const LightLayer&, const TilePos& pos, int brightness);
 	int getSeaLevel() const { return 63; }
-	int64_t getSeed() const { return m_levelData.getSeed(); }
-	int64_t getTime() const { return m_levelData.getTime(); }
+	int64_t getSeed() const { return getLevelData().getSeed(); }
+	int64_t getTime() const { return getLevelData().getTime(); }
 	void setTime(int64_t time);
-	GameType getDefaultGameType() { return m_levelData.getGameType(); }
-	int getHeightmap(const TilePos& pos);
+	GameType getDefaultGameType() { return getLevelData().getGameType(); }
+	int getHeightmap(const TilePos& pos) const;
 	bool isDay() const;
 	bool isSkyLit(const TilePos& pos) const;
 	bool isEmptyTile(const TilePos& pos) const;
@@ -86,9 +99,9 @@ public:
 	bool updateLights();
 	void updateLight(const LightLayer&, const TilePos& tilePos1, const TilePos& tilePos2, bool = true);
 	void updateLightIfOtherThan(const LightLayer&, const TilePos& pos, int);
-	bool setTileAndDataNoUpdate(const TilePos& pos, TileID tile, int data);
-	bool setTileNoUpdate(const TilePos& pos, TileID tile);
-	bool setDataNoUpdate(const TilePos& pos, int data);
+	virtual bool setTileAndDataNoUpdate(const TilePos& pos, TileID tile, int data);
+	virtual bool setTileNoUpdate(const TilePos& pos, TileID tile);
+	virtual bool setDataNoUpdate(const TilePos& pos, int data);
 	bool setTileAndData(const TilePos& pos, TileID tile, int data);
 	bool setTile(const TilePos& pos, TileID tile);
 	bool setData(const TilePos& pos, int data);
@@ -98,8 +111,8 @@ public:
 	void updateNeighborsAt(const TilePos& pos, TileID tile);
 	void neighborChanged(const TilePos& pos, TileID tile);
 	void setTilesDirty(const TilePos& min, const TilePos& max);
-	void entityAdded(Entity* pEnt);
-	void entityRemoved(Entity* pEnt);
+	virtual void entityAdded(Entity* pEnt);
+	virtual void entityRemoved(Entity* pEnt);
 	void lightColumnChanged(int x, int z, int y1, int y2);
 	bool containsFireTile(const AABB&);
 	bool containsAnyLiquid(const AABB&);
@@ -113,16 +126,16 @@ public:
 	int getTopSolidBlock(const TilePos& tilePos) const;
 	int countWithCategory(EntityCategories::CategoriesMask category);
 	void loadPlayer(std::shared_ptr<Player>);
-	bool addEntity(std::shared_ptr<Entity>);
-	bool removeEntity(std::shared_ptr<Entity>);
+	virtual bool addEntity(std::shared_ptr<Entity>);
+	virtual bool removeEntity(std::shared_ptr<Entity>);
 	void removeEntities(const EntityVector&);
-	void removeAllPendingEntityRemovals();
+	void removeAllPendingEntityRemovals(bool limited = true);
 	void prepare();
 	void saveLevelData();
 	void savePlayerData();
 	void saveAllChunks();
 	void setInitialSpawn();
-	void setSpawnPos(const TilePos& pos) { m_levelData.setSpawn(pos); }
+	void setSpawnPos(const TilePos& pos) { getLevelData().setSpawn(pos); }
 	void setSpawnSettings(bool a, bool b) { }
 	bool canSeeSky(const TilePos& pos) const;
 	Vec3f getSkyColor(Entity* pEnt, float f) const;
@@ -135,11 +148,12 @@ public:
 	void removeListener(LevelListener*);
 	void addListener(LevelListener*);
 	void tick(std::shared_ptr<Entity> pEnt, bool = true) const;
-	void tick();
-	void tickPendingTicks(bool b);
-	void tickTiles();
+	virtual void tick();
+	virtual bool tickPendingTicks(bool b);
+	virtual void tickTiles();
+	virtual void advanceWeatherCycle();
 	void tickEntities();
-	void addToTickNextTick(const TilePos& tilePos, int, int);
+	virtual void addToTickNextTick(const TilePos& tilePos, int, int);
 	void takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* pOwner);
 	void addParticle(const std::string& name, const Vec3& pos, const Vec3& dir = Vec3::ZERO);
 	void playSound(Entity*, const std::string& name, float volume = 1.0f, float pitch = 1.0f);
@@ -157,16 +171,44 @@ public:
 	float getStarBrightness(float f) const;
 	float getSunAngle(float f) const;
 	void swap(const TilePos& pos1, const TilePos& pos2);
+	uint8_t* getBlocksAndData(const TilePos& pos1, int xs, int ys, int zs);
+	void setBlocksAndData(const TilePos& pos, int xs, int ys, int zs, uint8_t*);
 
 	HitResult clip(const Vec3& a, const Vec3& b) const;
-	HitResult clip(Vec3 a, Vec3 b, bool c) const;
+	HitResult clip(Vec3 a, Vec3 b, bool c, bool = false) const;
 	std::shared_ptr<Entity> getEntity(int id) const;
 	const EntityVector* getAllEntities() const;
-	EntityVector getEntities(std::shared_ptr<Entity> pAvoid, const AABB&) const;
+	template<typename Predicate>
+	EntityVector getEntitiesOfPredicate(Predicate predicate, const AABB& aabb) const
+	{
+		EntityVector entities = EntityVector();
+
+		long lowerXBound = floor((aabb.min.x - 2.0f) / 16);
+		long lowerZBound = floor((aabb.min.z - 2.0f) / 16);
+		long upperXBound = floor((aabb.max.x + 2.0f) / 16);
+		long upperZBound = floor((aabb.max.z + 2.0f) / 16);
+
+		for (long z = lowerZBound; z <= upperZBound; z++)
+		{
+			for (long x = lowerXBound; x <= upperXBound; x++)
+			{
+				if (!hasChunk(ChunkPos(x, z))) continue;
+
+				LevelChunk* pChunk = getChunk(ChunkPos(x, z));
+				pChunk->getEntities(predicate, aabb, entities);
+			}
+		}
+
+		return entities;
+	}
+	EntityVector getEntities(const Entity* pAvoid, const AABB&) const;
 	EntityVector getEntitiesOfCategory(EntityCategories::CategoriesMask category, const AABB&) const;
+	EntityVector getEntitiesOfType(EntityType*, const AABB&) const;
+	EntityVector getPlayers(const AABB&) const;
+	std::shared_ptr<Player> getPlayer(const std::string&);
 	BiomeSource* getBiomeSource() const override;
-	LevelStorage* getLevelStorage() const { return m_pLevelStorage; }
-	const LevelData* getLevelData() const { return &m_levelData; }
+	LevelManager* getManager() const { return m_pLevelManager; }
+	virtual LevelData& getLevelData() const { return getManager()->m_levelData; }
 	AABBVector* getCubes(const Entity* pEnt, const AABB& aabb);
 	std::vector<LightUpdate>* getLightsToUpdate();
 	std::shared_ptr<Player> getNearestPlayer(const Entity*, float) const;
@@ -178,12 +220,29 @@ public:
 	bool hasDirectSignal(const TilePos& pos) const;
 	bool hasNeighborSignal(const TilePos& pos) const;
 
-	void saveUnsavedChunks(bool limited = false);
+	void save(bool force = true);
+	void save(bool force, ProgressListener&);
 
+	void updateSleeping();
+	void wakeUpAllPlayers();
+	bool isAnyPlayersSleeping() const;
+	bool isAllPlayersSleepingLongEnough();
+
+	void playStreamingMusic(const std::string&, const TilePos&);
+	void tileEvent(const TilePos&, int info, int info2);
+	void levelEvent(int event, const TilePos&, int info);
+	void levelEvent(Player*, int event, const TilePos&, int info);
+	void entityEvent(Entity*, int event);
 
 protected:
 	int m_randValue;
 	int m_addend;
+	int m_saveInterval;
+	int m_delayUntilNextMoodSound;
+	float m_oRainLevel;
+	float m_rainLevel;
+	float m_oThunderLevel;
+	float m_thunderLevel;
 
 public:
 	AABBVector m_aabbs;
@@ -193,6 +252,7 @@ public:
 	EntityVector m_entities;
 	std::vector<std::shared_ptr<Player>> m_players;
 	int m_skyDarken;
+	int m_flashTime;
 	bool m_noNeighborUpdate;
 	Dimension* m_pDimension;
     int m_difficulty; // @TODO: Difficulty enum
@@ -200,7 +260,7 @@ public:
 	bool m_bCalculatingInitialSpawn;
 	std::vector<LevelListener*> m_levelListeners;
 	ChunkSource* m_pChunkSource;
-	LevelStorage* m_pLevelStorage;
+	LevelManager* m_pLevelManager;
 	EntityVector m_pendingEntityRemovals;
 	std::set<TickNextTickData> m_pendingTicks;
 	std::set<ChunkPos> m_chunksToUpdate;
@@ -208,7 +268,7 @@ public:
 	std::vector<std::shared_ptr<TileEntity>> m_tileEntityList;
 	bool m_bUpdateLights;
 	int m_maxRecurse;
-	bool m_bNoLevelData;
+	bool m_bIsNew;
 	int field_B10;
 	int viewDistance = 10;
 	PathFinder* m_pPathFinder;

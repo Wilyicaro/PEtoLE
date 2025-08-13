@@ -1,3 +1,5 @@
+#pragma once
+
 #include "world/entity/PathfinderMob.hpp"
 #include "world/level/Level.hpp"
 
@@ -8,7 +10,7 @@ public:
 
 	void aiStep() override;
 	void tick() override;
-	Entity* findAttackTarget() override;
+	std::shared_ptr<Entity> findAttackTarget() override;
 	bool hurt(Entity* pCulprit, int damage) override;
 	virtual void checkHurtTarget(Entity*, float) override;
 	virtual float getWalkTargetValue(const TilePos& pos) const override;

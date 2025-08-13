@@ -497,11 +497,71 @@
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\FurnaceScreen.hpp">
       <Filter>Header Files\GUI\Screens\Inventory</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.hpp">
-      <Filter>Header Files\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\CreativeScreen.hpp">
       <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\model\MinecartModel.hpp">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\MinecartRenderer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\model\BoatModel.hpp">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\BoatRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\IntroScreen.hpp">
+      <Filter>Header Files\GUI\Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\model\SignModel.hpp">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\SignRenderer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.hpp">
+      <Filter>Header Files\GUI\Screens\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\GhastRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\model\GhastModel.hpp">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\SlimeRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\PaintingRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\FishingHookRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\LightningBoltRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\model\SquidModel.hpp">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\SquidRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\model\WolfModel.hpp">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\WolfRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\entity\GiantMobRenderer.hpp">
+      <Filter>Header Files\Renderer\Entity</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -901,11 +961,77 @@
     <ClCompile Include="..\..\..\..\source\client\renderer\ClockTexture.cpp">
       <Filter>Source Files\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.cpp">
-      <Filter>Source Files\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\CreativeScreen.cpp">
       <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\MinecartModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\MinecartRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\ArrowRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\BoatModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\BoatRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\IntroScreen.cpp">
+      <Filter>Source Files\GUI\Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\SignModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\SignRenderer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.cpp">
+      <Filter>Source Files\GUI\Screens\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\PortalTexture.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\GhastModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\GhastRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\SlimeModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\SlimeRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\PaintingRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\FishingHookRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\LightningBoltRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\SquidModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\SquidRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\model\WolfModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\WolfRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\entity\GiantMobRenderer.cpp">
+      <Filter>Source Files\Renderer\Entity</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

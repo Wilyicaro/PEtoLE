@@ -29,6 +29,7 @@ class Gui : public GuiComponent
 private:
 	void renderPumpkin(int, int);
 	void renderVignette(float, int, int);
+	void renderTp(float, int, int);
 
 public:
 	Gui(Minecraft* pMinecraft);
@@ -61,10 +62,10 @@ public:
 	Random m_random;
 	Minecraft* m_pMinecraft;
 	int m_tickCount;
-	std::string field_A00;
-	int field_A18;
-	bool field_A1C;
-	float field_A20;
+	std::string m_overlayMessage;
+	int m_overlayMessageDuration;
+	bool m_bHasOverlayMessage;
+	float m_tbr;
 	RenderChunk m_renderChunk;
 	bool field_A3C;
 	bool m_bRenderMessages;

@@ -24,7 +24,7 @@
 class RandomLevelSource : public ChunkSource
 {
 public:
-	RandomLevelSource(Level*, int64_t seed, int);
+	RandomLevelSource(Level*, int64_t seed);
 	int tick() override;
 	bool shouldSave() override;
 	bool hasChunk(const ChunkPos& pos) override;
@@ -34,37 +34,33 @@ public:
 	std::string gatherStats() override;
 	void postProcess(ChunkSource*, const ChunkPos& pos) override;
 
-	real* getHeights(real*, int, int, int, int, int, int);
-	void prepareHeights(const ChunkPos& pos, TileID*, void*, real*);
-	void buildSurfaces (const ChunkPos& pos, TileID*, Biome**);
+	const std::vector<real>& getHeights(std::vector<real>&, int, int, int, int, int, int);
+	void prepareHeights(const ChunkPos& pos, TileID*, const std::vector<real>&);
+	void buildSurfaces(const ChunkPos& pos, TileID*, const std::vector<Biome*>);
 	
 
 public:
-	bool field_4;
 	LargeCaveFeature m_largeCaveFeature;
 	std::unordered_map<uint64_t, LevelChunk*> m_chunks;
-	real field_19F0;
 	Random m_random;
+	PerlinNoise m_lperlinNoise1;
+	PerlinNoise m_lperlinNoise2;
 	PerlinNoise m_perlinNoise1;
 	PerlinNoise m_perlinNoise2;
 	PerlinNoise m_perlinNoise3;
-	PerlinNoise m_perlinNoise4;
-	PerlinNoise m_perlinNoise5;
-	PerlinNoise m_perlinNoise6;
-	PerlinNoise m_perlinNoise7;
-	PerlinNoise m_perlinNoise8;
+	PerlinNoise m_scaleNoise;
+	PerlinNoise m_depthNoise;
+	PerlinNoise m_forestNoise;
 	Level* m_pLevel;
-	real* field_7280;
-	real m_sandBuffer[256];
-	real m_gravelBuffer[256];
-	real m_depthBuffer[256];
-	// @TODO
-	real* m_pnr;
-	real* m_ar;
-	real* m_br;
-	real* m_sr;
-	real* m_dr;
-	// @TODO
+	std::vector<real> m_buffer;
+	std::vector<real> m_sandBuffer;
+	std::vector<real> m_gravelBuffer;
+	std::vector<real> m_depthBuffer;
+	std::vector<real> m_pnr;
+	std::vector<real> m_ar;
+	std::vector<real> m_br;
+	std::vector<real> m_sr;
+	std::vector<real> m_dr;
 
 
 	static const real SNOW_CUTOFF;

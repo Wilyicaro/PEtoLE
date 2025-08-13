@@ -22,8 +22,8 @@ struct TickNextTickData
 	void setDelay(int32_t);
 
 	int m_ID;
-	TilePos field_4;
-	int field_10;
+	TilePos m_pos;
+	int m_tileId;
 	int32_t m_delay;
 };
 

@@ -13,66 +13,40 @@ bool ProgressScreen::isInGameScreen()
 	return false;
 }
 
+void ProgressScreen::init(Minecraft* minecraft, int w, int h)
+{
+	Screen::init(minecraft, w, h);
+	minecraft->m_progress.progressStart(Util::EMPTY_STRING);
+	minecraft->m_progress.progressStage(Util::EMPTY_STRING);
+	minecraft->m_progress.progressStagePercentage(0);
+}
+
 void ProgressScreen::render(int a, int b, float c)
 {
-	renderBackground();
-
-	// render the dirt background
-	// for some reason, this was manually written:
+	renderDirtBackground(0);
 
 	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/background.png");
 
 	//! why not use the screen stuff
-	int x_width  = int(Minecraft::width  * Gui::InvGuiScale);
-	int x_height = int(Minecraft::height * Gui::InvGuiScale);
 
-	Tesselator& t = Tesselator::instance;
-	t.begin();
-	t.color(0x404040);
-	t.vertexUV(0.0f,           float(x_height), 0, 0,                      float(x_height) / 32.0f);
-	t.vertexUV(float(x_width), float(x_height), 0, float(x_width) / 32.0f, float(x_height) / 32.0f);
-	t.vertexUV(float(x_width), 0,               0, float(x_width) / 32.0f, 0);
-	t.vertexUV(0.0f,           0,               0, 0,                      0);
-	t.draw();
+	int yPos = m_height / 2;
 
-	int yPos = x_height / 2;
-
-	if (m_pMinecraft->m_progressPercent >= 0)
+	if (m_pMinecraft->m_progress.m_percentage >= 0)
 	{
-		float lX = float(x_width) / 2 - 50, rX = float(x_width) / 2 + 50;
-		float prog = float(m_pMinecraft->m_progressPercent);
+		float lX = float(m_width) / 2 - 50, rX = float(m_width) / 2 + 50;
+		float prog = float(m_pMinecraft->m_progress.m_percentage);
 
-		// disable the texturing
-		glDisable(GL_TEXTURE_2D);
-
-		t.begin();
-
-		t.color(0x808080); // gray background
-		t.vertex(lX, float(yPos + 16), 0);
-		t.vertex(lX, float(yPos + 18), 0);
-		t.vertex(rX, float(yPos + 18), 0);
-		t.vertex(rX, float(yPos + 16), 0);
-
-		t.color(0x80FF80); // the green stuff
-		t.vertex(lX,        float(yPos + 16), 0);
-		t.vertex(lX,        float(yPos + 18), 0);
-		t.vertex(lX + prog, float(yPos + 18), 0);
-		t.vertex(lX + prog, float(yPos + 16), 0);
-
-		t.draw();
-
-		// restore old state
-		glEnable(GL_TEXTURE_2D);
+		// gray background
+		fill(lX, yPos + 16, rX, yPos + 18, 0xFF808080);
+		// the green stuff
+		fill(lX, yPos + 16, lX + prog, yPos + 18, 0xFF80FF80);
 	}
 
-	//! Using m_pMinecraft->m_pFont instead of m_pFont.
-	Font* pFont = m_pMinecraft->m_pFont;
+	int width = m_pFont->width(m_pMinecraft->m_progress.m_title);
+	m_pFont->drawShadow(m_pMinecraft->m_progress.m_title, (m_width - width) / 2, yPos - 20, 0xFFFFFF);
 
-	int width = pFont->width("Generating world");
-	pFont->drawShadow("Generating world", (x_width - width) / 2, yPos - 20, 0xFFFFFF);
-
-	width = pFont->width(m_pMinecraft->getProgressMessage());
-	pFont->drawShadow(m_pMinecraft->getProgressMessage(), (x_width - width) / 2, yPos + 4, 0xFFFFFF);
+	width = m_pFont->width(m_pMinecraft->m_progress.m_status);
+	m_pFont->drawShadow(m_pMinecraft->m_progress.m_status, (m_width - width) / 2, yPos + 4, 0xFFFFFF);
 
 #ifdef ORIGINAL_CODE
 	sleepMs(50);
@@ -81,11 +55,13 @@ void ProgressScreen::render(int a, int b, float c)
 
 void ProgressScreen::updateEvents()
 {
-	if (m_pMinecraft->isLevelGenerated())
+	if (m_pMinecraft->m_async.empty())
 	{
 		m_pMinecraft->setScreen(nullptr);
 		return;
 	}
+
+
 
 	Screen::updateEvents();
 }

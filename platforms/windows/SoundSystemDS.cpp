@@ -128,8 +128,26 @@ void SoundSystemDS::pause(const std::string& sound)
 
 void SoundSystemDS::stop(const std::string& sound)
 {
+	for (auto it = m_buffers.begin(); it != m_buffers.end(); it++)
+	{
+		if (it->name == sound) it->buffer->Stop();
+	}
 }
 
+bool SoundSystemDS::playing(const std::string& sound)
+{
+	for (auto it = m_buffers.begin(); it != m_buffers.end(); it++)
+	{
+		if (it->name == sound) 
+		{
+			DWORD status;
+			it->buffer->GetStatus(&status);
+			if (status == DSBSTATUS_PLAYING)
+				return true;
+		}
+	}
+	return false;
+}
 
 void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch)
 {
@@ -154,7 +172,6 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 			i--;
 		}
 	}
-
 	HRESULT result;
 	IDirectSoundBuffer* tempBuffer;
 	unsigned char* bufferPtr;
@@ -268,6 +285,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	soundbuffer->SetVolume(LONG(attenuation));
 
 	BufferInfo info;
+	info.name = sound.m_name;
 	info.buffer = soundbuffer;
 	info.object3d = NULL;
 

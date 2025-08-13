@@ -16,6 +16,7 @@ public:
     double oSpin = 0.0;
 
     MobSpawnerTileEntity() {
+        m_pType = TileEntityType::mobSpawner;
         spawnDelay = 20;
     }
 
@@ -66,7 +67,7 @@ public:
 
             AABB box(m_pos.x, m_pos.y, m_pos.z, m_pos.x, m_pos.y, m_pos.z);
             box.grow(8.0, 4.0, 8.0);
-            int existing = m_pLevel->getEntitiesOfCategory(mob->getType().getCategory().getCategoryMask(), box).size();
+            int existing = m_pLevel->getEntitiesOfCategory(mob->getCategory().getCategoryMask(), box).size();
 
             if (existing >= 6) {
                 delay();

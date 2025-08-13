@@ -7,6 +7,7 @@
  ********************************************************************/
 
 #include "Particle.hpp"
+#include "world/level/Level.hpp"
 #include <client/renderer/entity/EntityRenderDispatcher.hpp>
 
 PickupParticle::PickupParticle(Level* level, std::shared_ptr<Entity> throwed, std::shared_ptr<Entity> thrower, float vel) :
@@ -15,12 +16,12 @@ PickupParticle::PickupParticle(Level* level, std::shared_ptr<Entity> throwed, st
 	this->throwed = throwed;
 	this->thrower = thrower;
 	this->vel = vel;
-	field_EC = 3;
+	m_lifetime = 3;
 }
 
 void PickupParticle::render(Tesselator& t, float f, float a, float b, float c, float d, float e)
 {
-	float var8 = (field_E8 + f) / field_EC;
+	float var8 = (m_age + f) / m_lifetime;
 	var8 *= var8;
 	float var15 = Mth::Lerp(thrower->m_posPrev.x, thrower->m_pos.x, f);
 	float var17 = Mth::Lerp(thrower->m_posPrev.y, thrower->m_pos.y, f) + vel;
@@ -36,8 +37,8 @@ void PickupParticle::render(Tesselator& t, float f, float a, float b, float c, f
 
 void PickupParticle::tick()
 {
-	field_E8++;
-	if (field_E8 >= field_EC)
+	m_age++;
+	if (m_age >= m_lifetime)
 		remove();
 
 }

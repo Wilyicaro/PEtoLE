@@ -10,8 +10,7 @@
 
 Chicken::Chicken(Level* pLevel) : Animal(pLevel)
 {
-	m_pEntityType = EntityType::chicken;
-	m_renderType = RENDER_CHICKEN;
+	m_pType = EntityType::chicken;
 	m_texture = "mob/chicken.png";
 	setSize(0.3f, 0.7f);
 
@@ -25,7 +24,7 @@ void Chicken::aiStep()
 
 	m_oFlap = m_flap;
 	m_oFlapSpeed = m_flapSpeed;
-	m_flapSpeed += (m_onGround ? -1.0f : 4.0f) * 0.3f;
+	m_flapSpeed += (m_bOnGround ? -1.0f : 4.0f) * 0.3f;
 	if (m_flapSpeed >= 0.0f)
 	{
 		if (m_flapSpeed > 1.0f)
@@ -35,11 +34,11 @@ void Chicken::aiStep()
 	{
 		m_flapSpeed = 0.0f;
 	}
-	if (!m_onGround && m_flapping < 1.0f)
+	if (!m_bOnGround && m_flapping < 1.0f)
 		m_flapping = 1.0f;
 
 	m_flapping *= 0.9f;
-	if (!m_onGround && m_vel.y < 0.0f)
+	if (!m_bOnGround && m_vel.y < 0.0f)
 		m_vel.y *= 0.6f;
 
 	m_flap += m_flapping * 2.0f;

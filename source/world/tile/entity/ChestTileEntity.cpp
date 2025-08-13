@@ -2,6 +2,7 @@
 
 ChestTileEntity::ChestTileEntity() : SimpleContainer(27, "gui.chest")
 {
+    m_pType = TileEntityType::chest;
 }
 
 void ChestTileEntity::load(std::shared_ptr<CompoundTag> tag) {

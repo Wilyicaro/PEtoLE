@@ -7,7 +7,7 @@
  ********************************************************************/
 
 #include "ExternalFileLevelStorageSource.hpp"
-#include "ExternalFileLevelStorage.hpp"
+#include "LevelManager.hpp"
 #include "common/Util.hpp"
 
 #ifndef DEMO
@@ -39,9 +39,9 @@ std::string ExternalFileLevelStorageSource::getName()
 	return "External File Level Storage";
 }
 
-LevelStorage* ExternalFileLevelStorageSource::selectLevel(const std::string& name, bool b)
+LevelManager* ExternalFileLevelStorageSource::selectLevel(const std::string& name, bool b)
 {
-	return new ExternalFileLevelStorage(name, m_worldsPath + "/" + name);
+	return new LevelManager(name, m_worldsPath + "/" + name);
 }
 
 void ExternalFileLevelStorageSource::getLevelList(std::vector<LevelSummary>& vls)
@@ -127,9 +127,9 @@ void ExternalFileLevelStorageSource::renameLevel(const std::string& oldName, con
 		levelUniqueName = oldName;
 
 	LevelData ld;
-	ExternalFileLevelStorage::readLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", &ld);
+	LevelManager::readLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
 	ld.setLevelName(levelName);
-	ExternalFileLevelStorage::writeLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", &ld);
+	LevelManager::writeLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
 }
 
 bool ExternalFileLevelStorageSource::isConvertible(const std::string&)
@@ -153,7 +153,7 @@ void ExternalFileLevelStorageSource::addLevelSummaryIfExists(std::vector<LevelSu
 	
 	LevelData ld;
 	
-	if (!ExternalFileLevelStorage::readLevelData(levelDat, &ld))
+	if (!LevelManager::readLevelData(levelDat, ld))
 		return;
 
 	vls.push_back(LevelSummary(name, ld.getLevelName(), ld.getLastPlayed(), ld.getSizeOnDisk()));

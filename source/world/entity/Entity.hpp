@@ -25,30 +25,7 @@ class Level;
 class Player;
 class ItemInstance;
 class ItemEntity;
-
-enum eEntityRenderType
-{
-	RENDER_NONE,
-	RENDER_DYNAMIC,
-	RENDER_TNT,
-	RENDER_HUMANOID,
-	RENDER_ITEM,
-	RENDER_CAMERA,
-	RENDER_CHICKEN,
-	RENDER_COW,
-	RENDER_PIG,
-	RENDER_SHEEP,
-	RENDER_SHEEP_FUR,
-	RENDER_ZOMBIE,
-	RENDER_SKELETON,
-	RENDER_SPIDER,
-	RENDER_CREEPER,
-	RENDER_ARROW,
-
-	// custom
-	RENDER_FALLING_TILE = 50,
-};
-
+class LightningBolt;
 struct EntityPos
 {
 	Vec3 m_pos;
@@ -104,11 +81,17 @@ public:
 	virtual void interpolateTurn(const Vec2& rot);
 	virtual void tick();
 	virtual void baseTick();
+	virtual void rideTick();
+	virtual void positionRider();
+	virtual real getRidingHeight();
+	virtual real getRideHeight();
+	virtual void ride(std::shared_ptr<Entity>);
 	virtual bool intersects(const Vec3& min, const Vec3& max) const;
 	virtual bool isFree(const Vec3& off) const;
 	virtual bool isFree(const Vec3& off, float expand) const;
 	virtual bool isInWall() const;
 	virtual bool isInWater();
+	virtual bool isWet();
 	virtual bool wasInWater();
 	virtual bool isInLava() const;
 	virtual bool isUnderLiquid(Material*) const;
@@ -130,14 +113,16 @@ public:
 	virtual bool isSneaking() const { return false; }
 	virtual bool isAlive() const { return m_bRemoved; }
 	virtual bool isOnFire() const { return m_fireTicks > 0; }
-	virtual bool isPlayer() const { return false; }
+	virtual bool isPlayer() const { return getType() == EntityType::player; }
 	virtual bool isCreativeModeAllowed() const { return false; }
 	virtual bool shouldRender(Vec3& camPos) const;
-	virtual bool shouldRenderAtSqrDistance(float distSqr) const;
+	virtual bool shouldRenderAtSqrDistance(real distSqr) const;
 	virtual bool hurt(Entity*, int);
 	virtual void animateHurt();
 	virtual float getPickRadius() const { return 0.1f; }
-	virtual std::shared_ptr<ItemEntity> spawnAtLocation(ItemInstance*, float);
+	virtual Vec3 getLookAngle() const { return Vec3::ZERO; }
+	virtual bool isRiding() { return m_pRiding != nullptr; }
+	virtual std::shared_ptr<ItemEntity> spawnAtLocation(std::shared_ptr<ItemInstance>, float);
 	virtual std::shared_ptr<ItemEntity> spawnAtLocation(int, int);
 	virtual std::shared_ptr<ItemEntity> spawnAtLocation(int, int, float);
 	virtual void awardKillScore(Entity* pKilled, int score);
@@ -152,18 +137,22 @@ public:
 	virtual void markHurt();
 	virtual void burn(int);
 	virtual void lavaHurt();
-	virtual int queryEntityRenderer();
+	virtual const AABB* getCollideBox() const;
+	virtual AABB* getCollideAgainstBox(Entity* ent) const;
+	virtual void handleInsidePortal();
 	virtual void handleEntityEvent(int event);
+	virtual void thunderHit(LightningBolt*);
 	void load(std::shared_ptr<CompoundTag> tag);
 	bool save(std::shared_ptr<CompoundTag> tag);
 	void saveWithoutId(std::shared_ptr<CompoundTag> tag);
 	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag);
 	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag);
-	// Removed by Mojang. See https://stackoverflow.com/questions/962132/why-is-a-call-to-a-virtual-member-function-in-the-constructor-a-non-virtual-call
-	//virtual void defineSynchedData();
+	virtual void defineSynchedData();
+	void startSynchedData();
 	std::string getEncodeId();
 
-	const EntityType& getType() const { return *m_pEntityType; }
+	const EntityType* getType() const { return m_pType; }
+	const EntityCategories getCategory() const { return getType()->getCategory(); }
 	const SynchedEntityData& getEntityData() const { return m_entityData; }
 
 	int hashCode() const { return m_EntityID; }
@@ -184,15 +173,18 @@ public:
 	static int entityCounter;
 	Random m_random;
 
+	std::shared_ptr<Entity> m_pRider;
+	std::shared_ptr<Entity> m_pRiding;
+	Vec2 m_rideRotA;
 	Vec3 m_pos;
-	bool m_bInAChunk;
+	bool m_bInChunk;
 	ChunkPos m_chunkPos;
 	int m_chunkPosY;
 	int field_20; // unused Vec3?
 	int field_24;
 	int field_28;
 	int m_EntityID;
-	float m_noNeighborUpdate;
+	float m_viewScale;
 	bool m_bBlocksBuilding;
 	Level* m_pLevel;
 	Vec3 m_oPos; // "o" in Java or "xo" ""yo" "zo"
@@ -204,18 +196,19 @@ public:
 	//this to be the case.
 	Vec2 m_rotPrev;
 	AABB m_hitbox;
-	bool m_onGround;
+	bool m_definedData;
+	bool m_bOnGround;
 	bool m_bHorizontalCollision;
 	bool m_bVerticalCollision;
 	bool m_bCollision;
 	bool m_bHurt;
 	bool m_bInWeb;
-	uint8_t slide;
+	bool m_bSlide;
 	bool m_bRemoved;
 	float m_heightOffset;
 	float m_bbWidth;
 	float m_bbHeight;
-	float field_90;
+	float m_walkDistO;
 	float m_walkDist;
 	Vec3 m_posPrev;
 	float m_ySlideOffset;
@@ -227,17 +220,17 @@ public:
 	int m_airCapacity;
 	int m_fireTicks;
 	int m_flameTime;
-	int m_renderType;  // @NOTE: Render type? (eEntityRenderType)
 	float m_distanceFallen; // Supposed to be protected
 	int m_airSupply;
-	uint8_t m_bWasInWater;
+	bool m_bWasInWater;
 	bool m_bFireImmune;
 	bool m_bFirstTick;
+	bool m_bIgnoreFrustum;
 	int m_nextStep;
 	float m_minBrightness;
 
-	protected:
-		SynchedEntityData m_entityData;
-		bool m_bMakeStepSound;
-		const EntityType* m_pEntityType;
+protected:
+	SynchedEntityData m_entityData;
+	bool m_bMakeStepSound;
+	const EntityType* m_pType;
 };

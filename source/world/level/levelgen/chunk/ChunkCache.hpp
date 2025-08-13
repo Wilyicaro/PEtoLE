@@ -32,7 +32,8 @@ public:
 	bool shouldSave() override;
 	void saveAll() override;
 	int tick() override;
-	void saveUnsaved(bool limited = true) override;
+	void save(bool force = true) override;
+	bool save(bool force, ProgressListener&) override;
 
 	void unloadChunk(std::pair<uint64_t, LevelChunk*> p);
 

@@ -21,12 +21,12 @@ public:
 	float x, y;
     
 private:
-    void _init(float x, float y);
+    void _init(float y, float x);
 
 public:
 	// this constructor is nice to have, but it's probably inlined
 	Vec2();
-	Vec2(float x, float y);
+	Vec2(float y, float x);
     
     Vec2 normalize() const;
 

@@ -43,7 +43,7 @@ void CreativeScreen::mouseDragged(double x, double y, int button, double deltaX,
 
 void CreativeScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 {
-	Inventory* var5 = m_pMinecraft->m_pLocalPlayer->m_pInventory;
+	Inventory* var5 = m_pMinecraft->m_pPlayer->m_pInventory;
 	std::shared_ptr<ItemInstance> var6 = nullptr;
 	if (slot) {
 		if (slot->container == creativeGrid) {
@@ -80,7 +80,7 @@ void CreativeScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 			}
 		}
 		else {
-			m_menu->clicked(slot->index, button, m_pMinecraft->m_pLocalPlayer.get());
+			m_menu->clicked(slot->index, button, m_pMinecraft->m_pPlayer.get());
 			auto var8 = m_menu->getSlot(slot->index)->getItem();
 			//@TODO Sync if online
 		}
@@ -88,14 +88,14 @@ void CreativeScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 	else {
 		if (var5->getCarried()) {
 			if (!button) {
-				m_pMinecraft->m_pLocalPlayer->drop(var5->getCarried().get());
+				m_pMinecraft->m_pPlayer->drop(var5->getCarried());
 				//@TODO Sync if online
 				var5->setCarried(nullptr);
 			}
 
 			if (button == 1) {
 				var6 = var5->getCarried()->remove(1);
-				m_pMinecraft->m_pLocalPlayer->drop(var6.get());
+				m_pMinecraft->m_pPlayer->drop(var6);
 				//@TODO Sync if online
 				if (!var5->getCarried()->m_count) {
 					var5->setCarried(nullptr);
@@ -107,9 +107,9 @@ void CreativeScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 
 void CreativeScreen::tick()
 {
-	if (m_pMinecraft->m_pLocalPlayer->isSurvival())
+	if (m_pMinecraft->m_pPlayer->isSurvival())
 	{
-		m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pLocalPlayer.get()));
+		m_pMinecraft->setScreen(new InventoryScreen(m_pMinecraft->m_pPlayer.get()));
 	}
 }
 

@@ -11,6 +11,7 @@
 #include "world/phys/Vec3T.hpp"
 #include "world/level/levelgen/biome/BiomeSource.hpp"
 #include "world/level/levelgen/chunk/ChunkSource.hpp"
+#include "storage/ChunkStorage.hpp"
 #include "Level.hpp"
 
 class Level; // if included from Level.hpp
@@ -28,12 +29,13 @@ public:
 	virtual bool isValidSpawn(const TilePos& pos);
 	virtual float getCloudHeight();
 	virtual float* getSunriseColor(float, float);
-	virtual float getTimeOfDay(int32_t, float);
-	void init(Level* pLevel);
+	virtual float getTimeOfDay(int64_t, float);
+	virtual void init(Level* pLevel);
 	virtual void updateLightRamp();
 
 
-	ChunkSource* createRandomLevelSource();
+	virtual ChunkSource* createRandomLevelSource();
+	virtual ChunkStorage* createStorage();
 
 public:
 	Level* m_pLevel;

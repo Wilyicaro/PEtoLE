@@ -166,7 +166,7 @@ void OptionsScreen::buttonClicked(Button* pButton)
 	switch (pButton->m_buttonId)
 	{
 	case OB_BACK:
-		if (m_pMinecraft->isLevelGenerated())
+		if (m_pMinecraft->isLevelReady())
 			m_pMinecraft->setScreen(new PauseScreen);
 		else
 			m_pMinecraft->setScreen(new StartMenuScreen);

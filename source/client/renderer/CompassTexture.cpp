@@ -2,9 +2,8 @@
 #include "world/item/Item.hpp"
 #include "client/app/Minecraft.hpp"
 
-CompassTexture::CompassTexture(Minecraft* minecraft) : DynamicTexture(Item::compass->m_icon), m_pMinecraft(minecraft)
+CompassTexture::CompassTexture(Minecraft* minecraft) : DynamicTexture(Item::compass->m_icon), m_pMinecraft(minecraft), m_rot(0), m_rota(0)
 {
-	m_data = new uint32_t[256];
     m_textureId = 1;
 
     auto texture = minecraft->m_pPlatform->loadTexture("gui/items.png", true);
@@ -21,11 +20,6 @@ CompassTexture::CompassTexture(Minecraft* minecraft) : DynamicTexture(Item::comp
     }
 }
 
-CompassTexture::~CompassTexture()
-{
-	SAFE_DELETE(m_data);
-}
-
 void CompassTexture::tick()
 {
     for (int i = 0; i < 256; ++i) {
@@ -33,7 +27,7 @@ void CompassTexture::tick()
         int r = m_data[i] >> 16 & 255;
         int g = m_data[i] >> 8 & 255;
         int b = m_data[i] >> 0 & 255;
-        if (m_anaglyph3d) {
+        if (m_bAnaglyph3d) {
             int rr = (r * 30 + g * 59 + b * 11) / 100;
             int gg = (r * 30 + g * 70) / 100;
             int bb = (r * 30 + b * 70) / 100;
@@ -48,13 +42,13 @@ void CompassTexture::tick()
         m_pixels[i * 4 + 3] = a;
     }
 
-    double rott = 0.0;
-    double rotd;
-    double sin;
-    if (m_pMinecraft->m_pLevel && m_pMinecraft->m_pLocalPlayer) {
-        rotd = (double)m_pMinecraft->m_pLevel->getSharedSpawnPos().x - m_pMinecraft->m_pLocalPlayer->m_pos.x;
-        sin = (double)m_pMinecraft->m_pLevel->getSharedSpawnPos().z - m_pMinecraft->m_pLocalPlayer->m_pos.z;
-        rott = (double)(m_pMinecraft->m_pLocalPlayer->m_rot.y - 90.0F) * M_PI / 180.0 - Mth::atan2(sin, rotd);
+    real rott = 0.0;
+    real rotd;
+    real sin;
+    if (m_pMinecraft->m_pLevel && m_pMinecraft->m_pPlayer) {
+        rotd = m_pMinecraft->m_pLevel->getSharedSpawnPos().x - m_pMinecraft->m_pPlayer->m_pos.x;
+        sin = m_pMinecraft->m_pLevel->getSharedSpawnPos().z - m_pMinecraft->m_pPlayer->m_pos.z;
+        rott = (m_pMinecraft->m_pPlayer->m_rot.y - 90.0F) * M_PI / 180.0 - Mth::atan2(sin, rotd);
         if (m_pMinecraft->m_pLevel->m_pDimension->m_bFoggy) {
             rott = Mth::random() * M_PI * 2.0;
         }
@@ -100,7 +94,7 @@ void CompassTexture::tick()
         g = 100;
         b = 100;
         a = 255;
-        if (m_anaglyph3d) {
+        if (m_bAnaglyph3d) {
             rr = (r * 30 + g * 59 + b * 11) / 100;
             gg = (r * 30 + g * 70) / 100;
             bb = (r * 30 + b * 70) / 100;
@@ -123,7 +117,7 @@ void CompassTexture::tick()
         g = d >= 0 ? 20 : 100;
         b = d >= 0 ? 20 : 100;
         a = 255;
-        if (m_anaglyph3d) {
+        if (m_bAnaglyph3d) {
             rr = (r * 30 + g * 59 + b * 11) / 100;
             gg = (r * 30 + g * 70) / 100;
             bb = (r * 30 + b * 70) / 100;

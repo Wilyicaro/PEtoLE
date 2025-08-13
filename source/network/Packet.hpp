@@ -9,6 +9,7 @@
 #pragma once
 
 #include <string>
+#include <array>
 #include "world/phys/Vec3T.hpp"
 #include "world/phys/Vec2.hpp"
 #include "world/gamemode/GameType.hpp"
@@ -29,7 +30,7 @@ class LevelChunk;
 // RakNet requires this to be cast to an "unsigned char" before being written to the BitStream
 enum ePacketType
 #ifndef USE_OLD_CPP
-: uint8_t // this is compiled as a 32-bit integer in C++03 and earlier, and we obviously CANNOT afford a 24-bit inconsitency.
+: uint8_t // this is compiled as a 32-bit integer in C++03 and earlier, and we obviously CANNOT afford a 24-bit inconsistency.
 // TODO: WritePacketType function that casts this down to a uint8_t / an unsigned 8-bit integer?
 #endif
 {
@@ -68,6 +69,7 @@ enum ePacketType
 	PACKET_SET_HEALTH,
 	PACKET_ANIMATE,
 	PACKET_RESPAWN,
+	PACKET_SIGN_UPDATE,
 #else
 	PACKET_LOGIN = ID_USER_PACKET_ENUM,
 	PACKET_LOGIN_STATUS,
@@ -215,13 +217,14 @@ public:
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
-	int32_t m_seed;
+	int64_t m_seed;
 	int m_levelVersion;
+	int m_dimension;
 	GameType m_gameType;
 	int m_entityId;
 	Vec3 m_pos;
 	int m_serverVersion;
-	int m_time;
+	int64_t m_time;
 };
 
 class AddPlayerPacket : public Packet
@@ -347,14 +350,17 @@ class ChunkDataPacket : public Packet
 {
 public:
 	ChunkDataPacket() {}
-	ChunkDataPacket(const ChunkPos& pos, LevelChunk* c) :m_chunkPos(pos), m_pChunk(c) {}
+	ChunkDataPacket(Level* level, const TilePos& minPos, int xs, int ys, int zs);
+	ChunkDataPacket(LevelChunk* c) : ChunkDataPacket(c->m_pLevel, c->m_chunkPos, 16, 128, 16)
+	{
+	}
 	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
-	ChunkPos m_chunkPos;
+	TilePos m_pos;
+	int m_xs, m_ys, m_zs, m_size;
 	RakNet::BitStream m_data;
-	LevelChunk* m_pChunk;
 };
 
 class LevelDataPacket : public Packet
@@ -381,4 +387,23 @@ public:
 public:
 	int m_playerID;
 	uint16_t m_itemID;
+};
+
+class SignUpdatePacket : public Packet
+{
+public:
+	SignUpdatePacket() {};
+	SignUpdatePacket(const TilePos& pos, const std::array<std::string, 4>& messages) : m_pos(pos) 
+	{
+		for (int i = 0; i < messages.size(); ++i)
+		{
+			m_messages[i] = messages[i].c_str();
+		}
+	}
+	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
+	void write(RakNet::BitStream*) override;
+	void read(RakNet::BitStream*) override;
+public:
+	TilePos m_pos;
+	std::array<RakNet::RakString, 4> m_messages;
 };

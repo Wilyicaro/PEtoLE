@@ -108,7 +108,7 @@ real ImprovedNoise::noise(real x, real y, real z)
                 grad(p[BB + 1], x - 1, y - 1, z - 1))));
 }
 
-void ImprovedNoise::add(real* output, real x, real y, real z, int xSize, int ySize, int zSize, real xScale, real yScale, real zScale, real amplitude) 
+void ImprovedNoise::add(std::vector<real>& output, real x, real y, real z, int xSize, int ySize, int zSize, real xScale, real yScale, real zScale, real amplitude)
 {
     int i = 0;
 
@@ -202,7 +202,7 @@ void ImprovedNoise::add(real* output, real x, real y, real z, int xSize, int ySi
     }
 }
 
-void ImprovedNoise::addBiome(real* var1, real var2, real var4, int var6, int var7, real var8, real var10, real var12)
+void ImprovedNoise::addBiome(std::vector<real>& var1, real var2, real var4, int var6, int var7, real var8, real var10, real var12)
 {
     int var14 = 0;
 

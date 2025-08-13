@@ -10,16 +10,13 @@ public:
 public:
 	Sheep(Level* pLevel);
 
-private:
-	void _defineEntityData();
-
-public:
-	std::string getAmbientSound() const override { return "mob.sheep"; };
+	std::string getAmbientSound() override { return "mob.sheep"; };
 	std::string getDeathSound() const override { return "mob.sheep"; }
 	std::string getHurtSound() const override { return "mob.sheep"; }
 	virtual bool hurt(Entity*, int) override;
-	//TODO: addAdditonalSaveData
-	//TODO: readAdditionalSaveData
+	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void defineSynchedData() override;
 
 	Entity* getBreedOffspring(Animal* pOther) { return new Sheep(m_pLevel); }
 

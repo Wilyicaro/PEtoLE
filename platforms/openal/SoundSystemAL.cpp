@@ -33,19 +33,19 @@ void SoundSystemAL::delete_sources()
 {
 	if (_initialized)
 	{
-		for (std::vector<ALuint>::iterator source = _sources_idle.begin(); source != _sources_idle.end(); source++)
+		for (std::vector<ALuint>::iterator source = m_sources_idle.begin(); source != m_sources_idle.end(); source++)
 		{
 			alDeleteSources(1, &*source);
 			AL_ERROR_CHECK();
 		}
-		for (std::vector<ALuint>::iterator source = _sources.begin(); source != _sources.end(); source++)
+		for (auto source = m_sources.begin(); source != m_sources.end(); source++)
 		{
-			alDeleteSources(1, &*source);
+			alDeleteSources(1, &source->m_id);
 			AL_ERROR_CHECK();
 		}
 	}
-	_sources_idle.clear();
-	_sources.clear();
+	m_sources_idle.clear();
+	m_sources.clear();
 }
 
 // Delete Buffers
@@ -53,8 +53,8 @@ void SoundSystemAL::delete_buffers()
 {
 	if (_initialized)
 	{
-		for (std::map<void *, ALuint>::iterator it = _buffers.begin(); it != _buffers.end(); it++)
-		//for (auto &it : _buffers)
+		for (auto it = m_buffers.begin(); it != m_buffers.end(); it++)
+		//for (auto &it : m_buffers)
 		{
 			if (it->second && alIsBuffer(it->second))
 			{
@@ -63,15 +63,16 @@ void SoundSystemAL::delete_buffers()
 			}
 		}
 	}
-	_buffers.clear();
+	m_buffers.clear();
 }
 
 // Get Buffer
 ALuint SoundSystemAL::get_buffer(const SoundDesc& sound)
 {
-	if (_buffers.count(sound.m_pData) > 0)
+	auto it = m_buffers.find(sound.m_pData);
+	if (it != m_buffers.end())
 	{
-		return _buffers[sound.m_pData];
+		return it->second;
 	}
 	else
 	{
@@ -97,7 +98,7 @@ ALuint SoundSystemAL::get_buffer(const SoundDesc& sound)
 		AL_ERROR_CHECK();
 
 		// Store
-		_buffers[sound.m_pData] = buffer;
+		m_buffers[sound.m_pData] = buffer;
 		return buffer;
 	}
 }
@@ -138,10 +139,10 @@ void SoundSystemAL::update()
 	AL_ERROR_CHECK();
 
 	// Clear Finished Sources
-	std::vector<ALuint>::iterator it = _sources.begin();
-	while (it != _sources.end())
+	auto it = m_sources.begin();
+	while (it != m_sources.end())
 	{
-		ALuint source = *it;
+		ALuint source = it->m_id;
 		bool remove = false;
 		// Check
 		if (source && alIsSource(source))
@@ -154,9 +155,9 @@ void SoundSystemAL::update()
 			{
 				// Finished Playing
 				remove = true;
-				if (_sources_idle.size() < MAX_IDLE_SOURCES)
+				if (m_sources_idle.size() < MAX_IDLE_SOURCES)
 				{
-					_sources_idle.push_back(source);
+					m_sources_idle.push_back(source);
 				}
 				else
 				{
@@ -172,13 +173,41 @@ void SoundSystemAL::update()
 		}
 		// Remove If Needed
 		if (remove) {
-			it = _sources.erase(it);
+			it = m_sources.erase(it);
 		}
 		else
 		{
 			++it;
 		}
 	}
+}
+
+void SoundSystemAL::stop(const std::string& sound)
+{
+	for (auto& it : m_sources)
+	{
+		if (it.m_name == sound)
+		{
+			alSourceStop(it.m_id);
+			AL_ERROR_CHECK();
+		}
+	}
+}
+
+bool SoundSystemAL::playing(const std::string& sound)
+{
+	for (auto& it : m_sources)
+	{
+		if (it.m_name == sound)
+		{
+			ALint source_state;
+			alGetSourcei(it.m_id, AL_SOURCE_STATE, &source_state);
+			AL_ERROR_CHECK();
+			if (source_state == AL_PLAYING)
+				return true;
+		}
+	}
+	return false;
 }
 
 void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch)
@@ -212,11 +241,11 @@ void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	
 	// Get Source
 	ALuint al_source;
-	if (_sources_idle.size() > 0)
+	if (m_sources_idle.size() > 0)
 	{
 		// Use Idle Source
-		al_source = _sources_idle.back();
-		_sources_idle.pop_back();
+		al_source = m_sources_idle.back();
+		m_sources_idle.pop_back();
 	}
 	else
 	{
@@ -267,7 +296,7 @@ void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	// Play
 	alSourcePlay(al_source);
 	AL_ERROR_CHECK();
-	_sources.push_back(al_source);
+	m_sources.push_back(SoundSource(al_source, sound.m_name));
 }
 
 void SoundSystemAL::startEngine()

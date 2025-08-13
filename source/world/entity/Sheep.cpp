@@ -25,29 +25,26 @@ const float Sheep::COLOR[][3] = {
 
 Sheep::Sheep(Level* pLevel) : Animal(pLevel)
 {
-	m_pEntityType = EntityType::sheep;
-	m_renderType = RENDER_SHEEP;
+	m_pType = EntityType::sheep;
 	m_texture = "mob/sheep.png";
 	setSize(0.9f, 1.3f);
-
-	_defineEntityData();
 }
 
-void Sheep::_defineEntityData()
+void Sheep::defineSynchedData()
 {
 	m_entityData.define<int8_t>(DATA_WOOL_ID, 0);
 }
 
 bool Sheep::hurt(Entity* pEnt, int damage)
 {
-	if (!m_pLevel->m_bIsOnline && !isSheared() && (pEnt && pEnt->getType().getCategory().contains(EntityCategories::MOB)))
+	if (!m_pLevel->m_bIsOnline && !isSheared() && (pEnt && pEnt->getCategory().contains(EntityCategories::MOB)))
 	{
 		setSheared(true);
 		int var3 = 1 + m_random.nextInt(3);
 
 		for (int i = 0; i < var3; i++)
 		{
-			auto item = spawnAtLocation(new ItemInstance(TILE_CLOTH, 1, getColor()), 1.0f);
+			auto item = spawnAtLocation(std::make_shared<ItemInstance>(TILE_CLOTH, 1, getColor()), 1.0f);
 			item->m_vel.y += m_random.nextFloat() * 0.05f;
 			item->m_vel.x += (m_random.nextFloat() - m_random.nextFloat()) * 0.1f;
 			item->m_vel.z += (m_random.nextFloat() - m_random.nextFloat()) * 0.1f;
@@ -55,6 +52,18 @@ bool Sheep::hurt(Entity* pEnt, int damage)
 	}
 
 	return Mob::hurt(pEnt, damage);
+}
+
+void Sheep::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+{
+	tag->putBoolean("Sheared", isSheared());
+	tag->putByte("Color", getColor());
+}
+
+void Sheep::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+{
+	setSheared(tag->getBoolean("Sheared"));
+	setColor(tag->getByte("Color"));
 }
 
 int Sheep::getColor() const 
@@ -98,8 +107,14 @@ int Sheep::getSheepColor(Random& random)
 	{
 		return 7;
 	}
-	else
+	else if (value < 15)
 	{
-		return value < 15 ? 8 : 0;
+		return 8;
 	}
+	else if (value < 18)
+	{
+		return 12;
+	}
+	else return random.nextInt(500) == 0 ? 6 : 0;
+
 }

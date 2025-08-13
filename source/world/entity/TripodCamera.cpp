@@ -17,7 +17,6 @@ TripodCamera::TripodCamera(Level* level, Player* player, const Vec3& pos) : Mob(
 	m_bActive = false;
 
 	m_owner = player;
-	m_renderType = RENDER_CAMERA;
 
 	m_rotPrev = m_rot = player->m_rot;
 
@@ -51,7 +50,7 @@ void TripodCamera::tick()
 	move(m_vel);
 
 	m_vel *= 0.98f;
-	if (m_onGround)
+	if (m_bOnGround)
 	{
 		m_vel.x *= 0.7f;
 		m_vel.z *= 0.7f;

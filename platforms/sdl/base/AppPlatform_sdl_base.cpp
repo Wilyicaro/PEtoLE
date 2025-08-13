@@ -214,6 +214,11 @@ void AppPlatform_sdl_base::clearDiff()
 	yrel = 0;
 }
 
+void AppPlatform_sdl_base::swapBuffers()
+{
+	SDL_GL_SwapWindow(_window);
+}
+
 bool AppPlatform_sdl_base::shiftPressed()
 {
 	return m_bShiftPressed[0] || m_bShiftPressed[1];

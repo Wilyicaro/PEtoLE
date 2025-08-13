@@ -96,3 +96,7 @@ void NetEventCallback::handle(const RakNet::RakNetGUID& guid, PlayerEquipmentPac
 void NetEventCallback::handle(const RakNet::RakNetGUID& guid, LevelDataPacket* packet)
 {
 }
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, SignUpdatePacket*)
+{
+}

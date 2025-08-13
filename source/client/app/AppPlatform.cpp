@@ -222,6 +222,10 @@ void AppPlatform::_fireAppTerminated()
 	
 }
 
+void AppPlatform::swapBuffers()
+{
+}
+
 bool AppPlatform::hasFileSystemAccess()
 {
 	return false;

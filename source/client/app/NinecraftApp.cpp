@@ -12,6 +12,7 @@
 #include "client/player/input/Multitouch.hpp"
 #include "client/gui/screens/StartMenuScreen.hpp"
 #include "world/entity/EntityType.hpp"
+#include "world/tile/entity/TileEntityType.hpp"
 
 #ifdef DEMO
 #include "world/level/storage/MemoryLevelStorageSource.hpp"
@@ -23,7 +24,7 @@ bool NinecraftApp::_hasInitedStatics;
 
 bool NinecraftApp::handleBack(bool b)
 {
-	if (m_bPreparingLevel)
+	if (!m_async.empty())
 		return true;
 
 	if (b)
@@ -76,7 +77,7 @@ void NinecraftApp::init()
 		Tile::initTiles();
 		Item::initItems();
 		Biome::initBiomes();
-		TileEntity::initTileEntities();
+		TileEntityType::initTypes();
 	}
 
 	initGLStates();
@@ -90,9 +91,7 @@ void NinecraftApp::init()
 	m_pLevelStorageSource = new ExternalFileLevelStorageSource(m_externalStorageDir);
 #endif
 
-	field_D9C = 0;
-
-	setScreen(new StartMenuScreen);
+	m_bIsLevelLoaded = false;
 }
 
 void NinecraftApp::onGraphicsReset()

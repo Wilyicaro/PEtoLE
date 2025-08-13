@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include "SoundData.hpp"
+#include "common/Random.hpp"
 
 class SoundRepository
 {
@@ -21,5 +22,8 @@ public:
 
 public:
 	std::map<std::string, std::vector<SoundDesc> > m_repo;
+
+private:
+	Random m_random;
 };
 

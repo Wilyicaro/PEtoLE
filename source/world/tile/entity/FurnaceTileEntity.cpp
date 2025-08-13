@@ -4,6 +4,7 @@
 
 FurnaceTileEntity::FurnaceTileEntity() : SimpleContainer(3, "gui.furnace")
 {
+    m_pType = TileEntityType::furnace;
 }
 
 void FurnaceTileEntity::load(std::shared_ptr<CompoundTag> tag) 

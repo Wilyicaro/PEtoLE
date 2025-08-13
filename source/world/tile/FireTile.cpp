@@ -7,6 +7,7 @@
  ********************************************************************/
 
 #include "FireTile.hpp"
+#include "PortalTile.hpp"
 #include "world/level/Level.hpp"
 
 FireTile::FireTile(int ID, int texture) : Tile(ID, texture, Material::fire)
@@ -167,16 +168,16 @@ void FireTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 
 void FireTile::onPlace(Level* level, const TilePos& pos)
 {
-	// @NOTE: Unused return result
-	level->getTile(pos.below());
-
-	if (!level->isSolidTile(pos.below()) && !isValidFireLocation(level, pos))
+	if (level->getTile(pos.below()) != Tile::obsidian->m_ID || !Tile::portal->trySpawnPortal(level, pos))
 	{
-		level->setTile(pos, TILE_AIR);
-		return;
-	}
+		if (!level->isSolidTile(pos.below()) && !isValidFireLocation(level, pos))
+		{
+			level->setTile(pos, TILE_AIR);
+			return;
+		}
 
-	level->addToTickNextTick(pos, m_ID, getTickDelay());
+		level->addToTickNextTick(pos, m_ID, getTickDelay());
+	}
 }
 
 void FireTile::tick(Level* level, const TilePos& pos, Random* random)

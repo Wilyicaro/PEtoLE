@@ -20,6 +20,7 @@
 class AppPlatform_win32 : public AppPlatform
 {
 public:
+	HDC _deviceContext;
 	AppPlatform_win32();
 	~AppPlatform_win32();
 
@@ -60,6 +61,8 @@ public:
 	void setScreenSize(int width, int height);
 	const char* const getWindowTitle() const { return m_WindowTitle; }
 	SoundSystem* const getSoundSystem() const override { return m_pSoundSystem; }
+
+	void swapBuffers() override;
 
 	static MouseButtonType GetMouseButtonType(UINT iMsg);
 	static bool GetMouseButtonState(UINT iMsg, WPARAM wParam);

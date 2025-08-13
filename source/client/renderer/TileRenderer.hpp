@@ -54,6 +54,7 @@ public:
 	bool tesselateBedInWorld(Tile*, const TilePos& pos);
 	bool tesselateDustInWorld(Tile* tile, const TilePos& pos);
 	bool tesselateRailInWorld(Tile* tile, const TilePos& pos);
+	bool tesselateRepeaterInWorld(Tile* tile, const TilePos& pos);
 	bool tesselateBlockInWorldWithAmbienceOcclusionV2(Tile*, const TilePos& pos, float r, float g, float b);
 
 	int getTileColor(Tile*, const TilePos& pos);

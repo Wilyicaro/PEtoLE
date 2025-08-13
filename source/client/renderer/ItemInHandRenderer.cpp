@@ -10,6 +10,7 @@
 #include "client/app/Minecraft.hpp"
 #include "common/Mth.hpp"
 #include "Lighting.hpp"
+#include "entity/HumanoidMobRenderer.hpp"
 
 ItemInHandRenderer::ItemInHandRenderer(Minecraft* pMC) :
 	m_pMinecraft(pMC)
@@ -32,13 +33,13 @@ void ItemInHandRenderer::itemUsed()
 	m_height = 0;
 }
 
-#ifdef ENH_SHADE_HELD_TILES
+#ifndef USE_GL_NORMAL_LIGHTING
 #define SHADE_IF_NEEDED(col) t.color(col*bright,col*bright,col*bright,1.0f)
 #else
 #define SHADE_IF_NEEDED(col)
 #endif
 
-void ItemInHandRenderer::renderItem(std::shared_ptr<ItemInstance> inst)
+void ItemInHandRenderer::renderItem(Mob* mob, std::shared_ptr<ItemInstance> inst)
 {
 #ifndef ORIGINAL_CODE
     if (inst->isNull())
@@ -47,7 +48,7 @@ void ItemInHandRenderer::renderItem(std::shared_ptr<ItemInstance> inst)
     
     glPushMatrix();
 #ifdef ENH_SHADE_HELD_TILES
-    float bright = m_pMinecraft->m_pLocalPlayer->getBrightness(0.0f);
+    float bright = mob->getBrightness(1.0f);
 #endif
     
     if (inst->m_itemID < C_MAX_TILES && TileRenderer::canRender(Tile::tiles[inst->m_itemID]->getRenderShape()))
@@ -74,15 +75,16 @@ void ItemInHandRenderer::renderItem(std::shared_ptr<ItemInstance> inst)
         if (inst->m_itemID < C_MAX_TILES)
             toBind = C_TERRAIN_NAME;
         else
-            toBind = "gui/items.png";
+            toBind = C_ITEMS_NAME;
         m_pMinecraft->m_pTextures->loadAndBindTexture(toBind);
         
         constexpr float C_RATIO     = 1.0f / 256.0f;
         constexpr float C_RATIO_2   = 1.0f / 512.0f;
         constexpr float C_ONE_PIXEL = 1.0f / 16.0f;
         
-        int textureX = inst->getIcon() % 16 * 16;
-        int textureY = inst->getIcon() / 16 * 16;
+        int icon = mob->getItemIcon(inst.get());
+        int textureX = icon % 16 * 16;
+        int textureY = icon / 16 * 16;
         
         float texU_1 = C_RATIO * float(textureX + 0.0f);
         float texU_2 = C_RATIO * float(textureX + 15.99f);
@@ -152,7 +154,7 @@ void ItemInHandRenderer::renderItem(std::shared_ptr<ItemInstance> inst)
 
 void ItemInHandRenderer::render(float f)
 {
-	auto& pLP = m_pMinecraft->m_pLocalPlayer;
+	auto& pLP = m_pMinecraft->m_pPlayer;
 
 	float h = m_oHeight + (m_height - m_oHeight) * f;
 	glPushMatrix();
@@ -166,16 +168,13 @@ void ItemInHandRenderer::render(float f)
 		float rYaw   = Mth::Lerp(pLP->m_lastRenderArmRot.y, pLP->m_renderArmRot.y, f);
 		float rPitch = Mth::Lerp(pLP->m_lastRenderArmRot.x, pLP->m_renderArmRot.x, f);
 		glRotatef((pLP->m_rot.x - rPitch) * 0.1f, 1.0f, 0.0f, 0.0f);
-		glRotatef((pLP->m_rot.y - rYaw  ) * 0.1f, 0.0f, 1.0f, 0.0f);
+		glRotatef((pLP->m_rot.y - rYaw) * 0.1f, 0.0f, 1.0f, 0.0f);
 	}
 
-	float fBright = m_pMinecraft->m_pLevel->getBrightness(pLP->m_pos);
-	glColor4f(fBright, fBright, fBright, 1.0f);
-
     std::shared_ptr<ItemInstance> pItem = m_selectedItem;
-	/*if (pLP->m_fishing != null) {
-		pItem = new ItemInstance(Item::stick);
-	}*/
+
+    float fBright = m_pMinecraft->m_pLevel->getBrightness(pLP->m_pos);
+    glColor4f(fBright, fBright, fBright, 1.0f);
     
     glPushMatrix();
     
@@ -201,7 +200,7 @@ void ItemInHandRenderer::render(float f)
         if (pItem->getItem()->isMirroredArt())
             glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
 
-        renderItem(pItem);
+        renderItem(m_pMinecraft->m_pPlayer.get(), pItem);
 	}
 	else
 	{
@@ -300,9 +299,9 @@ void ItemInHandRenderer::tick()
 {
 	m_oHeight = m_height;
 
-	auto item = m_pMinecraft->m_pLocalPlayer->m_pInventory->getSelectedItem();
+	auto item = m_pMinecraft->m_pPlayer->m_pInventory->getSelectedItem();
 
-    bool canChange = m_pMinecraft->m_pLocalPlayer->m_pInventory->m_selected == m_lastSlot && item == m_selectedItem;
+    bool canChange = m_pMinecraft->m_pPlayer->m_pInventory->m_selected == m_lastSlot && item == m_selectedItem;
 
     if (!item && !m_selectedItem) canChange = true;
 
@@ -325,7 +324,7 @@ void ItemInHandRenderer::tick()
     if (m_height < 0.1f)
     {
         m_selectedItem = item;
-        m_lastSlot = m_pMinecraft->m_pLocalPlayer->m_pInventory->m_selected;
+        m_lastSlot = m_pMinecraft->m_pPlayer->m_pInventory->m_selected;
     }
 }
 
@@ -337,7 +336,7 @@ void ItemInHandRenderer::renderScreenEffect(float f)
 {
 	glDisable(GL_ALPHA_TEST);
 
-	auto& player = m_pMinecraft->m_pLocalPlayer;
+	auto& player = m_pMinecraft->m_pPlayer;
 	Textures* textures = m_pMinecraft->m_pTextures;
 	Level* level = m_pMinecraft->m_pLevel;
 

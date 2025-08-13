@@ -1,58 +1,46 @@
 #include "TileEntityRenderDispatcher.hpp"
 #include "TileEntityRenderer.hpp"
 #include "MobSpawnerRenderer.hpp"
+#include "SignRenderer.hpp"
 
 Vec3 TileEntityRenderDispatcher::off = Vec3::ZERO;
 
-TileEntityRenderDispatcher* TileEntityRenderDispatcher::instance = new TileEntityRenderDispatcher();
+TileEntityRenderDispatcher* TileEntityRenderDispatcher::instance;
 
-TileEntityRenderDispatcher::TileEntityRenderDispatcher() {
-//  registerRenderer<SignBlockEntity, SignRenderer>();
-    registerRenderer<MobSpawnerTileEntity, MobSpawnerRenderer>();
-
-    for (auto& pair : renderers) {
-        pair.second->init(this);
-    }
+TileEntityRenderDispatcher::TileEntityRenderDispatcher()
+{
+    registerRenderer(TileEntityType::sign, new SignRenderer);
+    registerRenderer(TileEntityType::mobSpawner, new MobSpawnerRenderer);
 }
 
-template<typename T, typename V>
-void TileEntityRenderDispatcher::registerRenderer() {
-    renderers[typeid(T)] = std::make_unique<V>();
+void TileEntityRenderDispatcher::registerRenderer(TileEntityType* type, TileEntityRendererBase* tileEntityRenderer)
+{
+    m_renderers[type] = tileEntityRenderer;
+    tileEntityRenderer->init(this);
 }
 
-template<typename T>
-TileEntityRendererBase* TileEntityRenderDispatcher::getRenderer() {
-    auto it = renderers.find(typeid(T));
-    if (it != renderers.end()) {
-        return dynamic_cast<TileEntityRendererBase*>(it->second.get());
-    }
+TileEntityRendererBase* TileEntityRenderDispatcher::getRenderer(const TileEntityType* type)
+{
+    if (!type) return nullptr;
+
+    auto it = m_renderers.find(type);
+    if (it != m_renderers.end())
+        return it->second;
+
     return nullptr;
 }
 
-TileEntityRendererBase* TileEntityRenderDispatcher::getRenderer(TileEntity* e) {
-    if (!e) return nullptr;
-
-    std::type_index index = typeid(*e);
-    auto it = renderers.find(index);
-    if (it != renderers.end()) {
-        return dynamic_cast<TileEntityRendererBase*>(it->second.get());
-    }
-
-    if (typeid(*e) != typeid(TileEntity)) {
-        it = renderers.find(typeid(TileEntity));
-        if (it != renderers.end()) {
-            return dynamic_cast<TileEntityRendererBase*>(it->second.get());
-        }
-    }
-
-    return nullptr;
+TileEntityRendererBase* TileEntityRenderDispatcher::getRenderer(TileEntity* e)
+{
+    return e ? getRenderer(e->getType()) : nullptr;
 }
 
 bool TileEntityRenderDispatcher::hasRenderer(TileEntity* e) {
     return getRenderer(e) != nullptr;
 }
 
-void TileEntityRenderDispatcher::prepare(Level* level, Textures* textures, Font* font, std::shared_ptr<Mob> mob, float a) {
+void TileEntityRenderDispatcher::prepare(Level* level, Textures* textures, Font* font, std::shared_ptr<Mob> mob, float a)
+{
     this->level = level;
     this->textures = textures;
     this->font = font;
@@ -62,7 +50,8 @@ void TileEntityRenderDispatcher::prepare(Level* level, Textures* textures, Font*
     m_pos = mob->m_posPrev + (mob->m_pos - mob->m_posPrev) * a;
 }
 
-void TileEntityRenderDispatcher::render(TileEntity* e, float a) {
+void TileEntityRenderDispatcher::render(TileEntity* e, float a)
+{
     if (!e || !level) return;
 
     if (e->distanceToSqr(m_pos) < 4096.0) {
@@ -72,7 +61,8 @@ void TileEntityRenderDispatcher::render(TileEntity* e, float a) {
     }
 }
 
-void TileEntityRenderDispatcher::render(TileEntity* e, const Vec3& vec, float a) {
+void TileEntityRenderDispatcher::render(TileEntity* e, const Vec3& vec, float a)
+{
     TileEntityRendererBase* renderer = getRenderer(e);
     if (renderer) {
         renderer->render(e, vec, a);

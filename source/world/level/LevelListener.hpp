@@ -28,6 +28,7 @@ public:
 	virtual void entityRemoved(Entity*);
 	virtual void skyColorChanged();
 	virtual void timeChanged(int64_t time);
-	virtual void playStreamingMusic(const std::string&, int, int, int);
+	virtual void playStreamingMusic(const std::string&, const TilePos&);
+	virtual void levelEvent(Player*, int event, const TilePos&, int info);
 };
 

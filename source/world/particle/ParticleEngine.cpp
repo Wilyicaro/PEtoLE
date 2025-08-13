@@ -53,9 +53,8 @@ std::string ParticleEngine::countParticles()
 	return ss.str();
 }
 
-void ParticleEngine::crack(const TilePos& tilePos, Facing::Name face)
+void ParticleEngine::crack(const TilePos& tilePos, TileID tileID, Facing::Name face)
 {
-	TileID tileID = m_pLevel->getTile(tilePos);
 	if (!tileID) return;
 
 	Tile* pTile = Tile::tiles[tileID];
@@ -64,42 +63,47 @@ void ParticleEngine::crack(const TilePos& tilePos, Facing::Name face)
 
 	switch (face)
 	{
-		case Facing::DOWN:
-			pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.y += pTile->m_aabb.min.y - 0.1f;
-			break;
-		case Facing::UP:
-			pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.y += pTile->m_aabb.max.y + 0.1f;
-			break;
-		case Facing::NORTH:
-			pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.z += pTile->m_aabb.min.z - 0.1f;
-			break;
-		case Facing::SOUTH:
-			pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.z += pTile->m_aabb.max.z + 0.1f;
-			break;
-		case Facing::WEST:
-			pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.x += pTile->m_aabb.min.x - 0.1f;
-			break;
-		case Facing::EAST:
-			pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
-			pos.x += pTile->m_aabb.max.x + 0.1f;
-			break;
-		default:
-			// @TODO: dont know what they do for the undefined case
-			break;
+	case Facing::DOWN:
+		pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.y += pTile->m_aabb.min.y - 0.1f;
+		break;
+	case Facing::UP:
+		pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.y += pTile->m_aabb.max.y + 0.1f;
+		break;
+	case Facing::NORTH:
+		pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.z += pTile->m_aabb.min.z - 0.1f;
+		break;
+	case Facing::SOUTH:
+		pos.x += Mth::Lerp(pTile->m_aabb.min.x, pTile->m_aabb.max.x - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.z += pTile->m_aabb.max.z + 0.1f;
+		break;
+	case Facing::WEST:
+		pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.x += pTile->m_aabb.min.x - 0.1f;
+		break;
+	case Facing::EAST:
+		pos.y += Mth::Lerp(pTile->m_aabb.min.y, pTile->m_aabb.max.y - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.z += Mth::Lerp(pTile->m_aabb.min.z, pTile->m_aabb.max.z - 0.2f, m_random.nextFloat()) + 0.1f;
+		pos.x += pTile->m_aabb.max.x + 0.1f;
+		break;
+	default:
+		// @TODO: dont know what they do for the undefined case
+		break;
 	}
 
 	add((new TerrainParticle(m_pLevel, pos, pTile))->init(tilePos)->setPower(0.2f)->scale(0.6f));
+}
+
+void ParticleEngine::crack(const TilePos& tilePos, Facing::Name face)
+{
+	crack(tilePos, m_pLevel->getTile(tilePos), face);
 }
 
 void ParticleEngine::destroyEffect(const TilePos& pos)
@@ -165,6 +169,8 @@ void ParticleEngine::render(Entity* ent, float f)
 	{
 		if (i == PT_TERRAIN)
 			m_pTextures->loadAndBindTexture(C_TERRAIN_NAME);
+		else if (i == PT_ITEM)
+			m_pTextures->loadAndBindTexture(C_ITEMS_NAME);
 		else
 			m_pTextures->loadAndBindTexture("particles.png");
 

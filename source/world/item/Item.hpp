@@ -115,6 +115,9 @@ public: // Methods
 	virtual EquipmentSlot getEquipmentSlot() const;
 	virtual int getDefense() const;
 	virtual const std::string& getArmorTexture() const;
+	virtual const std::string& getStreamingMusic();
+	virtual bool isFood() const;
+	virtual bool isWolfFood() const;
 
 	static void initItems();
 	
@@ -221,8 +224,8 @@ public: // Static declarations
 	static Item* paper;
 	static Item* book;
 	static Item* slimeBall;
-	static Item* minecart_chest;
-	static Item* minecart_furnace;
+	static Item* chestMinecart;
+	static Item* furnaceMinecart;
 	static Item* egg;
 	static Item* compass;
 	static Item* fishingRod;

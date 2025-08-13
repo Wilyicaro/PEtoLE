@@ -59,8 +59,8 @@ public:
 	std::string field_34;
 	float m_textureWidth;
 	float m_textureHeight;
-	int field_40;
-	int field_44;
+	int m_xTexOffs;
+	int m_yTexOffs;
 	bool m_bVisible;
 	bool m_bNeverRender;
 	bool m_bCompiled;

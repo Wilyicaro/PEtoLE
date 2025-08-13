@@ -21,7 +21,7 @@ public:
 	ExternalFileLevelStorageSource(const std::string& path);
 
 	std::string getName() override;
-	LevelStorage* selectLevel(const std::string&, bool) override;
+	LevelManager* selectLevel(const std::string&, bool) override;
 	void getLevelList(std::vector<LevelSummary>&) override;
 	void clearAll() override;
 	int getDataTagFor(const std::string&) override;

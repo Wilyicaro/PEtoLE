@@ -18,28 +18,28 @@ int Entity::entityCounter;
 void Entity::_init()
 {
 	m_random = Random();
-	m_bInAChunk = false;
+	m_bInChunk = false;
 	m_chunkPos = ChunkPos(0, 0);
 	field_20 = 0;
 	field_24 = 0;
 	field_28 = 0;
-	m_noNeighborUpdate = 1.0f;
+	m_viewScale = 1.0f;
     m_bBlocksBuilding = false;
 	m_pLevel = nullptr;
 	m_rot = Vec2::ZERO;
 	m_rotPrev = Vec2::ZERO;
-	m_onGround = false;
+	m_bOnGround = false;
 	m_bHorizontalCollision = false;
 	m_bVerticalCollision = false;
 	m_bCollision = false;
 	m_bHurt = false;
 	m_bInWeb = false;
-	slide = true;
+	m_bSlide = true;
 	m_bRemoved = false;
 	m_heightOffset = 0.0f;
 	m_bbWidth = 0.6f;
 	m_bbHeight = 1.8f;
-	field_90 = 0.0f;
+	m_walkDistO = 0.0f;
 	m_walkDist = 0.0f;
 	m_bMakeStepSound = true;
 	m_ySlideOffset = 0.0f;
@@ -52,16 +52,19 @@ void Entity::_init()
 	m_fireTicks = 0;
 	m_flameTime = 1;
     m_tickCount = 0;
-	m_renderType = 0;  // @NOTE: Render type? (eEntityRenderType)
 	m_distanceFallen = 0.0f;
 	m_airSupply = TOTAL_AIR_SUPPLY;
-	m_bWasInWater = 0;
+	m_bWasInWater = false;
 	m_bFireImmune = false;
 	m_bFirstTick = true;
 	m_nextStep = 1;
 	m_minBrightness = 0.0f;
 	m_entityData = SynchedEntityData();
-	m_pEntityType = EntityType::unknown;
+	m_pType = EntityType::unknown;
+	m_pRider = nullptr;
+	m_pRiding = nullptr;
+	m_bIgnoreFrustum = false;
+	m_definedData = false;
 }
 
 Entity::Entity(Level* pLevel)
@@ -135,7 +138,7 @@ int Entity::move(const Vec3& pos)
 		real cPosY = newPos.y;
 		real cPosZ = newPos.z;
 		AABB var17 = m_hitbox;
-		bool validSneaking = m_onGround && isSneaking();
+		bool validSneaking = m_bOnGround && isSneaking();
 		if (validSneaking) {
 			real var19;
 			for (var19 = 0.05; pos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.cloneMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x) {
@@ -172,13 +175,13 @@ int Entity::move(const Vec3& pos)
 		}
 
 		m_hitbox.move(0.0, newPos.y, 0.0);
-		if (!slide && cPosY != newPos.y) {
+		if (!m_bSlide && cPosY != newPos.y) {
 			newPos.z = 0.0;
 			newPos.y = 0.0;
 			newPos.x = 0.0;
 		}
 
-		bool var36 = m_onGround || cPosY != newPos.y && cPosY < 0.0;
+		bool var36 = m_bOnGround || cPosY != newPos.y && cPosY < 0.0;
 
 		int var21;
 		for (var21 = 0; var21 < var35->size(); ++var21) {
@@ -186,7 +189,7 @@ int Entity::move(const Vec3& pos)
 		}
 
 		m_hitbox.move(newPos.x, 0.0, 0.0);
-		if (!slide && cPosX != newPos.x) {
+		if (!m_bSlide && cPosX != newPos.x) {
 			newPos.z = 0.0;
 			newPos.y = 0.0;
 			newPos.x = 0.0;
@@ -197,7 +200,7 @@ int Entity::move(const Vec3& pos)
 		}
 
 		m_hitbox.move(0.0, 0.0, newPos.z);
-		if (!slide && cPosZ != newPos.z) {
+		if (!m_bSlide && cPosZ != newPos.z) {
 			newPos.z = 0.0;
 			newPos.y = 0.0;
 			newPos.x = 0.0;
@@ -223,7 +226,7 @@ int Entity::move(const Vec3& pos)
 			}
 
 			m_hitbox.move(0.0, newPos.y, 0.0);
-			if (!slide && cPosY != newPos.y) {
+			if (!m_bSlide && cPosY != newPos.y) {
 				newPos.z = 0.0;
 				newPos.y = 0.0;
 				newPos.x = 0.0;
@@ -234,7 +237,7 @@ int Entity::move(const Vec3& pos)
 			}
 
 			m_hitbox.move(newPos.x, 0.0, 0.0);
-			if (!slide && cPosX != newPos.x) {
+			if (!m_bSlide && cPosX != newPos.x) {
 				newPos.z = 0.0;
 				newPos.y = 0.0;
 				newPos.x = 0.0;
@@ -245,7 +248,7 @@ int Entity::move(const Vec3& pos)
 			}
 
 			m_hitbox.move(0.0, 0.0, newPos.z);
-			if (!slide && cPosZ != newPos.z) {
+			if (!m_bSlide && cPosZ != newPos.z) {
 				newPos.z = 0.0;
 				newPos.y = 0.0;
 				newPos.x = 0.0;
@@ -270,9 +273,9 @@ int Entity::move(const Vec3& pos)
 		m_pos.z = (m_hitbox.min.z + m_hitbox.max.z) / 2.0;
 		m_bHorizontalCollision = cPosX != newPos.x || cPosZ != newPos.z;
 		m_bVerticalCollision = cPosY != newPos.y;
-		m_onGround = cPosY != newPos.y && cPosY < 0.0;
+		m_bOnGround = cPosY != newPos.y && cPosY < 0.0;
 		m_bCollision = m_bHorizontalCollision || m_bVerticalCollision;
-		checkFallDamage(newPos.y, m_onGround);
+		checkFallDamage(newPos.y, m_bOnGround);
 		if (cPosX != newPos.x) {
 			m_vel.x = 0.0;
 		}
@@ -322,7 +325,7 @@ int Entity::move(const Vec3& pos)
 					}
 		}
 
-		bool bIsInWater = wasInWater();
+		bool bIsInWater = isWet();
 
 		if (m_pLevel->containsFireTile(m_hitbox))
 		{
@@ -462,9 +465,12 @@ void Entity::tick()
 
 void Entity::baseTick()
 {
+	if (m_pRiding && m_pRiding->m_bRemoved) {
+		m_pRiding = nullptr;
+	}
 	//@TODO: untangle the gotos
 
-	field_90 = m_walkDist;
+	m_walkDistO = m_walkDist;
 	m_oPos = m_pos;
     m_tickCount++;
 	m_rotPrev = m_rot;
@@ -570,6 +576,102 @@ label_6:
 	m_bFirstTick = false;
 }
 
+void Entity::rideTick()
+{
+	if (m_pRiding->m_bRemoved) {
+		m_pRiding = nullptr;
+	}
+	else {
+		m_vel = Vec3::ZERO;
+		tick();
+		if (!m_pRiding) return;
+		m_pRiding->positionRider();
+		m_rideRotA.y += (m_pRiding->m_rot.y - m_pRiding->m_rotPrev.y);
+
+		for (m_rideRotA.x += (m_pRiding->m_rot.x - m_pRiding->m_rotPrev.x); m_rideRotA.y >= 180.0; m_rideRotA.y -= 360.0) {
+		}
+
+		while (m_rideRotA.y < -180.0) {
+			m_rideRotA.y += 360.0;
+		}
+
+		while (m_rideRotA.x >= 180.0) {
+			m_rideRotA.x -= 360.0;
+		}
+
+		while (m_rideRotA.x < -180.0) {
+			m_rideRotA.x += 360.0;
+		}
+		Vec2 rotDiff = m_rideRotA * 0.5f;
+
+		const constexpr float var5 = 10.0F;
+
+		if (rotDiff.y > var5) {
+			rotDiff.y = var5;
+		}
+
+		if (rotDiff.y < -var5) {
+			rotDiff.y = -var5;
+		}
+
+		if (rotDiff.x > var5) {
+			rotDiff.x = var5;
+		}
+
+		if (rotDiff.x < -var5) {
+			rotDiff.x = -var5;
+		}
+
+		m_rideRotA -= rotDiff;
+		m_rot += rotDiff;
+	}
+}
+
+void Entity::positionRider()
+{
+	m_pRider->setPos(Vec3(m_pos.x, m_pos.y + getRideHeight() + m_pRider->getRidingHeight(), m_pos.z));
+}
+
+real Entity::getRidingHeight()
+{
+	return m_heightOffset;
+}
+
+real Entity::getRideHeight()
+{
+	return m_bbHeight * 0.75f;
+}
+
+void Entity::ride(std::shared_ptr<Entity> ent)
+{
+	m_rideRotA = Vec2::ZERO;
+	if (!ent) {
+		if (m_pRiding) {
+			moveTo(Vec3(m_pRiding->m_pos.x, m_pRiding->m_hitbox.min.y + m_pRiding->m_bbHeight, m_pRiding->m_pos.z), m_rot);
+			m_pRiding->m_pRider = nullptr;
+		}
+
+		m_pRiding = nullptr;
+	}
+	else if (m_pRiding == ent) {
+		m_pRiding->m_pRider = nullptr;
+		m_pRiding = nullptr;
+		moveTo(Vec3(ent->m_pos.x, ent->m_hitbox.min.y + ent->m_bbHeight, ent->m_pos.z), m_rot);
+	}
+	else {
+		if (m_pRiding) {
+			m_pRiding->m_pRider = nullptr;
+		}
+
+		if (ent->m_pRider) {
+			ent->m_pRider->m_pRiding = nullptr;
+		}
+
+		m_pRiding = ent;
+		ent->m_pRider = shared_from_this();
+	}
+}
+
 bool Entity::intersects(const Vec3& min, const Vec3& max) const
 {
 	AABB aabb(min, max);
@@ -612,6 +714,11 @@ bool Entity::isInWater()
 	aabb.grow(0, -0.4f, 0);
 	aabb.grow(-0.001, -0.001, -0.001);
 	return m_pLevel->checkAndHandleWater(aabb, Material::water, this);
+}
+
+bool Entity::isWet()
+{
+	return wasInWater() || m_pLevel->isRainingAt(m_pos);
 }
 
 bool Entity::wasInWater()
@@ -690,22 +797,25 @@ void Entity::playerTouch(Player* player)
 
 void Entity::push(Entity* bud)
 {
-	real diffX = bud->m_pos.x - m_pos.x;
-	real diffZ = bud->m_pos.z - m_pos.z;
-	real maxDiff = Mth::absMax(diffX, diffZ);
+	if (bud->m_pRider.get() != this && bud->m_pRiding.get() != this)
+	{
+		real diffX = bud->m_pos.x - m_pos.x;
+		real diffZ = bud->m_pos.z - m_pos.z;
+		real maxDiff = Mth::absMax(diffX, diffZ);
 
-	if (maxDiff < 0.01f) return;
+		if (maxDiff < 0.01f) return;
 
-	real x1 = Mth::sqrt(maxDiff);
-	real x2 = 1.0f / x1;
-	if (x2 > 1.0f)
-		x2 = 1.0f;
-	real x3 = 1.0f - this->m_pushThrough;
-	real x4 = x3 * diffX / x1 * x2 * 0.05f;
-	real x5 = x3 * diffZ / x1 * x2 * 0.05f;
+		real x1 = Mth::sqrt(maxDiff);
+		real x2 = 1.0f / x1;
+		if (x2 > 1.0f)
+			x2 = 1.0f;
+		real x3 = 1.0f - this->m_pushThrough;
+		real x4 = x3 * diffX / x1 * x2 * 0.05f;
+		real x5 = x3 * diffZ / x1 * x2 * 0.05f;
 
-	push(Vec3(-x4, 0.0f, -x5));
-	bud->push(Vec3(x4, 0.0f, x5));
+		push(Vec3(-x4, 0.0f, -x5));
+		bud->push(Vec3(x4, 0.0f, x5));
+	}
 }
 
 void Entity::push(const Vec3& pos)
@@ -718,11 +828,11 @@ bool Entity::shouldRender(Vec3& camPos) const
 	return shouldRenderAtSqrDistance(distanceToSqr(camPos));
 }
 
-bool Entity::shouldRenderAtSqrDistance(float distSqr) const
+bool Entity::shouldRenderAtSqrDistance(real distSqr) const
 {
-	float maxDist = (m_noNeighborUpdate * 64.0f) * (((m_hitbox.max.z - m_hitbox.min.z) + (m_hitbox.max.x - m_hitbox.min.x) + (m_hitbox.max.y - m_hitbox.min.y)) / 3.0f);
+	real maxDist = (m_viewScale * 64.0f) * m_hitbox.getSize();
 
-	return maxDist * maxDist > distSqr;
+	return maxDist * maxDist >= distSqr;
 }
 
 bool Entity::hurt(Entity* pAttacker, int damage)
@@ -736,10 +846,9 @@ void Entity::animateHurt()
 
 }
 
-std::shared_ptr<ItemEntity> Entity::spawnAtLocation(ItemInstance* itemInstance, float y)
+std::shared_ptr<ItemEntity> Entity::spawnAtLocation(std::shared_ptr<ItemInstance> itemInstance, float y)
 {
 	auto itemEntity = std::make_shared<ItemEntity>(m_pLevel, Vec3(m_pos.x, m_pos.y + y, m_pos.z), itemInstance);
-	delete(itemInstance);
 	itemEntity->m_throwTime = 10;
 	m_pLevel->addEntity(itemEntity);
 	
@@ -753,7 +862,7 @@ std::shared_ptr<ItemEntity> Entity::spawnAtLocation(int itemID, int amount)
 
 std::shared_ptr<ItemEntity> Entity::spawnAtLocation(int itemID, int amount, float y)
 {
-	return spawnAtLocation(new ItemInstance(itemID, amount, 0), y);
+	return spawnAtLocation(std::make_shared<ItemInstance>(itemID, amount, 0), y);
 }
 
 void Entity::awardKillScore(Entity* pKilled, int score)
@@ -768,8 +877,8 @@ void Entity::setEquippedSlot(int a, int b, int c)
 
 void Entity::setRot(const Vec2& rot)
 {
-	m_rot.y = /*Mth::abs(rot.x) > 360.0f ? fmod(rot.x, 360.0f) :*/ rot.y;
-	m_rot.x = /*Mth::abs(rot.y) > 360.0f ? fmod(rot.y, 360.0f) :*/ rot.x;
+	m_rot.y = Mth::abs(rot.y) > 360.0f ? fmod(rot.y, 360.0f) : rot.y;
+	m_rot.x = Mth::abs(rot.x) > 360.0f ? fmod(rot.x, 360.0f) : rot.x;
 }
 
 void Entity::setSize(float rad, float height)
@@ -865,23 +974,39 @@ void Entity::lavaHurt()
 	}
 }
 
-int Entity::queryEntityRenderer()
+const AABB* Entity::getCollideBox() const
 {
-	// If field_C8 is equal to RENDER_DYNAMIC, EntityRenderDispatcher
-	// calls here. Used for sheared sheep.
-	return 0;
+	return nullptr;
+}
+
+AABB* Entity::getCollideAgainstBox(Entity* ent) const
+{
+	return nullptr;
+}
+
+void Entity::handleInsidePortal()
+{
 }
 
 void Entity::handleEntityEvent(int event)
 {
 }
 
+void Entity::thunderHit(LightningBolt* bolt)
+{
+	burn(5);
+	++m_fireTicks;
+	if(m_fireTicks == 0)
+		m_fireTicks = 300;
+	
+}
+
 void Entity::load(std::shared_ptr<CompoundTag> tag)
 {
+	startSynchedData();
 	std::shared_ptr<ListTag> var2 = tag->getList("Pos");
 	std::shared_ptr<ListTag> var3 = tag->getList("Motion");
 	std::shared_ptr<ListTag> var4 = tag->getList("Rotation");
-	setPos(Vec3::ZERO);
 	m_vel.x = std::dynamic_pointer_cast<DoubleTag>(var3->getValue().at(0))->getValue();
 	m_vel.y = std::dynamic_pointer_cast<DoubleTag>(var3->getValue().at(1))->getValue();
 	m_vel.z = std::dynamic_pointer_cast<DoubleTag>(var3->getValue().at(2))->getValue();
@@ -904,8 +1029,9 @@ void Entity::load(std::shared_ptr<CompoundTag> tag)
 	m_distanceFallen = tag->getFloat("FallDistance");
 	m_fireTicks = tag->getShort("Fire");
 	m_airSupply = tag->getShort("Air");
-	m_onGround = tag->getBoolean("OnGround");
+	m_bOnGround = tag->getBoolean("OnGround");
 	setPos(m_pos);
+	setRot(m_rot);
 	readAdditionalSaveData(tag);
 }
 
@@ -930,7 +1056,7 @@ void Entity::saveWithoutId(std::shared_ptr<CompoundTag> tag)
 	tag->putFloat("FallDistance", m_distanceFallen);
 	tag->putShort("Fire", m_fireTicks);
 	tag->putShort("Air", m_airSupply);
-	tag->putBoolean("OnGround", m_onGround);
+	tag->putBoolean("OnGround", m_bOnGround);
 	addAdditionalSaveData(tag);
 }
 
@@ -942,9 +1068,20 @@ void Entity::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
 {
 }
 
+void Entity::defineSynchedData()
+{
+}
+
+void Entity::startSynchedData()
+{
+	if (m_definedData) return;
+	defineSynchedData();
+	m_definedData = true;
+}
+
 std::string Entity::getEncodeId()
 {
-	return getType().getName();
+	return getType()->getName();
 }
 
 bool Entity::operator==(const Entity& other) const

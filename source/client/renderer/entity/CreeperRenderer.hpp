@@ -12,9 +12,10 @@
 class CreeperRenderer : public MobRenderer
 {
 public:
-	CreeperRenderer(Model*, float);
+	CreeperRenderer(Model*, Model*, float);
 	~CreeperRenderer();
 
+	bool prepareArmor(Mob* mob, int a, float b) override;
 	int getOverlayColor(Mob*, float, float) override;
 	void scale(Mob*, float) override;
 };

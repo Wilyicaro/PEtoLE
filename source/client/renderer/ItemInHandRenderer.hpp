@@ -20,7 +20,7 @@ public:
 	void itemPlaced();
 	void itemUsed();
 	void render(float f);
-	void renderItem(std::shared_ptr<ItemInstance>);
+	void renderItem(Mob* mob, std::shared_ptr<ItemInstance>);
 	void renderScreenEffect(float f);
 	void renderFire(float f);
 	void renderTex(float f, int tex);

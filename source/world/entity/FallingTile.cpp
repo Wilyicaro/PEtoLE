@@ -9,18 +9,13 @@
 #include "FallingTile.hpp"
 #include "world/level/Level.hpp"
 
-FallingTile::FallingTile(Level* level) : Entity(level),
-	field_E0(0)
+FallingTile::FallingTile(Level* level) : Entity(level), field_E0(0)
 {
-	m_pEntityType = EntityType::fallingTile;
-	m_renderType = RENDER_FALLING_TILE;
+	m_pType = EntityType::fallingTile;
 }
 
-FallingTile::FallingTile(Level* level, const Vec3& pos, int id) : Entity(level),
-	field_E0(0)
+FallingTile::FallingTile(Level* level, const Vec3& pos, int id) : FallingTile(level)
 {
-	m_pEntityType = EntityType::fallingTile;
-	m_renderType = RENDER_FALLING_TILE;
 	m_id = id;
     m_bBlocksBuilding = false;
 	setSize(0.98f, 0.98f);
@@ -61,7 +56,7 @@ void FallingTile::tick()
 	if (m_pLevel->getTile(tilePos) == m_id)
 		m_pLevel->setTile(tilePos, TILE_AIR);
 
-	if (!m_onGround)
+	if (!m_bOnGround)
 	{
 		if (field_E0 > 100 && !m_pLevel->m_bIsOnline)
 			remove();

@@ -15,6 +15,8 @@
 #include "client/renderer/FoliageColor.hpp"
 #include <world/tile/RedStoneDustTile.hpp>
 #include <world/tile/BedTile.hpp>
+#include <world/tile/RailTile.hpp>
+#include <world/tile/RepeaterTile.hpp>
 
 bool TileRenderer::m_bFancyGrass = true;
 bool TileRenderer::m_bBiomeColors = true;
@@ -100,11 +102,11 @@ float TileRenderer::getWaterHeight(const TilePos& pos, const Material* pCheckMtl
 			int data = m_pLevelSource->getData(checkPos);
 			if (data >= 8 || data == 0)
 			{
-				fHeight += LiquidTile::getWaterVolume(data) * 10.0f;
+				fHeight += LiquidTile::getHeight(data) * 10.0f;
 				iBias += 10;
 			}
 
-			fHeight += LiquidTile::getWaterVolume(data);
+			fHeight += LiquidTile::getHeight(data);
 			iBias++;
 			continue;
 		}
@@ -1520,6 +1522,10 @@ bool TileRenderer::tesselateRailInWorld(Tile* tile, const TilePos& pos)
 		tex = m_textureOverride;
 	}
 
+	if (RailTile::isPowered(tile)) {
+		data &= 7;
+	}
+
 	float br = tile->getBrightness(m_pLevelSource, pos);
 	t.color(br, br, br);
 	int xt = (tex & 15) << 4;
@@ -1584,6 +1590,98 @@ bool TileRenderer::tesselateRailInWorld(Tile* tile, const TilePos& pos)
 	return true;
 }
 
+bool TileRenderer::tesselateRepeaterInWorld(Tile* tile, const TilePos& pos)
+{
+	int var5 = m_pLevelSource->getData(pos);
+	int var6 = var5 & 3;
+	int var7 = (var5 & 12) >> 2;
+	tesselateBlockInWorld(tile, pos);
+	Tesselator& t = Tesselator::instance;
+	float var9 = tile->getBrightness(m_pLevelSource, pos);
+	if (Tile::lightBlock[tile->m_ID] > 0)
+		var9 = (var9 + 1.0F) * 0.5F;
+
+	t.color(var9, var9, var9);
+	real var10 = -0.1875;
+	real var12 = 0.0;
+	real var14 = 0.0;
+	real var16 = 0.0;
+	real var18 = 0.0;
+	switch (var6) {
+	case 0:
+		var18 = -0.3125;
+		var14 = RepeaterTile::repeaterFacing[var7];
+		break;
+	case 1:
+		var16 = 0.3125;
+		var12 = -RepeaterTile::repeaterFacing[var7];
+		break;
+	case 2:
+		var18 = 0.3125;
+		var14 = -RepeaterTile::repeaterFacing[var7];
+		break;
+	case 3:
+		var16 = -0.3125;
+		var12 = RepeaterTile::repeaterFacing[var7];
+	}
+
+	tesselateTorch(tile, Vec3(pos.x + var12, pos.y + var10, pos.z + var14), 0.0, 0.0);
+	tesselateTorch(tile, Vec3(pos.x + var16, pos.y + var10, pos.z + var18), 0.0, 0.0);
+	int var20 = tile->getTexture(Facing::UP);
+	int var21 = (var20 & 15) << 4;
+	int var22 = var20 & 240;
+	real var23 = (real)((float)var21 / 256.0F);
+	real var25 = (real)(((float)var21 + 15.99F) / 256.0F);
+	real var27 = (real)((float)var22 / 256.0F);
+	real var29 = (real)(((float)var22 + 15.99F) / 256.0F);
+	float var31 = 2.0F / 16.0F;
+	float var32 = (float)(pos.x + 1);
+	float var33 = (float)(pos.x + 1);
+	float var34 = (float)(pos.x + 0);
+	float var35 = (float)(pos.x + 0);
+	float var36 = (float)(pos.z + 0);
+	float var37 = (float)(pos.z + 1);
+	float var38 = (float)(pos.z + 1);
+	float var39 = (float)(pos.z + 0);
+	float var40 = (float)pos.y + var31;
+	if (var6 == 2) {
+		var33 = (float)(pos.x + 0);
+		var32 = var33;
+		var35 = (float)(pos.x + 1);
+		var34 = var35;
+		var39 = (float)(pos.z + 1);
+		var36 = var39;
+		var38 = (float)(pos.z + 0);
+		var37 = var38;
+	}
+	else if (var6 == 3) {
+		var35 = (float)(pos.x + 0);
+		var32 = var35;
+		var34 = (float)(pos.x + 1);
+		var33 = var34;
+		var37 = (float)(pos.z + 0);
+		var36 = var37;
+		var39 = (float)(pos.z + 1);
+		var38 = var39;
+	}
+	else if (var6 == 1) {
+		var35 = (float)(pos.x + 1);
+		var32 = var35;
+		var34 = (float)(pos.x + 0);
+		var33 = var34;
+		var37 = (float)(pos.z + 1);
+		var36 = var37;
+		var39 = (float)(pos.z + 0);
+		var38 = var39;
+	}
+
+	t.vertexUV(var35, var40, var39, var23, var27);
+	t.vertexUV(var34, var40, var38, var23, var29);
+	t.vertexUV(var33, var40, var37, var25, var29);
+	t.vertexUV(var32, var40, var36, var25, var27);
+	return true;
+}
+
 bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos)
 {
 	int shape = tile->getRenderShape();
@@ -1627,6 +1725,8 @@ bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos)
 			return tesselateBlockInWorld(tile, pos, 1.0f, 1.0f, 1.0f);
 		case SHAPE_BED:
 			return tesselateBedInWorld(tile, pos);
+		case SHAPE_REPEATER:
+			return tesselateRepeaterInWorld(tile, pos);
 	}
 
 	return false;
@@ -1685,7 +1785,7 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 		{
 			const auto normal = Facing::NORMALS[dir];
 			int texture = tile->getTexture((Facing::Name)dir, data);
-			computeTileColor(tile, data, Facing::UP, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
+			computeTileColor(tile, data, (Facing::Name)dir, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
 			t.normal(normal[0], normal[1], normal[2]);
 			renderFace(tile, Vec3::ZERO, tile->getTexture((Facing::Name)dir, data), (Facing::Name)dir, red, grn, blu);
 		}
@@ -1727,7 +1827,7 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 			{
 				const auto normal = Facing::NORMALS[dir];
 				int texture = tile->getTexture((Facing::Name)dir, data);
-				computeTileColor(tile, data, Facing::UP, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
+				computeTileColor(tile, data, (Facing::Name)dir, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
 				t.normal(normal[0], normal[1], normal[2]);
 				renderFace(tile, Vec3::ZERO, tile->getTexture((Facing::Name)dir, data), (Facing::Name)dir, red, grn, blu);
 			}
@@ -1757,7 +1857,7 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 			{
 				const auto normal = Facing::NORMALS[dir];
 				int texture = tile->getTexture((Facing::Name)dir, data);
-				computeTileColor(tile, data, Facing::UP, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
+				computeTileColor(tile, data, (Facing::Name)dir, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
 				t.normal(normal[0], normal[1], normal[2]);
 				renderFace(tile, Vec3::ZERO, tile->getTexture((Facing::Name)dir, data), (Facing::Name)dir, red, grn, blu);
 			}

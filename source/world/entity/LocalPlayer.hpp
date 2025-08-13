@@ -29,14 +29,18 @@ public:
 	virtual void tick() override;
 	virtual void updateAi() override;
 	virtual bool isLocalPlayer() const override { return true; }
-	virtual void drop(const ItemInstance* pItemInstance, bool b = false) override;
+	virtual void drop(std::shared_ptr<ItemInstance>, bool b = false) override;
 	virtual bool isImmobile() const override;
 	virtual void startCrafting(const TilePos& pos) override;
 	virtual void openFurnace(std::shared_ptr<FurnaceTileEntity> furnace) override;
 	virtual void openContainer(Container* container) override;
+	virtual void openTrap(std::shared_ptr<DispenserTileEntity> tileEntity) override;
+	virtual void openTextEdit(std::shared_ptr<SignTileEntity> tileEntity) override;
+	virtual void displayClientMessage(const std::string& msg) override;
+	virtual int getItemIcon(ItemInstance*) override;
 
 	void calculateFlight(const Vec3& pos);
-	void closeContainer() override; //@HUH: oddly enough not a virtual/override
+	void closeContainer() override;
 	void respawn();
 
 private:

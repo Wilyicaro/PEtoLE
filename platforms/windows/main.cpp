@@ -166,6 +166,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	HDC hDC; HGLRC hRC;
 	// enable OpenGL for the window
 	EnableOpenGL(hWnd, &hDC, &hRC);
+	g_AppPlatform._deviceContext = hDC;
 
 	xglInit();
 

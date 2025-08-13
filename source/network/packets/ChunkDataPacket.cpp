@@ -9,6 +9,16 @@
 #include "../Packet.hpp"
 #include "world/level/levelgen/chunk/LevelChunk.hpp"
 
+ChunkDataPacket::ChunkDataPacket(Level* level, const TilePos& minPos, int xs, int ys, int zs) : m_pos(minPos), m_xs(xs), m_ys(ys), m_zs(zs)
+{
+	uint8_t* rawData = level->getBlocksAndData(minPos, xs, ys, zs);
+	size_t compressedSize = 0;
+	uint8_t* compressed = ZlibDeflateToMemoryLvl(rawData, xs * ys * zs * 5 / 2, &compressedSize, 1);
+	m_size = compressedSize;
+	m_data.WriteAlignedBytes(compressed, m_size);
+	delete[] compressed;
+}
+
 void ChunkDataPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
 {
 	pCallback->handle(guid, this);
@@ -17,41 +27,34 @@ void ChunkDataPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* p
 void ChunkDataPacket::write(RakNet::BitStream* bs)
 {
 	bs->Write((unsigned char)PACKET_CHUNK_DATA);
-	bs->Write(m_chunkPos.x);
-	bs->Write(m_chunkPos.z);
-	
-	// Well, we first have to prepare the data.
-	m_data.Reset();
-
-	for (int i = 0; i < C_MAX_CHUNKS; i++)
-	{
-		m_data.Write(m_pChunk->m_updateMap[i]);
-
-		// if nothing was updated:
-		if (!m_pChunk->m_updateMap[i])
-			continue;
-
-		for (int y = 0; y < 8; y++)
-		{
-			if ((m_pChunk->m_updateMap[i] >> y) & 1)
-			{
-				int idx = ((i & 0xF) << 11) | ((i >> 4) << 7) + (y * 16);
-				//write the tile data
-				
-				m_data.Write((const char*) &m_pChunk->m_pBlockData[idx],      16 * sizeof(TileID));
-				m_data.Write((const char*) &m_pChunk->m_tileData  [idx >> 1], 8);
-			}
-		}
-	}
-
-	m_data.ResetReadPointer();
-	bs->Write(m_data);
+	bs->Write(m_pos.x);
+	bs->Write(m_pos.y);
+	bs->Write(m_pos.z);
+	bs->Write(m_xs);
+	bs->Write(m_ys);
+	bs->Write(m_zs);
+	bs->Write(m_size);
+	bs->WriteAlignedBytes(m_data.GetData(), m_size);
 }
 
 void ChunkDataPacket::read(RakNet::BitStream* bs)
 {
-	bs->Read(m_chunkPos.x);
-	bs->Read(m_chunkPos.z);
-	bs->Read(m_data);
+	bs->Read(m_pos.x);
+	bs->Read(m_pos.y);
+	bs->Read(m_pos.z);
+	bs->Read(m_xs);
+	bs->Read(m_ys);
+	bs->Read(m_zs);
+	bs->Read(m_size);
+
+	uint8_t* compressed = new uint8_t[m_size];
+	bs->ReadAlignedBytes(compressed, m_size);
+
+	uint8_t* decompressed = ZlibInflateToMemory(compressed, m_size, m_xs * m_ys * m_zs * 5 / 2);
+	m_data.Reset();
+	m_data.WriteAlignedBytes(decompressed, m_xs * m_ys * m_zs * 5 / 2);
 	m_data.ResetReadPointer();
+
+	delete[] compressed;
+	delete[] decompressed;
 }

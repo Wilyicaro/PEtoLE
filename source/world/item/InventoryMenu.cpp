@@ -45,7 +45,7 @@ void InventoryMenu::removed(Player* player)
     for (int i = 0; i < 4; ++i) {
         std::shared_ptr<ItemInstance> item = craftSlots->getItem(i);
         if (item != nullptr) {
-            player->drop(item.get());
+            player->drop(item);
             craftSlots->setItem(i, nullptr);
         }
     }

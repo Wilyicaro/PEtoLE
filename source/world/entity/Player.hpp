@@ -19,6 +19,9 @@
 
 class Inventory; // in case we're included from Inventory.hpp
 class FurnaceTileEntity;
+class DispenserTileEntity;
+class SignTileEntity;
+class FishingHook;
 
 struct Abilities
 {
@@ -29,10 +32,21 @@ struct Abilities
 
 class Player : public Mob
 {
+public:
+	enum BedSleepingProblem
+	{
+		OK,
+		NOT_POSSIBLE_HERE,
+		NOT_POSSIBLE_NOW,
+		TOO_FAR_AWAY,
+		OTHER_PROBLEM
+	};
+
 private:
 	GameType _playerGameType;
 	int m_dmgSpill;
 	Abilities m_abilities;
+	int m_sleepTimer;
 
 public:
 	Player(Level* pLevel, GameType gameType);
@@ -45,20 +59,23 @@ public:
 	virtual bool isCreativeModeAllowed() const override { return true; }
 	virtual bool hurt(Entity*, int) override;
 	virtual void actuallyHurt(int) override;
+	virtual void alertWolves(Mob*, bool);
 	virtual void awardKillScore(Entity* pKilled, int score) override;
 	virtual void resetPos() override;
 	virtual void die(Entity* pCulprit) override;
 	virtual void aiStep() override;
 	virtual void tick() override;
-	virtual bool isImmobile() const override { return m_health <= 0; }
+	virtual bool isImmobile() const override;
 	virtual void updateAi() override;
 	virtual void take(Entity* pEnt, int x);
 
 	virtual void animateRespawn();
-	virtual void drop(const ItemInstance* pItemInstance, bool b = false);
+	virtual void drop(std::shared_ptr<ItemInstance> pItemInstance, bool b = false);
 	virtual void startCrafting(const TilePos& pos);
 	virtual void openFurnace(std::shared_ptr<FurnaceTileEntity> tileEntity);
 	virtual void openContainer(Container* container);
+	virtual void openTrap(std::shared_ptr<DispenserTileEntity> tileEntity);
+	virtual void openTextEdit(std::shared_ptr<SignTileEntity> tileEntity);
 	virtual void startDestroying();
 	virtual void stopDestroying();
 	virtual bool isLocalPlayer() const { return false; }
@@ -67,23 +84,32 @@ public:
 	virtual void carriedChanged(std::shared_ptr<ItemInstance> instance);
 	virtual void removeSelectedItem();
 	virtual void travel(const Vec2& pos) override;
+	virtual real getRidingHeight() override;
+	virtual void handleInsidePortal() override;
 
 	int addResource(int);
 	void animateRespawn(Player*, Level*);
 	void attack(Entity* pEnt);
 	bool canDestroy(const Tile*) const;
-	void displayClientMessage(const std::string& msg);
+	virtual void displayClientMessage(const std::string& msg);
 	void drop();
 	float getDestroySpeed(const Tile* tile) const;
 	int getInventorySlot(int x) const;
-	TilePos getRespawnPosition() { return m_respawnPos; }
+	TilePos getRespawnPosition() const { return m_respawnPos; }
 	int getScore() const { return m_score; }
 	void prepareCustomTextures();
 	void reallyDrop(std::shared_ptr<ItemEntity> pEnt);
 	void respawn();
-	void rideTick();
+	void rideTick() override;
 	void setDefaultHeadHeight();
+	virtual int getItemIcon(ItemInstance*) override;
 	void setRespawnPos(const TilePos& pos);
+	void setBedSleepPos(const TilePos& pos);
+	void updateSleepingPos(int);
+	static TilePos checkRespawnPos(Level*, const TilePos&);
+	bool isSleeping() const override { return m_bSleeping; }
+	bool isSleepingLongEnough() const { return isSleeping() && m_sleepTimer >= 100; }
+	float getBedSleepRot();
 	Abilities& getAbilities();
 
 	void touch(Entity* pEnt);
@@ -94,9 +120,12 @@ public:
 		getAbilities().m_invulnerable = m_abilities.m_mayFly = playerGameType == GameType::GAME_TYPE_CREATIVE;
 		if (playerGameType == GAME_TYPE_SURVIVAL) m_abilities.m_flying = false;
 	}
+	virtual void wake(bool, bool, bool);
+	virtual BedSleepingProblem sleep(const TilePos&);
 	bool isSurvival() const { return getPlayerGameType() == GAME_TYPE_SURVIVAL; }
 	bool isCreative() const { return getPlayerGameType() == GAME_TYPE_CREATIVE; }
 	std::shared_ptr<ItemInstance> getSelectedItem() const;
+	std::shared_ptr<ItemInstance> getCarriedItem() override;
 	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
 	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
 
@@ -108,11 +137,18 @@ public:
 
 protected:
 	int m_jumpTriggerTime = 0;
+	bool m_bSleeping;
+	bool m_bIsInsidePortal;
+
+private:
+	bool isInBed();
+
 
 public:
 	ContainerMenu* m_containerMenu;
 	InventoryMenu* m_inventoryMenu;
 	Inventory* m_pInventory;
+	std::shared_ptr<FishingHook> m_fishing;
 	uint8_t m_userType;
 	int m_score;
 	float m_oBob; // field_B9C
@@ -120,11 +156,15 @@ public:
 	std::string m_name;
 	int m_dimension;
 	RakNet::RakNetGUID m_guid;
-	//TODO
 	TilePos m_respawnPos;
-	//TODO
-	bool m_bHaveRespawnPos;
+	bool m_bHasRespawnPos;
+	bool m_bHasBedSleepPos;
 	//TODO
 	bool m_destroyingBlock;
+	TilePos m_bedSleepPos;
+	Vec3 m_sleepingPos;
+	int m_changingDimensionDelay;
+	float m_portalTime;
+	float m_oPortalTime;
 };
 

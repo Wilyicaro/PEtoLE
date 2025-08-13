@@ -8,6 +8,8 @@
 
 #include "EntityRenderer.hpp"
 #include "EntityRenderDispatcher.hpp"
+#include "world/entity/Entity.hpp"
+#include "world/level/Level.hpp"
 
 EntityRenderer::EntityRenderer() : m_model(0.0f, 0.0f)
 {

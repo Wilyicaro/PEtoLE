@@ -13,6 +13,8 @@
 class ProgressScreen : public Screen
 {
 public:
+	void init(Minecraft*, int, int) override;
+
 	void render(int, int, float) override;
 	void updateEvents() override;
 	bool isInGameScreen() override;

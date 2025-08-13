@@ -19,14 +19,13 @@ class TileEntityRenderDispatcher {
 public:
     static TileEntityRenderDispatcher* getInstance()
     {
+        if (!instance) instance = new TileEntityRenderDispatcher();
         return instance;
     }
 
-    template<typename T, typename V>
-    void registerRenderer();
+    void registerRenderer(TileEntityType*, TileEntityRendererBase*);
 
-    template<typename T>
-    TileEntityRendererBase* getRenderer();
+    TileEntityRendererBase* getRenderer(const TileEntityType*);
 
     TileEntityRendererBase* getRenderer(TileEntity* e);
 
@@ -53,7 +52,7 @@ public:
 
 private:
     TileEntityRenderDispatcher();
-    std::unordered_map<std::type_index, std::unique_ptr<TileEntityRendererBase>> renderers;
+    std::unordered_map<const TileEntityType*, TileEntityRendererBase*> m_renderers;
 
     Font* font = nullptr;
 

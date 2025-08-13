@@ -11,8 +11,7 @@
 
 Cow::Cow(Level* pLevel) : Animal(pLevel)
 {
-	m_pEntityType = EntityType::cow;
-	m_renderType = RENDER_COW;
+	m_pType = EntityType::cow;
 	m_texture = "mob/cow.png";
 	setSize(0.9f, 1.3f);
 }

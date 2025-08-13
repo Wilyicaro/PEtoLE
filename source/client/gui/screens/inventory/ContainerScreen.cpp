@@ -2,13 +2,14 @@
 #include "client/locale/Language.hpp"
 #include "world/item/ItemInstance.hpp"
 #include <client/renderer/Lighting.hpp>
+#include <client/renderer/entity/ItemRenderer.hpp>
 
 ContainerScreen::ContainerScreen(ContainerMenu* menu)
     : m_menu(menu) {}
 
 void ContainerScreen::init() {
     Screen::init();
-    m_pMinecraft->m_pLocalPlayer->m_containerMenu = m_menu;
+    m_pMinecraft->m_pPlayer->m_containerMenu = m_menu;
     m_leftPos = (m_width - m_imageWidth) / 2;
     m_topPos = (m_height - m_imageHeight) / 2;
 
@@ -45,7 +46,7 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks) {
         }
     }
 
-    Inventory* inv = m_pMinecraft->m_pLocalPlayer->m_pInventory;
+    Inventory* inv = m_pMinecraft->m_pPlayer->m_pInventory;
     if (inv->getCarried()) {
         glTranslatef(0.0F, 0.0F, 200.0F);
         ItemRenderer::renderGuiItem(m_pMinecraft->m_pTextures, inv->getCarried(), mouseX - m_leftPos - 8, mouseY - m_topPos - 8);
@@ -113,7 +114,7 @@ void ContainerScreen::slotClicked(int mouseX, int mouseY, int button) {
 
 void ContainerScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 {
-    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(m_menu->containerId, index, button, m_pMinecraft->m_pLocalPlayer.get());
+    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(m_menu->containerId, index, button, m_pMinecraft->m_pPlayer.get());
 }
 
 
@@ -122,8 +123,8 @@ void ContainerScreen::keyPressed(int keyCode) {
 }
 
 void ContainerScreen::removed() {
-    if (m_pMinecraft->m_pLocalPlayer) {
-        m_pMinecraft->m_pGameMode->handleCloseInventory(m_menu->containerId, m_pMinecraft->m_pLocalPlayer.get());
+    if (m_pMinecraft->m_pPlayer) {
+        m_pMinecraft->m_pGameMode->handleCloseInventory(m_menu->containerId, m_pMinecraft->m_pPlayer.get());
     }
 }
 

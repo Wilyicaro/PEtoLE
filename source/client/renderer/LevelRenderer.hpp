@@ -75,6 +75,8 @@ public:
 	void allChanged() override;
 	void entityAdded(Entity*) override;
 	void tileChanged(const TilePos& pos) override;
+	void playStreamingMusic(const std::string&, const TilePos&) override;
+	void levelEvent(Player*, int event, const TilePos&, int info) override;
 	void setTilesDirty(const TilePos& min, const TilePos& max) override;
 	void takePicture(std::shared_ptr<TripodCamera>, Entity*) override;
 	void addParticle(const std::string&, const Vec3& pos, const Vec3& dir) override;

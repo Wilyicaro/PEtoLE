@@ -15,32 +15,26 @@
 class Level;
 class BiomeSource
 {
-private:
-	BiomeSource* init();
+
 public:
-	BiomeSource() { init(); }
+	BiomeSource() : m_temperatureMap(0), m_downfallMap(0), m_noiseMap(0) { }
 	BiomeSource(Level*);
 	real getTemperature(int x, int y);
 	virtual ~BiomeSource();
 
 	virtual Biome* getBiome(const ChunkPos& pos);
 	virtual Biome* getBiome(const TilePos& pos);
-	virtual Biome** getBiomeBlock(const TilePos& pos, int, int);
-	virtual Biome** getBiomeBlock(Biome**, const TilePos& pos, int, int);
-	virtual real* getTemperatureBlock(int, int, int, int);
+	virtual const std::vector<Biome*>& getBiomeBlock(const TilePos& pos, int, int);
+	virtual const std::vector<Biome*>& getBiomeBlock(std::vector<Biome*>&, const TilePos& pos, int, int);
+	virtual const std::vector<real>& getTemperatureBlock(int, int, int, int);
 
 public:
-	real* temperatures;
-	real* downfalls;
-	real* noises;
-	int field_10;
-	int field_14;
-	int field_18;
-	int field_1C;
-	Biome** biomes;
-	PerlinNoise* m_pPerlinNoise[3];
-	Random m_Random1;
-	Random m_Random2;
-	Random m_Random3;
+	std::vector<real> m_temperatures;
+	std::vector<real> m_downfalls;
+	std::vector<real> m_noises;
+	std::vector<Biome*> m_biomes;
+	PerlinNoise m_temperatureMap;
+	PerlinNoise m_downfallMap;
+	PerlinNoise m_noiseMap;
 };
 

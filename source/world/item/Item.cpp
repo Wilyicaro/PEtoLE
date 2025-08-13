@@ -26,6 +26,14 @@
 #include "CoalItem.hpp"
 #include "BowItem.hpp"
 #include "SeedItem.hpp"
+#include "MinecartItem.hpp"
+#include "BoatItem.hpp"
+#include "BedItem.hpp"
+#include "RecordItem.hpp"
+#include "SignItem.hpp"
+#include "EggItem.hpp"
+#include "PaintingItem.hpp"
+#include "FishingRodItem.hpp"
 
 #define ITEM(x) ((x) - 256)
 
@@ -113,6 +121,21 @@ int Item::getDefense() const
 const std::string& Item::getArmorTexture() const
 {
 	return Util::EMPTY_STRING;
+}
+
+const std::string& Item::getStreamingMusic()
+{
+	return Util::EMPTY_STRING;
+}
+
+bool Item::isFood() const
+{
+	return false;
+}
+
+bool Item::isWolfFood() const
+{
+	return false;
 }
 
 void Item::initItems()
@@ -371,11 +394,12 @@ void Item::initItems()
 		->setIcon(6, 0)
 		->setDescriptionId("flint");
 
-	Item::rawPorkchop = NEW_X_ITEM(FoodItem, ITEM_PORKCHOP_RAW, 3)
+	Item::rawPorkchop = NEW_X_ITEM(FoodItem, ITEM_PORKCHOP_RAW, 3, true);
+	Item::rawPorkchop
 		->setIcon(7, 5)
 		->setDescriptionId("porkchopRaw");
 
-	Item::cookedPorkchop = NEW_X_ITEM(FoodItem, ITEM_PORKCHOP_COOKED, 8)
+	Item::cookedPorkchop = NEW_X_ITEM(FoodItem, ITEM_PORKCHOP_COOKED, 8, true)
 		->setIcon(8, 5)
 		->setDescriptionId("porkchopCooked");
 
@@ -405,6 +429,22 @@ void Item::initItems()
 		->setDescriptionId("bucketLava")
 		->setCraftingRemainingItem(emptyBucket);
 
+	Item::minecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART, 0)
+		->setIcon(7, 8)
+		->setDescriptionId("minecart");
+
+	Item::chestMinecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART_CHEST, 1)
+		->setIcon(7, 9)
+		->setDescriptionId("minecartChest");
+
+	Item::furnaceMinecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART_FURNACE, 2)
+		->setIcon(7, 10)
+		->setDescriptionId("minecartFurnace");
+
+	Item::boat = NEW_X_ITEMN(BoatItem, ITEM_BOAT)
+		->setIcon(8, 8)
+		->setDescriptionId("boat");
+
 	Item::ironDoor = NEW_X_ITEM(DoorItem, ITEM_DOOR_IRON, Material::metal)
 		->setIcon(12, 2)
 		->setDescriptionId("doorIron");
@@ -414,8 +454,7 @@ void Item::initItems()
 		->setIcon(8, 3)
 		->setDescriptionId("redstone");
 
-	//@TODO SnowballItem
-	Item::snowBall = NEW_ITEM(ITEM_SNOWBALL)
+	Item::snowBall = NEW_X_ITEMN(SnowballItem, ITEM_SNOWBALL)
 		->setIcon(14, 0)
 		->setDescriptionId("snowball");
 
@@ -456,13 +495,17 @@ void Item::initItems()
 		->setIcon(14, 1)
 		->setDescriptionId("slimeball");
 
-	Item::egg = NEW_ITEM(ITEM_EGG)
+	Item::egg = NEW_X_ITEMN(EggItem, ITEM_EGG)
 		->setIcon(12, 0)
 		->setDescriptionId("egg");
 
 	Item::compass = NEW_ITEM(ITEM_COMPASS)
 		->setIcon(6, 3)
 		->setDescriptionId("compass");
+
+	Item::fishingRod = NEW_X_ITEMN(FishingRodItem, ITEM_FISHING_ROD)
+		->setIcon(5, 4)
+		->setDescriptionId("fishingRod");
 
 	Item::dyePowder = NEW_X_ITEMN(DyeItem, ITEM_DYE_POWDER)
 		->setIcon(14, 4)
@@ -499,12 +542,27 @@ void Item::initItems()
 		->setMaxStackSize(1)
 		->setDescriptionId("cake");
 
-	//@TODO RecordingItem
-	Item::record_01 = NEW_ITEM(ITEM_RECORD_01)
+	Item::bed = NEW_X_ITEMN(BedItem, ITEM_BED)
+		->setIcon(13, 2)
+		->setDescriptionId("bed");
+
+	Item::diode = NEW_X_ITEM(TilePlanterItem, ITEM_DIODE, TILE_REPEATER_OFF)
+		->setIcon(6, 5)
+		->setDescriptionId("diode");
+
+	Item::sign = NEW_X_ITEMN(SignItem, ITEM_SIGN)
+		->setIcon(10, 2)
+		->setDescriptionId("sign");
+
+	Item::painting = NEW_X_ITEMN(PaintingItem, ITEM_PAINTING)
+		->setIcon(10, 1)
+		->setDescriptionId("painting");
+
+	Item::record_01 = NEW_X_ITEM(RecordItem, ITEM_RECORD_01, "13")
 		->setIcon(0, 15)
 		->setDescriptionId("record");
 
-	Item::record_02 = NEW_ITEM(ITEM_RECORD_02)
+	Item::record_02 = NEW_X_ITEM(RecordItem, ITEM_RECORD_02, "cat")
 		->setIcon(1, 15)
 		->setDescriptionId("record");
 }
@@ -730,8 +788,8 @@ Item* Item::reeds;
 Item* Item::paper;
 Item* Item::book;
 Item* Item::slimeBall;
-Item* Item::minecart_chest;
-Item* Item::minecart_furnace;
+Item* Item::chestMinecart;
+Item* Item::furnaceMinecart;
 Item* Item::egg;
 Item* Item::compass;
 Item* Item::fishingRod;

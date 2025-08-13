@@ -2,9 +2,8 @@
 #include "world/item/Item.hpp"
 #include "client/app/Minecraft.hpp"
 
-ClockTexture::ClockTexture(Minecraft* minecraft) : DynamicTexture(Item::clock->m_icon), m_pMinecraft(minecraft)
+ClockTexture::ClockTexture(Minecraft* minecraft) : DynamicTexture(Item::clock->m_icon), m_pMinecraft(minecraft), m_rot(0), m_rota(0)
 {
-	m_data = new uint32_t[256];
     m_dialData = minecraft->m_pPlatform->loadTexture("misc/dial.png", true).m_pixels;
     m_textureId = 1;
 
@@ -22,15 +21,10 @@ ClockTexture::ClockTexture(Minecraft* minecraft) : DynamicTexture(Item::clock->m
     }
 }
 
-ClockTexture::~ClockTexture()
-{
-	SAFE_DELETE(m_data);
-}
-
 void ClockTexture::tick()
 {
     double rott = 0.0;
-    if (m_pMinecraft->m_pLevel && m_pMinecraft->m_pLocalPlayer) {
+    if (m_pMinecraft->m_pLevel && m_pMinecraft->m_pPlayer) {
         float time = m_pMinecraft->m_pLevel->getTimeOfDay(1.0F);
         rott = (double)(-time * M_PI * 2.0F);
         if (m_pMinecraft->m_pLevel->m_pDimension->m_bFoggy) {
@@ -81,7 +75,7 @@ void ClockTexture::tick()
             std::swap(r, b);
         }
 
-        if (m_anaglyph3d) {
+        if (m_bAnaglyph3d) {
             int rr = (r * 30 + g * 59 + b * 11) / 100;
             int gg = (r * 30 + g * 70) / 100;
             int bb = (r * 30 + b * 70) / 100;

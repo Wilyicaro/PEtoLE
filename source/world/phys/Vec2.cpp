@@ -10,10 +10,10 @@
 
 const Vec2 Vec2::ZERO = Vec2(0, 0);
 
-void Vec2::_init(float x, float y)
+void Vec2::_init(float y, float x)
 {
-    this->y = x;
-    this->x = y;
+    this->y = y;
+	this->x = x;
 }
 
 Vec2::Vec2()
@@ -21,9 +21,9 @@ Vec2::Vec2()
     _init(0, 0);
 }
 
-Vec2::Vec2(float x, float y)
+Vec2::Vec2(float y, float x)
 {
-	_init(x, y);
+	_init(y, x);
 }
 
 Vec2 Vec2::normalize() const

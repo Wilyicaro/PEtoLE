@@ -50,6 +50,12 @@ int FurnaceTile::getTexture(Facing::Name face) const
 	}
 }
 
+void FurnaceTile::onPlace(Level* level, const TilePos& pos)
+{
+	Tile::onPlace(level, pos);
+	recalcLockDir(level, pos);
+}
+
 bool FurnaceTile::use(Level* level, const TilePos& pos, Player* player)
 {
 	if (player->isSneaking() && player->getSelectedItem())
@@ -102,7 +108,7 @@ void FurnaceTile::onRemove(Level* level, const TilePos& pos) {
 				}
 
 				var7->m_count -= var11;
-				auto var12 = std::make_shared<ItemEntity>(level, pos.offset(var8, var9, var10), new ItemInstance(var7->m_itemID, var11, var7->getAuxValue()));
+				auto var12 = std::make_shared<ItemEntity>(level, pos.offset(var8, var9, var10), std::make_shared<ItemInstance>(var7->m_itemID, var11, var7->getAuxValue()));
 				float var13 = 0.05F;
 				var12->m_vel.x = (double)((float)m_furnaceRandom.nextGaussian() * var13);
 				var12->m_vel.y = (double)((float)m_furnaceRandom.nextGaussian() * var13 + 0.2F);
@@ -142,4 +148,29 @@ std::shared_ptr<TileEntity> FurnaceTile::newTileEntity()
 int FurnaceTile::getResource(int, Random*) const
 {
 	return Tile::furnace->m_ID;
+}
+
+void FurnaceTile::recalcLockDir(Level* level, const TilePos& pos) {
+	int var5 = level->getTile(pos.north());
+	int var6 = level->getTile(pos.south());
+	int var7 = level->getTile(pos.west());
+	int var8 = level->getTile(pos.east());
+	uint8_t var9 = 3;
+	if (Tile::solid[var5] && !Tile::solid[var6]) {
+		var9 = 3;
+	}
+
+	if (Tile::solid[var6] && !Tile::solid[var5]) {
+		var9 = 2;
+	}
+
+	if (Tile::solid[var7] && !Tile::solid[var8]) {
+		var9 = 5;
+	}
+
+	if (Tile::solid[var8] && !Tile::solid[var7]) {
+		var9 = 4;
+	}
+
+	level->setData(pos, var9);
 }

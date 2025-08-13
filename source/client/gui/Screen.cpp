@@ -423,7 +423,7 @@ void Screen::mouseEvent()
 
 void Screen::renderBackground(int unk)
 {
-	if (m_pMinecraft->isLevelGenerated())
+	if (m_pMinecraft->isLevelReady())
 	{
 		// draw the background offset by the Y offset so that the smaller virtual
 		// keyboards don't reveal undrawn areas

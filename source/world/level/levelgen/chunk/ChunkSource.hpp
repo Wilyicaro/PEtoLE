@@ -10,6 +10,7 @@
 #include <string>
 #include "world/level/levelgen/chunk/LevelChunk.hpp"
 #include "common/Utils.hpp"
+#include "common/ProgressListener.hpp"
 #include "GameMods.hpp"
 class Level;
 class LevelChunk;
@@ -27,7 +28,8 @@ public:
 	virtual bool shouldSave() = 0;
 	virtual void saveAll();
 	virtual std::string gatherStats() = 0;
-	virtual void saveUnsaved(bool limited = true);
+	virtual void save(bool force = true);
+	virtual bool save(bool force, ProgressListener&);
 	virtual void unloadFarChunks();
 };
 

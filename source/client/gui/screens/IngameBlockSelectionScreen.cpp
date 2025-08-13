@@ -10,6 +10,7 @@
 #include "PauseScreen.hpp"
 #include "client/app/Minecraft.hpp"
 #include "client/renderer/entity/ItemRenderer.hpp"
+#include "world/tile/Sapling.hpp"
 
 std::string g_sNotAvailableInDemoVersion = "Not available in the demo version";
 
@@ -86,7 +87,7 @@ IngameBlockSelectionScreen::IngameBlockSelectionScreen() :
 
 Inventory* IngameBlockSelectionScreen::getInventory()
 {
-	return m_pMinecraft->m_pLocalPlayer->m_pInventory;
+	return m_pMinecraft->m_pPlayer->m_pInventory;
 }
 
 int IngameBlockSelectionScreen::getBottomY()

@@ -11,7 +11,7 @@
 AddMobPacket::AddMobPacket(const Mob *mob)
 {
 	m_id = mob->m_EntityID;
-	m_type = mob->getType().getId();
+	m_type = mob->getType()->getId();
 	m_pos = mob->m_pos;
 	m_pos -= mob->m_heightOffset;
 	m_rot = mob->m_rot;

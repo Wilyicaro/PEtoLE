@@ -76,7 +76,6 @@ void DirectConnectScreen::buttonClicked(Button* pButton)
 		newPgs.m_address = sysAddress;
 
 		m_pMinecraft->joinMultiplayer(newPgs);
-		m_pMinecraft->setScreen(new ProgressScreen);
 
 		m_btnJoin.m_bEnabled = false;
 		m_textAddress.m_bEnabled = false;

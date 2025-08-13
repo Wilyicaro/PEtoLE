@@ -25,8 +25,8 @@ ModelPart::ModelPart(const std::string& baseId)
 {
 	m_pModel = nullptr;
 	field_34 = baseId;
-	field_40 = 0;
-	field_44 = 0;
+	m_xTexOffs = 0;
+	m_yTexOffs = 0;
 	_init();
 }
 
@@ -52,8 +52,8 @@ void ModelPart::_init()
 void ModelPart::_init(int a, int b)
 {
 	m_pModel = nullptr;
-	field_40 = a;
-	field_44 = b;
+	m_xTexOffs = a;
+	m_yTexOffs = b;
 	_init();
 }
 
@@ -64,13 +64,13 @@ void ModelPart::addChild(ModelPart* pPart)
 
 void ModelPart::addBox(float a, float b, float c, int d, int e, int f, float g)
 {
-	Cube* pCube = new Cube(this, field_40, field_44, a, b, c, d, e, f, g);
+	Cube* pCube = new Cube(this, m_xTexOffs, m_yTexOffs, a, b, c, d, e, f, g);
 	m_pCubes.push_back(pCube);
 }
 
 void ModelPart::addBox(const std::string& id, float a, float b, float c, int d, int e, int f, float g)
 {
-	Cube* pCube = new Cube(this, field_40, field_44, a, b, c, d, e, f, g);
+	Cube* pCube = new Cube(this, m_xTexOffs, m_yTexOffs, a, b, c, d, e, f, g);
 	pCube->setId(field_34 + "." + id);
 	m_pCubes.push_back(pCube);
 }
@@ -221,8 +221,6 @@ void ModelPart::renderRollable(float scale)
 		compile(scale);
 
 	glPushMatrix();
-	translatePosTo(scale);
-
 	translateRotTo(scale);
 	draw();
 
@@ -254,8 +252,8 @@ void ModelPart::setTexSize(int width, int height)
 
 void ModelPart::texOffs(int a, int b)
 {
-	field_40 = a;
-	field_44 = b;
+	m_xTexOffs = a;
+	m_yTexOffs = b;
 }
 
 void ModelPart::translateTo(float scale)

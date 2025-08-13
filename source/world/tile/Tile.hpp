@@ -27,6 +27,9 @@ class Entity;
 class Mob;
 class Player;
 class LiquidTile;
+class Sapling;
+class RecordPlayerTile;
+class PortalTile;
 
 class Tile
 {
@@ -197,6 +200,8 @@ public: // static variables
 	static Tile* poweredRail;
 	static Tile* detectorRail;
 	static Tile* lever;
+	static Tile* stonePressurePlate;
+	static Tile* woodPressurePlate;
 	static Tile* obsidian;
 	static Tile* tnt;
 	static Tile* torch;
@@ -208,6 +213,9 @@ public: // static variables
 	static Tile* glowstone;
 	static Tile* pumpkinLantern;
 	static Tile* fire;
+	static Tile* dispenser;
+	static Tile* musicBlock;
+	static RecordPlayerTile* recordPlayer;
 	static Tile* mobSpawner;
 	static Tile* chest;
 	static Tile* redstoneDust;
@@ -220,7 +228,7 @@ public: // static variables
 	static Tile* wallSign;
 	static Tile* doorWood;
 	static Tile* doorIron;
-	static Tile* sapling;
+	static Sapling* sapling;
 	static Tile* sponge;
 	static Tile* bed;
 	static Tile* web;
@@ -232,15 +240,19 @@ public: // static variables
 	static Tile* furnace;
 	static Tile* furnaceLit;
 	static Tile* cake;
+	static Tile* repeater;
+	static Tile* repeaterLit;
+	static Tile* trapDoor;
+	static PortalTile* portal;
 
 public:
 	int m_TextureFrame;
 	int m_ID;
 	AABB m_aabb;
 	const SoundType* m_pSound;
-	float field_28;
+	float m_gravity;
 	Material* m_pMaterial;
-	float friction;
+	float m_friction;
 	float m_hardness;
 	float m_blastResistance;
 	AABB m_aabbReturned;

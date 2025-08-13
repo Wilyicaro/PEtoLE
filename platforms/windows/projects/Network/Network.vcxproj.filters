@@ -35,6 +35,9 @@
     <ClInclude Include="$(MC_ROOT)\source\network\PacketUtil.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\network\ServerLevelListener.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\network\packets\AddPlayerPacket.cpp">
@@ -102,6 +105,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\network\packets\AddMobPacket.cpp">
       <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\SignUpdatePacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\ServerLevelListener.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

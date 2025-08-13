@@ -11,6 +11,7 @@
 #include "network/NetEventCallback.hpp"
 #include "client/app/Minecraft.hpp"
 #include "network/RakNetInstance.hpp"
+#include "world/level/MultiPlayerLevel.hpp"
 
 struct SBufferedBlockUpdate
 {
@@ -46,6 +47,9 @@ public:
 	void handle(const RakNet::RakNetGUID&, ChunkDataPacket*) override;
 	void handle(const RakNet::RakNetGUID&, PlayerEquipmentPacket*) override;
 	void handle(const RakNet::RakNetGUID&, LevelDataPacket*) override;
+	void handle(const RakNet::RakNetGUID&, SignUpdatePacket*) override;
+
+	std::shared_ptr<Entity> getEntity(int);
 	
 	bool areAllChunksLoaded();
 	void arrangeRequestChunkOrder();
@@ -55,7 +59,7 @@ public:
 
 private:
 	Minecraft* m_pMinecraft;
-	Level* m_pLevel;
+	MultiPlayerLevel* m_pLevel;
 	RakNetInstance* m_pRakNetInstance;
 	RakNet::RakPeerInterface* m_pServerPeer;
 	int m_field_14;

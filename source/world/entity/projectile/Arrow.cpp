@@ -3,15 +3,13 @@
 
 Arrow::Arrow(Level* level) : Entity(level)
 {
-	m_pEntityType = EntityType::arrow;
-    m_renderType = RENDER_ARROW;
+	m_pType = EntityType::arrow;
 	setSize(0.5f, 0.5f);
 }
 
 Arrow::Arrow(Level* level, const Vec3& pos) : Entity(level)
 {
-    m_pEntityType = EntityType::arrow;
-    m_renderType = RENDER_ARROW;
+    m_pType = EntityType::arrow;
 	setSize(0.5f, 0.5f);
 	setPos(pos);
 	m_heightOffset = 0;
@@ -19,19 +17,18 @@ Arrow::Arrow(Level* level, const Vec3& pos) : Entity(level)
 
 Arrow::Arrow(Level* level, std::shared_ptr<Mob> mob) : Entity(level), m_owner(mob)
 {
-    m_pEntityType = EntityType::arrow;
-    m_renderType = RENDER_ARROW;
+    m_pType = EntityType::arrow;
 	setSize(0.5f, 0.5f);
     m_bFromPlayer = mob->isPlayer();
 	moveTo(mob->m_pos.add(0, mob->getHeadHeight(), 0), mob->m_rot);
-	m_pos.x -= (double)(Mth::cos(m_rot.y / 180.0F * M_PI) * 0.16F);
+	m_pos.x -= (Mth::cos(m_rot.y / 180.0F * M_PI) * 0.16F);
 	m_pos.y -= 0.1;
-	m_pos.z -= (double)(Mth::sin(m_rot.y / 180.0F * M_PI) * 0.16F);
+	m_pos.z -= (Mth::sin(m_rot.y / 180.0F * M_PI) * 0.16F);
 	setPos(m_pos);
 	m_heightOffset = 0.0F;
-	m_vel.x = (double)(-Mth::sin(m_rot.y / 180.0F * M_PI) * Mth::cos(m_rot.x / 180.0F * M_PI));
-	m_vel.z = (double)(Mth::cos(m_rot.y / 180.0F * M_PI) * Mth::cos(m_rot.x / 180.0F * M_PI));
-	m_vel.y = (double)(-Mth::sin(m_rot.x / 180.0F * M_PI));
+	m_vel.x = (-Mth::sin(m_rot.y / 180.0F * M_PI) * Mth::cos(m_rot.x / 180.0F * M_PI));
+	m_vel.z = (Mth::cos(m_rot.y / 180.0F * M_PI) * Mth::cos(m_rot.x / 180.0F * M_PI));
+	m_vel.y = (-Mth::sin(m_rot.x / 180.0F * M_PI));
 	shoot(m_vel, 1.5F, 1.0F);
 }
 
@@ -74,17 +71,18 @@ float Arrow::getShadowHeightOffs() const
 void Arrow::tick()
 {
 	Entity::tick();
-    if (m_rotPrev.x == 0.0F && m_rotPrev.y == 0.0F) {
+    if (m_rotPrev.x == 0.0F && m_rotPrev.y == 0.0F)
+    {
         float var1 = Mth::sqrt(m_vel.x * m_vel.x + m_vel.z * m_vel.z);
         m_rotPrev.y = m_rot.y = (float)(Mth::atan2(m_vel.x, m_vel.z) * 180.0 / M_PI);
-        m_rotPrev.x = m_rot.x = (float)(Mth::atan2(m_vel.y, (double)var1) * 180.0 / M_PI);
+        m_rotPrev.x = m_rot.x = (float)(Mth::atan2(m_vel.y, var1) * 180.0 / M_PI);
     }
 
-    if (m_shakeTime > 0) {
+    if (m_shakeTime > 0)
         --m_shakeTime;
-    }
 
-    if (m_bInGround) {
+    if (m_bInGround)
+    {
         int var15 = m_pLevel->getTile(m_tilePos);
         if (var15 == m_lastTile) {
             ++m_life;
@@ -102,33 +100,35 @@ void Arrow::tick()
         m_life = 0;
         m_flightTime = 0;
     }
-    else {
+    else
+    {
         ++m_flightTime;
     }
 
     HitResult var3 = m_pLevel->clip(m_pos, m_pos + m_vel);
-    Vec3 var2 = m_pos - m_vel;
-    if (var3.isHit()) {
+    Vec3 var2 = m_pos + m_vel;
+    if (var3.isHit())
         var2 = var3.m_hitPos;
-    }
 
     std::shared_ptr<Entity> var4 = nullptr;
     AABB checkBox = m_hitbox;
     checkBox.expand(m_vel.x, m_vel.y, m_vel.z);
     checkBox.grow(1.0, 1.0, 1.0);
-    auto entities = m_pLevel->getEntities(shared_from_this(), checkBox);
+    auto entities = m_pLevel->getEntities(this, checkBox);
     real var6 = 0.0;
 
-    float var10;
-    for (auto& var9 : entities) {
-        if (var9->isPickable() && (var9 != m_owner || m_flightTime >= 5)) {
-            var10 = 0.3F;
+    for (auto& var9 : entities)
+    {
+        if (var9->isPickable() && (var9 != m_owner || m_flightTime >= 5))
+        {
             AABB var11 = var9->m_hitbox;
-            var11.grow(var10, var10, var10);
+            var11.grow(0.3, 0.3, 0.3);
             HitResult var12 = var11.clip(m_pos, var2);
-            if (var12.isHit()) {
+            if (var12.isHit())
+            {
                 real var13 = m_pos.distanceTo(var12.m_hitPos);
-                if (var13 < var6 || var6 == 0.0) {
+                if (var13 < var6 || var6 == 0.0)
+                {
                     var4 = var9;
                     var6 = var13;
                 }
@@ -136,25 +136,29 @@ void Arrow::tick()
         }
     }
 
-    if (var4) {
+    if (var4)
         var3 = HitResult(var4);
-    }
 
     float var17;
-    if (var3.isHit()) {
-        if (var3.m_pEnt) {
-            if (var3.m_pEnt->hurt(m_owner.get(), 4)) {
+    if (var3.isHit())
+    {
+        if (var3.m_pEnt)
+        {
+            if (var3.m_pEnt->hurt(m_owner.get(), 4))
+            {
                 m_pLevel->playSound(this, "random.drr", 1.0F, 1.2F / (m_random.nextFloat() * 0.2F + 0.9F));
                 remove();
             }
-            else {
+            else
+            {
                 m_vel *= -0.1;
                 m_rot.y += 180.0F;
                 m_rotPrev.y += 180.0F;
                 m_flightTime = 0;
             }
         }
-        else {
+        else
+        {
             m_tilePos = var3.m_tilePos;
             m_lastTile = m_pLevel->getTile(m_tilePos);
             m_vel = var3.m_hitPos - m_pos;
@@ -170,35 +174,31 @@ void Arrow::tick()
     var17 = Mth::sqrt(m_vel.x * m_vel.x + m_vel.z * m_vel.z);
     m_rot.y = (float)(Mth::atan2(m_vel.x, m_vel.z) * 180.0 / M_PI);
 
-    for (m_rot.x = (float)(Mth::atan2(m_vel.y, (double)var17) * 180.0 / M_PI); m_rot.x - m_rotPrev.x < -180.0F; m_rotPrev.x -= 360.0F) {
+    for (m_rot.x = (float)(Mth::atan2(m_vel.y, var17) * 180.0 / M_PI); m_rot.x - m_rotPrev.x < -180.0F; m_rotPrev.x -= 360.0F) {
     }
 
-    while (m_rot.x - m_rotPrev.x >= 180.0F) {
+    while (m_rot.x - m_rotPrev.x >= 180.0F)
         m_rotPrev.x += 360.0F;
-    }
 
-    while (m_rot.y - m_rotPrev.y < -180.0F) {
+    while (m_rot.y - m_rotPrev.y < -180.0F)
         m_rotPrev.y -= 360.0F;
-    }
 
-    while (m_rot.y - m_rotPrev.y >= 180.0F) {
+    while (m_rot.y - m_rotPrev.y >= 180.0F)
         m_rotPrev.y += 360.0F;
-    }
 
     m_rot.x = m_rotPrev.x + (m_rot.x - m_rotPrev.x) * 0.2F;
     m_rot.y = m_rotPrev.y + (m_rot.y - m_rotPrev.y) * 0.2F;
     float var18 = 0.99F;
-    var10 = 0.03F;
-    if (wasInWater()) {
-        for (int var19 = 0; var19 < 4; ++var19) {
+    if (wasInWater())
+    {
+        for (int var19 = 0; var19 < 4; ++var19)
             m_pLevel->addParticle("bubble", m_pos - (m_vel * 0.25), m_vel);
-        }
 
         var18 = 0.8F;
     }
 
     m_vel *= var18;
-    m_vel.y -= var10;
+    m_vel.y -= 0.03;
     setPos(m_pos);
 }
 

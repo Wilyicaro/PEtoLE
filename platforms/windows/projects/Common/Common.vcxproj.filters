@@ -89,6 +89,9 @@
     <ClCompile Include="$(MC_ROOT)\source\common\EndTag.cpp">
       <Filter>Source Files\Tag</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\common\ProgressListener.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\common\CThread.hpp">
@@ -162,6 +165,9 @@
     </ClInclude>
     <ClInclude Include="$(MC_ROOT)\source\common\IOUtil.hpp">
       <Filter>Header Files\Tag</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\common\ProgressListener.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -35,7 +35,7 @@ public:
 	Screen();
 	virtual ~Screen();
 
-	void init(Minecraft*, int, int);
+	virtual void init(Minecraft*, int, int);
 	void updateTabButtonSelection();
 	void setSize(int width, int height);
 	void onRender(int mouseX, int mouseY, float f);

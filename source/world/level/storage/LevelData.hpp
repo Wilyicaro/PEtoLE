@@ -22,9 +22,12 @@ private:
 	int64_t m_time;
 	int64_t m_lastPlayed;
 	int64_t m_sizeOnDisk;
-	int field_1C;
-	int m_storageVersion;
-	int m_generatorVersion;
+	int m_version;
+	int m_dimension;
+	int m_rainTime;
+	bool m_bRaining;
+	int m_thunderTime;
+	bool m_bThundering;
 	std::string m_levelName;
 
 private:
@@ -34,14 +37,13 @@ private:
 public:
 
 	std::shared_ptr<CompoundTag> m_LocalPlayerData = nullptr;
-	int m_nPlayers;
 
 	LevelData() { _init(); }
 	LevelData(int64_t seed, const std::string& name, int storageVersion) { _init(seed, storageVersion, name); }
 
 
 	void deserialize(std::shared_ptr<CompoundTag> tag);
-	std::shared_ptr<CompoundTag> serialize();
+	std::shared_ptr<CompoundTag> serialize() const;
 
 	/* Getters & Setters */
 
@@ -63,14 +65,12 @@ public:
 
 	void setSpawn(const TilePos& pos) { m_spawnPos = pos; }
 
-	int getGeneratorVersion() const { return m_generatorVersion; }
-	void setGeneratorVersion(int generatorVersion) { m_generatorVersion = generatorVersion; }
+	int getDimension() const { return m_dimension; }
 
 	int64_t getLastPlayed() const { return m_lastPlayed; }
 
-	// inlined in 0.1.0 demo
-	int getStorageVersion() const { return m_storageVersion; }
-	void setStorageVersion(int storageVersion) { m_storageVersion = storageVersion; }
+	int getVersion() const { return m_version; }
+	void setVersion(int version) { m_version = version; }
 
 	GameType getGameType() const;
 	void setGameType(GameType gameType) { /* Empty in 0.2.1 */ }
@@ -81,6 +81,18 @@ public:
 
 	std::string getLevelName() const { return m_levelName; }
 	void setLevelName(const std::string& name) { m_levelName = name; }
+
+	bool isThundering() const { return m_bThundering; }
+	void setThundering(bool thunder) { m_bThundering = thunder; }
+
+	int getThunderTime() const { return m_thunderTime; }
+	void setThunderTime(int time) { m_thunderTime = time; }
+
+	bool isRaining() const { return m_bRaining; }
+	void setRaining(bool raining) { m_bRaining = raining; }
+
+	int getRainTime() const { return m_rainTime; }
+	void setRainTime(int time) { m_rainTime = time; }
 
 	void setLoadedPlayerTo(Player* player);
 };

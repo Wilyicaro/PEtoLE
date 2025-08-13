@@ -48,5 +48,5 @@ void SynchedEntityData::_resizeToContain(DataID id)
 
 bool SynchedEntityData::hasData(DataID id) const
 {
-    return id <= m_itemsArray.size() && m_itemsArray[id] != nullptr;
+    return id < m_itemsArray.size() && m_itemsArray[id] != nullptr;
 }

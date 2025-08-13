@@ -82,6 +82,8 @@ public:
 	void _fireAppFocusGained();
 	void _fireAppTerminated();
 
+	virtual void swapBuffers();
+
 	virtual bool hasFileSystemAccess();
 	// Also add this to allow dynamic patching.
 	virtual std::string getPatchData();

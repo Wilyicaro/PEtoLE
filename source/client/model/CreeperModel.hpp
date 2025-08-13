@@ -12,7 +12,7 @@
 class CreeperModel : public Model
 {
 public:
-	CreeperModel();
+	CreeperModel(float = 0.0f);
 	~CreeperModel();
 	void render(float, float, float, float, float, float) override;
 	void setupAnim(float, float, float, float, float, float) override;

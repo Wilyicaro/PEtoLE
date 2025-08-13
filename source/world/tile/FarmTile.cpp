@@ -71,7 +71,7 @@ bool FarmTile::isNearWater(Level* level, const TilePos& pos)
 		{
 			for (waterPos.z = pos.z - 4; waterPos.z <= pos.z + 4; waterPos.z++)
 			{
-				if (level->getMaterial(pos) == Material::water)
+				if (level->getMaterial(waterPos) == Material::water)
 					return true;
 			}
 		}
@@ -99,7 +99,7 @@ void FarmTile::stepOn(Level* level, const TilePos& pos, Entity* pEnt)
 
 void FarmTile::tick(Level* level, const TilePos& pos, Random* random)
 {
-	if (random->nextInt(5) != 0)
+	if (level->m_bIsOnline || random->nextInt(5) != 0)
 		return;
 
 	if (isNearWater(level, pos))
@@ -110,7 +110,7 @@ void FarmTile::tick(Level* level, const TilePos& pos, Random* random)
 	{
 		int data = level->getData(pos);
 
-		if (data < 0)
+		if (data > 0)
 			level->setData(pos, data - 1);
 		else if (!isUnderCrops(level, pos))
 			level->setTile(pos, Tile::dirt->m_ID);

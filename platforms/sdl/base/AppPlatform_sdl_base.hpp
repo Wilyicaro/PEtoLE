@@ -36,6 +36,7 @@ public:
 	void setMouseDiff(int x, int y);
 	void getMouseDiff(int& x, int& y) override;
 	void clearDiff() override;
+	void swapBuffers() override;
 
 	// Also add these to allow proper text input within the game.
 	bool shiftPressed() override;
@@ -62,6 +63,7 @@ public:
 	void handleKeyEvent(int key, uint8_t state);
 	void handleButtonEvent(SDL_JoystickID controllerIndex, uint8_t button, uint8_t state);
 	void handleControllerAxisEvent(SDL_JoystickID controllerIndex, uint8_t axis, int16_t value);
+
 private:
 	SDL_Window *_window;
 	SDL_GameController* _controller;

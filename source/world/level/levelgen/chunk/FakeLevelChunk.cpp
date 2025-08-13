@@ -3,7 +3,7 @@
 
 FakeLevelChunk::FakeLevelChunk(Level* pLevel, TileID* pBlockData, const ChunkPos& pos, ContentType content) : LevelChunk(pLevel, pBlockData, pos)
 {
-	m_bFakeChunk = true;
+	m_bDontSave = true;
 	contentType = content;
 }
 

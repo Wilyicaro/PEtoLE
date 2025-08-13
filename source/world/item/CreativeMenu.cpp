@@ -1,11 +1,13 @@
 #include "CreativeMenu.hpp"
 #include "Slot.hpp"
+#include "world/tile/Sapling.hpp"
+#include "world/tile/RecordPlayerTile.hpp"
 
 CreativeMenu::CreativeMenu(Container* inventory, Container* container)
     : m_container(container)
 {
 
-	Tile* var2[] = {Tile::cobblestone, Tile::stone, Tile::diamondOre, Tile::goldOre, Tile::ironOre, Tile::coalOre, Tile::lapisOre, Tile::redstoneOre, Tile::clay, Tile::diamondBlock, Tile::goldBlock, Tile::ironBlock, Tile::bedrock, Tile::lapisBlock, Tile::brick, Tile::mossStone, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::obsidian, Tile::netherrack, Tile::soulSand, Tile::glowstone, Tile::treeTrunk, Tile::treeTrunk, Tile::treeTrunk, Tile::leaves, Tile::dirt, Tile::grass, Tile::sand, Tile::sandStone, Tile::gravel, Tile::web, Tile::wood, Tile::sapling, Tile::sapling, Tile::sapling, Tile::deadBush, Tile::sponge, Tile::ice, Tile::snow, Tile::flower, Tile::rose, Tile::mushroom1, Tile::mushroom2, Tile::reeds, Tile::cactus, Tile::pumpkin, Tile::pumpkinLantern, Tile::chest, Tile::craftingTable, Tile::glass, Tile::tnt, Tile::bookshelf, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, /*Tile::dispenser,*/ Tile::furnace, /*Tile::noteblock, Tile::jukebox, Tile::stickyPiston, Tile::piston,*/ Tile::fence, Tile::ladder, Tile::rail, Tile::poweredRail, Tile::detectorRail, Tile::torch, Tile::stairsWood, Tile::stairsStone, Tile::lever, /*Tile::stonePressurePlate, Tile::woodPressurePlate,*/ Tile::redstoneTorchLit, Tile::button, Tile::cake, /*Tile::trapdoor*/};
+	Tile* var2[] = {Tile::cobblestone, Tile::stone, Tile::diamondOre, Tile::goldOre, Tile::ironOre, Tile::coalOre, Tile::lapisOre, Tile::redstoneOre, Tile::clay, Tile::diamondBlock, Tile::goldBlock, Tile::ironBlock, Tile::bedrock, Tile::lapisBlock, Tile::brick, Tile::mossStone, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::obsidian, Tile::netherrack, Tile::soulSand, Tile::glowstone, Tile::treeTrunk, Tile::treeTrunk, Tile::treeTrunk, Tile::leaves, Tile::dirt, Tile::grass, Tile::sand, Tile::sandStone, Tile::gravel, Tile::web, Tile::wood, Tile::sapling, Tile::sapling, Tile::sapling, Tile::deadBush, Tile::sponge, Tile::ice, Tile::snow, Tile::flower, Tile::rose, Tile::mushroom1, Tile::mushroom2, Tile::reeds, Tile::cactus, Tile::pumpkin, Tile::pumpkinLantern, Tile::chest, Tile::craftingTable, Tile::glass, Tile::tnt, Tile::bookshelf, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::dispenser, Tile::furnace, Tile::musicBlock, Tile::recordPlayer, /*Tile::stickyPiston, Tile::piston,*/ Tile::fence, Tile::ladder, Tile::rail, Tile::poweredRail, Tile::detectorRail, Tile::torch, Tile::stairsWood, Tile::stairsStone, Tile::lever, Tile::stonePressurePlate, Tile::woodPressurePlate, Tile::redstoneTorchLit, Tile::button, Tile::cake, Tile::trapDoor};
 	int var3 = 0;
 	int var4 = 0;
 	int var5 = 0;
@@ -14,21 +16,17 @@ CreativeMenu::CreativeMenu(Container* inventory, Container* container)
 
 
 	int var9;
-	for (Tile* tile : var2) {
-
+	for (Tile* tile : var2)
+	{
 		var9 = 0;
-		if (tile == Tile::cloth) {
+		if (tile == Tile::cloth)
 			var9 = var3++;
-		}
-		else if (tile == Tile::stoneSlabHalf) {
+		else if (tile == Tile::stoneSlabHalf)
 			var9 = var4++;
-		}
-		else if (tile == Tile::treeTrunk) {
+		else if (tile == Tile::treeTrunk)
 			var9 = var5++;
-		}
-		else if (tile == Tile::sapling) {
+		else if (tile == Tile::sapling)
 			var9 = var6++;
-		}
 		creativeItems.push_back(std::make_shared<ItemInstance>(tile, 1, var9));
 	}
 
@@ -82,6 +80,7 @@ void CreativeMenu::updateScroll(float scroll)
 	}
 }
 
-bool CreativeMenu::stillValid(Player* player) const {
+bool CreativeMenu::stillValid(Player* player) const
+{
     return true;
 }

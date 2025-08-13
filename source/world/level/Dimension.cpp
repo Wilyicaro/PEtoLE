@@ -7,9 +7,12 @@
  ********************************************************************/
 
 #include "Dimension.hpp"
+#include "HellDimension.hpp"
 #include "world/level/levelgen/chunk/TestChunkSource.hpp"
 #include "world/level/levelgen/chunk/RandomLevelSource.hpp"
 #include "world/level/levelgen/chunk/ChunkCache.hpp"
+#include "storage/ExternalFileLevelStorage.hpp"
+
 
 Dimension* Dimension::getNew(int type)
 {
@@ -17,9 +20,9 @@ Dimension* Dimension::getNew(int type)
 	{
 	case 0:
 		return new Dimension;
-	/*case -1:
-		return new HellDimension;*/
-	default: // type not supported
+	case -1:
+		return new HellDimension;
+	default:
 		return nullptr;
 	}
 }
@@ -64,7 +67,7 @@ float* Dimension::getSunriseColor(float a, float b)
 	return nullptr;
 }
 
-float Dimension::getTimeOfDay(int32_t l, float f)
+float Dimension::getTimeOfDay(int64_t l, float f)
 {
 	int i = int(l % 24000);
 	float f1 = (float(i) + f) / 24000.0f - 0.25f;
@@ -129,8 +132,14 @@ ChunkSource* Dimension::createRandomLevelSource()
 #ifdef MOD_USE_FLAT_WORLD
 	return new TestChunkSource(m_pLevel);
 #else
-	return new RandomLevelSource(m_pLevel, m_pLevel->getSeed(), m_pLevel->getLevelData()->getGeneratorVersion());
+	return new RandomLevelSource(m_pLevel, m_pLevel->getSeed());
 #endif
+}
+
+ChunkStorage* Dimension::createStorage()
+{
+	if (m_ID == 0) return new ExternalFileLevelStorage(m_pLevel->getManager()->m_path);
+	return new ExternalFileLevelStorage(m_ID, m_pLevel->getManager()->m_path);
 }
 
 bool Dimension::isValidSpawn(const TilePos& pos)

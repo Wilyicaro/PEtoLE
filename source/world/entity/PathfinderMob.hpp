@@ -16,8 +16,8 @@ public:
 	PathfinderMob(Level* pLevel);
 
 	virtual Entity* getAttackTarget();
-	virtual void setAttackTarget(Entity*);
-	virtual Entity* findAttackTarget();
+	virtual void setAttackTarget(std::shared_ptr<Entity>);
+	virtual std::shared_ptr<Entity> findAttackTarget();
 	virtual void checkHurtTarget(Entity*, float);
 	virtual void checkCantSeeTarget(Entity*, float);
 	virtual float getWalkTargetValue(const TilePos& pos) const;
@@ -33,8 +33,8 @@ public:
 
 protected:
 	friend class Animal;
-	Entity* m_pAttackTarget;
+	std::shared_ptr<Entity> m_pAttackTarget;
 	bool m_bHoldGround;
-	int field_BA4;
+	int m_ticksRunning;
 	Path m_path;
 };

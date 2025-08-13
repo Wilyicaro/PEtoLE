@@ -29,11 +29,11 @@ void Monster::tick()
 	}
 }
 
-Entity* Monster::findAttackTarget()
+std::shared_ptr<Entity> Monster::findAttackTarget()
 {
-	auto player = m_pLevel->getNearestPlayer(this, 16.0f).get();
+	auto player = m_pLevel->getNearestPlayer(this, 16.0f);
 
-	if (player && canSee(player))
+	if (player && canSee(player.get()))
 	{
 		return player;
 	}
@@ -47,7 +47,7 @@ bool Monster::hurt(Entity* pCulprit, int damage)
 	{
 		if (pCulprit != this)
 		{
-			m_pAttackTarget = pCulprit;
+			m_pAttackTarget = pCulprit ? pCulprit->shared_from_this() : nullptr;
 		}
 		return true;
 	}

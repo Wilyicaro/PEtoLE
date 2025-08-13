@@ -20,10 +20,6 @@ ChunkStorage* MemoryLevelStorage::createChunkStorage(Dimension* pDim)
 	return new MemoryChunkStorage;
 }
 
-void MemoryLevelStorage::saveLevelData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players)
-{
-}
-
 void MemoryLevelStorage::closeAll()
 {
 }

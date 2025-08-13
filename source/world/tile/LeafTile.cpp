@@ -7,6 +7,7 @@
  ********************************************************************/
 
 #include "LeafTile.hpp"
+#include "Sapling.hpp"
 #include "world/level/Level.hpp"
 #include "client/renderer/PatchManager.hpp"
 #include <client/renderer/FoliageColor.hpp>
@@ -46,7 +47,7 @@ int LeafTile::getColor(const LevelSource* levelSource, const TilePos& pos, Facin
 	}
 
 	levelSource->getBiomeSource()->getBiome(pos);
-	return FoliageColor::get(levelSource->getBiomeSource()->temperatures[0], levelSource->getBiomeSource()->downfalls[0]);
+	return FoliageColor::get(levelSource->getBiomeSource()->m_temperatures[0], levelSource->getBiomeSource()->m_downfalls[0]);
 }
 
 int LeafTile::getColor(int data, Facing::Name facing, int texture) const

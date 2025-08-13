@@ -34,7 +34,7 @@ public:
 	virtual void outOfWorld() override;
 	virtual void causeFallDamage(float level) override;
 	virtual void handleEntityEvent(int event) override;
-
+	virtual void rideTick() override;
 	//virtuals
 	virtual void knockback(Entity* pEnt, int a, float x, float z);
 	virtual void die(Entity* pCulprit);
@@ -55,12 +55,12 @@ public:
 	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
 	virtual void lookAt(Entity* pEnt, float, float);
 	virtual bool isLookingAtAnEntity() { return m_pEntLookedAt != nullptr; }
-	virtual Entity* getLookingAt() const { return m_pEntLookedAt; }
+	virtual Entity* getLookingAt() const { return m_pEntLookedAt.get(); }
 	virtual void beforeRemove() { }
 	virtual bool canSpawn();
 	virtual float getAttackAnim(float f) const;
 	virtual Vec3 getPos(float f) const;
-	virtual Vec3 getLookAngle(float f) const { return getViewVector(1.0f); }
+	virtual Vec3 getLookAngle() const override { return getViewVector(1.0f); }
 	virtual Vec3 getViewVector(float f) const;
 	virtual int getMaxSpawnClusterSize() const { return 4; }
 	virtual bool isBaby() const { return false; }
@@ -74,13 +74,17 @@ public:
 	virtual int getMaxHeadXRot() const { return 10; }
 	virtual int getMaxHealth() const { return 10; }
 	virtual float getSoundVolume() const { return 1.0f; }
-	virtual std::string getAmbientSound() const { return ""; }
+	virtual std::string getAmbientSound() { return ""; }
 	virtual std::string getHurtSound() const { return "random.hurt"; }
 	virtual std::string getDeathSound() const { return "random.hurt"; }
 	virtual float getWalkingSpeedModifier() const { return 0.7f; }
+	virtual bool canDespawn() const;
 	virtual void checkDespawn(Mob* nearestMob);
 	virtual void checkDespawn();
 	virtual void swing();
+	virtual bool isSleeping() const { return false; }
+	virtual std::shared_ptr<ItemInstance> getCarriedItem();
+	virtual int getItemIcon(ItemInstance*);
 
 	float rotlerp(float, float, float);
 	void updateAttackAnim();
@@ -91,7 +95,7 @@ public:
 	float field_E4;
 	float m_yBodyRot;
 	float m_yBodyRotO;
-	char m_bInterpolateOnly;
+	bool m_bInterpolateOnly;
 	float m_oAttackAnim;
 	float m_attackAnim;
 	int m_health;
@@ -104,11 +108,11 @@ public:
 	int m_attackTime;
 	float m_oTilt;
 	float m_tilt;
-	int field_120;
+	int m_lookTime;
 	int field_124;
-	float field_128;
+	float m_walkAnimSpeedO;
 	float m_walkAnimSpeed;
-	float field_130;
+	float m_walkAnimPos;
 	Random m_random;
 	int m_noActionTime;
 	Vec2 m_moving;
@@ -119,8 +123,8 @@ public:
 	std::string m_skinUrl;
 	std::string m_texture;
 	int field_B48;
-	float field_B4C;
-	float field_B50;
+	float m_oRun;
+	float m_run;
 	float m_animStep;
 	float m_animStepO;
 	float m_rotOffs;
@@ -133,7 +137,7 @@ public:
 	Vec3 m_lPos;
 	Vec2 m_lRot;
 	int m_lastHurt;
-	Entity* m_pEntLookedAt;
+	std::shared_ptr<Entity> m_pEntLookedAt;
 
 	bool m_bSwinging;
 	int m_swingTime;

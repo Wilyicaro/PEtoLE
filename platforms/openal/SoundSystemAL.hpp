@@ -16,7 +16,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 #include "client/sound/SoundSystem.hpp"
 #include "world/phys/Vec3T.hpp"
@@ -29,9 +29,11 @@ class SoundSystemAL : public SoundSystem
 public:
 	SoundSystemAL();
 	~SoundSystemAL();
-	virtual bool isAvailable();
+	virtual bool isAvailable() override;
 	void update();
-	virtual void playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch);
+	virtual void stop(const std::string& sound) override;
+	virtual bool playing(const std::string& sound) override;
+	virtual void playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch) override;
 
 	virtual void setListenerPos(float x, float y, float z);
 	virtual void setListenerAngle(float yaw, float pitch);
@@ -40,6 +42,14 @@ public:
     virtual void stopEngine();
     
 private:
+	struct SoundSource {
+		ALuint m_id;
+		std::string m_name;
+		SoundSource(ALuint id, std::string name) : m_id(id), m_name(name)
+		{
+		}
+	};
+
 	void delete_sources();
 	void delete_buffers();
 	ALuint get_buffer(const SoundDesc& sound);
@@ -47,9 +57,9 @@ private:
 	ALCdevice *_device;
 	ALCcontext *_context;
 	bool _initialized;
-	std::vector<ALuint> _sources;
-	std::vector<ALuint> _sources_idle;
-	std::map<void *, ALuint> _buffers;
+	std::vector<SoundSource> m_sources;
+	std::vector<ALuint> m_sources_idle;
+	std::unordered_map<void*, ALuint> m_buffers;
 
 	Vec3 _lastListenerPos;
     float _listenerVolume;

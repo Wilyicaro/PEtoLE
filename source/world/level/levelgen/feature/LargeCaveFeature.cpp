@@ -1,16 +1,20 @@
 #include "LargeCaveFeature.hpp"
 
+LargeCaveFeature::LargeCaveFeature(bool isNether) : m_bIsNether(isNether)
+{
+}
+
 void LargeCaveFeature::addFeature(Level* level, int ax, int az, int x, int z, TileID* tiles, int unk)
 {
-    int x1 = m_random.nextInt(m_random.nextInt(m_random.nextInt(40) + 1) + 1);
+    int x1 = m_random.nextInt(m_random.nextInt(m_random.nextInt(m_bIsNether ? 10 : 40) + 1) + 1);
 
-    if (m_random.nextInt(15) != 0)
+    if (m_random.nextInt(m_bIsNether ? 5 : 15) != 0)
         x1 = 0;
 
     for (int i = 0; i < x1; i++)
     {
         real rx = 16 * ax + m_random.nextInt(16);
-        real ry = m_random.nextInt(m_random.nextInt(120) + 8);
+        real ry = m_random.nextInt(m_bIsNether ? 128 : m_random.nextInt(120) + 8);
         real rz = 16 * az + m_random.nextInt(16);
 
         int nTunnels = 1;
@@ -25,7 +29,7 @@ void LargeCaveFeature::addFeature(Level* level, int ax, int az, int x, int z, Ti
             float ang1 = 2.0f * float(M_PI) * m_random.nextFloat();
             float x2 = (2.0f * (m_random.nextFloat() - 0.5f)) / 8.0f;
             float step = (2.0f * m_random.nextFloat()) + m_random.nextFloat();
-            addTunnel(x, z, tiles, rx, ry, rz, step, ang1, x2, 0, 0, 1.0f);
+            addTunnel(x, z, tiles, rx, ry, rz, m_bIsNether ? 2 * step : step, ang1, x2, 0, 0, m_bIsNether ? 0.5f : 1.0f);
         }
     }
 }
@@ -147,8 +151,9 @@ void LargeCaveFeature::addTunnel(int x, int z, TileID* tiles, real rx, real ry, 
                             int v42 = k + ((j + 16 * i) << 7);
                             if (k >= 0 && k <= 127)
                             {
-                                if (tiles[v42] == Tile::water->m_ID || tiles[v42] == Tile::calmWater->m_ID)
-                                    v67 = 1;
+                                if (((tiles[v42] == Tile::water->m_ID || tiles[v42] == Tile::calmWater->m_ID) && !m_bIsNether) ||
+                                    ((tiles[v42] == Tile::lava->m_ID || tiles[v42] == Tile::calmLava->m_ID) && m_bIsNether))
+                                    v67 = true;
                                 if (v49 - 1 != k && i != v51 && v50 - 1 != i && j != v47 && v46 - 1 != j)
                                     k = v49;
                             }
@@ -165,7 +170,7 @@ void LargeCaveFeature::addTunnel(int x, int z, TileID* tiles, real rx, real ry, 
                             real v38 = ((real(m + 16 * z) + 0.5f) - rz) / rad;
                             int v37 = v48 + ((m + 16 * l) << 7);
                             bool v66 = 0;
-                            if ((v40 * v40) + (v38 * v38) < 1.0f)
+                            if (m_bIsNether || (v40 * v40) + (v38 * v38) < 1.0f)
                             {
                                 for (int n = v48 - 1; n >= v49; --n)
                                 {
@@ -174,16 +179,17 @@ void LargeCaveFeature::addTunnel(int x, int z, TileID* tiles, real rx, real ry, 
                                         && v40 * v40 + v35 * v35 + v38 * v38 < 1.0f)
                                     {
                                         TileID v34 = tiles[v37];
-                                        if (Tile::grass->m_ID == v34)
+                                        if (!m_bIsNether && Tile::grass->m_ID == v34)
                                             v66 = 1;
-                                        if (Tile::stone->m_ID == v34 ||
+                                        if ((Tile::stone->m_ID == v34 && !m_bIsNether) ||
+                                            (Tile::netherrack->m_ID == v34 && m_bIsNether) ||
                                             Tile::dirt->m_ID == v34 ||
                                             Tile::grass->m_ID == v34)
                                         {
-                                            if (n > 9)
+                                            if (m_bIsNether || n > 9)
                                             {
                                                 tiles[v37] = 0;
-                                                if (v66)
+                                                if (!m_bIsNether && v66)
                                                 {
                                                     if (tiles[v37 - 1] == Tile::dirt->m_ID)
                                                         tiles[v37 - 1] = Tile::grass->m_ID;

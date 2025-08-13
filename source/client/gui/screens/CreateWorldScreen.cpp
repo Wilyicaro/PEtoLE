@@ -121,8 +121,6 @@ void CreateWorldScreen::buttonClicked(Button* pButton)
 		}
 
 		m_pMinecraft->selectLevel(levelUniqueName, levelNickname, seed);
-		m_pMinecraft->hostMultiplayer();
-		m_pMinecraft->setScreen(new ProgressScreen);
 	}
 }
 

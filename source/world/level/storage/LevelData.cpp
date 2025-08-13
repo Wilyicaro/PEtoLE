@@ -10,16 +10,18 @@
 
 #define FORCE_SURVIVAL_MODE (TEST_SURVIVAL_MODE || 0)
 
-void LevelData::_init(int64_t seed, int storageVersion)
+void LevelData::_init(int64_t seed, int version)
 {
 	m_seed = seed;
 	m_time = 0;
 	m_lastPlayed = 0;
 	m_sizeOnDisk = 0;
-	field_1C = 0;
-	m_storageVersion = storageVersion;
-	m_generatorVersion = 1; // pre-0.2.1 versions used storageVersion instead
-	m_nPlayers = -1;
+	m_version = version;
+	m_dimension = 0;
+	m_bThundering = false;
+	m_thunderTime = 0;
+	m_bRaining = false;
+	m_rainTime = 0;
 }
 
 void LevelData::_init(int64_t seed, int storageVersion, const std::string& name)
@@ -36,11 +38,16 @@ void LevelData::deserialize(std::shared_ptr<CompoundTag> tag)
 	m_lastPlayed = tag->getLong("LastPlayed");
 	m_sizeOnDisk = tag->getLong("SizeOnDisk");
 	m_levelName = tag->getString("LevelName");
-	m_storageVersion = tag->getInt("version");
+	m_version = tag->getInt("version");
 	m_LocalPlayerData = tag->getCompound("Player");
+	m_rainTime = tag->getInt("rainTime");
+	m_bRaining = tag->getBoolean("raining");
+	m_thunderTime = tag->getInt("thunderTime");
+	m_bThundering = tag->getBoolean("thundering");
+	if (m_LocalPlayerData) m_dimension = m_LocalPlayerData->getInt("Dimension");
 }
 
-std::shared_ptr<CompoundTag> LevelData::serialize()
+std::shared_ptr<CompoundTag> LevelData::serialize() const
 {
 	auto tag = std::make_shared<CompoundTag>();
 	tag->putLong("RandomSeed", m_seed);
@@ -52,6 +59,10 @@ std::shared_ptr<CompoundTag> LevelData::serialize()
 	tag->putLong("SizeOnDisk", m_sizeOnDisk);
 	tag->putString("LevelName", m_levelName);
 	tag->putInt("version", 19132);
+	tag->putInt("rainTime", m_rainTime);
+	tag->putBoolean("raining", m_bRaining);
+	tag->putInt("thunderTime", m_thunderTime);
+	tag->putBoolean("thundering", m_bThundering);
 	if (m_LocalPlayerData) tag->put("Player", m_LocalPlayerData);
 	return tag;
 }
@@ -63,5 +74,9 @@ GameType LevelData::getGameType() const
 
 void LevelData::setLoadedPlayerTo(Player* player)
 {
-	if (m_LocalPlayerData) player->load(m_LocalPlayerData);
+	if (m_LocalPlayerData) 
+	{
+		player->load(m_LocalPlayerData);
+		m_LocalPlayerData = nullptr;
+	}
 }

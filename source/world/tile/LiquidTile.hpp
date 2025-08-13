@@ -44,7 +44,7 @@ public:
 	static float getSlopeAngle(const LevelSource*, const TilePos& pos, const Material* pMtl);
 
 	// @NOTE: This is inlined in minecraftcpp
-	static float getWaterVolume(int data)
+	static float getHeight(int data)
 	{
 		if (data >= 8)
 			data = 0;

@@ -129,7 +129,7 @@ void ChestTile::onRemove(Level* level, const TilePos& pos){
                 }
 
                 var7->m_count -= var11;
-                auto var12 = std::make_shared<ItemEntity>(level, pos.offset(var8, var9, var10), new ItemInstance(var7->m_itemID, var11, var7->getAuxValue()));
+                auto var12 = std::make_shared<ItemEntity>(level, pos.offset(var8, var9, var10), std::make_shared<ItemInstance>(var7->m_itemID, var11, var7->getAuxValue()));
                 float var13 = 0.05F;
                 var12->m_vel.x = (double)((float)m_chestRandom.nextGaussian() * var13);
                 var12->m_vel.y = (double)((float)m_chestRandom.nextGaussian() * var13 + 0.2F);

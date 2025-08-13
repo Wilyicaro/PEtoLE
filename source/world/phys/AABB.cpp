@@ -170,6 +170,12 @@ bool AABB::intersect(const AABB& other) const
 		&& min.z < other.max.z;
 }
 
+real AABB::getSize() const
+{
+	Vec3 diff = max - min;
+	return (diff.x + diff.y + diff.z) / 3.0;
+}
+
 void AABB::move(const Vec3& vec)
 {
 	min += vec;

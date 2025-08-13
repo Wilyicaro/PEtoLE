@@ -11,7 +11,3 @@
 LevelStorage::~LevelStorage()
 {
 }
-
-void LevelStorage::savePlayerData(LevelData* levelData, std::vector<std::shared_ptr<Player>>& players)
-{
-}

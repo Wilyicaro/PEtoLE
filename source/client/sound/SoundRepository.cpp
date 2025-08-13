@@ -35,7 +35,7 @@ bool SoundRepository::get(const std::string& name, SoundDesc& sd)
 		return false;
 	}
 
-	int index = Mth::random(int(iter->second.size()));
+	int index = m_random.nextInt(int(iter->second.size()));
 
 	sd = iter->second[index];
 

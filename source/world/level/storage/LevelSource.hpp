@@ -25,6 +25,6 @@ public:
 	virtual Material* getMaterial(const TilePos& pos) const = 0;
 	virtual bool isSolidTile(const TilePos& pos) const = 0;
 	virtual BiomeSource* getBiomeSource() const = 0;
-	virtual std::shared_ptr<TileEntity> getTileEntity(const TilePos& pos) const  = 0;
+	virtual std::shared_ptr<TileEntity> getTileEntity(const TilePos& pos) const = 0;
 };
 

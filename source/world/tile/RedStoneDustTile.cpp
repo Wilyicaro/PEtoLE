@@ -301,14 +301,14 @@ bool RedStoneDustTile::shouldConnectTo(const LevelSource* level, const TilePos& 
     else if (var4 == 0) {
         return false;
     }
-    else 
-        return Tile::tiles[var4]->isSignalSource();
-    //else if (var4 != Tile::redstoneRepeaterIdle->m_ID && var4 != Tile::redstoneRepeaterActive->m_ID) {
-    //    return false;
-    //}
-    //else {
-    //    return side == repeaterConnect[level->getData(pos) & 3];
-    //}
+    else if (Tile::tiles[var4]->isSignalSource())
+        return true;
+    else if (var4 != Tile::repeater->m_ID && var4 != Tile::repeaterLit->m_ID) {
+        return false;
+    }
+    else {
+        return side == repeaterConnect[level->getData(pos) & 3];
+    }
 }
 
 void RedStoneDustTile::checkSignalUpdates(Level* level, const TilePos& pos)

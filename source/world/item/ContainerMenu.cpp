@@ -44,7 +44,7 @@ void ContainerMenu::broadcastChanges() {
 void ContainerMenu::removed(Player* player) {
     Inventory* inv = player->m_pInventory;
     if (inv->getCarried()) {
-        player->drop(inv->getCarried().get());
+        player->drop(inv->getCarried());
         inv->setCarried(nullptr);
     }
 }
@@ -75,12 +75,12 @@ std::shared_ptr<ItemInstance> ContainerMenu::clicked(int slotIndex, int mouseBut
         if (slotIndex == -999) {
             if (inv->getCarried()) {
                 if (mouseButton == 0) {
-                    player->drop(inv->getCarried().get());
+                    player->drop(inv->getCarried());
                     inv->setCarried(nullptr);
                 }
                 else if (mouseButton == 1) {
                     std::shared_ptr<ItemInstance> single = inv->getCarried()->remove(1);
-                    player->drop(single.get());
+                    player->drop(single);
                     if (!inv->getCarried()->m_count) {
                         inv->setCarried(nullptr);
                     }

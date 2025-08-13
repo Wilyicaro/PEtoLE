@@ -8,23 +8,15 @@
 
 #pragma once
 
+#include <unordered_map>
 #include "EntityRenderer.hpp"
-#include "HumanoidMobRenderer.hpp"
-#include "TripodCameraRenderer.hpp"
-#include "TntRenderer.hpp"
-#include "ItemRenderer.hpp"
-#include "FallingTileRenderer.hpp"
-#include "PigRenderer.hpp"
-#include "SheepRenderer.hpp"
-#include "CowRenderer.hpp"
-#include "ChickenRenderer.hpp"
-#include "CreeperRenderer.hpp"
-#include "ArrowRenderer.hpp"
+#include "world/phys/Vec2.hpp"
 
 class Minecraft;
 class Font;
 class Level;
 class Entity;
+class EntityType;
 class Textures;
 class ItemInHandRenderer;
 
@@ -32,10 +24,11 @@ class EntityRenderDispatcher
 {
 public:
 	EntityRenderDispatcher();
-	float distanceToSqr(const Vec3& pos);
+	float distanceToSqr(const Vec3& pos) const;
 	Font* getFont();
+	void registerRenderer(EntityType*, EntityRenderer*);
 	EntityRenderer* getRenderer(Entity* pEnt);
-	EntityRenderer* getRenderer(int renderType);
+	EntityRenderer* getRenderer(const EntityType*);
 	void onGraphicsReset();
 	void prepare(Level*, Textures*, Font*, std::shared_ptr<Mob>, Options*, float);
 	void render(Entity*, float);
@@ -46,21 +39,8 @@ public:
 	static EntityRenderDispatcher* getInstance();
 
 public:
+	std::unordered_map<const EntityType*, EntityRenderer*> m_renderers;
 	ItemInHandRenderer* m_pItemInHandRenderer;
-	HumanoidMobRenderer m_HumanoidMobRenderer;
-	PigRenderer m_PigRenderer;
-	SheepRenderer m_SheepRenderer;
-	CowRenderer m_CowRenderer;
-	ChickenRenderer m_ChickenRenderer;
-	TntRenderer m_TntRenderer;
-	ArrowRenderer m_arrowRenderer;
-	ItemRenderer m_ItemRenderer;
-	CreeperRenderer m_CreeperRenderer;
-	//SpiderRenderer m_SpiderRenderer;
-	//SkeletonRenderer m_SkeletonRenderer;
-	//ZombieRenderer m_ZombieRenderer;
-	//SheepFurRenderer m_SheepFurRenderer;
-	TripodCameraRenderer m_CameraRenderer;
 	Textures* m_pTextures;
 	Level* m_pLevel;
 	Minecraft* m_pMinecraft;
@@ -70,9 +50,6 @@ public:
 	Vec3 m_pos;
 	Font* m_pFont;
 
-#ifdef ENH_ALLOW_SAND_GRAVITY
-	FallingTileRenderer m_FallingTileRenderer;
-#endif
 
 	static EntityRenderDispatcher* instance;
 	static Vec3 off;

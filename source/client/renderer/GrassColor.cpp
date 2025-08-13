@@ -18,5 +18,5 @@ uint32_t GrassColor::get(double x, double y)
 uint32_t GrassColor::get(const LevelSource* levelSource, const TilePos& pos)
 {
 	levelSource->getBiomeSource()->getBiome(pos);
-	return get(levelSource->getBiomeSource()->temperatures[0], levelSource->getBiomeSource()->downfalls[0]);
+	return get(levelSource->getBiomeSource()->m_temperatures[0], levelSource->getBiomeSource()->m_downfalls[0]);
 }

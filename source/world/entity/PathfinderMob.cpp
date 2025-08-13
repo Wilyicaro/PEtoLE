@@ -14,20 +14,20 @@ PathfinderMob::PathfinderMob(Level* pLevel) : Mob(pLevel)
 {
 	m_pAttackTarget = nullptr;
 	m_bHoldGround = false;
-	field_BA4 = 0;
+	m_ticksRunning = 0;
 }
 
 Entity* PathfinderMob::getAttackTarget()
 {
-	return m_pAttackTarget;
+	return m_pAttackTarget.get();
 }
 
-void PathfinderMob::setAttackTarget(Entity* pEnt)
+void PathfinderMob::setAttackTarget(std::shared_ptr<Entity> pEnt)
 {
 	m_pAttackTarget = pEnt;
 }
 
-Entity* PathfinderMob::findAttackTarget()
+std::shared_ptr<Entity> PathfinderMob::findAttackTarget()
 {
 	return nullptr;
 }
@@ -84,7 +84,7 @@ float PathfinderMob::getWalkingSpeedModifier() const
 {
 	float mod = Mob::getWalkingSpeedModifier();
 
-	if (field_BA4 > 0)
+	if (m_ticksRunning > 0)
 		mod *= 2.0f;
 
 	return mod;
@@ -100,8 +100,8 @@ bool PathfinderMob::canSpawn()
 
 void PathfinderMob::updateAi()
 {
-	if (field_BA4 > 0)
-		field_BA4--;
+	if (m_ticksRunning > 0)
+		m_ticksRunning--;
 
 	m_bHoldGround = shouldHoldGround();
 
@@ -115,24 +115,24 @@ void PathfinderMob::updateAi()
 		{
 			float dist = m_pAttackTarget->distanceTo(this);
 
-			if (canSee(m_pAttackTarget))
-				checkHurtTarget(m_pAttackTarget, dist);
+			if (canSee(m_pAttackTarget.get()))
+				checkHurtTarget(m_pAttackTarget.get(), dist);
 			else
-				checkCantSeeTarget(m_pAttackTarget, dist);
+				checkCantSeeTarget(m_pAttackTarget.get(), dist);
 		}
 	}
 	else
 	{
 		m_pAttackTarget = findAttackTarget();
 		if (m_pAttackTarget)
-			m_pLevel->findPath(&m_path, this, m_pAttackTarget, 16.0f);
+			m_pLevel->findPath(&m_path, this, m_pAttackTarget.get(), 16.0f);
 	}
 
 	if (!m_bHoldGround && m_pAttackTarget && (m_path.empty() || m_random.nextInt(20) != 0))
 	{
-		m_pLevel->findPath(&m_path, this, m_pAttackTarget, 16.0f);
+		m_pLevel->findPath(&m_path, this, m_pAttackTarget.get(), 16.0f);
 	}
-	else if (!m_bHoldGround && ((m_path.empty() && m_random.nextInt(180) == 0) || field_BA4 > 0 || m_random.nextInt(120) == 0))
+	else if (!m_bHoldGround && ((m_path.empty() && m_random.nextInt(180) == 0) || m_ticksRunning > 0 || m_random.nextInt(120) == 0))
 	{
 		if (m_noActionTime < 100)
 			findRandomStrollLocation();
@@ -208,7 +208,7 @@ void PathfinderMob::updateAi()
 	}
 
 	if (m_pAttackTarget)
-		lookAt(m_pAttackTarget, MAX_TURN, MAX_TURN);
+		lookAt(m_pAttackTarget.get(), MAX_TURN, MAX_TURN);
 
 	// if we hit a wall while moving
 	if (m_bHorizontalCollision && !isPathFinding())

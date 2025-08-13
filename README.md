@@ -3,6 +3,12 @@
 This project aims to port all the features from Minecraft Java Edition b1.7.3 to the early Minecraft: Pocket Edition, forked from the [ReMinecraftPE](https://github.com/ReMinecraftPE/)
 My thanks to the contributors of ReMinecraftPE, without them this project would not be possible
 
+## TO-DO List
+* Make screens accurate, like Options and Select World screens
+* Completely functional integrated servers
+* Optimization in general, mainly RAM Usage
+* Audio Streaming Implementation (helps with less RAM Usage and faster initial loading)
+
 ## FAQ
 
 **Why PEtoLE?**
@@ -14,6 +20,11 @@ Eventually there will be a branch that lives up to this name, but one step at a 
 **Why is the goal b1.7.3 instead of b1.6.6, since TU0 is based on it?**
 
 Well, basically the difference between these two versions is just the scissors, pistons, textures and bug fixes, so since they are minimal, it makes more sense to have the most popular version as the goal.
+
+**Why only these things in the TO-DO List?**
+
+It may not seem like it, but most of the features from b1.6.6 have already been added! Like all the blocks, items, entities, the Nether, and more.
+
 
 Currently the platforms originally from the ReMinecraftPE are:
 * Windows 11 (older versions have not been tested, most of the newer ones should work)

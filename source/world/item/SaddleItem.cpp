@@ -10,7 +10,7 @@ SaddleItem::SaddleItem(int id) : Item(id)
 
 void SaddleItem::interactEnemy(ItemInstance* instance, Mob* mob)
 {
-    if (mob->getType() == *EntityType::pig) {
+    if (mob->getType() == EntityType::pig) {
         Pig* pig = (Pig*)mob;
         if (!pig->hasSaddle()) {
             pig->setSaddle(true);

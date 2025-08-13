@@ -19,6 +19,8 @@ public:
 
 	static constexpr const Name OPPOSITE[6] = { UP, DOWN, SOUTH, NORTH, EAST, WEST };
 
+	static constexpr const Name CLOCKWISE[6] = { UP, DOWN, NORTH, EAST, WEST, SOUTH };
+
 	static constexpr const Name HORIZONTAL[4] = { NORTH, SOUTH, WEST, EAST };
 
 	static constexpr const Name VERTICAL[4] = { DOWN, UP };

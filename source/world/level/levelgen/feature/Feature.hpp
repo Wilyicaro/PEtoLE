@@ -112,6 +112,16 @@ private:
 	int m_ID;
 };
 
+class HellSpringFeature : public Feature
+{
+public:
+	HellSpringFeature(int id);
+	bool place(Level*, Random*, const TilePos& pos) override;
+
+private:
+	int m_ID;
+};
+
 class LakeFeature : public Feature
 {
 public:
@@ -156,6 +166,13 @@ private:
 	int m_count;
 };
 
+class HellFireFeature : public Feature
+{
+public:
+	bool place(Level*, Random*, const TilePos& pos) override;
+};
+
+
 class PumpkinFeature : public Feature
 {
 public:
@@ -169,6 +186,12 @@ public:
 };
 
 class ReedsFeature : public Feature
+{
+public:
+	bool place(Level*, Random*, const TilePos& pos) override;
+};
+
+class LightGemFeature : public Feature
 {
 public:
 	bool place(Level*, Random*, const TilePos& pos) override;

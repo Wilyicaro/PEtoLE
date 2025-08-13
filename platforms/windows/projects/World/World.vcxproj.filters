@@ -701,9 +701,6 @@
     <ClCompile Include="..\..\..\..\source\world\item\BowItem.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\world\item\SimpleContainer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\source\world\item\CreativeMenu.cpp">
       <Filter>Source Files\Item\Inventory</Filter>
     </ClCompile>
@@ -712,6 +709,183 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\world\item\SeedItem.cpp">
       <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\SimpleContainer.cpp">
+      <Filter>Source Files\Item\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Minecart.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\DetectorRailTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\MinecartItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Boat.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\BoatItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\entity\TileEntityType.cpp">
+      <Filter>Source Files\Tile\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\DispenserTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\entity\DispenserTileEntity.cpp">
+      <Filter>Source Files\Tile\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\TrapMenu.cpp">
+      <Filter>Source Files\Item\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\entity\MusicTileEntity.cpp">
+      <Filter>Source Files\Tile\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\MusicTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\particle\NoteParticle.cpp">
+      <Filter>Source Files\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\particle\WaterDropParticle.cpp">
+      <Filter>Source Files\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\particle\SplashParticle.cpp">
+      <Filter>Source Files\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\BedItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\MobSpawner.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\entity\RecordPlayerTileEntity.cpp">
+      <Filter>Source Files\Tile\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\RecordPlayerTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\RecordItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\PressurePlateTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\TrapDoorTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\entity\SignTileEntity.cpp">
+      <Filter>Source Files\Tile\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\SignItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\PortalTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\chunk\HellRandomLevelSource.cpp">
+      <Filter>Source Files\Level\LevelGen\Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\feature\HellSpringFeature.cpp">
+      <Filter>Source Files\Level\LevelGen\Feature</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\feature\HellFireFeature.cpp">
+      <Filter>Source Files\Level\LevelGen\Feature</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\feature\LightGemFeature.cpp">
+      <Filter>Source Files\Level\LevelGen\Feature</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\storage\LevelManager.cpp">
+      <Filter>Source Files\Level\Storage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\HellDimension.cpp">
+      <Filter>Source Files\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\biome\FixedBiomeSource.cpp">
+      <Filter>Source Files\Level\LevelGen\Biome</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\PortalForcer.cpp">
+      <Filter>Source Files\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\MultiPlayerLevel.cpp">
+      <Filter>Source Files\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\chunk\MultiPlayerChunkCache.cpp">
+      <Filter>Source Files\Level\LevelGen\Chunk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\RepeaterTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\particle\PortalParticle.cpp">
+      <Filter>Source Files\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\particle\BreakingItemParticle.cpp">
+      <Filter>Source Files\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\projectile\Snowball.cpp">
+      <Filter>Source Files\Entity\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\projectile\ThrownEgg.cpp">
+      <Filter>Source Files\Entity\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\SnowballItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\EggItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\PaintingType.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\FlyingMob.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Ghast.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Slime.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Painting.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\PaintingItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\projectile\Fireball.cpp">
+      <Filter>Source Files\Entity\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\projectile\FishingHook.cpp">
+      <Filter>Source Files\Entity\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\FishingRodItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\LightningBolt.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Squid.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Wolf.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Zombie.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Spider.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Skeleton.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\Giant.cpp">
+      <Filter>Source Files\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\entity\PigZombie.cpp">
+      <Filter>Source Files\Entity</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1272,6 +1446,150 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\source\world\item\SeedItem.hpp">
       <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Minecart.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\DetectorRailTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\MinecartItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Boat.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\BoatItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\entity\TileEntityType.hpp">
+      <Filter>Header Files\Tile\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\DispenserTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\entity\DispenserTileEntity.hpp">
+      <Filter>Header Files\Tile\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\TrapMenu.hpp">
+      <Filter>Header Files\Item\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\entity\MusicTileEntity.hpp">
+      <Filter>Header Files\Tile\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\MusicTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\BedItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\entity\RecordPlayerTileEntity.hpp">
+      <Filter>Header Files\Tile\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\RecordPlayerTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\RecordItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\PressurePlateTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\TrapDoorTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\entity\SignTileEntity.hpp">
+      <Filter>Header Files\Tile\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\SignItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\PortalTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\levelgen\chunk\HellRandomLevelSource.hpp">
+      <Filter>Header Files\Level\LevelGen\Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\HellDimension.hpp">
+      <Filter>Header Files\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\storage\LevelManager.hpp">
+      <Filter>Header Files\Level\Storage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\levelgen\biome\FixedBiomeSource.hpp">
+      <Filter>Header Files\Level\LevelGen\Biome</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\PortalForcer.hpp">
+      <Filter>Header Files\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\MultiPlayerLevel.hpp">
+      <Filter>Header Files\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\level\levelgen\chunk\MultiPlayerChunkCache.hpp">
+      <Filter>Header Files\Level\LevelGen\Chunk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\RepeaterTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\projectile\Snowball.hpp">
+      <Filter>Header Files\Entity\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\projectile\ThrownEgg.hpp">
+      <Filter>Header Files\Entity\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\SnowballItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\PaintingType.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\FlyingMob.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Ghast.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Slime.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\projectile\Fireball.hpp">
+      <Filter>Header Files\Entity\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Painting.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\PaintingItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\projectile\FishingHook.hpp">
+      <Filter>Header Files\Entity\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\FishingRodItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\LightningBolt.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Squid.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Wolf.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Zombie.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Spider.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Skeleton.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\Giant.hpp">
+      <Filter>Header Files\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\entity\PigZombie.hpp">
+      <Filter>Header Files\Entity</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

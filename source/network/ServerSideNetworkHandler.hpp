@@ -9,10 +9,11 @@
 #pragma once
 
 #include <map>
+#include <unordered_set>
 #include "NetEventCallback.hpp"
 #include "client/app/Minecraft.hpp"
 #include "RakNetInstance.hpp"
-#include "world/level/LevelListener.hpp"
+#include "network/ServerLevelListener.hpp"
 
 class Minecraft;
 class ServerSideNetworkHandler;
@@ -21,6 +22,7 @@ struct OnlinePlayer
 {
 	std::shared_ptr<Player> m_pPlayer; // The player avatar this online player controls
 	RakNet::RakNetGUID m_guid;
+	std::unordered_set<ChunkPos> m_sentChunks;
 
 	OnlinePlayer(std::shared_ptr<Player> p, const RakNet::RakNetGUID& guid) : m_pPlayer(p), m_guid(guid) {}
 };
@@ -30,7 +32,7 @@ typedef std::map<std::string, CommandFunction> CommandMap;
 typedef std::map<RakNet::RakNetGUID, OnlinePlayer*> OnlinePlayerMap;
 
 // @TODO: Rename to ServerNetworkHandler?
-class ServerSideNetworkHandler : public NetEventCallback, public LevelListener
+class ServerSideNetworkHandler : public NetEventCallback
 {
 private:
 	bool checkPermissions(OnlinePlayer* player);
@@ -54,11 +56,6 @@ public:
 	void handle(const RakNet::RakNetGUID&, PlayerEquipmentPacket*) override;
 	void handle(const RakNet::RakNetGUID&, RequestChunkPacket*) override;
 
-	// Overridden from LevelListener
-	void tileBrightnessChanged(const TilePos& pos) override;
-	void tileChanged(const TilePos& pos) override;
-	void timeChanged(int64_t time) override;
-
 	void allowIncomingConnections(bool b);
 	void displayGameMessage(const std::string&);
 	void sendMessage(const RakNet::RakNetGUID& guid, const std::string&);
@@ -78,15 +75,16 @@ public:
 	void commandSummon (OnlinePlayer*, const std::vector<std::string>&);
 	void commandGamemode(OnlinePlayer*, const std::vector<std::string>&);
 	void commandGive(OnlinePlayer*, const std::vector<std::string>&);
+	void commandToggledownfall(OnlinePlayer*, const std::vector<std::string>&);
 
 public:
 	Minecraft* m_pMinecraft;
-	Level* m_pLevel;
 	RakNetInstance* m_pRakNetInstance;
 	RakNet::RakPeerInterface* m_pRakNetPeer;
 	bool m_bAllowIncoming;
 
 	OnlinePlayerMap m_onlinePlayers;
+	std::unordered_map<int, ServerLevelListener> m_levelListeners;
 	CommandMap m_commands;
 };
 

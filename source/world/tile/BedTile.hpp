@@ -13,7 +13,9 @@ public:
 	void updateShape(const LevelSource* level, const TilePos& pos) override;
 	void updateDefaultShape() override;
 	void neighborChanged(Level* level, const TilePos& pos, TileID tile) override;
-	//int use(Level*, const TilePos& pos, Player*) override;
+	bool use(Level*, const TilePos& pos, Player*) override;
+	int getResource(int data, Random* random) const override;
+	void spawnResources(Level*, const TilePos& pos, int, float) override;
 	static const constexpr int headBlockToFootBlockMap[4][2] = {{0, 1}, {-1, 0}, {0, -1}, {1, 0}};
 	static const constexpr int hiddenFace[4] = {3, 4, 2, 5};
 	static const constexpr int hiddenFaceIndex[4] = {2, 3, 0, 1};
@@ -29,5 +31,6 @@ public:
 	static bool isBedOccupied(int meta) {
 		return (meta & 4) != 0;
 	}
-	static TilePos getNearestEmptyChunkTilePos(const Level* level, const TilePos& pos, int steps);
+	static void setBedOccupied(Level* level, const TilePos& pos, bool);
+	static TilePos getRespawnTilePos(const Level* level, const TilePos& pos, int steps);
 };

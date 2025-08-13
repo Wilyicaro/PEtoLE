@@ -60,7 +60,8 @@ public: // Static Variables
 		* desert,
 		* plains,
 		* iceDesert,
-		* tundra;
+		* tundra,
+		* hell;
 	static Biome* map[4096];
 
 private: // Private Functions
@@ -97,7 +98,14 @@ public:
 class TaigaBiome : public Biome
 {
 public:
+	TaigaBiome();
 	Feature* getTreeFeature(Random*) override;
+};
+
+class HellBiome : public Biome
+{
+public:
+	HellBiome();
 };
 
 class FlatBiome : public Biome

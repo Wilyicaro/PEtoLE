@@ -67,29 +67,33 @@ public:
 	static EntityType* player;
 
 	static EntityType* arrow;
-	//static EntityType* snowball;
+	static EntityType* snowball;
+	static EntityType* thrownEgg;
+	static EntityType* fireball;
+	static EntityType* fishingHook;
+	static EntityType* lightningBolt;
 	static EntityType* item;
-	//static EntityType* painting;
+	static EntityType* painting;
 	static EntityType* mob;
-	//static EntityType* monster;
-	//static EntityType* creeper;
-	//static EntityType* skeleton;
-	//static EntityType* spider;
-	//static EntityType* giant;
-	//static EntityType* zombie;
-	//static EntityType* slime;
-	//static EntityType* monster;
-	//static EntityType* ghast;
-	//static EntityType* pigZombie;
+	static EntityType* monster;
+	static EntityType* creeper;
+	static EntityType* skeleton;
+	static EntityType* spider;
+	static EntityType* giant;
+	static EntityType* zombie;
+	static EntityType* slime;
+	static EntityType* ghast;
+	static EntityType* pigZombie;
 	static EntityType* pig;
 	static EntityType* sheep;
 	static EntityType* cow;
 	static EntityType* chicken;
-	//static EntityType* squid;
+	static EntityType* squid;
+	static EntityType* wolf;
 	static EntityType* primedTnt;
 	static EntityType* fallingTile;
-	//static EntityType* minecart;
-	//static EntityType* boat;
+	static EntityType* minecart;
+	static EntityType* boat;
 
 
 

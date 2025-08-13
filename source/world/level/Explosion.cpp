@@ -72,7 +72,7 @@ void Explosion::explode()
 
 	AABB aabb(m_pos - m_power - 1.0f, m_pos + m_power + 1.0f);
 
-	EntityVector ents = m_pLevel->getEntities(m_pEntity ? m_pEntity->shared_from_this() : nullptr, aabb);
+	EntityVector ents = m_pLevel->getEntities(m_pEntity ? m_pEntity : nullptr, aabb);
 	for (int i = 0; i < ents.size(); i++)
 	{
 		auto& entity = ents.at(i);

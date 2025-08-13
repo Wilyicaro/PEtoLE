@@ -40,7 +40,7 @@ void TripodCameraRenderer::render(Entity* entity, float x, float y, float z, flo
 
 	bindTexture("gui/items.png");
 	//t.begin();
-	//m_renderer.tesselateCrossTexture(&m_tile, 0, -0.5f, -0.5f, -0.5f);
+	//m_renderers.tesselateCrossTexture(&m_tile, 0, -0.5f, -0.5f, -0.5f);
 	m_renderer.renderTile(&m_tile, 0, brightness);
 	//t.draw();
 
