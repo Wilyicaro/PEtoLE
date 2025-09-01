@@ -33,7 +33,7 @@ void Level::init(Dimension* pDimension)
 
 	if (limit != DimensionLimit::ZERO && netherLimit != DimensionLimit::ZERO)
 	{
-		m_netherTravelRatio = Mth::Min(8, int(std::ceilf((limit.m_maxPos.x - limit.m_minPos.x) / float(netherLimit.m_maxPos.x - netherLimit.m_minPos.x))));
+		m_netherTravelRatio = Mth::Min(8, int(std::ceil((limit.m_maxPos.x - limit.m_minPos.x) / float(netherLimit.m_maxPos.x - netherLimit.m_minPos.x))));
 	}
 	else
 		m_netherTravelRatio = 8;

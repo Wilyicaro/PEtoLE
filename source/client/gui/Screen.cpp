@@ -237,7 +237,14 @@ void Screen::renderPanoramaBackground(float f)
 void Screen::renderPanoramaBlur(float f)
 {
 	glBindTexture(GL_TEXTURE_2D, m_pMinecraft->m_pTextures->loadBlankTexture("panorama_blur", 256, 256));
+#if defined(USE_GLES1_COMPATIBILITY_LAYER) && USE_GLES1_COMPATIBILITY_LAYER
+	static GLubyte buffer[256 * 256 * 4];
+	glReadPixels(0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 256,
+		GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+#else
 	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 256, 256);
+#endif
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColorMask(true, true, true, false);
