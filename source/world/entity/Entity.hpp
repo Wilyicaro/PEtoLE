@@ -142,11 +142,11 @@ public:
 	virtual void handleInsidePortal();
 	virtual void handleEntityEvent(int event);
 	virtual void thunderHit(LightningBolt*);
-	void load(std::shared_ptr<CompoundTag> tag);
-	bool save(std::shared_ptr<CompoundTag> tag);
-	void saveWithoutId(std::shared_ptr<CompoundTag> tag);
-	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag);
-	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag);
+	void load(CompoundIO tag);
+	bool save(CompoundIO tag);
+	void saveWithoutId(CompoundIO tag);
+	virtual void addAdditionalSaveData(CompoundIO tag);
+	virtual void readAdditionalSaveData(CompoundIO tag);
 	virtual void defineSynchedData();
 	void startSynchedData();
 	std::string getEncodeId();

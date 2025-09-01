@@ -12,7 +12,7 @@ std::shared_ptr<ItemInstance> FishingRodItem::use(std::shared_ptr<ItemInstance> 
 {
     if (player->m_fishing)
     {
-        item->hurt(player->m_fishing->retrieve());
+        item->hurtAndBreak(player->m_fishing->retrieve(), player);
         player->swing();
     }
     else

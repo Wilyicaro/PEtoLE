@@ -15,7 +15,7 @@ class RenderChunk
 	static int runningId;
 
 public:
-	GLuint field_0;
+	GLuint m_glID;
 	int field_4;
 	int m_id;
 	float m_posX;
@@ -25,7 +25,7 @@ public:
 public:
 	RenderChunk()
 	{
-		field_0 = -1;
+		m_glID = -1;
 		field_4 = 0;
 		m_posX = 0.0f;
 		m_posY = 0.0f;
@@ -40,7 +40,7 @@ public:
 		m_posZ = 0.0f;
 
 		m_id = ++runningId;
-		field_0 = a1;
+		m_glID = a1;
 		field_4 = a2;
 	}
 };

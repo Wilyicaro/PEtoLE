@@ -66,7 +66,12 @@ public:
 	virtual void keyboardNewChar(char);
 
 	// ported from 0.8
+	virtual void renderPanorama(float f);
 	virtual void renderMenuBackground(float f);
+
+private:
+	virtual void renderPanoramaBackground(float f);
+	virtual void renderPanoramaBlur(float f);
 
 public:
 	int m_width;

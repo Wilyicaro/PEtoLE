@@ -9,6 +9,7 @@ public:
 	enum ContentType {
 		NONE,
 		OCEAN,
+		FLAT,
 		DATA
 	};
 	FakeLevelChunk(Level*, TileID* pBlockData, const ChunkPos& pos, ContentType content = OCEAN);

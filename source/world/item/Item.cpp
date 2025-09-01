@@ -13,7 +13,7 @@
 #include "TileItem.hpp"
 #include "TilePlanterItem.hpp"
 #include "DyeItem.hpp"
-#include "FoodItem.hpp"
+#include "BowlFoodItem.hpp"
 #include "SaddleItem.hpp"
 #include "BucketItem.hpp"
 #include "WeaponItem.hpp"
@@ -34,6 +34,8 @@
 #include "EggItem.hpp"
 #include "PaintingItem.hpp"
 #include "FishingRodItem.hpp"
+#include "MapItem.hpp"
+#include "ShearsItem.hpp"
 
 #define ITEM(x) ((x) - 256)
 
@@ -53,7 +55,7 @@ Item::Item(int itemID)
 	m_bStackedByData = false;
 	m_pCraftingRemainingItem = 0;
 	m_maxStackSize = 64;
-	m_maxDamage = 32;
+	m_maxDamage = 0;
 	m_icon = 0;
 
 
@@ -136,6 +138,16 @@ bool Item::isFood() const
 bool Item::isWolfFood() const
 {
 	return false;
+}
+
+bool Item::isComplex() const
+{
+	return false;
+}
+
+Packet* Item::getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>&)
+{
+	return nullptr;
 }
 
 void Item::initItems()
@@ -362,6 +374,10 @@ void Item::initItems()
 		->setIcon(7, 4)
 		->setDescriptionId("bowl");
 
+	Item::mushroomStew = NEW_X_ITEM(BowlFoodItem, ITEM_STEW_MUSHROOM, 10)
+		->setIcon(8, 4)
+		->setDescriptionId("mushroomStew");
+
 	Item::string = NEW_ITEM(ITEM_STRING)
 		->setIcon(8, 0)
 		->setDescriptionId("string");
@@ -394,8 +410,7 @@ void Item::initItems()
 		->setIcon(6, 0)
 		->setDescriptionId("flint");
 
-	Item::rawPorkchop = NEW_X_ITEM(FoodItem, ITEM_PORKCHOP_RAW, 3, true);
-	Item::rawPorkchop
+	Item::rawPorkchop = NEW_X_ITEM(FoodItem, ITEM_PORKCHOP_RAW, 3, true)
 		->setIcon(7, 5)
 		->setDescriptionId("porkchopRaw");
 
@@ -550,6 +565,11 @@ void Item::initItems()
 		->setIcon(6, 5)
 		->setDescriptionId("diode");
 
+	Item::cookie = NEW_X_ITEM(FoodItem, ITEM_COOKIE, 1)
+		->setMaxStackSize(8)
+		->setIcon(12, 5)
+		->setDescriptionId("cookie");
+
 	Item::sign = NEW_X_ITEMN(SignItem, ITEM_SIGN)
 		->setIcon(10, 2)
 		->setDescriptionId("sign");
@@ -557,6 +577,17 @@ void Item::initItems()
 	Item::painting = NEW_X_ITEMN(PaintingItem, ITEM_PAINTING)
 		->setIcon(10, 1)
 		->setDescriptionId("painting");
+
+	Item::map = NEW_X_ITEMN(MapItem, ITEM_MAP);
+	Item::map
+		->setIcon(12, 3)
+		->setDescriptionId("map");
+
+#ifdef ENH_b1_7
+	Item::shears = NEW_X_ITEMN(ShearsItem, ITEM_SHEARS)
+		->setIcon(13, 5)
+		->setDescriptionId("shears");
+#endif
 
 	Item::record_01 = NEW_X_ITEM(RecordItem, ITEM_RECORD_01, "13")
 		->setIcon(0, 15)
@@ -617,7 +648,7 @@ void Item::hurtEnemy(ItemInstance* instance, Mob* mob)
 
 }
 
-void Item::mineBlock(ItemInstance* instance, int tile, const TilePos& pos, Facing::Name face)
+void Item::mineBlock(ItemInstance* instance, int tile, const TilePos& pos, Facing::Name face, Player*)
 {
 
 }
@@ -682,7 +713,11 @@ std::string Item::getName()
 	return getDescriptionId() + ".name";
 }
 
-void Item::onCrafting(std::shared_ptr<ItemInstance>, Player*, Level*)
+void Item::onCraftedBy(const std::shared_ptr<ItemInstance>&, Player*, Level*)
+{
+}
+
+void Item::inventoryTick(const std::shared_ptr<ItemInstance>&, Level*, Entity*, int, bool)
 {
 }
 
@@ -803,5 +838,10 @@ Item* Item::sugar;
 Item* Item::cake;
 Item* Item::bed;
 Item* Item::diode;
+Item* Item::cookie;
+MapItem* Item::map;
+#ifdef ENH_b1_7
+Item* Item::shears;
+#endif
 Item* Item::record_01;
 Item* Item::record_02;

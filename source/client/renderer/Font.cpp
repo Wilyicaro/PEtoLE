@@ -54,6 +54,12 @@ void Font::init(Options* pOpts)
 
 		m_charWidthInt[i] = widthMax + 2;
 		m_charWidthFloat[i] = float (widthMax) + 2;
+		GLuint id;
+		xglGenBuffers(1, &id);
+		Tesselator& t = Tesselator::instance;
+		t.begin();
+		buildChar(i, 0, 0);
+		m_bakedChars[i] = t.end(id);
 	}
 }
 
@@ -87,9 +93,52 @@ void Font::drawShadow(const std::string& str, int x, int y, int color)
 	draw(str, x, y, color, false);
 }
 
-void Font::draw(const std::string& str, int x, int y, int color, bool bShadow)
+void Font::draw(const std::string& str, int x, int y, int colorI, bool bShadow)
 {
-	drawSlow(str, x, y, color, bShadow);
+	if (str.empty()) return;
+
+	uint32_t color = colorI;
+
+	if (bShadow)
+		color = (color & 0xFF000000U) + ((color & 0xFCFCFCu) >> 2);
+
+	m_pTextures->loadAndBindTexture(m_fileName);
+
+	uint32_t red = (color >> 16) & 0xFF;
+	uint32_t grn = (color >> 8) & 0xFF;
+	uint32_t blu = (color >> 0) & 0xFF;
+	uint32_t alp = (color >> 24) & 0xFF;
+
+	float alpf = float(alp) / 255.0f;
+	if (alpf == 0.0f)
+		alpf = 1.0f;
+
+	glColor4f(float(red) / 255.0f, float(grn) / 255.0f, float(blu) / 255.0f, alpf);
+	glPushMatrix();
+
+
+	glTranslatef(float(x), float(y), 0.0f);
+
+	float xOff = 0.0f;
+
+	for (int i = 0; i < int(str.size()); i++)
+	{
+		if (str[i] == '\n')
+		{
+			glTranslatef(-xOff, 12.0f, 0.0f);
+			xOff = 0.0f;
+			continue;
+		}
+
+		uint8_t x = uint8_t(str[i]);
+
+		drawArrayVT(m_bakedChars[x].m_glID, 16);
+
+		xOff += m_charWidthFloat[x];
+		glTranslatef(m_charWidthFloat[x], 0.0f, 0.0f);
+	}
+
+	glPopMatrix();
 }
 
 void Font::drawSlow(const std::string& str, int x, int y, int colorI, bool bShadow)

@@ -141,7 +141,7 @@ void RenderList::renderChunks()
 			glPushMatrix();
 
 			glTranslatef(chk.m_posX, chk.m_posY, chk.m_posZ);
-			xglBindBuffer(GL_ARRAY_BUFFER, chk.field_0);
+			xglBindBuffer(GL_ARRAY_BUFFER, chk.m_glID);
 			xglVertexPointer  (3, GL_FLOAT,         sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_x));
 			xglTexCoordPointer(2, GL_FLOAT,         sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_u));
 			xglColorPointer   (4, GL_UNSIGNED_BYTE, sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_color));

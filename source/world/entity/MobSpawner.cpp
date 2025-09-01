@@ -64,7 +64,7 @@ int MobSpawner::tick(Level* level, bool allowHostile, bool allowFriendly)
                 int idx = level->m_random.nextInt((int)spawnList.size());
                 TilePos tpos = getRandomPosWithin(level, pos.x * 16, pos.z * 16);
 
-                if (level->isSolidTile(tpos)) continue;
+                if (level->isNormalTile(tpos)) continue;
                 if (level->getMaterial(tpos) != category->getSpawnPositionMaterial()) continue;
 
                 int spawned = 0;
@@ -133,7 +133,7 @@ bool MobSpawner::spawnNightmare(Level* level, const std::vector<std::shared_ptr<
             EntityType* type = nightmareEntities[level->m_random.nextInt(nightmareEntities.size())];
 
             int newY;
-            for (newY = tp.y; newY > 2 && !level->isSolidTile(TilePos(tp.x, newY, tp.z)); --newY) {
+            for (newY = tp.y; newY > 2 && !level->isNormalTile(TilePos(tp.x, newY, tp.z)); --newY) {
             }
 
             while (!isSpawnPositionOk(MobCategory::monster, level, TilePos(tp.x, newY, tp.z)) && newY < tp.y + 16 && newY < 128)

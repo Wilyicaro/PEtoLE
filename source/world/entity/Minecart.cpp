@@ -286,22 +286,22 @@ void Minecart::tick()
                 }
                 else if (data == 1)
                 {
-                    if (m_pLevel->isSolidTile(tp.west()))
+                    if (m_pLevel->isNormalTile(tp.west()))
                     {
                         m_vel.x = 0.02;
                     }
-                    else if (m_pLevel->isSolidTile(tp.east()))
+                    else if (m_pLevel->isNormalTile(tp.east()))
                     {
                         m_vel.x = -0.02;
                     }
                 }
                 else if (data == 0)
                 {
-                    if (m_pLevel->isSolidTile(tp.north()))
+                    if (m_pLevel->isNormalTile(tp.north()))
                     {
                         m_vel.z = 0.02;
                     }
-                    else if (m_pLevel->isSolidTile(tp.south()))
+                    else if (m_pLevel->isNormalTile(tp.south()))
                     {
                         m_vel.z = -0.02;
                     }
@@ -541,7 +541,7 @@ Vec3* Minecart::getPosOffs(const Vec3& pos, real var7)
     }
 }
 
-void Minecart::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Minecart::addAdditionalSaveData(CompoundIO tag)
 {
     tag->putInt("Type", m_type);
     if (m_type == 2) 
@@ -553,7 +553,7 @@ void Minecart::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
         SimpleContainer::save(tag);
 }
 
-void Minecart::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Minecart::readAdditionalSaveData(CompoundIO tag)
 {
     m_type = tag->getInt("Type");
     if (m_type == 2) 

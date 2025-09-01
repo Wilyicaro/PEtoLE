@@ -106,6 +106,14 @@ bool Region::isSolidTile(const TilePos& pos) const
 	return pTile->isSolidRender();
 }
 
+bool Region::isNormalTile(const TilePos& pos) const
+{
+	Tile* pTile = Tile::tiles[getTile(pos)];
+	if (!pTile) return false;
+
+	return pTile->m_pMaterial->isOpaque() && pTile->isCubeShaped();
+}
+
 BiomeSource* Region::getBiomeSource() const
 {
 	return m_pLevel->getBiomeSource();

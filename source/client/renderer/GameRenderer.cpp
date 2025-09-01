@@ -98,12 +98,12 @@ void GameRenderer::unZoomRegion()
 
 void GameRenderer::setupCamera(float f, int i)
 {
-	m_renderDistance = float(256 >> m_pMinecraft->getOptions()->m_iViewDistance);
+	m_renderDistance = float(256 >> m_pMinecraft->getOptions()->m_iViewDistance.get());
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 
-	if (m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 	{
 		glTranslatef(float(1 - 2 * i) * 0.07f, 0.0f, 0.0f);
 	}
@@ -120,13 +120,13 @@ void GameRenderer::setupCamera(float f, int i)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	if (m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 	{
 		glTranslatef(float(2 * i - 1) * 0.1f, 0.0f, 0.0f);
 	}
 
 	bobHurt(f);
-	if (m_pMinecraft->getOptions()->m_bViewBobbing)
+	if (m_pMinecraft->getOptions()->m_bViewBobbing.get())
 		bobView(f);
 
 	moveCameraToPlayer(f);
@@ -286,7 +286,7 @@ void GameRenderer::setupClearColor(float f)
 	Level* pLevel = pMC->m_pLevel;
 	auto& pMob = pMC->m_pMobPersp;
 
-	float x1 = 1.0f - powf(1.0f / float(4 - pMC->getOptions()->m_iViewDistance), 0.25f);
+	float x1 = 1.0f - powf(1.0f / float(4 - pMC->getOptions()->m_iViewDistance.get()), 0.25f);
 
 	Vec3f skyColor = pLevel->getSkyColor(pMob.get(), f), fogColor = pLevel->getFogColor(f);
 
@@ -317,7 +317,7 @@ void GameRenderer::setupClearColor(float f)
 	m_fg *= x2;
 	m_fb *= x2;
 
-	if (pMC->getOptions()->m_bAnaglyphs)
+	if (pMC->getOptions()->m_bAnaglyphs.get())
 	{
 		float r = (m_fr * 30.0f + m_fg * 59.0f + m_fb * 11.0f) / 100.0f;
 		float g = (m_fr * 30.0f + m_fg * 70.0f) / 100.0f;
@@ -439,8 +439,8 @@ void GameRenderer::renderLevel(float f)
 	fCamPos.y = pMob->m_posPrev.y + (pMob->m_pos.y - pMob->m_posPrev.y) * f;
 	fCamPos.z = pMob->m_posPrev.z + (pMob->m_pos.z - pMob->m_posPrev.z) * f;
 
-	bool bAnaglyph = m_pMinecraft->getOptions()->m_bAnaglyphs;
-	bool bFancy = m_pMinecraft->getOptions()->m_bFancyGraphics;
+	bool bAnaglyph = m_pMinecraft->getOptions()->m_bAnaglyphs.get();
+	bool bFancy = m_pMinecraft->getOptions()->m_bFancyGraphics.get();
 
 	LevelRenderer* pLR = m_pMinecraft->m_pLevelRenderer;
 	ParticleEngine* pPE = m_pMinecraft->m_pParticleEngine;
@@ -464,7 +464,7 @@ void GameRenderer::renderLevel(float f)
 		saveMatrices();
 
 		Frustum::prepare();
-		if (m_pMinecraft->getOptions()->m_iViewDistance <= 2)
+		if (m_pMinecraft->getOptions()->m_iViewDistance.get() <= 2)
 		{
 			setupFog(-1);
 			pLR->renderSky(f);
@@ -473,7 +473,7 @@ void GameRenderer::renderLevel(float f)
 		glEnable(GL_FOG);
 		setupFog(1);
 
-		if (m_pMinecraft->getOptions()->m_bAmbientOcclusion)
+		if (m_pMinecraft->getOptions()->m_bAmbientOcclusion.get())
 			glShadeModel(GL_SMOOTH);
 
 		Frustum& frust = Frustum::frustum;
@@ -508,7 +508,7 @@ void GameRenderer::renderLevel(float f)
 
 			pLR->renderHit((Player*)pMob.get(), m_pMinecraft->m_hitResult, 0, nullptr, f);
 
-			if (m_pMinecraft->getOptions()->m_bBlockOutlines)
+			if (m_pMinecraft->getOptions()->m_bBlockOutlines.get())
 				pLR->renderHitOutline((Player*)pMob.get(), m_pMinecraft->m_hitResult, 0, nullptr, f);
 			else
 				pLR->renderHitSelect((Player*)pMob.get(), m_pMinecraft->m_hitResult, 0, nullptr, f);
@@ -555,7 +555,7 @@ void GameRenderer::renderLevel(float f)
 			// added by iProgramInCpp - renders the cracks
 			pLR->renderHit((Player*)pMob.get(), m_pMinecraft->m_hitResult, 0, nullptr, f);
 
-			if (m_pMinecraft->getOptions()->m_bBlockOutlines)
+			if (m_pMinecraft->getOptions()->m_bBlockOutlines.get())
 				pLR->renderHitOutline((Player*)pMob.get(), m_pMinecraft->m_hitResult, 0, nullptr, f);
 			else
 				pLR->renderHitSelect((Player*)pMob.get(), m_pMinecraft->m_hitResult, 0, nullptr, f);
@@ -595,12 +595,12 @@ void GameRenderer::render(float f)
 		float multPitch = -1.0f;
 		float diff_field_84;
 
-		if (pMC->getOptions()->m_bInvertMouse)
+		if (pMC->getOptions()->m_bInvertMouse.get())
 			multPitch = 1.0f;
 
 		if (pMC->m_mouseHandler.smoothTurning())
 		{
-			float mult1 = 2.0f * (0.2f + pMC->getOptions()->m_fSensitivity * 0.6f);
+			float mult1 = 2.0f * (0.2f + pMC->getOptions()->m_fSensitivity.get() * 0.6f);
 			mult1 = pow(mult1, 3);
 
 			float xd = 4.0f * mult1 * pMC->m_mouseHandler.m_delta.x;
@@ -840,7 +840,7 @@ void GameRenderer::tick()
 	}
 
 	float bright = m_pMinecraft->m_pLevel->getBrightness(pMob->m_pos);
-	float x3 = float(3 - m_pMinecraft->getOptions()->m_iViewDistance);
+	float x3 = float(3 - m_pMinecraft->getOptions()->m_iViewDistance.get());
 
 	m_ticks++;
 
@@ -857,13 +857,13 @@ void GameRenderer::renderItemInHand(float f, int i)
 {
 	glLoadIdentity();
 
-	if (m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 		glTranslatef(float(2 * i - 1) * 0.1f, 0.0f, 0.0f);
 
 	glPushMatrix();
 	bobHurt(f);
 
-	if (m_pMinecraft->getOptions()->m_bViewBobbing)
+	if (m_pMinecraft->getOptions()->m_bViewBobbing.get())
 		bobView(f);
 
 	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pMobPersp->isSleeping() && !m_pMinecraft->getOptions()->m_bDontRenderGui)
@@ -877,7 +877,7 @@ void GameRenderer::renderItemInHand(float f, int i)
 		bobHurt(f);
 	}
 
-	if (m_pMinecraft->getOptions()->m_bViewBobbing)
+	if (m_pMinecraft->getOptions()->m_bViewBobbing.get())
 		bobView(f);
 }
 
@@ -904,7 +904,7 @@ void GameRenderer::renderSnowAndRain(float f)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	int range = m_pMinecraft->getOptions()->m_bFancyGraphics ? 10 : 5;
+	int range = m_pMinecraft->getOptions()->m_bFancyGraphics.get() ? 10 : 5;
 
 	auto& biomes = pLevel->getBiomeSource()->getBiomeBlock(TilePos(bPosX - range, bPosY, bPosZ - range), range * 2 + 1, range * 2 + 1);
 	int i = 0;
@@ -992,7 +992,7 @@ void GameRenderer::renderSnowAndRain(float f)
 void GameRenderer::tickRain()
 {
 	float rainLevel = m_pMinecraft->m_pLevel->getRainLevel(1.0F);
-	if (!m_pMinecraft->getOptions()->m_bFancyGraphics)
+	if (!m_pMinecraft->getOptions()->m_bFancyGraphics.get())
 		rainLevel /= 2.0F;
 
 	if (rainLevel != 0.0F) {

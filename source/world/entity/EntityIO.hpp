@@ -29,7 +29,7 @@ public:
         return nullptr;
     }
 
-    static std::shared_ptr<Entity> loadStatic(std::shared_ptr<CompoundTag> tag, Level* level) {
+    static std::shared_ptr<Entity> loadStatic(CompoundIO tag, Level* level) {
         std::string id = tag->contains("id") ? tag->getString("id") : "";
         auto entity = newEntity(id, level);
         if (entity) 

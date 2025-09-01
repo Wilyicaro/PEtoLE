@@ -26,8 +26,8 @@ public:
 
 	virtual void clear();
 
-	virtual void load(std::shared_ptr<CompoundTag> tag);
-	virtual void save(std::shared_ptr<CompoundTag> tag);
+	virtual void load(CompoundIO tag);
+	virtual void save(CompoundIO tag);
 
 private:
 	std::vector<std::shared_ptr<ItemInstance>> m_items;

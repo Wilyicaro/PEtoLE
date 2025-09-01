@@ -15,13 +15,13 @@
 
 #ifndef DEMO
 
-class ExternalFileLevelStorageSource : public LevelStorageSource
+class McRegionLevelStorageSource : public LevelStorageSource
 {
 public:
-	ExternalFileLevelStorageSource(const std::string& path);
+	McRegionLevelStorageSource(const std::string& path);
 
 	std::string getName() override;
-	LevelManager* selectLevel(const std::string&, bool) override;
+	MinecraftServer* selectLevel(const std::string&, bool) override;
 	void getLevelList(std::vector<LevelSummary>&) override;
 	void clearAll() override;
 	int getDataTagFor(const std::string&) override;

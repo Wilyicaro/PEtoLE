@@ -287,7 +287,7 @@ void SoundEngine::destroy()
 
 void SoundEngine::play(const std::string& name, const Vec3& pos, float volume, float pitch)
 {
-	float vol = m_pOptions->m_fMasterVolume * volume;
+	float vol = m_pOptions->m_fMasterVolume.get() * volume;
 	if (vol <= 0.0f)
 		return;
 
@@ -320,7 +320,7 @@ void SoundEngine::playMusicTick()
 {
 	if (m_musics.empty()) return;
 
-	if (m_pOptions->m_fMusicVolume != 0.0F) {
+	if (m_pOptions->m_fMusicVolume.get() != 0.0F) {
 		if ((m_lastMusic.empty() || !m_pSoundSystem->playing(m_lastMusic)) && (m_lastStreaming.empty() || !m_pSoundSystem->playing(m_lastStreaming))) {
 			if (m_bNoMusicDelay > 0) {
 				--m_bNoMusicDelay;
@@ -331,7 +331,7 @@ void SoundEngine::playMusicTick()
 			LOG_I("Playing %s music", song.m_name.c_str());
 			m_bNoMusicDelay = m_random.nextInt(12000) + 12000;
 			m_lastStreaming = m_lastMusic = song.m_name;
-			m_pSoundSystem->playAt(song, 0, 0, 0, m_pOptions->m_fMusicVolume, 1.0f);
+			m_pSoundSystem->playAt(song, 0, 0, 0, m_pOptions->m_fMusicVolume.get(), 1.0f);
 		}
 	}
 }

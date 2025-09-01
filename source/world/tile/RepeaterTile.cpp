@@ -8,12 +8,12 @@ RepeaterTile::RepeaterTile(int id, bool powered) : Tile(id, TEXTURE_STONE_SLAB_T
 
 bool RepeaterTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.below()) && Tile::mayPlace(level, pos);
+	return level->isNormalTile(pos.below()) && Tile::mayPlace(level, pos);
 }
 
 bool RepeaterTile::canSurvive(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.below()) && Tile::canSurvive(level, pos);
+	return level->isNormalTile(pos.below()) && Tile::canSurvive(level, pos);
 }
 
 void RepeaterTile::tick(Level* level, const TilePos& pos, Random* random)

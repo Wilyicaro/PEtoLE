@@ -49,13 +49,13 @@ bool Pig::interact(Player* player) {
 	}
 }
 
-void Pig::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Pig::addAdditionalSaveData(CompoundIO tag)
 {
 	Animal::addAdditionalSaveData(tag);
 	tag->putBoolean("Saddle", hasSaddle());
 }
 
-void Pig::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Pig::readAdditionalSaveData(CompoundIO tag)
 {
 	Animal::readAdditionalSaveData(tag);
 	setSaddle(tag->getBoolean("Saddle"));

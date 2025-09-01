@@ -17,9 +17,9 @@ public:
 
 	virtual void tick() override;
 
-	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	virtual void addAdditionalSaveData(CompoundIO tag) override;
 
-	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	virtual void readAdditionalSaveData(CompoundIO tag) override;
 
 	virtual float getShadowHeightOffs() const override;
 

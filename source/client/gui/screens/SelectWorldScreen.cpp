@@ -130,7 +130,7 @@ void SelectWorldScreen::tick()
 			}
 		}
 
-		m_pMinecraft->selectLevel(levelUniqueName, levelNickname, seed);
+		m_pMinecraft->selectLevel(levelUniqueName);
 		// @BUG: Use of deallocated memory. SetScreen frees us
 #ifdef ORIGINAL_CODE
 		field_130 = 0;
@@ -143,7 +143,7 @@ void SelectWorldScreen::tick()
 	if (m_pWorldSelectionList->field_90)
 	{
 		LevelSummary& ls = m_pWorldSelectionList->m_levelSummary;
-		m_pMinecraft->selectLevel(ls.m_fileName, ls.m_levelName, 0);
+		m_pMinecraft->selectLevel(ls.m_fileName);
 		return;
 	}
 

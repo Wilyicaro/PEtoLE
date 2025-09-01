@@ -79,6 +79,7 @@
 #include "TrapDoorTile.hpp"
 #include "PortalTile.hpp"
 #include "RepeaterTile.hpp"
+#include "Mushroom.hpp"
 
 std::string Tile::TILE_DESCRIPTION_PREFIX = "tile.";
 
@@ -293,7 +294,7 @@ void Tile::initTiles()
 		->setSoundType(Tile::SOUND_STONE)
 		->setDescriptionId("stone");
 
-	Tile::grass = (new GrassTile(TILE_GRASS, Material::dirt))
+	Tile::grass = (new GrassTile(TILE_GRASS, Material::grass))
 		->init()
 		->setDestroyTime(0.6f)
 		->setSoundType(Tile::SOUND_GRASS)
@@ -454,14 +455,14 @@ void Tile::initTiles()
 		->setSoundType(Tile::SOUND_GRASS)
 		->setDescriptionId("rose");
 
-	Tile::mushroom1 = (new Bush(TILE_MUSHROOM_1, TEXTURE_MUSHROOM_BROWN))
+	Tile::mushroom1 = (new Mushroom(TILE_MUSHROOM_1, TEXTURE_MUSHROOM_BROWN))
 		->init()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_GRASS)
 		->setLightEmission(0.125f)
 		->setDescriptionId("mushroom");
 
-	Tile::mushroom2 = (new Bush(TILE_MUSHROOM_2, TEXTURE_MUSHROOM_RED))
+	Tile::mushroom2 = (new Mushroom(TILE_MUSHROOM_2, TEXTURE_MUSHROOM_RED))
 		->init()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_GRASS)
@@ -876,6 +877,9 @@ void Tile::initTiles()
 	Item::items[Tile::treeTrunk->m_ID] = (new AuxTileItem(Tile::treeTrunk->m_ID - C_MAX_TILES))
 		->setDescriptionId("log");
 
+	Item::items[Tile::leaves->m_ID] = (new AuxTileItem(Tile::leaves->m_ID - C_MAX_TILES))
+		->setDescriptionId("leaves");
+
 	Item::items[Tile::sapling->m_ID] = (new AuxTileItem(Tile::sapling->m_ID - C_MAX_TILES))
 		->setDescriptionId("sapling");
 
@@ -965,14 +969,7 @@ bool Tile::shouldRenderFace(const LevelSource* pSrc, const TilePos& pos, Facing:
 		break;
 	}
 
-	Tile* pTile = Tile::tiles[pSrc->getTile(pos)];
-	if (!pTile)
-		return true;
-
-	if (face == Facing::UP && pTile->m_ID == Tile::topSnow->m_ID)
-		return false;
-
-	return !pTile->isSolidRender();
+	return !pSrc->isSolidTile(pos);
 }
 
 int Tile::getTexture(const LevelSource* pSrc, const TilePos& pos, Facing::Name face) const
@@ -992,7 +989,7 @@ bool Tile::mayPlace(const Level* pLevel, const TilePos& pos) const
 	if (!tile)
 		return true; // we can definitely place something over air
 	
-	return Tile::tiles[tile]->m_pMaterial->isLiquid();
+	return Tile::tiles[tile]->m_pMaterial->isReplaceable();
 }
 
 void Tile::tick(Level* pLevel, const TilePos& pos, Random* pRandom)
@@ -1052,6 +1049,11 @@ bool Tile::containsZ(const Vec3& v)
 		&& v.x <= m_aabb.max.x
 		&& v.y >= m_aabb.min.y
 		&& v.y <= m_aabb.max.y;
+}
+
+bool Tile::canStartDestroy(const Level*, const TilePos&, Facing::Name)
+{
+	return true;
 }
 
 HitResult Tile::clip(const Level* level, const TilePos& pos, Vec3 vec1, Vec3 vec2)
@@ -1180,16 +1182,21 @@ void Tile::spawnResources(Level* pLevel, const TilePos& pos, int data, float fCh
 		int id = getResource(data, &pLevel->m_random);
 		if (id <= 0)
 			continue;
-
-		Vec3 o((pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f,
-			   (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f,
-			   (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f);
-
-		auto pEntity = std::make_shared<ItemEntity>(pLevel, o + pos, std::make_shared<ItemInstance>(id, 1, getSpawnResourcesAuxValue(data)));
-		pEntity->m_throwTime = 10;
-
-		pLevel->addEntity(pEntity);
+		spawnResources(pLevel, pos, std::make_shared<ItemInstance>(id, 1, getSpawnResourcesAuxValue(data)));
 	}
+}
+
+void Tile::spawnResources(Level* pLevel, const TilePos& pos, const std::shared_ptr<ItemInstance>& item)
+{
+	Vec3 o;
+	o.x = (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f;
+	o.y = (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f;
+	o.z = (pLevel->m_random.nextFloat() * 0.7f) + (1.0f - 0.7f) * 0.5f;
+
+	auto pEntity = std::make_shared<ItemEntity>(pLevel, o + pos, item);
+	pEntity->m_throwTime = 10;
+
+	pLevel->addEntity(pEntity);
 }
 
 int Tile::spawnBurnResources(Level*, float, float, float)

@@ -36,6 +36,7 @@
 #define ENH_3D_INVENTORY_TILES  	 // Uses 3D rendered inventory tiles, use with ENH_SHADE_HELD_TILES to render correctly.
 #define ENH_MENU_BACKGROUND 		 // Renders a spinning panorama (if it's available) in the background of the main menu
 #define ENH_GUI_ITEM_POP             // Calls Inventory::tick() to create the "pop" animation for items that enter the hotbar. This function was not present on Pocket Edition.
+#define ENH_b1_7                     // Enables b1.7.3 features (WIP)
 
 // Toggle Demo Mode
 //#define DEMO

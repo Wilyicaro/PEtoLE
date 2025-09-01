@@ -32,6 +32,7 @@ public:
 	static float atan2(float y, float x);
 	static float cos(float);
 	static float clamp(float, float, float);
+	static int clamp(int, int, int);
 	static int floor(float);
 	static int floor(double);
 	static int round(double d);

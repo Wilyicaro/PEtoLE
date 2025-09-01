@@ -1,10 +1,13 @@
 #include "Language.hpp"
+#include "client/options/Options.hpp"
 
 Language* Language::m_singleton = new Language();
 
-void Language::init()
+void Language::init(Options* options)
 {
     loadLanguageFile("lang/en_us.json");
+    if (options->m_lang.get() != "en_us")
+        loadLanguageFile("lang/" + options->m_lang.get() + ".json");
 }
 
 bool Language::loadLanguageFile(const std::string& path)
@@ -14,10 +17,10 @@ bool Language::loadLanguageFile(const std::string& path)
     if (!json) return false;
 
 
-    for (auto it = json->begin(); it != json->end(); ++it) {
-        if (it->is_string()) {
+    for (auto it = json->begin(); it != json->end(); ++it)
+    {
+        if (it->is_string())
             m_translations[it.key()] = it->get<std::string>();
-        }
     }
 
 	return false;

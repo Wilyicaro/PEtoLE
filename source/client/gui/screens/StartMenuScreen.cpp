@@ -359,7 +359,7 @@ StartMenuScreen::StartMenuScreen() :
 	m_startButton  (2,   0, 0, 200, 20, Language::getInstance()->get("menu.singleplayer")),
 	m_joinButton   (3,   0, 0, 200, 20, Language::getInstance()->get("menu.multiplayer")),
 	m_optionsButton(4,   0, 0, 200, 20, Language::getInstance()->get("menu.options")),
-	m_exitButton    (5,   0, 0, 200, 20, Language::getInstance()->get("menu.exit"))
+	m_exitButton    (5,   0, 0, 200, 20, Language::getInstance()->get("menu.quit"))
 {
 	m_pTiles = nullptr;
 	m_chosenSplash = -1;
@@ -420,7 +420,7 @@ void StartMenuScreen::buttonClicked(Button* pButton)
 	}
 	else if (pButton->m_buttonId == m_optionsButton.m_buttonId)
 	{
-		m_pMinecraft->setScreen(new OptionsScreen);
+		m_pMinecraft->setScreen(new OptionsScreen(m_pMinecraft->getOptions()));
 	}
 }
 

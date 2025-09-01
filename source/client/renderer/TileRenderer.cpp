@@ -162,7 +162,8 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 		u1 = C_RATIO * (texX);
 		u2 = C_RATIO * (texX + 15.99f);
 	}
-	else {
+	else
+	{
 		u1 = C_RATIO * (texX + 16.0f * minU);
 		u2 = C_RATIO * (texX + 16.0f * maxU - 0.01f);
 	}
@@ -175,7 +176,15 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 		v1 = C_RATIO * (texY);
 		v2 = C_RATIO * (texY + 15.99f);
 	}
-	else {
+#ifdef ENH_b1_7
+	else if (Facing::isHorizontal(face))
+	{
+		v1 = C_RATIO * (16.0f + texY - 16.0f * maxV);
+		v2 = C_RATIO * (16.0f + texY - 16.0f * minV - 0.01f);
+	}
+#endif
+	else
+	{
 		v1 = C_RATIO * (texY + 16.0f * minV);
 		v2 = C_RATIO * (texY + 16.0f * maxV - 0.01f);
 	}
@@ -1101,7 +1110,7 @@ bool TileRenderer::tesselateFireInWorld(Tile* tile, const TilePos& pos)
 	float texV_2 = C_RATIO * (texY + 15.99f);
 	float xf = float(pos.x), yf = float(pos.y), zf = float(pos.z);
 
-	if (m_pLevelSource->isSolidTile(pos.below()) || pFireTile->canBurn(m_pLevelSource, pos.below()))
+	if (m_pLevelSource->isNormalTile(pos.below()) || pFireTile->canBurn(m_pLevelSource, pos.below()))
 	{
 		t.vertexUV(xf + 0.5f - 0.3f, yf + 1.4f, zf + 1.0f, texU_2, texV_1);
 		t.vertexUV(xf + 0.5f + 0.2f, yf + 0.0f, zf + 1.0f, texU_2, texV_2);
@@ -1380,16 +1389,16 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 	TilePos north = pos.north();
 	TilePos south = pos.south();
 
-	bool w = RedStoneDustTile::shouldConnectTo(m_pLevelSource, west, 1) || (!m_pLevelSource->isSolidTile(west) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, west.below(), -1));
-	bool e = RedStoneDustTile::shouldConnectTo(m_pLevelSource, east, 3) || (!m_pLevelSource->isSolidTile(east) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, east.below(), -1));
-	bool n = RedStoneDustTile::shouldConnectTo(m_pLevelSource, north, 2) || (!m_pLevelSource->isSolidTile(north) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, north.below(), -1));
-	bool s = RedStoneDustTile::shouldConnectTo(m_pLevelSource, south, 0) || (!m_pLevelSource->isSolidTile(south) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, south.below(), -1));
+	bool w = RedStoneDustTile::shouldConnectTo(m_pLevelSource, west, 1) || (!m_pLevelSource->isNormalTile(west) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, west.below(), -1));
+	bool e = RedStoneDustTile::shouldConnectTo(m_pLevelSource, east, 3) || (!m_pLevelSource->isNormalTile(east) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, east.below(), -1));
+	bool n = RedStoneDustTile::shouldConnectTo(m_pLevelSource, north, 2) || (!m_pLevelSource->isNormalTile(north) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, north.below(), -1));
+	bool s = RedStoneDustTile::shouldConnectTo(m_pLevelSource, south, 0) || (!m_pLevelSource->isNormalTile(south) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, south.below(), -1));
 
-	if (!m_pLevelSource->isSolidTile(above)) {
-		if (m_pLevelSource->isSolidTile(west) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, west.above(), -1)) w = true;
-		if (m_pLevelSource->isSolidTile(east) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, east.above(), -1)) e = true;
-		if (m_pLevelSource->isSolidTile(north) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, north.above(), -1)) n = true;
-		if (m_pLevelSource->isSolidTile(south) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, south.above(), -1)) s = true;
+	if (!m_pLevelSource->isNormalTile(above)) {
+		if (m_pLevelSource->isNormalTile(west) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, west.above(), -1)) w = true;
+		if (m_pLevelSource->isNormalTile(east) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, east.above(), -1)) e = true;
+		if (m_pLevelSource->isNormalTile(north) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, north.above(), -1)) n = true;
+		if (m_pLevelSource->isNormalTile(south) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, south.above(), -1)) s = true;
 	}
 
 	constexpr float d = 0.3125f;
@@ -1456,8 +1465,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 	v0 = yt / 256.0;
 	v1 = (yt + 15.99) / 256.0;
 
-	if (!m_pLevelSource->isSolidTile(above)) {
-		if (m_pLevelSource->isSolidTile(west) && m_pLevelSource->getTile(west.above()) == Tile::redstoneDust->m_ID) {
+	if (!m_pLevelSource->isNormalTile(above)) {
+		if (m_pLevelSource->isNormalTile(west) && m_pLevelSource->getTile(west.above()) == Tile::redstoneDust->m_ID) {
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + r, pos.y + 1 + o, pos.z + 1 + o, u1, v0);
 			t.vertexUV(pos.x + r, pos.y - o, pos.z + 1 + o, u0, v0);
@@ -1470,7 +1479,7 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 			t.vertexUV(pos.x + r, pos.y + 1 + o, pos.z - o, u1, v1 + tOff);
 		}
 
-		if (m_pLevelSource->isSolidTile(east) && m_pLevelSource->getTile(east.above()) == Tile::redstoneDust->m_ID) {
+		if (m_pLevelSource->isNormalTile(east) && m_pLevelSource->getTile(east.above()) == Tile::redstoneDust->m_ID) {
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + 1 - r,pos.y - o, pos.z + 1 + o, u0, v1);
 			t.vertexUV(pos.x + 1 - r, pos.y + 1 + o, pos.z + 1 + o, u1, v1);
@@ -1483,7 +1492,7 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 			t.vertexUV(pos.x + 1 - r, pos.y - o, pos.z - o, u0, v0 + tOff);
 		}
 
-		if (m_pLevelSource->isSolidTile(north) && m_pLevelSource->getTile(north.above()) == Tile::redstoneDust->m_ID) {
+		if (m_pLevelSource->isNormalTile(north) && m_pLevelSource->getTile(north.above()) == Tile::redstoneDust->m_ID) {
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + 1 + o, pos.y - o, pos.z + r, u0, v1);
 			t.vertexUV(pos.x + 1 + o, pos.y + 1 + o, pos.z + r, u1, v1);
@@ -1496,7 +1505,7 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 			t.vertexUV(pos.x - o, pos.y - o, pos.z + r, u0, v0 + tOff);
 		}
 
-		if (m_pLevelSource->isSolidTile(south) && m_pLevelSource->getTile(south.above()) == Tile::redstoneDust->m_ID) {
+		if (m_pLevelSource->isNormalTile(south) && m_pLevelSource->getTile(south.above()) == Tile::redstoneDust->m_ID) {
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + 1 + o, pos.y + 1 + o, pos.z + 1 - r, u1, v0);
 			t.vertexUV(pos.x + 1 + o, pos.y  - o, pos.z + 1 - r, u0, v0);

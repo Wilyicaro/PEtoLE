@@ -21,7 +21,6 @@ SurvivalMode::SurvivalMode(Minecraft* pMC, Level& level) : GameMode(pMC, level),
 void SurvivalMode::initPlayer(Player* p)
 {
 	p->m_rot.y = -180.0f;
-	p->m_pInventory->prepareSurvivalInventory();
 }
 
 bool SurvivalMode::canHurtPlayer()
@@ -63,7 +62,7 @@ bool SurvivalMode::destroyBlock(Player* player, const TilePos& pos, Facing::Name
 	auto item = player->getSelectedItem();
 	bool couldDestroy = player->canDestroy(Tile::tiles[tile]);
 	if (item) {
-		item->mineBlock(tile, pos, face);
+		item->mineBlock(tile, pos, face, player);
 		if (!item->m_count) {
 			item->snap(player);
 			player->removeSelectedItem();

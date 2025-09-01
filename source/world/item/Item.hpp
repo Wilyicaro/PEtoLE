@@ -15,7 +15,7 @@
 #include "world/level/TilePos.hpp"
 #include "world/Facing.hpp"
 
-#define C_MAX_ITEMS (C_MAX_TILES * 2)
+#define C_MAX_ITEMS (32000)
 
 
 class ItemInstance; // in case we're included from ItemInstance.hpp
@@ -25,6 +25,8 @@ class Entity;
 class Mob;
 class Player;
 class Tile;
+class Packet;
+class MapItem;
 
 class Item
 {
@@ -93,7 +95,7 @@ public: // Methods
 	virtual bool isStackedByData();
 	virtual int getMaxDamage();
 	virtual void hurtEnemy(ItemInstance*, Mob*);
-	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face);
+	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player*);
 	virtual int getAttackDamage(Entity*);
 	virtual bool canDestroySpecial(const Tile*);
 	virtual void interactEnemy(ItemInstance*, Mob*);
@@ -109,7 +111,8 @@ public: // Methods
 	virtual Item* getCraftingRemainingItem();
 	virtual bool hasCraftingRemainingItem();
 	virtual std::string getName();
-	virtual void onCrafting(std::shared_ptr<ItemInstance>, Player*, Level*);
+	virtual void onCraftedBy(const std::shared_ptr<ItemInstance>&, Player*, Level*);
+	virtual void inventoryTick(const std::shared_ptr<ItemInstance>&, Level*, Entity*, int, bool);
 	
 	// Custom methods
 	virtual EquipmentSlot getEquipmentSlot() const;
@@ -118,6 +121,9 @@ public: // Methods
 	virtual const std::string& getStreamingMusic();
 	virtual bool isFood() const;
 	virtual bool isWolfFood() const;
+	virtual bool isComplex() const;
+
+	Packet* getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>&);
 
 	static void initItems();
 	
@@ -239,6 +245,11 @@ public: // Static declarations
 	static Item* cake;
 	static Item* bed;
 	static Item* diode;
+	static Item* cookie;
+	static MapItem* map;
+#ifdef ENH_b1_7
+	static Item* shears;
+#endif
 	static Item* record_01;
 	static Item* record_02;
 };

@@ -7,29 +7,36 @@
  ********************************************************************/
 
 #include "common/Utils.hpp"
+#include "MapColor.hpp"
 
 #pragma once
 
 class Material
 {
 public:
-	Material();
-	Material(bool bFlammable);
+	Material(MapColor* mapColor);
 	virtual ~Material();
 
 	static void initMaterials();
 	static void teardownMaterials();
 
 	virtual bool isLiquid() const;
-	virtual bool letsWaterThrough() const;
+	virtual bool isReplaceable() const;
+	virtual bool isMineable() const;
+	virtual bool isOpaque() const;
 	virtual bool isSolid() const;
 	virtual bool blocksLight() const;
 	virtual bool blocksMotion() const;
 	virtual bool isFlammable() const;
+	virtual Material* setReplaceable();
+	virtual Material* setFlammable();
+	virtual Material* setNonMineable();
+	virtual Material* setTranslucent();
 
 public:
 	static Material
 		*air,
+		*grass,
 		*dirt,
 		*wood,
 		*stone,
@@ -55,14 +62,21 @@ public:
 		*vegetable,
 		*portal,
 		*cake,
-		*web;
+		*web,
+		*piston;
 
 public:
+	const MapColor* m_pMapColor;
 	bool m_bFlammable;
+	bool m_bReplaceable;
+	bool m_bMineable;
+	bool m_bTranslucent;
 };
 
 class GasMaterial : public Material
 {
+public:
+	GasMaterial(MapColor*);
 	bool isSolid() const override;
 	bool blocksLight() const override;
 	bool blocksMotion() const override;
@@ -70,6 +84,8 @@ class GasMaterial : public Material
 
 class LiquidMaterial : public Material
 {
+public:
+	LiquidMaterial(MapColor*);
 	bool isLiquid() const override;
 	bool isSolid() const override;
 	bool blocksMotion() const override;
@@ -77,6 +93,8 @@ class LiquidMaterial : public Material
 
 class DecorationMaterial : public Material
 {
+public:
+	DecorationMaterial(MapColor*);
 	bool isSolid() const override;
 	bool blocksLight() const override;
 	bool blocksMotion() const override;

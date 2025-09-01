@@ -10,8 +10,8 @@ class MusicTileEntity : public TileEntity {
 public:
     MusicTileEntity();
 
-    void load(std::shared_ptr<CompoundTag> tag) override;
-    void save(std::shared_ptr<CompoundTag> tag) override;
+    void load(CompoundIO tag) override;
+    void save(CompoundIO tag) override;
 
     void tune();
     void playNote(Level*, const TilePos&);

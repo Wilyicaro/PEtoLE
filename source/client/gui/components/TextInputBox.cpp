@@ -139,6 +139,7 @@ void TextInputBox::keyPressed(int key)
 				m_insertHead = int(m_text.size());
 			}
 			m_text.erase(m_text.begin() + m_insertHead - 1, m_text.begin() + m_insertHead);
+			m_pParent->onTextBoxUpdated(getKey());
 			m_insertHead--;
 			recalculateScroll();
 			break;
@@ -159,6 +160,7 @@ void TextInputBox::keyPressed(int key)
 				return;
 			}
 			m_text.erase(m_text.begin() + m_insertHead, m_text.begin() + m_insertHead + 1);
+			m_pParent->onTextBoxUpdated(getKey());
 			break;
 		}
 		case AKEYCODE_ARROW_LEFT:

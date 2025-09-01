@@ -1,4 +1,4 @@
-/********************************************************************
+﻿/********************************************************************
 	Minecraft: Pocket Edition - Decompilation Project
 	Copyright (C) 2023 iProgramInCpp
 	
@@ -94,6 +94,7 @@ const std::vector<real>& RandomLevelSource::getHeights(std::vector<real>& fptr, 
 	m_ar = m_lperlinNoise1.getRegion(m_ar, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1, C_MAGIC_1, C_MAGIC_1);
 	m_br = m_lperlinNoise2.getRegion(m_br, real(a3), real(a4), real(a5), a6, a7, a8, C_MAGIC_1, C_MAGIC_1, C_MAGIC_1);
 
+	auto& limit = m_pLevel->getLevelData().getLimit(m_pLevel->m_pDimension->m_ID);
 
 	int k1 = 0;
 	int l1 = 0;
@@ -141,6 +142,30 @@ const std::vector<real>& RandomLevelSource::getHeights(std::vector<real>& fptr, 
 			d6 = d6 * (real)a7 / 16.0;
 			real d7 = (real)a7 / 2.0 + d6 * 4.0;
 			l1++;
+
+			real offset = 0.0f;
+
+			if (limit != DimensionLimit::ZERO)
+			{
+				int worldX = (a3 + j2) * 4;
+				int worldZ = (a5 + l2) * 4;
+
+				int minX = limit.m_minPos.x * 16;
+				int maxX = (limit.m_maxPos.x + 1) * 16 - 1;
+				int minZ = limit.m_minPos.z * 16;
+				int maxZ = (limit.m_maxPos.z + 1) * 16 - 1;
+
+				int distX = std::min(worldX - minX, maxX - worldX);
+				int distZ = std::min(worldZ - minZ, maxZ - worldZ);
+				int distToBorder = std::min(distX, distZ);
+
+				const int fadeDistance = 32;
+				if (distToBorder < fadeDistance) {
+					distToBorder -= 4;
+					offset = (fadeDistance - distToBorder) * 0.03125f * 128.0f;
+				}
+			}
+
 			for (int j3 = 0; j3 < a7; j3++)
 			{
 				real d8 = 0.0;
@@ -159,6 +184,7 @@ const std::vector<real>& RandomLevelSource::getHeights(std::vector<real>& fptr, 
 				else
 					d8 = d10 + (d11 - d10) * d12;
 				d8 -= d9;
+				d8 -= offset;
 				if (j3 > a7 - 4)
 				{
 					real d13 = (real)(j3 - (a7 - 4)) / 3.0;
@@ -210,6 +236,7 @@ void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, const
 
 						real density = d9;
 						real d13 = (d10 - d9) * 0.25;
+
 
 						for (int n = 0; n < 4; ++n)
 						{

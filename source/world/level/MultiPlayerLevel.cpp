@@ -3,6 +3,8 @@
 
 MultiPlayerLevel::MultiPlayerLevel(int64_t seed, Dimension* pDimension) : Level()
 {
+    //@NOTE: Should be managed by ClientSideNetworkHandler
+    m_pDataStorage = new DimensionDataStorage(nullptr);
 	m_levelData.setSeed(seed);
 	m_levelData.setLevelName("MpServer");
 	init(pDimension);

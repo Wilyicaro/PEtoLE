@@ -246,6 +246,8 @@ void HellRandomLevelSource::buildSurfaces(const ChunkPos& pos, TileID* tiles)
 	m_perlinNoise2.getRegion(m_gravelBuffer, real(pos.x) * 16.0, 109.0134, real(pos.z) * 16.0, 16, 1, 16, 1.0 / 32.0, 1.0, 1.0 / 32.0);
 	m_perlinNoise3.getRegion(m_depthBuffer, real(pos.x) * 16.0, real(pos.z) * 16.0, 0.0f, 16, 16, 1, 1.0 / 16.0, 1.0 / 16.0, 1.0 / 16.0);
 
+	DimensionLimit limit = m_pLevel->getLevelData().getLimit(m_pLevel->m_pDimension->m_ID);
+
 	constexpr int byte0 = 64;
 	for (int k = 0; k < 16; k++)
 	{
@@ -263,6 +265,16 @@ void HellRandomLevelSource::buildSurfaces(const ChunkPos& pos, TileID* tiles)
 			{
 				int l1 = (l * 16 + k) * 128 + k1;
 				if (k1 >= 127 - m_random.nextInt(5) || k1 <= m_random.nextInt(5))
+				{
+					tiles[l1] = Tile::bedrock->m_ID;
+					continue;
+				}
+
+				if (limit != DimensionLimit::ZERO && (
+					pos.x * 16 + l <= limit.m_minPos.x * 16 + m_random.nextInt(5) ||
+					pos.z * 16 + k <= limit.m_minPos.z * 16 + m_random.nextInt(5) ||
+					pos.x * 16 + l >= limit.m_maxPos.x * 16 - 1 - m_random.nextInt(5) ||
+					pos.z * 16 + k >= limit.m_maxPos.z * 16 - 1 - m_random.nextInt(5)))
 				{
 					tiles[l1] = Tile::bedrock->m_ID;
 					continue;

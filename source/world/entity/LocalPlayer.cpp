@@ -229,7 +229,7 @@ void LocalPlayer::calculateFlight(const Vec3& pos)
 		y1 = f1 * -0.2f;
 
 	field_BFC += x1;
-	float f2 = m_pMinecraft->getOptions()->m_fSensitivity * 0.35f;
+	float f2 = m_pMinecraft->getOptions()->m_fSensitivity.get() * 0.35f;
 	float f3 = f2 * (field_BFC - field_C00);
 	float f4 = field_C04 + 0.5f * (f3 - field_C04);
 	field_C04 = f4;
@@ -328,19 +328,19 @@ int LocalPlayer::move(const Vec3& pos)
 			TileID tileOnTop = m_pLevel->getTile(TilePos(x1, int(m_pos.y - 1.0f), z1));
 
 			// not standing on top of a tile?
-			if (!m_pLevel->isSolidTile(TilePos(x1, int(m_pos.y - 1.0f), z1)))
+			if (!m_pLevel->isNormalTile(TilePos(x1, int(m_pos.y - 1.0f), z1)))
 				return 0;
 
 			// aren't inside of a tile right now
-			if (m_pLevel->isSolidTile(TilePos(x1, int(m_pos.y), z1)))
+			if (m_pLevel->isNormalTile(TilePos(x1, int(m_pos.y), z1)))
 				return 0;
 
 			// don't have anything on top of us
-			if (m_pLevel->isSolidTile(TilePos(x1, int(m_pos.y + 1.0f), z1)))
+			if (m_pLevel->isNormalTile(TilePos(x1, int(m_pos.y + 1.0f), z1)))
 				return 1;
 
 			// are we trying to walk into stairs or a slab?
-			if (tileOnTop != Tile::stairsStone->m_ID && tileOnTop != Tile::stairsWood->m_ID && tileOnTop != Tile::stoneSlabHalf->m_ID && m_pMinecraft->getOptions()->m_bAutoJump)
+			if (tileOnTop != Tile::stairsStone->m_ID && tileOnTop != Tile::stairsWood->m_ID && tileOnTop != Tile::stoneSlabHalf->m_ID && m_pMinecraft->getOptions()->m_bAutoJump.get())
 				// Nope, we're walking towards a full block. Trigger an auto jump.
 				m_nAutoJumpFrames = 1;
 		}

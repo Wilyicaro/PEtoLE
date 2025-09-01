@@ -65,7 +65,7 @@ bool SimpleContainer::stillValid(Player* player)
     return true;
 }
 
-void SimpleContainer::load(std::shared_ptr<CompoundTag> tag)
+void SimpleContainer::load(CompoundIO tag)
 {
     clear();
     auto list = tag->getList("Items");
@@ -81,7 +81,7 @@ void SimpleContainer::load(std::shared_ptr<CompoundTag> tag)
     }
 }
 
-void SimpleContainer::save(std::shared_ptr<CompoundTag> tag)
+void SimpleContainer::save(CompoundIO tag)
 {
     auto list = std::make_shared<ListTag>();
 

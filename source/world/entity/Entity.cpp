@@ -705,7 +705,7 @@ bool Entity::isFree(const Vec3& off, float expand) const
 
 bool Entity::isInWall() const
 {
-	return m_pLevel->isSolidTile(TilePos(m_pos.x, m_pos.y + getHeadHeight(), m_pos.z));
+	return m_pLevel->isNormalTile(TilePos(m_pos.x, m_pos.y + getHeadHeight(), m_pos.z));
 }
 
 bool Entity::isInWater()
@@ -1001,7 +1001,7 @@ void Entity::thunderHit(LightningBolt* bolt)
 	
 }
 
-void Entity::load(std::shared_ptr<CompoundTag> tag)
+void Entity::load(CompoundIO tag)
 {
 	startSynchedData();
 	std::shared_ptr<ListTag> var2 = tag->getList("Pos");
@@ -1035,7 +1035,7 @@ void Entity::load(std::shared_ptr<CompoundTag> tag)
 	readAdditionalSaveData(tag);
 }
 
-bool Entity::save(std::shared_ptr<CompoundTag> tag)
+bool Entity::save(CompoundIO tag)
 {
 	std::string var2 = getEncodeId();
 	if (!m_bRemoved && !var2.empty()) {
@@ -1048,7 +1048,7 @@ bool Entity::save(std::shared_ptr<CompoundTag> tag)
 	}
 }
 
-void Entity::saveWithoutId(std::shared_ptr<CompoundTag> tag)
+void Entity::saveWithoutId(CompoundIO tag)
 {
 	tag->putDoubleList("Pos", { m_pos.x, m_pos.y + m_ySlideOffset, m_pos.z });
 	tag->putDoubleList("Motion", { m_vel.x, m_vel.y, m_vel.z });
@@ -1060,11 +1060,11 @@ void Entity::saveWithoutId(std::shared_ptr<CompoundTag> tag)
 	addAdditionalSaveData(tag);
 }
 
-void Entity::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Entity::addAdditionalSaveData(CompoundIO tag)
 {
 }
 
-void Entity::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Entity::readAdditionalSaveData(CompoundIO tag)
 {
 }
 

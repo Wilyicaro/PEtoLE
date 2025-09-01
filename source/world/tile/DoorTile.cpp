@@ -146,7 +146,7 @@ bool DoorTile::isSolidRender() const
 
 bool DoorTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return pos.y <= 126 && level->isSolidTile(pos.below()) && Tile::mayPlace(level, pos) && Tile::mayPlace(level, pos.above());
+	return pos.y <= 126 && level->isNormalTile(pos.below()) && Tile::mayPlace(level, pos) && Tile::mayPlace(level, pos.above());
 }
 
 void DoorTile::setShape(int dir)
@@ -226,7 +226,7 @@ void DoorTile::neighborChanged(Level* level, const TilePos& pos, TileID newTile)
 		topBreak = true;
 	}
 
-	if (!level->isSolidTile(pos.below()))
+	if (!level->isNormalTile(pos.below()))
 	{
 		level->setTile(pos, TILE_AIR);
 		topBreak = true;

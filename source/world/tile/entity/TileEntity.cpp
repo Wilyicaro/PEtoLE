@@ -1,7 +1,7 @@
 #include "TileEntity.hpp"
 #include "world/level/Level.hpp"
 
-std::shared_ptr<TileEntity> TileEntity::loadStatic(std::shared_ptr<CompoundTag> tag)
+std::shared_ptr<TileEntity> TileEntity::loadStatic(CompoundIO tag)
 {
     std::string id = tag->contains("id") ? tag->getString("id") : "";
     auto it = TileEntityType::getByName(id);
@@ -15,14 +15,14 @@ std::shared_ptr<TileEntity> TileEntity::loadStatic(std::shared_ptr<CompoundTag> 
     }
 }
 
-void TileEntity::load(std::shared_ptr<CompoundTag> tag)
+void TileEntity::load(CompoundIO tag)
 {
     m_pos.x = tag->getInt("x");
     m_pos.y = tag->getInt("y");
     m_pos.z = tag->getInt("z");
 }
 
-void TileEntity::save(std::shared_ptr<CompoundTag> tag)
+void TileEntity::save(CompoundIO tag)
 {
     if (!m_pType)
         throw std::runtime_error("Missing mapping for class: " + std::string(typeid(*this).name()));

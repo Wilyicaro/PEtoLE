@@ -5,12 +5,12 @@ DispenserTileEntity::DispenserTileEntity() : SimpleContainer(9, "gui.dispenser")
     m_pType = TileEntityType::trap;
 }
 
-void DispenserTileEntity::load(std::shared_ptr<CompoundTag> tag) {
+void DispenserTileEntity::load(CompoundIO tag) {
     TileEntity::load(tag);
     SimpleContainer::load(tag);
 }
 
-void DispenserTileEntity::save(std::shared_ptr<CompoundTag> tag) {
+void DispenserTileEntity::save(CompoundIO tag) {
     TileEntity::save(tag);
     SimpleContainer::save(tag);
 }

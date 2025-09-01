@@ -84,10 +84,10 @@ Level* FallingTile::getLevel()
 }
 
 
-void FallingTile::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void FallingTile::addAdditionalSaveData(CompoundIO tag) {
 	tag->putByte("Tile", m_id);
 }
 
-void FallingTile::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void FallingTile::readAdditionalSaveData(CompoundIO tag) {
 	m_id = tag->getByte("Tile") & 255;
 }

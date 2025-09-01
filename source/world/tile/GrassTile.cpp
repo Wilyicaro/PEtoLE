@@ -68,22 +68,22 @@ void GrassTile::tick(Level* level, const TilePos& pos, Random* random)
 	if (level->m_bIsOnline)
 		return;
 
-	if (level->getRawBrightness(pos.above()) <= 3 &&
-		level->getMaterial(pos.above())->blocksLight())
+	if (level->getRawBrightness(pos.above()) < 4 &&
+		Tile::lightBlock[level->getTile(pos.above())] > 2)
 	{
 		// grass death
 		if (random->nextInt() % 4 == 0)
 			level->setTile(pos, Tile::dirt->m_ID);
 	}
-	else if (level->getRawBrightness(pos.above()) > 8)
+	else if (level->getRawBrightness(pos.above()) >= 9)
 	{
 		TilePos tp(pos.x - 1 + random->nextInt(3),
 		           pos.y - 3 + random->nextInt(5),
 		           pos.z - 1 + random->nextInt(3));
 
 		if (level->getTile(tp) == Tile::dirt->m_ID &&
-			level->getRawBrightness(tp.above()) > 3 &&
-			!level->getMaterial(tp.above())->blocksLight())
+			level->getRawBrightness(tp.above()) >= 4 &&
+			Tile::lightBlock[level->getTile(tp.above())] <= 2)
 		{
 			//@NOTE: not this->m_ID
 			level->setTile(tp, Tile::grass->m_ID);

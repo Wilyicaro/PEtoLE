@@ -9,8 +9,8 @@ public:
 
 	void tick() override;
 	bool canSpawn() override;
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 	std::shared_ptr<Entity> findAttackTarget() override;
 	bool hurt(Entity* ent, int dmg) override;
 	std::shared_ptr<ItemInstance> getCarriedItem() override;

@@ -68,6 +68,7 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	field_E0 = Mth::random() * 12398.0f;
 	m_rot.y = float(Mth::random() * M_PI);
 	m_footSize = 0.5f;
+	m_pType = EntityType::mob;
 }
 
 Mob::~Mob()
@@ -634,14 +635,14 @@ void Mob::aiStep()
 	}
 }
 
-void Mob::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void Mob::addAdditionalSaveData(CompoundIO tag) {
 	tag->putShort("Health", m_health);
 	tag->putShort("HurtTime", m_hurtTime);
 	tag->putShort("DeathTime", m_deathTime);
 	tag->putShort("AttackTime", m_attackTime);
 }
 
-void Mob::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void Mob::readAdditionalSaveData(CompoundIO tag) {
 	if (!tag->contains("Health")) m_health = 10;
 	else m_health = tag->getShort("Health");
 

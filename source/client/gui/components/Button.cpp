@@ -61,13 +61,7 @@ Button::Button(int buttonId, const std::string& text)
 
 bool Button::clicked(Minecraft* pMinecraft, int xPos, int yPos)
 {
-	if (!m_bEnabled) return false;
-	if (xPos < m_xPos) return false;
-	if (yPos < m_yPos) return false;
-	if (xPos >= m_xPos + m_width) return false;
-	if (yPos >= m_yPos + m_height) return false;
-
-	return true;
+	return m_bEnabled && xPos >= m_xPos && yPos >= m_yPos && xPos < m_xPos + m_width && yPos < m_yPos + m_height;
 }
 
 int Button::getYImage(bool bHovered)
@@ -92,7 +86,7 @@ void Button::render(Minecraft* pMinecraft, int xPos, int yPos)
 	if (!m_bVisible) return;
 
 	if (!pMinecraft->useController())
-		m_bHoveredOrFocused = clicked(pMinecraft, xPos, yPos);
+		m_bHoveredOrFocused = Button::clicked(pMinecraft, xPos, yPos);
 
 	Font* pFont = pMinecraft->m_pFont;
 	Textures* pTexs = pMinecraft->m_pTextures;

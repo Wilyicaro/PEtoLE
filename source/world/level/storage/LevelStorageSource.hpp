@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "LevelManager.hpp"
+#include "MinecraftServer.hpp"
 #include <common/ProgressListener.hpp>
 
 struct LevelSummary
@@ -43,7 +43,7 @@ class LevelStorageSource
 public:
 	virtual ~LevelStorageSource();
 	virtual std::string getName() = 0;
-	virtual LevelManager* selectLevel(const std::string&, bool) = 0;
+	virtual MinecraftServer* selectLevel(const std::string&, bool) = 0;
 	virtual void getLevelList(std::vector<LevelSummary>&);
 	virtual void clearAll() = 0;
 	virtual int getDataTagFor(const std::string&) = 0;

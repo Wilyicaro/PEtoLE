@@ -40,6 +40,7 @@ class Level : public LevelSource
 private:
 	bool m_bAllPlayersSleeping;
 	bool m_bAnyPlayersSleeping;
+	int m_netherTravelRatio;
 
 private:
 	// @NOTE: LevelListeners do NOT get updated here
@@ -50,16 +51,17 @@ private:
 public:
 	virtual void init(Dimension* pDimension = nullptr);
 	Level();
-	Level(LevelManager* pStor, Dimension* pDimension = nullptr);
+	Level(MinecraftServer* pStor, Dimension* pDimension = nullptr);
 	~Level();
 
-	// TODO
+	bool isValidPos(const ChunkPos& pos) const;
 
 	TileID getTile(const TilePos& pos) const override;
 	float getBrightness(const TilePos& pos) const override;
 	int getData(const TilePos& pos) const override;
 	Material* getMaterial(const TilePos& pos) const override;
 	bool isSolidTile(const TilePos& pos) const override;
+	bool isNormalTile(const TilePos& pos) const override;
 
 	float getThunderLevel(float) const;
 	void setThunderLevel(float);
@@ -72,6 +74,7 @@ public:
 	virtual ChunkSource* createChunkSource();
 	LevelChunk* getChunk(const ChunkPos& pos) const;
 	LevelChunk* getChunkAt(const TilePos& pos) const;
+	int getTileRawBrightness(const TilePos& pos) const;
 	int getRawBrightness(const TilePos& pos) const;
 	int getRawBrightness(const TilePos& pos, bool b) const;
 	std::shared_ptr<TileEntity> getTileEntity(const TilePos& pos) const override;
@@ -170,6 +173,7 @@ public:
 	int getLightDepth(const TilePos& pos) const;
 	float getStarBrightness(float f) const;
 	float getSunAngle(float f) const;
+	int getNetherTravelRatio() const;
 	void swap(const TilePos& pos1, const TilePos& pos2);
 	uint8_t* getBlocksAndData(const TilePos& pos1, int xs, int ys, int zs);
 	void setBlocksAndData(const TilePos& pos, int xs, int ys, int zs, uint8_t*);
@@ -207,8 +211,8 @@ public:
 	EntityVector getPlayers(const AABB&) const;
 	std::shared_ptr<Player> getPlayer(const std::string&);
 	BiomeSource* getBiomeSource() const override;
-	LevelManager* getManager() const { return m_pLevelManager; }
-	virtual LevelData& getLevelData() const { return getManager()->m_levelData; }
+	MinecraftServer* getServer() const { return m_pMinecraftServer; }
+	virtual LevelData& getLevelData() const { return getServer()->m_levelData; }
 	AABBVector* getCubes(const Entity* pEnt, const AABB& aabb);
 	std::vector<LightUpdate>* getLightsToUpdate();
 	std::shared_ptr<Player> getNearestPlayer(const Entity*, float) const;
@@ -230,6 +234,18 @@ public:
 
 	void playStreamingMusic(const std::string&, const TilePos&);
 	void tileEvent(const TilePos&, int info, int info2);
+
+
+	template <typename T>
+	std::shared_ptr<T> getSavedData(const std::string& key)
+	{
+		return m_pDataStorage->computeIfAbsent<T>(key);
+	}
+
+	void setSavedData(const std::string& key, std::shared_ptr<SavedData> data);
+
+	int getFreeMapId(const std::string& key);
+
 	void levelEvent(int event, const TilePos&, int info);
 	void levelEvent(Player*, int event, const TilePos&, int info);
 	void entityEvent(Entity*, int event);
@@ -260,7 +276,8 @@ public:
 	bool m_bCalculatingInitialSpawn;
 	std::vector<LevelListener*> m_levelListeners;
 	ChunkSource* m_pChunkSource;
-	LevelManager* m_pLevelManager;
+	MinecraftServer* m_pMinecraftServer;
+	DimensionDataStorage* m_pDataStorage;
 	EntityVector m_pendingEntityRemovals;
 	std::set<TickNextTickData> m_pendingTicks;
 	std::set<ChunkPos> m_chunksToUpdate;

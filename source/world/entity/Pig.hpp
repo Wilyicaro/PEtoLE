@@ -21,8 +21,8 @@ public:
 	int getDeathLoot() const override;
 	int getMaxHealth() const override { return 10; }
 	bool interact(Player*) override;
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 
 	bool hasSaddle() const;
 	void setSaddle(bool b);

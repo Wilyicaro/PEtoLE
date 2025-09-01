@@ -9,10 +9,35 @@
 #pragma once
 
 #include <string>
-#include "BitStream.h"
 #include "common/Utils.hpp"
 #include "world/phys/Vec3T.hpp"
 #include "world/item/Inventory.hpp"
+
+
+struct DimensionLimit {
+	ChunkPos m_minPos, m_maxPos;
+	DimensionLimit() : m_minPos(ChunkPos()), m_maxPos(ChunkPos())
+	{
+	}
+	DimensionLimit(ChunkPos pos) : m_minPos(-pos), m_maxPos(pos)
+	{
+	}
+	DimensionLimit(ChunkPos minPos, ChunkPos maxPos) : m_minPos(minPos), m_maxPos(maxPos)
+	{
+	}
+
+	bool operator==(const DimensionLimit& other) const
+	{
+		return other.m_minPos == m_minPos && other.m_maxPos == m_maxPos;
+	}
+
+	bool operator!=(const DimensionLimit& other) const
+	{
+		return !(other == *this);
+	}
+
+	static DimensionLimit ZERO;
+};
 
 struct LevelData
 {
@@ -28,7 +53,10 @@ private:
 	bool m_bRaining;
 	int m_thunderTime;
 	bool m_bThundering;
+	bool m_bIsFlat;
 	std::string m_levelName;
+	GameType m_gameType;
+	std::unordered_map<int, DimensionLimit> m_levelLimit;
 
 private:
 	void _init(int64_t seed = 0, int x = 19132);
@@ -42,8 +70,8 @@ public:
 	LevelData(int64_t seed, const std::string& name, int storageVersion) { _init(seed, storageVersion, name); }
 
 
-	void deserialize(std::shared_ptr<CompoundTag> tag);
-	std::shared_ptr<CompoundTag> serialize() const;
+	void load(CompoundIO tag);
+	void save(CompoundIO) const;
 
 	/* Getters & Setters */
 
@@ -54,7 +82,6 @@ public:
 	const TilePos& getSpawn() const { return m_spawnPos; }
 	int64_t getTime() const { return m_time; }
 	int64_t getSizeOnDisk() const { return m_sizeOnDisk; }
-	//CompoundTag getLoadedPlayerTag(); // Return type may actually be a pointer, not sure
 
 	void setSeed(int64_t seed) { m_seed = seed; }
 	void setXSpawn(int xSpawn) { m_spawnPos.x = xSpawn; }
@@ -73,7 +100,7 @@ public:
 	void setVersion(int version) { m_version = version; }
 
 	GameType getGameType() const;
-	void setGameType(GameType gameType) { /* Empty in 0.2.1 */ }
+	void setGameType(GameType gameType) { m_gameType = gameType; }
 
 	// @TODO: Not Implemented
 	bool getSpawnMobs() { return false; }
@@ -95,5 +122,13 @@ public:
 	void setRainTime(int time) { m_rainTime = time; }
 
 	void setLoadedPlayerTo(Player* player);
+
+	void setLimit(int dim, DimensionLimit);
+
+	bool isValidPos(int dim, const ChunkPos& pos) const;
+	const DimensionLimit& getLimit(int dim) const;
+
+	bool isFlat() const { return m_bIsFlat; }
+	void setFlat(bool flat) { m_bIsFlat = flat; }
 };
 

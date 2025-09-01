@@ -21,13 +21,13 @@ bool PigZombie::canSpawn()
 	return m_pLevel->m_difficulty > 0 && m_pLevel->isUnobstructed(&m_hitbox) && m_pLevel->getCubes(this, m_hitbox)->empty() && !m_pLevel->containsAnyLiquid(m_hitbox);
 }
 
-void PigZombie::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void PigZombie::addAdditionalSaveData(CompoundIO tag)
 {
 	Zombie::addAdditionalSaveData(tag);
 	tag->putShort("Anger", m_angerTime);
 }
 
-void PigZombie::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void PigZombie::readAdditionalSaveData(CompoundIO tag)
 {
 	Zombie::readAdditionalSaveData(tag);
 	m_angerTime = tag->getShort("Anger");

@@ -300,7 +300,7 @@ void FishingHook::tick()
     }
 }
 
-void FishingHook::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) 
+void FishingHook::addAdditionalSaveData(CompoundIO tag) 
 {
     tag->putShort("xTile", m_tilePos.x);
     tag->putShort("yTile", m_tilePos.y);
@@ -310,7 +310,7 @@ void FishingHook::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
     tag->putBoolean("inGround", m_bInGround);
 }
 
-void FishingHook::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void FishingHook::readAdditionalSaveData(CompoundIO tag) {
     m_tilePos.x = tag->getShort("xTile");
     m_tilePos.y = tag->getShort("yTile");
     m_tilePos.z = tag->getShort("zTile");

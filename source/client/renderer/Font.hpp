@@ -9,6 +9,7 @@
 #pragma once
 
 #include "Textures.hpp"
+#include "RenderChunk.hpp"
 #include "client/options/Options.hpp"
 
 class Font
@@ -36,6 +37,7 @@ public:
 private:
 	int m_charWidthInt[256];
 	float m_charWidthFloat[256];
+	RenderChunk m_bakedChars[256];
 	// huge gap, don't know why it's there...
 	std::string m_fileName;
 	Options* m_pOptions;

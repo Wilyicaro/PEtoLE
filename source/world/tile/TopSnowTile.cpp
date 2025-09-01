@@ -40,6 +40,19 @@ int TopSnowTile::getResourceCount(Random* random) const
 	return 0;
 }
 
+void TopSnowTile::playerDestroy(Level* level, Player*, const TilePos& pos, int)
+{
+	float var7 = 0.7F;
+	Vec3 itemPos;
+	itemPos.x = pos.x + (level->m_random.nextFloat() * var7) + (1.0F - var7) * 0.5;
+	itemPos.y = pos.y + (level->m_random.nextFloat() * var7) + (1.0F - var7) * 0.5;
+	itemPos.z = pos.z + (level->m_random.nextFloat() * var7) + (1.0F - var7) * 0.5;
+	auto item = std::make_shared<ItemEntity>(level, itemPos, std::make_shared<ItemInstance>(Item::snowBall->m_itemID, 1, 0));
+	item->m_throwTime = 10;
+	level->addEntity(item);
+	level->setTile(pos, TILE_AIR);
+}
+
 bool TopSnowTile::mayPlace(const Level* level, const TilePos& pos) const
 {
 	TileID tile = level->getTile(pos.below());

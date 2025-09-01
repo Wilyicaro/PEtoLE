@@ -24,8 +24,8 @@ public:
 	virtual void checkHurtTarget(Entity*, float) override;
 	virtual void thunderHit(LightningBolt*) override;
 
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 
 	void defineSynchedData() override;
 

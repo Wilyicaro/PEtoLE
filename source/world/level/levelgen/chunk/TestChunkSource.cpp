@@ -22,14 +22,6 @@ TestChunkSource::TestChunkSource(Level* pLevel)
 
 TestChunkSource::~TestChunkSource()
 {
-	for (int z = C_MIN_CHUNKS_Z; z < C_MAX_CHUNKS_Z; z++)
-	{
-		for (int x = C_MIN_CHUNKS_X; x < C_MAX_CHUNKS_X; x++)
-		{
-			if (m_chunkMap[z][x])
-				delete m_chunkMap[z][x];
-		}
-	}
 }
 
 LevelChunk* TestChunkSource::generateChunk(const ChunkPos& pos)
@@ -37,7 +29,7 @@ LevelChunk* TestChunkSource::generateChunk(const ChunkPos& pos)
 	//@NOTE: This gets called a dangerous amount of recursions (for the entire damn world!)
 	// We really should fix this...
 
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 		return nullptr;
 	
 	if (m_chunkMap[pos.z][pos.x])
@@ -155,7 +147,7 @@ LevelChunk* TestChunkSource::getChunk(const ChunkPos& pos)
 
 LevelChunk* TestChunkSource::getChunkDontCreate(const ChunkPos& pos)
 {
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 		return nullptr;
 
 	if (m_chunkMap[pos.z][pos.x])

@@ -46,7 +46,7 @@ public:
 	std::vector<std::shared_ptr<TileEntity>>& m_globalRenderableTileEntities;
 	std::vector<std::shared_ptr<TileEntity>> m_renderableTileEntities;
 	TilePos m_pos;
-	TilePos field_10;
+	TilePos m_size;
 	bool empty[2];
 	TilePos m_pos2;
 	float field_2C;

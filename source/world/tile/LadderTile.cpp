@@ -81,10 +81,10 @@ void LadderTile::setPlacedOnFace(Level* level, const TilePos& pos, Facing::Name 
 {
 	int data = level->getData(pos);
 
-	if ((data == 0 || face == Facing::NORTH) && level->isSolidTile(pos.south())) data = 2;
-	if ((data == 0 || face == Facing::SOUTH) && level->isSolidTile(pos.north())) data = 3;
-	if ((data == 0 || face == Facing::WEST) && level->isSolidTile(pos.east())) data = 4;
-	if ((data == 0 || face == Facing::EAST) && level->isSolidTile(pos.west())) data = 5;
+	if ((data == 0 || face == Facing::NORTH) && level->isNormalTile(pos.south())) data = 2;
+	if ((data == 0 || face == Facing::SOUTH) && level->isNormalTile(pos.north())) data = 3;
+	if ((data == 0 || face == Facing::WEST) && level->isNormalTile(pos.east())) data = 4;
+	if ((data == 0 || face == Facing::EAST) && level->isNormalTile(pos.west())) data = 5;
 
 	level->setData(pos, data);
 	assert(level->getData(pos) == data);
@@ -96,16 +96,16 @@ void LadderTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 	switch (data)
 	{
 		case 2:
-			if (level->isSolidTile(pos.south())) return;
+			if (level->isNormalTile(pos.south())) return;
 			break;
 		case 3:
-			if (level->isSolidTile(pos.north())) return;
+			if (level->isNormalTile(pos.north())) return;
 			break;
 		case 4:
-			if (level->isSolidTile(pos.east())) return;
+			if (level->isNormalTile(pos.east())) return;
 			break;
 		case 5:
-			if (level->isSolidTile(pos.west())) return;
+			if (level->isNormalTile(pos.west())) return;
 			break;
 		case 0:
 			// hasn't decided on anything right now?
@@ -123,8 +123,8 @@ void LadderTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 bool LadderTile::mayPlace(const Level* level, const TilePos& pos) const
 {
 	return
-		level->isSolidTile(pos.west()) ||
-		level->isSolidTile(pos.east()) ||
-		level->isSolidTile(pos.north()) ||
-		level->isSolidTile(pos.south());
+		level->isNormalTile(pos.west()) ||
+		level->isNormalTile(pos.east()) ||
+		level->isNormalTile(pos.north()) ||
+		level->isNormalTile(pos.south());
 }

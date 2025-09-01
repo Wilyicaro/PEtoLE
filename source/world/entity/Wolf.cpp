@@ -102,7 +102,7 @@ void Wolf::updateAttackTarget(Entity* ent, float dist)
 			tp.x = base.x + dx;
 			for (int dz = 0; dz <= 4; ++dz) {
 				tp.z = base.z + dz;
-				if ((dx < 1 || dz < 1 || dx > 3 || dz > 3) && m_pLevel->isSolidTile(tp.below()) && !m_pLevel->isSolidTile(tp) && !m_pLevel->isSolidTile(tp.above())) {
+				if ((dx < 1 || dz < 1 || dx > 3 || dz > 3) && m_pLevel->isNormalTile(tp.below()) && !m_pLevel->isNormalTile(tp) && !m_pLevel->isNormalTile(tp.above())) {
 					moveTo(Vec3(tp.x + 0.5, tp.y, tp.z + 0.5), m_rot);
 					return;
 				}
@@ -129,7 +129,7 @@ void Wolf::addTamingParticles(bool heart)
 	}
 }
 
-void Wolf::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Wolf::addAdditionalSaveData(CompoundIO tag)
 {
 	Animal::addAdditionalSaveData(tag);
 	tag->putBoolean("Angry", isAngry());
@@ -137,7 +137,7 @@ void Wolf::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
 	tag->putString("Owner", getOwner());
 }
 
-void Wolf::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Wolf::readAdditionalSaveData(CompoundIO tag)
 {
 	Animal::readAdditionalSaveData(tag);
 	setAngry(tag->getBoolean("Angry"));

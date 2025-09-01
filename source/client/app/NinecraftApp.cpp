@@ -17,7 +17,7 @@
 #ifdef DEMO
 #include "world/level/storage/MemoryLevelStorageSource.hpp"
 #else
-#include "world/level/storage/ExternalFileLevelStorageSource.hpp"
+#include "world/level/storage/McRegionLevelStorageSource.hpp"
 #endif
 
 bool NinecraftApp::_hasInitedStatics;
@@ -71,6 +71,7 @@ void NinecraftApp::init()
 	if (!_hasInitedStatics)
 	{
 		_hasInitedStatics = true;
+		MapColor::initMapColors();
 		Material::initMaterials();
 		EntityType::initTypes();
 		MobCategory::initMobCategories();
@@ -88,7 +89,7 @@ void NinecraftApp::init()
 #ifdef DEMO
 	m_pLevelStorageSource = new MemoryLevelStorageSource;
 #else
-	m_pLevelStorageSource = new ExternalFileLevelStorageSource(m_externalStorageDir);
+	m_pLevelStorageSource = new McRegionLevelStorageSource(m_externalStorageDir);
 #endif
 
 	m_bIsLevelLoaded = false;

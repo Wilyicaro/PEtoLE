@@ -42,7 +42,7 @@ bool Bush::isValidGrowTile(const TileID tile) const
 
 bool Bush::canSurvive(const Level* level, const TilePos& pos) const
 {
-	if (level->getRawBrightness(pos) <= 7 && !level->canSeeSky(pos))
+	if (level->getTileRawBrightness(pos) <= 7 && !level->canSeeSky(pos))
 		return false;
 
 	return isValidGrowTile(level->getTile(pos.below()));

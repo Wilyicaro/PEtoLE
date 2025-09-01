@@ -41,7 +41,7 @@ int RedStoneDustTile::getColor(const LevelSource*, const TilePos& pos, Facing::N
 
 bool RedStoneDustTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.below());
+	return level->isNormalTile(pos.below());
 }
 
 int RedStoneDustTile::getResource(int, Random*) const
@@ -70,24 +70,24 @@ int RedStoneDustTile::getSignal(const LevelSource* level, const TilePos& pos, Fa
         TilePos east = pos.east();
         TilePos north = pos.north();
         TilePos south = pos.south();
-        bool var6 = shouldConnectTo(level, west, 1) || !level->isSolidTile(west) && shouldConnectTo(level, west.below(), -1);
-        bool var7 = shouldConnectTo(level, east, 3) || !level->isSolidTile(east) && shouldConnectTo(level, east.below(), -1);
-        bool var8 = shouldConnectTo(level, north, 2) || !level->isSolidTile(north) && shouldConnectTo(level, north.below(), -1);
-        bool var9 = shouldConnectTo(level, south, 0) || !level->isSolidTile(south) && shouldConnectTo(level, south.below(), -1);
-        if (!level->isSolidTile(pos.above())) {
-            if (level->isSolidTile(west) && shouldConnectTo(level, west.above(), -1)) {
+        bool var6 = shouldConnectTo(level, west, 1) || !level->isNormalTile(west) && shouldConnectTo(level, west.below(), -1);
+        bool var7 = shouldConnectTo(level, east, 3) || !level->isNormalTile(east) && shouldConnectTo(level, east.below(), -1);
+        bool var8 = shouldConnectTo(level, north, 2) || !level->isNormalTile(north) && shouldConnectTo(level, north.below(), -1);
+        bool var9 = shouldConnectTo(level, south, 0) || !level->isNormalTile(south) && shouldConnectTo(level, south.below(), -1);
+        if (!level->isNormalTile(pos.above())) {
+            if (level->isNormalTile(west) && shouldConnectTo(level, west.above(), -1)) {
                 var6 = true;
             }
 
-            if (level->isSolidTile(east) && shouldConnectTo(level, east.above(), -1)) {
+            if (level->isNormalTile(east) && shouldConnectTo(level, east.above(), -1)) {
                 var7 = true;
             }
 
-            if (level->isSolidTile(north) && shouldConnectTo(level, north.above(), -1)) {
+            if (level->isNormalTile(north) && shouldConnectTo(level, north.above(), -1)) {
                 var8 = true;
             }
 
-            if (level->isSolidTile(south) && shouldConnectTo(level, south.above(), -1)) {
+            if (level->isNormalTile(south) && shouldConnectTo(level, south.above(), -1)) {
                 var9 = true;
             }
         }
@@ -190,13 +190,13 @@ void RedStoneDustTile::updatePowerStrength(Level* level, const TilePos& from, co
                 var9 = checkTarget(level, tp, var9);
             }
 
-            if (level->isSolidTile(tp) && !level->isSolidTile(from.above())) {
+            if (level->isNormalTile(tp) && !level->isNormalTile(from.above())) {
                 TilePos above = tp.above();
                 if (above != to) {
                     var9 = checkTarget(level, above, var9);
                 }
             }
-            else if (!level->isSolidTile(tp) && (tp.x != to.x || from.y - 1 != to.y || tp.z != to.z)) {
+            else if (!level->isNormalTile(tp) && (tp.x != to.x || from.y - 1 != to.y || tp.z != to.z)) {
                 var9 = checkTarget(level, tp.below(), var9);
             }
         }
@@ -234,7 +234,7 @@ void RedStoneDustTile::updatePowerStrength(Level* level, const TilePos& from, co
                 ++tp.z;
             }
 
-            if (level->isSolidTile(tp)) {
+            if (level->isNormalTile(tp)) {
                 var14 += 2;
             }
 
@@ -324,7 +324,7 @@ void RedStoneDustTile::checkSignalUpdates(Level* level, const TilePos& pos)
         {
             TilePos rel = pos.relative(face);
             checkCornerChangeAt(level, rel);
-            if (level->isSolidTile(rel)) {
+            if (level->isNormalTile(rel)) {
                 checkCornerChangeAt(level, rel.above());
             }
             else {

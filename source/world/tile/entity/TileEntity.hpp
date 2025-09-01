@@ -20,10 +20,10 @@ class TileEntity : public std::enable_shared_from_this<TileEntity>
 public:
     virtual ~TileEntity() = default;
 
-    static std::shared_ptr<TileEntity> loadStatic(std::shared_ptr<CompoundTag> tag);
+    static std::shared_ptr<TileEntity> loadStatic(CompoundIO tag);
 
-    virtual void load(std::shared_ptr<CompoundTag> tag);
-    virtual void save(std::shared_ptr<CompoundTag> tag);
+    virtual void load(CompoundIO tag);
+    virtual void save(CompoundIO tag);
     virtual void tick() {}
 
     virtual Packet* getUpdatePacket() { return nullptr; }

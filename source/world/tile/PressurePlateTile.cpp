@@ -14,13 +14,13 @@ AABB* PressurePlateTile::getAABB(const Level*, const TilePos& pos)
 
 bool PressurePlateTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.below());
+	return level->isNormalTile(pos.below());
 }
 
 void PressurePlateTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 {
 	bool var6 = false;
-	if (!level->isSolidTile(pos.below())) {
+	if (!level->isNormalTile(pos.below())) {
 		var6 = true;
 	}
 

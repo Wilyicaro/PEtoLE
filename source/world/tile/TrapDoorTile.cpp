@@ -62,7 +62,7 @@ bool TrapDoorTile::isSolidRender() const
 
 bool TrapDoorTile::mayPlace(const Level* level, const TilePos& pos, Facing::Name face) const
 {
-	return Facing::isHorizontal(face) && level->isSolidTile(pos.relative(Facing::OPPOSITE[face]));
+	return Facing::isHorizontal(face) && level->isNormalTile(pos.relative(Facing::OPPOSITE[face]));
 }
 
 void TrapDoorTile::setPlacedOnFace(Level* level, const TilePos& pos, Facing::Name face)
@@ -148,7 +148,7 @@ void TrapDoorTile::neighborChanged(Level* level, const TilePos& pos, TileID newT
 			--tp.x;
 		}
 
-		if (!level->isSolidTile(tp)) {
+		if (!level->isNormalTile(tp)) {
 			level->setData(pos, 0);
 			spawnResources(level, pos, data);
 		}

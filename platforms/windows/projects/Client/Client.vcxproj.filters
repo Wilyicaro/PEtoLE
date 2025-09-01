@@ -563,6 +563,15 @@
     <ClInclude Include="..\..\..\..\source\client\renderer\entity\GiantMobRenderer.hpp">
       <Filter>Header Files\Renderer\Entity</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\components\SliderButton.hpp">
+      <Filter>Header Files\GUI\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\VideoSettingsScreen.hpp">
+      <Filter>Header Files\GUI\Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\renderer\MapRenderer.hpp">
+      <Filter>Header Files\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.cpp">
@@ -1032,6 +1041,15 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\client\renderer\entity\GiantMobRenderer.cpp">
       <Filter>Source Files\Renderer\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\components\SliderButton.cpp">
+      <Filter>Source Files\GUI\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\VideoSettingsScreen.cpp">
+      <Filter>Source Files\GUI\Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\renderer\MapRenderer.cpp">
+      <Filter>Source Files\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

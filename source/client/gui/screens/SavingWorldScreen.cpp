@@ -48,11 +48,11 @@ void SavingWorldScreen::tick()
 			pLevel->saveLevelData();
 			pLevel->savePlayerData();
 
-			SAFE_DELETE(pLevel->getManager());
+			SAFE_DELETE(pLevel->getServer());
 			SAFE_DELETE(pLevel);
 
 			m_pMinecraft->m_pLevel = nullptr;
-			m_pMinecraft->m_pLevelManager = nullptr;
+			m_pMinecraft->m_pMinecraftServer = nullptr;
 		}
 
 		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer = nullptr;

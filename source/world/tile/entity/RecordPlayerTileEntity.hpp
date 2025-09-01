@@ -10,8 +10,8 @@ class RecordPlayerTileEntity : public TileEntity {
 public:
     RecordPlayerTileEntity();
 
-    void load(std::shared_ptr<CompoundTag> tag) override;
-    void save(std::shared_ptr<CompoundTag> tag) override;
+    void load(CompoundIO tag) override;
+    void save(CompoundIO tag) override;
 
 public:
     int m_record;

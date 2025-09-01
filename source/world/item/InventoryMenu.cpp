@@ -9,7 +9,7 @@ InventoryMenu::InventoryMenu(Inventory* inventory, bool active) : active(active)
     craftSlots = std::make_shared<CraftingContainer>(this, 2, 2);
     resultSlots = std::make_shared<ResultContainer>();
 
-    addSlot(std::make_shared<ResultSlot>(craftSlots.get(), resultSlots.get(), 0, 144, 36));
+    addSlot(std::make_shared<ResultSlot>(inventory->m_pPlayer, craftSlots.get(), resultSlots.get(), 0, 144, 36));
 
     for (int y = 0; y < 2; ++y) {
         for (int x = 0; x < 2; ++x) {
@@ -44,7 +44,8 @@ void InventoryMenu::removed(Player* player)
     ContainerMenu::removed(player);
     for (int i = 0; i < 4; ++i) {
         std::shared_ptr<ItemInstance> item = craftSlots->getItem(i);
-        if (item != nullptr) {
+        if (item)
+        {
             player->drop(item);
             craftSlots->setItem(i, nullptr);
         }

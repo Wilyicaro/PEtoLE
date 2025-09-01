@@ -35,9 +35,9 @@ private:
 protected:
 	LevelChunk() { _init(); }
 public:
-	std::shared_ptr<CompoundTag> serialize();
+	void save(CompoundIO tag);
 
-	void deserialize(std::shared_ptr<CompoundTag> tag);
+	void load(CompoundIO tag);
 
 	LevelChunk(Level*, const ChunkPos& pos);
 	LevelChunk(Level*, TileID* pBlockData, const ChunkPos& pos);
@@ -48,7 +48,6 @@ public:
 	void lightGap(const TilePos& pos, uint8_t heightMap);
 	void lightGaps(const ChunkTilePos& pos);
 	void deleteBlockData();
-	void clearUpdateMap();
 
 	virtual bool isAt(const ChunkPos& pos);
 	virtual int getHeightmap(const ChunkTilePos& pos);
@@ -126,7 +125,6 @@ public:
 	uint8_t* m_lightBlk;
 	int      m_lightBlkCnt;
 	uint8_t m_heightMap[256];
-	uint8_t m_updateMap[256];
 	int m_minHeight;
 	ChunkPos m_chunkPos;
 	bool m_bIsTerrainPopulated;

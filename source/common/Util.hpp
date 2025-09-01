@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cstring>
+#include <sstream>
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -34,6 +35,64 @@ public:
 		std::vector<char> buf(size);
 		std::snprintf(buf.data(), size, fmt, args...);
 		return std::string(buf.data());
+	}
+
+	template<typename T>
+	static std::string toString(const T& value) {
+		std::ostringstream oss;
+		oss << value;
+		return oss.str();
+	}
+
+	template<typename... Args>
+	static std::string format(const std::string& fmt, Args&&... arguments)
+	{
+		std::vector<std::string> args = { toString(std::forward<Args>(arguments))... };
+		std::string result;
+		size_t pos = 0;
+		size_t seqIndex = 0;
+
+		while (pos < fmt.size())
+		{
+			size_t pct = fmt.find('%', pos);
+			if (pct == std::string::npos)
+			{
+				result += fmt.substr(pos);
+				break;
+			}
+
+			result += fmt.substr(pos, pct - pos);
+			pos = pct + 1;
+
+			if (pos >= fmt.size())
+			{
+				result += '%';
+				break;
+			}
+
+			char c = fmt[pos];
+			if (c == 's')
+			{
+				if (seqIndex < args.size())
+					result += args[seqIndex++];
+				else
+					result += "%s";
+				++pos;
+			}
+			else if (c >= '0' && c <= '9')
+			{
+				int index = c - '0';
+				if (index < (int)args.size())
+					result += args[index];
+				else
+					result += "%" + std::string(1, c);
+				++pos;
+			}
+			else
+				result += '%';
+		}
+
+		return result;
 	}
 
 	template<typename T>

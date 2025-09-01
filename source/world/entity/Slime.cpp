@@ -19,13 +19,13 @@ void Slime::setSize(int size)
 	setPos(m_pos);
 }
 
-void Slime::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Slime::addAdditionalSaveData(CompoundIO tag)
 {
     Mob::addAdditionalSaveData(tag);
     tag->putInt("Size", m_size - 1);
 }
 
-void Slime::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Slime::readAdditionalSaveData(CompoundIO tag)
 {
     Mob::readAdditionalSaveData(tag);
     m_size = tag->getInt("Size") + 1;

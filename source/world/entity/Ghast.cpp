@@ -25,7 +25,8 @@ void Ghast::updateAi()
     }
     
 
-    if (m_floatDuration-- <= 0) {
+    if (m_floatDuration-- <= 0)
+    {
         m_floatDuration += m_random.nextInt(5) + 2;
         if (canReach(m_targetPos, dist))
             m_vel += diff / dist * 0.1;
@@ -74,7 +75,7 @@ void Ghast::updateAi()
     }
     else
     {
-        m_yBodyRot = m_rot.y = -((float)Mth::atan2(m_vel.x, m_vel.z)) * 180.0F / 3.1415927F;
+        m_yBodyRot = m_rot.y = -(Mth::atan2(m_vel.x, m_vel.z)) * 180.0F / M_PI;
         if (m_charge > 0)
             --m_charge;
     }

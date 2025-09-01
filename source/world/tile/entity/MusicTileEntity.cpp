@@ -5,13 +5,13 @@ MusicTileEntity::MusicTileEntity() : m_bOn(false), m_note(0)
     m_pType = TileEntityType::music;
 }
 
-void MusicTileEntity::load(std::shared_ptr<CompoundTag> tag)
+void MusicTileEntity::load(CompoundIO tag)
 {
     TileEntity::load(tag);
     tag->putByte("note", m_note);
 }
 
-void MusicTileEntity::save(std::shared_ptr<CompoundTag> tag)
+void MusicTileEntity::save(CompoundIO tag)
 {
     TileEntity::save(tag);
     m_note = Mth::clamp(tag->getByte("note"), 0, 24);

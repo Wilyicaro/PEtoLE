@@ -28,11 +28,12 @@ public:
 
 private:
     static bool isSpawnPositionOk(const MobCategory* category, Level* level, const TilePos& pos) {
+        if (!level->isValidPos(pos)) return false;
         if (category->getSpawnPositionMaterial() == Material::water) {
-            return level->getMaterial(pos)->isLiquid() && !level->isSolidTile(pos.above());
+            return level->getMaterial(pos)->isLiquid() && !level->isNormalTile(pos.above());
         } else {
-            return level->isSolidTile(pos.below()) && !level->isSolidTile(pos) &&
-                   !level->getMaterial(pos)->isLiquid() && !level->isSolidTile(pos.above());
+            return level->isNormalTile(pos.below()) && !level->isNormalTile(pos) &&
+                   !level->getMaterial(pos)->isLiquid() && !level->isNormalTile(pos.above());
         }
     }
 

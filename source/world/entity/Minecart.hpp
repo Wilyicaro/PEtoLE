@@ -29,8 +29,8 @@ public:
 	void lerpTo(const Vec3& pos, const Vec2& rot, int steps) override;
 	void lerpMotion(const Vec3& vel) override;
 	bool stillValid(Player* var1) override;
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 
 	float getLootContent();
 

@@ -23,8 +23,8 @@ public:
 	int getMaxHealth() const override { return 20; }
 	int getMaxSpawnClusterSize() const override { return 8; }
 	bool interact(Player*) override;
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 	bool canDespawn() const override;;
 	void updateAi() override;
 	void aiStep() override;

@@ -1,5 +1,6 @@
 #include "DiggerItem.hpp"
 #include "world/entity/Mob.hpp"
+#include "world/entity/Player.hpp"
 
 DiggerItem::DiggerItem(int id, int attackDamageBase, Tier& tier, std::initializer_list<Tile*> tiles) : Item(id),  m_tier(tier), m_tiles(tiles), m_speed(tier.m_speed), m_attackDamage(attackDamageBase + tier.m_damage)
 {
@@ -18,12 +19,12 @@ float DiggerItem::getDestroySpeed(ItemInstance * instance, const Tile * tile)
 
 void DiggerItem::hurtEnemy(ItemInstance* instance, Mob* mob)
 {
-	instance->hurt(2);
+	instance->hurtAndBreak(2, mob);
 }
 
-void DiggerItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face)
+void DiggerItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
-	instance->hurt(1);
+	instance->hurtAndBreak(1, player);
 }
 
 int DiggerItem::getAttackDamage(Entity* entity)

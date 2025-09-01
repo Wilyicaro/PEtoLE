@@ -5,12 +5,12 @@ ChestTileEntity::ChestTileEntity() : SimpleContainer(27, "gui.chest")
     m_pType = TileEntityType::chest;
 }
 
-void ChestTileEntity::load(std::shared_ptr<CompoundTag> tag) {
+void ChestTileEntity::load(CompoundIO tag) {
     TileEntity::load(tag);
     SimpleContainer::load(tag);
 }
 
-void ChestTileEntity::save(std::shared_ptr<CompoundTag> tag) {
+void ChestTileEntity::save(CompoundIO tag) {
     TileEntity::save(tag);
     SimpleContainer::save(tag);
 }

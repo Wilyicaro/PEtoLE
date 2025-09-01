@@ -17,6 +17,7 @@ LevelChunk::~LevelChunk()
 	SAFE_DELETE(m_lightBlk);
 	SAFE_DELETE(m_lightSky);
 	SAFE_DELETE(m_tileData);
+	SAFE_DELETE(m_pBlockData);
 }
 
 constexpr int MakeBlockDataIndex (const ChunkTilePos& pos)
@@ -55,10 +56,8 @@ void LevelChunk::_init()
 	m_pBlockData = nullptr;
 }
 
-std::shared_ptr<CompoundTag> LevelChunk::serialize() 
+void LevelChunk::save(CompoundIO levelTag) 
 {
-	auto levelTag = std::make_shared<CompoundTag>();
-
 	levelTag->putByteArray("Blocks", m_pBlockData, 32768);
 	levelTag->putByteArray("Data", m_tileData, 16384);
 	levelTag->putByteArray("SkyLight", m_lightSky, 16384);
@@ -90,10 +89,9 @@ std::shared_ptr<CompoundTag> LevelChunk::serialize()
 		tileEntities->add(tileEntityTag);
 	}
 	levelTag->put("TileEntities", tileEntities);
-	return levelTag;
 }
 
-void LevelChunk::deserialize(std::shared_ptr<CompoundTag> tag) 
+void LevelChunk::load(CompoundIO tag) 
 {
 	memcpy(m_pBlockData, tag->getByteArray("Blocks").data(), 32768);
 	memcpy(m_tileData, tag->getByteArray("Data").data(), 16384);
@@ -187,7 +185,6 @@ void LevelChunk::init()
 	m_lastSaveHadEntities = false;
 	m_lastSaveTime = 0;
 	memset(m_heightMap, 0, sizeof m_heightMap);
-	memset(m_updateMap, 0, sizeof m_updateMap);
 }
 
 void LevelChunk::unload()
@@ -280,6 +277,7 @@ void LevelChunk::recalcHeightmap()
 			}
 		}
 	}
+	m_bUnsaved = true;
 }
 
 void LevelChunk::recalcHeightmapOnly()
@@ -315,6 +313,8 @@ void LevelChunk::recalcHeightmapOnly()
 	}
 
 	m_minHeight = x1;
+
+	m_bUnsaved = true;
 }
 
 void LevelChunk::lightGaps(const ChunkTilePos& pos)
@@ -377,6 +377,7 @@ int LevelChunk::getBrightness(const LightLayer& ll, const ChunkTilePos& pos)
 
 void LevelChunk::setBrightness(const LightLayer& ll, const ChunkTilePos& pos, int brightness)
 {
+	m_bUnsaved = true;
 	CheckPosition(pos);
 	// why the hell is it doing it like that.
 
@@ -447,12 +448,6 @@ void LevelChunk::addEntity(std::shared_ptr<Entity> pEnt)
 	pEnt->m_chunkPosY = yCoord;
 
 	m_entities[yCoord].push_back(pEnt);
-}
-
-void LevelChunk::clearUpdateMap()
-{
-	memset(m_updateMap, 0, sizeof m_updateMap);
-	m_bUnsaved = 0;
 }
 
 void LevelChunk::deleteBlockData()
@@ -657,6 +652,7 @@ void LevelChunk::recalcHeight(const ChunkTilePos& pos)
 		{
 			m_pLevel->updateLight(LightLayer::Sky, TilePos(globalX - 1, x2, globalZ - 1), TilePos(globalX + 1, x1, globalZ + 1));
 		}
+		m_bUnsaved = true;
 	}
 }
 
@@ -770,7 +766,6 @@ bool LevelChunk::setTile(const ChunkTilePos& pos, TileID tile)
 	}
 
 	m_bUnsaved = true;
-	m_updateMap[MakeHeightMapIndex(pos)] |= 1 << (pos.y >> 4);
 
 	return true;
 }
@@ -833,7 +828,6 @@ bool LevelChunk::setTileAndData(const ChunkTilePos& pos, TileID tile, int data)
 	}
 
 	m_bUnsaved = true;
-	m_updateMap[MakeHeightMapIndex(pos)] |= 1 << (pos.y >> 4);
 
 	return true;
 }
@@ -864,6 +858,8 @@ void LevelChunk::setData(const ChunkTilePos& pos, int data)
 		xdata = (xdata & 0x0F) | (data << 4);
 	else
 		xdata = (xdata & 0xF0) | (data);
+
+	m_bUnsaved = true;
 }
 
 // seems to set block data in 8192 block (4*16*128) chunks for some reason ?

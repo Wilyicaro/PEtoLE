@@ -45,7 +45,7 @@ float Minecraft::_renderScaleMultiplier = 1.0f;
 
 int Minecraft::width  = C_DEFAULT_SCREEN_WIDTH;
 int Minecraft::height = C_DEFAULT_SCREEN_HEIGHT;
-bool Minecraft::useAmbientOcclusion = false;
+bool Minecraft::useAmbientOcclusion = true;
 int Minecraft::customDebugId = 0;
 
 //@HUH: For the demo, this is defined as TRUE.
@@ -324,7 +324,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 	
 			if (extinguished) break;
 
-			if (pTile != Tile::bedrock || (player->m_userType >= 100 && !m_hitResult.m_bUnk24))
+			if (pTile->canStartDestroy(m_pLevel, m_hitResult.m_tilePos, m_hitResult.m_hitSide) || (player->m_userType >= 100 && !m_hitResult.m_bUnk24))
 			{
 				bool destroyed = false;
 				if (action.isDestroyStart())
@@ -333,9 +333,9 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 					player->startDestroying();
 				}
 
-				bool contDestory = m_pGameMode->continueDestroyBlock(player.get(), m_hitResult.m_tilePos, m_hitResult.m_hitSide);
+				bool contDestroy = m_pGameMode->continueDestroyBlock(player.get(), m_hitResult.m_tilePos, m_hitResult.m_hitSide);
 
-				destroyed = destroyed || contDestory;
+				destroyed = destroyed || contDestroy;
 				m_pParticleEngine->crack(m_hitResult.m_tilePos, m_hitResult.m_hitSide);
 
 				m_lastBlockBreakTime = getTimeMs();
@@ -514,9 +514,8 @@ void Minecraft::tickInput()
 #ifdef ENH_ALLOW_AO_TOGGLE
 			else if (getOptions()->isKey(KM_TOGGLEAO, keyCode))
 			{
-				// Toggle ambient occlusion.
-				getOptions()->m_bAmbientOcclusion = !getOptions()->m_bAmbientOcclusion;
-				Minecraft::useAmbientOcclusion = getOptions()->m_bAmbientOcclusion;
+				getOptions()->m_bAmbientOcclusion.toggle();
+				Minecraft::useAmbientOcclusion = getOptions()->m_bAmbientOcclusion.get();
 				m_pLevelRenderer->allChanged();
 			}
 #endif
@@ -664,7 +663,11 @@ void Minecraft::respawnPlayer(std::shared_ptr<Player> player)
 
 std::string Minecraft::getVersionString() const
 {
+#ifdef ENH_b1_7
+	return "b1.7.3 - PEtoLE";
+#else
 	return "b1.6.6 - PEtoLE";
+#endif
 }
 
 void Minecraft::_reloadInput()
@@ -741,7 +744,7 @@ void Minecraft::tick()
 
 		if (m_pLevel && !isGamePaused())
 		{
-            m_pLevel->m_difficulty = m_options->m_difficulty;
+            m_pLevel->m_difficulty = m_options->m_difficulty.get();
             if (m_pLevel->m_bIsOnline)
             {
                 m_pLevel->m_difficulty = 3;
@@ -751,8 +754,8 @@ void Minecraft::tick()
 			m_pSoundEngine->playMusicTick();
 			m_pGameRenderer->tick();
 			m_pLevelRenderer->tick();
-			if (m_pLevelManager)
-				m_pLevelManager->tick();
+			if (m_pMinecraftServer)
+				m_pMinecraftServer->tick();
 			else
 			{
 				m_pLevel->tickEntities();
@@ -788,7 +791,7 @@ void Minecraft::tick()
 		Multitouch::reset();
 
 
-		m_bIsGamePaused = (!isOnline() || m_pLevelManager && m_pLevelManager->m_pConnection->m_onlinePlayers.size() == 1) && m_pScreen && m_pScreen->isPauseScreen();
+		m_bIsGamePaused = (!isOnline() || m_pMinecraftServer && m_pMinecraftServer->m_pConnection->m_onlinePlayers.size() == 1) && m_pScreen && m_pScreen->isPauseScreen();
 	}
 }
 
@@ -840,7 +843,7 @@ void Minecraft::update()
 void Minecraft::init()
 {
 	// Optional features that you really should be able to get away with not including.
-	Screen::setIsMenuPanoramaAvailable(platform()->doesTextureExist("gui/background/panorama_0.png"));
+	Screen::setIsMenuPanoramaAvailable(platform()->doesTextureExist("title/bg/panorama0.png"));
 
 	GetPatchManager()->LoadPatchData(platform()->getPatchData());
 
@@ -849,9 +852,9 @@ void Minecraft::init()
 	m_pRakNetInstance = new RakNetInstance;
 
 	if (platform()->hasFileSystemAccess())
-		m_options = new Options(m_externalStorageDir);
+		m_options = new Options(this, m_externalStorageDir);
 	else
-		m_options = new Options();
+		m_options = new Options(this);
 
 	m_pTextures = new Textures(m_options, platform());
 	m_pTextures->addDynamicTexture(new WaterTexture);
@@ -879,11 +882,10 @@ void Minecraft::init()
 	m_pSoundEngine = new SoundEngine(platform()->getSoundSystem());
 
 	m_pLevelRenderer = new LevelRenderer(this, m_pTextures);
+	m_pFont = new Font(m_options, "font/default.png", m_pTextures);
 	m_pGameRenderer = new GameRenderer(this);
 	m_pParticleEngine = new ParticleEngine(m_pLevel, m_pTextures);
-	m_pUser = new User(getOptions()->m_playerName, "");
-
-	m_pFont = new Font(m_options, "font/default.png", m_pTextures);
+	m_pUser = new User(getOptions()->m_playerName.get(), "");
 
 	setScreen(new IntroScreen);
 	m_async.emplace_back(std::bind(&Minecraft::initAssets, this));
@@ -895,7 +897,7 @@ void Minecraft::initAssets()
 	m_pSoundEngine->init(m_options, m_pPlatform);
 	GrassColor::init(m_pPlatform->loadTexture("misc/grasscolor.png", true));
 	FoliageColor::init(m_pPlatform->loadTexture("misc/foliagecolor.png", true));
-	Language::getInstance()->init();
+	Language::getInstance()->init(getOptions());
 }
 
 Minecraft::~Minecraft()
@@ -955,8 +957,13 @@ void Minecraft::prepareLevel(const std::string& text)
 
 void Minecraft::sizeUpdate(int newWidth, int newHeight)
 {
+	resizeDisplay(getOptions()->m_guiScale.get(), newWidth, newHeight);
+}
+
+void Minecraft::resizeDisplay(int guiScale, int newWidth, int newHeight)
+{
 	// re-calculate the GUI scale.
-	Gui::InvGuiScale = getBestScaleForThisScreenSize(newWidth, newHeight) / getRenderScaleMultiplier();
+	Gui::InvGuiScale = getBestScaleForThisScreenSize(guiScale, newWidth, newHeight) / getRenderScaleMultiplier();
 
 	// The ceil gives an extra pixel to the screen's width and height, in case the GUI scale doesn't
 	// divide evenly into width or height, so that none of the game screen is uncovered.
@@ -970,12 +977,12 @@ void Minecraft::sizeUpdate(int newWidth, int newHeight)
 		m_pInputHolder->setScreenSize(Minecraft::width, Minecraft::height);
 }
 
-float Minecraft::getBestScaleForThisScreenSize(int width, int height)
+float Minecraft::getBestScaleForThisScreenSize(int guiScale, int width, int height)
 {
-//#define USE_JAVA_SCREEN_SCALING
+#define USE_JAVA_SCREEN_SCALING
 #ifdef USE_JAVA_SCREEN_SCALING
 	int scale;
-	for (scale = 1; width / (scale + 1) >= 320 && height / (scale + 1) >= 240; ++scale)
+	for (scale = 1; scale != guiScale && width / (scale + 1) >= 320 && height / (scale + 1) >= 240; ++scale)
 	{
 	}
 	return 1.0f / scale;
@@ -1092,8 +1099,10 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr
 		m_pMobPersp = m_pPlayer;
 		m_pLevel = pLevel;
 
+		if (m_pMinecraftServer)
+			m_pMinecraftServer->manageLevels(m_progress);
 
-		if (m_pRakNetInstance->m_bIsHost && m_pLevelManager && m_pLevelManager->m_pConnection->m_onlinePlayers.empty())
+		if (m_pRakNetInstance->m_bIsHost && m_pMinecraftServer && m_pMinecraftServer->m_pConnection->m_onlinePlayers.empty())
 		{
 			m_pRakNetInstance->announceServer(m_pUser->m_guid);
 			_levelGenerated();
@@ -1108,8 +1117,8 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr
 		m_pRakNetInstance->disconnect();
 		m_pLevelRenderer->setLevel(nullptr);
 		m_pParticleEngine->setLevel(nullptr);
-		delete m_pLevelManager;
-		m_pLevelManager = nullptr;
+		delete m_pMinecraftServer;
+		m_pMinecraftServer = nullptr;
 		m_pLevel = nullptr;
 		m_pNetEventCallback = nullptr;
 	}
@@ -1128,7 +1137,7 @@ void Minecraft::toggleDimension(int dim)
 	m_pLevel->getChunk(m_pPlayer->m_chunkPos)->removeEntity(m_pPlayer);
 	m_pPlayer->m_bRemoved = false;
 	Vec3 fPos(m_pPlayer->m_pos);
-	const constexpr real teleportConst = 8.0;
+	const real teleportConst = m_pLevel->getNetherTravelRatio();
 	Level* newLevel;
 	if (m_pPlayer->m_dimension == dim)
 	{
@@ -1137,7 +1146,7 @@ void Minecraft::toggleDimension(int dim)
 		m_pPlayer->moveTo(fPos, m_pPlayer->m_rot);
 		if (m_pPlayer->isAlive())
 			m_pLevel->tick(m_pPlayer, false);
-		newLevel = m_pLevelManager->getLevel(dim);
+		newLevel = m_pMinecraftServer->getLevel(dim);
 		setLevel(newLevel, "Entering the Nether", m_pPlayer);
 	}
 	else
@@ -1147,7 +1156,7 @@ void Minecraft::toggleDimension(int dim)
 		m_pPlayer->moveTo(fPos, m_pPlayer->m_rot);
 		if (m_pPlayer->isAlive())
 			m_pLevel->tick(m_pPlayer, false);
-		newLevel = m_pLevelManager->getLevel(0);
+		newLevel = m_pMinecraftServer->getLevel(0);
 		setLevel(newLevel, "Leaving the Nether", m_pPlayer);
 	}
 
@@ -1160,19 +1169,19 @@ void Minecraft::toggleDimension(int dim)
 	}
 }
 
-void Minecraft::selectLevel(const std::string& a, const std::string& b, int64_t c)
+void Minecraft::selectLevel(const std::string& a, std::function<void(LevelData&)> prepare)
 {
 	setScreen(new ProgressScreen);
-	m_pLevelManager = m_pLevelStorageSource->selectLevel(a, false);
+	m_pMinecraftServer = m_pLevelStorageSource->selectLevel(a, false);
 	hostMultiplayer();
-	if (m_pLevelManager->m_bIsNew)
+	if (prepare)
+		prepare(m_pMinecraftServer->m_levelData);
+	if (m_pMinecraftServer->m_bIsNew)
 	{
-		m_pLevelManager->m_levelData.setSeed(c);
-		m_pLevelManager->m_levelData.setLevelName(b);
-		m_delayed.push_back(std::bind(&Minecraft::setLevel, this, m_pLevelManager->getLevel(), "Generating level", nullptr));
+		m_delayed.push_back(std::bind(&Minecraft::setLevel, this, m_pMinecraftServer->getLevel(), "Generating level", nullptr));
 	}
 	else
-		m_delayed.push_back(std::bind(&Minecraft::setLevel, this, m_pLevelManager->getLevel(m_pLevelManager->m_levelData.getDimension()), "Loading level", nullptr));
+		m_delayed.push_back(std::bind(&Minecraft::setLevel, this, m_pMinecraftServer->getLevel(m_pMinecraftServer->m_levelData.getDimension()), "Loading level", nullptr));
 	m_bIsLevelLoaded = true;
 }
 
@@ -1205,7 +1214,7 @@ void Minecraft::hostMultiplayer()
 	m_pRakNetInstance->host(m_pUser->m_guid, C_DEFAULT_PORT, C_MAX_CONNECTIONS);
 	ServerSideNetworkHandler* handler = new ServerSideNetworkHandler(this, m_pRakNetInstance);
 	m_pNetEventCallback = handler;
-	m_pLevelManager->setConnection(handler);
+	m_pMinecraftServer->setConnection(handler);
 #endif
 }
 

@@ -79,6 +79,7 @@ public: // virtual functions
 	virtual float getDestroyProgress(Player*) const;
 	virtual void spawnResources(Level*, const TilePos& pos, int);
 	virtual void spawnResources(Level*, const TilePos& pos, int, float);
+	virtual void spawnResources(Level*, const TilePos& pos, const std::shared_ptr<ItemInstance>&);
 	virtual int spawnBurnResources(Level*, float, float, float);
 	virtual float getExplosionResistance(Entity*) const;
 	virtual HitResult clip(const Level*, const TilePos& pos, Vec3, Vec3);
@@ -127,6 +128,7 @@ public: // functions
 	bool containsX(const Vec3&);
 	bool containsY(const Vec3&);
 	bool containsZ(const Vec3&);
+	bool canStartDestroy(const Level*, const TilePos&, Facing::Name);
 
 public: // static functions
 	static void initTiles();

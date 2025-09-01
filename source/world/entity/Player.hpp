@@ -126,8 +126,8 @@ public:
 	bool isCreative() const { return getPlayerGameType() == GAME_TYPE_CREATIVE; }
 	std::shared_ptr<ItemInstance> getSelectedItem() const;
 	std::shared_ptr<ItemInstance> getCarriedItem() override;
-	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	virtual void addAdditionalSaveData(CompoundIO tag) override;
+	virtual void readAdditionalSaveData(CompoundIO tag) override;
 
 	// QUIRK: Yes, I did mean it like that, as did Mojang.
 #pragma GCC diagnostic push

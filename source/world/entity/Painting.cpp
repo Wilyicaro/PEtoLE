@@ -135,7 +135,7 @@ bool Painting::survives()
     }
 }
 
-void Painting::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) 
+void Painting::addAdditionalSaveData(CompoundIO tag) 
 {
     tag->putByte("Dir", m_dir);
     tag->putString("Motive", getPaintingType().m_name);
@@ -144,7 +144,7 @@ void Painting::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
     tag->putInt("TileZ", m_tilePos.z);
 }
 
-void Painting::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void Painting::readAdditionalSaveData(CompoundIO tag) {
     m_dir = tag->getByte("Dir");
     m_tilePos.x = tag->getInt("TileX");
     m_tilePos.y = tag->getInt("TileY");

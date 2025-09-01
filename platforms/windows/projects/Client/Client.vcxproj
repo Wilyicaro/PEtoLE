@@ -202,6 +202,7 @@
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\Lighting.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\BuildActionIntention.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\components\SliderButton.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\IntroScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.hpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\VideoSettingsScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\locale\Language.hpp" />
     <ClInclude Include="..\..\..\..\source\client\model\BoatModel.hpp" />
     <ClInclude Include="..\..\..\..\source\client\model\GhastModel.hpp" />
@@ -230,6 +232,7 @@
     <ClInclude Include="..\..\..\..\source\client\renderer\entity\SquidRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\entity\WolfRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\HttpTexture.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\MapRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\SignRenderer.hpp" />
@@ -358,6 +361,7 @@
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\entity\ZombieRenderer.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Lighting.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\components\SliderButton.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\IntroScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.cpp" />
@@ -367,6 +371,7 @@
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\VideoSettingsScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\locale\Language.cpp" />
     <ClCompile Include="..\..\..\..\source\client\model\BoatModel.cpp" />
     <ClCompile Include="..\..\..\..\source\client\model\GhastModel.cpp" />
@@ -389,6 +394,7 @@
     <ClCompile Include="..\..\..\..\source\client\renderer\entity\SquidRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\entity\WolfRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\HttpTexture.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\MapRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\PortalTexture.cpp" />

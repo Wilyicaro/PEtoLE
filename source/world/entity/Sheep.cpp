@@ -35,6 +35,41 @@ void Sheep::defineSynchedData()
 	m_entityData.define<int8_t>(DATA_WOOL_ID, 0);
 }
 
+#ifdef ENH_b1_7
+void Sheep::dropDeathLoot()
+{
+	if (!isSheared())
+		spawnAtLocation(std::make_shared<ItemInstance>(getDeathLoot(), 1, getColor()), 0.0F);
+}
+bool Sheep::interact(Player* player)
+{
+	auto item = player->m_pInventory->getSelected();
+	if (item && item->m_itemID == Item::shears->m_itemID && !isSheared()) {
+		if (!m_pLevel->m_bIsOnline)
+		{
+			setSheared(true);
+			int var3 = 2 + m_random.nextInt(3);
+
+			for (int i = 0; i < var3; i++)
+			{
+				auto item = spawnAtLocation(std::make_shared<ItemInstance>(TILE_CLOTH, 1, getColor()), 1.0f);
+				item->m_vel.y += m_random.nextFloat() * 0.05f;
+				item->m_vel.x += (m_random.nextFloat() - m_random.nextFloat()) * 0.1f;
+				item->m_vel.z += (m_random.nextFloat() - m_random.nextFloat()) * 0.1f;
+			}
+		}
+		item->hurtAndBreak(1, player);
+	}
+
+	return Mob::interact(player);
+}
+
+int Sheep::getDeathLoot() const
+{
+	return Tile::cloth->m_ID;
+}
+
+#else
 bool Sheep::hurt(Entity* pEnt, int damage)
 {
 	if (!m_pLevel->m_bIsOnline && !isSheared() && (pEnt && pEnt->getCategory().contains(EntityCategories::MOB)))
@@ -53,14 +88,15 @@ bool Sheep::hurt(Entity* pEnt, int damage)
 
 	return Mob::hurt(pEnt, damage);
 }
+#endif
 
-void Sheep::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Sheep::addAdditionalSaveData(CompoundIO tag)
 {
 	tag->putBoolean("Sheared", isSheared());
 	tag->putByte("Color", getColor());
 }
 
-void Sheep::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Sheep::readAdditionalSaveData(CompoundIO tag)
 {
 	setSheared(tag->getBoolean("Sheared"));
 	setColor(tag->getByte("Color"));

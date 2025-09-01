@@ -9,7 +9,7 @@ CraftingMenu::CraftingMenu(Inventory* inventory, const TilePos& tilePos, Level* 
     craftSlots = std::make_shared<CraftingContainer>(this, 3, 3);
     resultSlots = std::make_shared<ResultContainer>();
 
-    addSlot(std::make_shared<ResultSlot>(craftSlots.get(), resultSlots.get(), 0, 124, 35));
+    addSlot(std::make_shared<ResultSlot>(inventory->m_pPlayer, craftSlots.get(), resultSlots.get(), 0, 124, 35));
 
     for (int y = 0; y < 3; ++y) {
         for (int x = 0; x < 3; ++x) {

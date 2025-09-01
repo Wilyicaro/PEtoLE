@@ -49,7 +49,7 @@ void SandTile::checkSlide(Level* level, const TilePos& pos)
 	}
 	else
 	{
-		level->addEntity(std::make_shared<FallingTile>(level, Vec3(float(pos.x) + 0.5f, float(pos.y) + 0.5f, float(pos.z) + 0.5f), m_ID));
+		level->addEntity(std::make_shared<FallingTile>(level, pos.center(), m_ID));
 	}
 }
 

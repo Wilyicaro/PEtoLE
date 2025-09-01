@@ -170,7 +170,7 @@ TilePos BedTile::getRespawnTilePos(const Level* level, const TilePos& pos, int s
 		{
 			for (tp.z = startZ; tp.z <= startZ + 2; ++tp.z)
 			{
-				if (level->isSolidTile(tp.below()) && level->isEmptyTile(tp) && level->isEmptyTile(tp.above()))
+				if (level->isNormalTile(tp.below()) && level->isEmptyTile(tp) && level->isEmptyTile(tp.above()))
 				{
 					if (steps <= 0)
 						return tp;

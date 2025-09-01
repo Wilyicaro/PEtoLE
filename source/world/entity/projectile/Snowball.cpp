@@ -194,7 +194,7 @@ void Snowball::tick()
     setPos(m_pos);
 }
 
-void Snowball::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) 
+void Snowball::addAdditionalSaveData(CompoundIO tag) 
 {
     tag->putShort("xTile", m_tilePos.x);
     tag->putShort("yTile", m_tilePos.y);
@@ -204,7 +204,7 @@ void Snowball::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
     tag->putBoolean("inGround", m_bInGround);
 }
 
-void Snowball::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void Snowball::readAdditionalSaveData(CompoundIO tag) {
     m_tilePos.x = tag->getShort("xTile");
     m_tilePos.y = tag->getShort("yTile");
     m_tilePos.z = tag->getShort("zTile");

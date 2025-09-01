@@ -2,6 +2,7 @@
 
 Monster::Monster(Level* pLevel) : PathfinderMob(pLevel)
 {
+	m_pType = EntityType::monster;
 	m_health = 20;
 	m_attackDamage = 2;
 }

@@ -7,14 +7,16 @@
 #include "client/app/AppPlatform.hpp"
 #include "common/Util.hpp"
 
+class Options;
+
 class Language {
 public:
-    void init();
+    void init(Options*);
     bool loadLanguageFile(const std::string& path);
     bool contains(const std::string& key) const;
     const std::string& get(const std::string& key) const;
     template<typename... Args>
-    const std::string& get(const std::string& key, Args... args) const {
+    std::string get(const std::string& key, Args&&... args) const {
         return Util::format(get(key), args...);
     }
 

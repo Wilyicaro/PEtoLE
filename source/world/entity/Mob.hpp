@@ -51,8 +51,8 @@ public:
 	virtual void travel(const Vec2& pos);
 	virtual void updateWalkAnim();
 	virtual void aiStep();
-	virtual void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	virtual void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	virtual void addAdditionalSaveData(CompoundIO tag) override;
+	virtual void readAdditionalSaveData(CompoundIO tag) override;
 	virtual void lookAt(Entity* pEnt, float, float);
 	virtual bool isLookingAtAnEntity() { return m_pEntLookedAt != nullptr; }
 	virtual Entity* getLookingAt() const { return m_pEntLookedAt.get(); }

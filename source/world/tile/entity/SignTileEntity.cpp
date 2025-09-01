@@ -7,7 +7,7 @@ SignTileEntity::SignTileEntity() : m_selectedLine(-1)
     m_pType = TileEntityType::sign;
 }
 
-void SignTileEntity::load(std::shared_ptr<CompoundTag> tag)
+void SignTileEntity::load(CompoundIO tag)
 {
     TileEntity::load(tag);
     m_messages[0] = tag->getString("Text1");
@@ -16,7 +16,7 @@ void SignTileEntity::load(std::shared_ptr<CompoundTag> tag)
     m_messages[3] = tag->getString("Text4");
 }
 
-void SignTileEntity::save(std::shared_ptr<CompoundTag> tag)
+void SignTileEntity::save(CompoundIO tag)
 {
     TileEntity::save(tag);
     tag->putString("Text1", m_messages[0]);

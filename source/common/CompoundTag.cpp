@@ -18,7 +18,7 @@ bool CompoundTag::contains(const std::string& name)
 }
 
 void CompoundTag::write(std::ostream& os) const {
-    for (const auto pair : tags) {
+    for (const auto& pair : tags) {
         writeNamed(os, pair.first, pair.second);
     }
 

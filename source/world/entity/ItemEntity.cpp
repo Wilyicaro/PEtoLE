@@ -116,13 +116,13 @@ void ItemEntity::tick()
 		remove();
 }
 
-void ItemEntity::addAdditionalSaveData(std::shared_ptr<CompoundTag> var1) {
+void ItemEntity::addAdditionalSaveData(CompoundIO var1) {
 	var1->putShort("Health", m_health);
 	var1->putShort("Age", m_age);
 	var1->put("Item", m_itemInstance->save(std::make_shared<CompoundTag>()));
 }
 
-void ItemEntity::readAdditionalSaveData(std::shared_ptr<CompoundTag> var1) {
+void ItemEntity::readAdditionalSaveData(CompoundIO var1) {
 	m_health = var1->getShort("Health") & 255;
 	m_age = var1->getShort("Age");
 	m_itemInstance = std::make_shared<ItemInstance>(var1->getOrMakeCompound("Item"));

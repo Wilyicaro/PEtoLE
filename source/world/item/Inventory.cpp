@@ -18,7 +18,7 @@ void Inventory::prepareCreativeInventory()
 	addTestItem(Tile::treeTrunk->m_ID);
 	addTestItem(Tile::leaves->m_ID);
 	addTestItem(Tile::torch->m_ID);
-	addTestItem(Tile::stoneSlab->m_ID);
+	addTestItem(Tile::stoneSlabHalf->m_ID);
 }
 
 void Inventory::prepareSurvivalInventory()
@@ -84,6 +84,23 @@ bool Inventory::add(std::shared_ptr<ItemInstance> pInst)
 	}
 }
 
+bool Inventory::contains(const std::shared_ptr<ItemInstance>& item)
+{
+	for (auto& armor : m_armor) {
+		if (armor && armor->sameItem(item)) {
+			return true;
+		}
+	}
+
+	for (auto& i : m_items) {
+		if (i && i->sameItem(item)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 int Inventory::getSlotWithRemainingSpace(std::shared_ptr<ItemInstance> item) {
 	for (int index = 0; index < m_items.size(); index++) {
 		std::shared_ptr<ItemInstance> i = m_items[index];
@@ -145,8 +162,14 @@ int Inventory::addResource(std::shared_ptr<ItemInstance> item) {
 
 void Inventory::tick()
 {
-	for (auto v : m_items) {
-		if (v && !v->isNull() && v->m_popTime > 0) v->m_popTime--;
+	for (int i = 0; i < m_items.size(); i++)
+	{
+		auto& v = m_items[i];
+		if (v) 
+		{
+			if (v->m_popTime > 0) v->m_popTime--;
+			v->getItem()->inventoryTick(v, m_pPlayer->m_pLevel, m_pPlayer, i, i == m_selected);
+		}
 	}
 }
 
@@ -311,8 +334,9 @@ void Inventory::hurtArmor(int amount)
 	{
 		std::shared_ptr<ItemInstance> armor = m_armor[i];
 		if (!armor || armor->getItem()->getDefense() <= 0) continue;
-		armor->hurt(amount);
-		if (!armor->m_count) {
+		armor->hurtAndBreak(amount, m_pPlayer);
+		if (!armor->m_count)
+		{
 			armor->snap(m_pPlayer);
 			m_armor[i] = nullptr;
 		}

@@ -82,7 +82,7 @@ class CompoundTag : public Tag {
             return getByte(name, fallback);
         }
 
-        void putByteArray(const std::string& name, uint8_t* value, size_t size) {
+        void putByteArray(const std::string& name, const uint8_t* value, size_t size) {
             std::vector<int8_t> arr;
             for (size_t i = 0; i < size; ++i)
                 arr.push_back(static_cast<int8_t>(value[i]));
@@ -140,4 +140,7 @@ class CompoundTag : public Tag {
         void putString(const std::string& name, std::string value) {
             put(name, std::make_shared<StringTag>(value));
         }
+
     };
+
+    using CompoundIO = const std::shared_ptr<CompoundTag>&;

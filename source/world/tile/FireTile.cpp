@@ -74,7 +74,7 @@ void FireTile::animateTick(Level* level, const TilePos& pos, Random* random)
 	}
 
 	FireTile* pFireTile = (FireTile*)Tile::fire;
-	if (level->isSolidTile(pos.below()) || pFireTile->canBurn(level, pos.below()))
+	if (level->isNormalTile(pos.below()) || pFireTile->canBurn(level, pos.below()))
 	{
 		for (int i = 0; i < 3; i++)
 		{
@@ -154,7 +154,7 @@ bool FireTile::mayPick() const
 bool FireTile::mayPlace(const Level* level, const TilePos& pos) const
 {
 	// @NOTE: This is useless as you usually don't 'place' fire.
-	if (level->isSolidTile(pos.below()))
+	if (level->isNormalTile(pos.below()))
 		return true;
 
 	return isValidFireLocation(level, pos);
@@ -162,7 +162,7 @@ bool FireTile::mayPlace(const Level* level, const TilePos& pos) const
 
 void FireTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 {
-	if (!level->isSolidTile(pos.below()) && !isValidFireLocation(level, pos))
+	if (!level->isNormalTile(pos.below()) && !isValidFireLocation(level, pos))
 		level->setTile(pos, TILE_AIR);
 }
 
@@ -170,7 +170,7 @@ void FireTile::onPlace(Level* level, const TilePos& pos)
 {
 	if (level->getTile(pos.below()) != Tile::obsidian->m_ID || !Tile::portal->trySpawnPortal(level, pos))
 	{
-		if (!level->isSolidTile(pos.below()) && !isValidFireLocation(level, pos))
+		if (!level->isNormalTile(pos.below()) && !isValidFireLocation(level, pos))
 		{
 			level->setTile(pos, TILE_AIR);
 			return;
@@ -190,7 +190,7 @@ void FireTile::tick(Level* level, const TilePos& pos, Random* random)
 	}
 
 	if (!var6 && !isValidFireLocation(level, pos)) {
-		if (!level->isSolidTile(pos.below()) || var7 > 3) {
+		if (!level->isNormalTile(pos.below()) || var7 > 3) {
 			level->setTile(pos, 0);
 		}
 

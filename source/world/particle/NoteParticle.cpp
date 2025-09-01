@@ -44,6 +44,6 @@ void NoteParticle::tick()
 void NoteParticle::render(Tesselator& t, float f, float a, float b, float c, float d, float e)
 {
 	float mult = float(m_age + f) / float(m_lifetime) * 32;
-	m_size = m_oSize * Mth::clamp(mult, 0, 1);
+	m_size = m_oSize * Mth::clamp(mult, 0.0f, 1.0f);
 	Particle::render(t, f, a, b, c, d, e);
 }

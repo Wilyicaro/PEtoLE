@@ -6,7 +6,7 @@
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
 
-#include "ExternalFileLevelStorage.hpp"
+#include "McRegionLevelStorage.hpp"
 #include "world/level/Level.hpp"
 #include "GetTime.h"
 #include <common/CompoundTag.hpp>
@@ -15,17 +15,17 @@
 
 #define C_CHUNKS_TO_SAVE_PER_TICK (2)
 
-ExternalFileLevelStorage::ExternalFileLevelStorage(int i, const std::string& path) : m_path(path + "/DIM" + std::to_string(i))
+McRegionLevelStorage::McRegionLevelStorage(int i, const std::string& path) : m_path(path + "/DIM" + std::to_string(i))
 {
 	createFolderIfNotExists(m_path.c_str());
 	createFolderIfNotExists((m_path + "/region").c_str());
 }
 
-ExternalFileLevelStorage::ExternalFileLevelStorage(const std::string& path) : m_path(path)
+McRegionLevelStorage::McRegionLevelStorage(const std::string& path) : m_path(path)
 {
 }
 
-ExternalFileLevelStorage::~ExternalFileLevelStorage()
+McRegionLevelStorage::~McRegionLevelStorage()
 {
 	for (auto it = m_pRegionMap.begin(); it != m_pRegionMap.end(); ) {
 		SAFE_DELETE(it->second);
@@ -34,7 +34,7 @@ ExternalFileLevelStorage::~ExternalFileLevelStorage()
 }
 
 
-RegionFile* ExternalFileLevelStorage::createOrGetRegion(const ChunkPos& pos)
+RegionFile* McRegionLevelStorage::createOrGetRegion(const ChunkPos& pos)
 {
 	RegionFile* regionFile = m_pRegionMap[pos.regionKey()];
 	if (!regionFile)
@@ -42,7 +42,7 @@ RegionFile* ExternalFileLevelStorage::createOrGetRegion(const ChunkPos& pos)
 	return regionFile;
 }
 
-LevelChunk* ExternalFileLevelStorage::load(Level* level, const ChunkPos& pos)
+LevelChunk* McRegionLevelStorage::load(Level* level, const ChunkPos& pos)
 {
 	RegionFile* regionFile = createOrGetRegion(pos);
 
@@ -65,7 +65,7 @@ LevelChunk* ExternalFileLevelStorage::load(Level* level, const ChunkPos& pos)
 
 
 	LevelChunk* chunk = new LevelChunk(level, new TileID[16 * 16 * 128], pos);
-	chunk->deserialize(levelTag);
+	chunk->load(levelTag);
 	chunk->recalcHeightmap();
 	chunk->m_bUnsaved = false;
 	chunk->field_237 = true;
@@ -73,7 +73,7 @@ LevelChunk* ExternalFileLevelStorage::load(Level* level, const ChunkPos& pos)
 	return chunk;
 }
 
-void ExternalFileLevelStorage::save(Level* level, LevelChunk* chunk)
+void McRegionLevelStorage::save(Level* level, LevelChunk* chunk)
 {
 	RegionFile* regionFile = createOrGetRegion(chunk->m_chunkPos);
 	if (!regionFile->open())
@@ -83,7 +83,9 @@ void ExternalFileLevelStorage::save(Level* level, LevelChunk* chunk)
 	}
 
 	auto root = std::make_shared<CompoundTag>();
-	root->put("Level", chunk->serialize());
+	auto tag = std::make_shared<CompoundTag>();
+	chunk->save(tag);
+	root->put("Level", tag);
 
 	std::ostringstream oss(std::ios::binary);
 	Tag::writeNamed(oss, "", root);
@@ -97,7 +99,7 @@ void ExternalFileLevelStorage::save(Level* level, LevelChunk* chunk)
 	chunk->m_bUnsaved = false;
 }
 
-void ExternalFileLevelStorage::saveEntities(Level* level, LevelChunk* chunk)
+void McRegionLevelStorage::saveEntities(Level* level, LevelChunk* chunk)
 {
 	// no op
 }

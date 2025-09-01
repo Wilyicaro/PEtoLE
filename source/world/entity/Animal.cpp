@@ -34,7 +34,7 @@ bool Animal::canSpawn()
 {
 	TilePos pos(m_pos.x, m_hitbox.min.y, m_pos.z);
 
-	if (m_pLevel->getTile(pos.below()) != Tile::grass->m_ID || m_pLevel->getRawBrightness(pos) < 8)
+	if (m_pLevel->getTile(pos.below()) != Tile::grass->m_ID || m_pLevel->getTileRawBrightness(pos) < 8)
 		return false;
 
 	return PathfinderMob::canSpawn();

@@ -42,7 +42,7 @@ LevelChunk* MultiPlayerChunkCache::create(const ChunkPos& pos)
 
 LevelChunk* MultiPlayerChunkCache::getChunk(const ChunkPos& pos)
 {
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 	{
 		auto it = m_fakeChunkMap.find(pos.key());
 		if (it != m_fakeChunkMap.end())
@@ -52,7 +52,7 @@ LevelChunk* MultiPlayerChunkCache::getChunk(const ChunkPos& pos)
 		return fakeChunk;
 	}
 
-	auto& chunkMap = pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z ? m_fakeChunkMap : m_chunkMap;
+	auto& chunkMap = m_pLevel->isValidPos(pos) ? m_chunkMap : m_fakeChunkMap;
 
 	auto it = m_chunkMap.find(pos.key());
 	if (m_chunkMap.find(pos.key()) != m_chunkMap.end())
@@ -63,7 +63,7 @@ LevelChunk* MultiPlayerChunkCache::getChunk(const ChunkPos& pos)
 
 bool MultiPlayerChunkCache::hasChunk(const ChunkPos& pos)
 {
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 	{
 		return m_fakeChunkMap.find(pos.key()) != m_fakeChunkMap.end();
 	}

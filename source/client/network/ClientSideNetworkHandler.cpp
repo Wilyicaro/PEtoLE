@@ -131,8 +131,6 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, StartGa
 
 	if (gameType == GAME_TYPE_CREATIVE)
 		pLocalPlayer->m_pInventory->prepareCreativeInventory();
-	else
-		pLocalPlayer->m_pInventory->prepareSurvivalInventory();
 
 	m_pLevel->setTime(pStartGamePkt->m_time);
 
@@ -292,6 +290,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlayerE
 	pPlayer->m_pInventory->selectItemById(pPlayerEquipmentPkt->m_itemID, C_MAX_HOTBAR_ITEMS);
 }
 
+//@Note: this will be removed
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataPacket* packet)
 {
 	const int uncompMagic = 12847812, compMagic = 58712758, chunkSepMagic = 284787658;

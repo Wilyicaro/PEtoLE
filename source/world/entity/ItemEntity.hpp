@@ -22,9 +22,9 @@ public:
 	void playerTouch(Player*) override;
 	void tick() override;
 
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag>) override;
+	void addAdditionalSaveData(CompoundIO) override;
 
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag>) override;
+	void readAdditionalSaveData(CompoundIO) override;
 
 public:
 

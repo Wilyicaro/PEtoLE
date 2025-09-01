@@ -3,19 +3,22 @@
 #include "LevelData.hpp"
 #include <unordered_map>
 #include <vector>
+#include "DimensionDataStorage.hpp"
 
 class ServerSideNetworkHandler;
 class Level;
+class ProgressListener;
 
-class LevelManager
+class MinecraftServer
 {
 public:
-	LevelManager(const std::string& name, const std::string& path);
-	virtual ~LevelManager();
+	MinecraftServer(const std::string& name, const std::string& path);
+	virtual ~MinecraftServer();
 	virtual Level* getLevel(int dim = 0);
 	virtual void saveLevelData();
 	virtual void savePlayerData();
 	virtual void tick();
+	virtual void manageLevels(ProgressListener&);
 	virtual void setConnection(ServerSideNetworkHandler*);
 
 	static bool readLevelData(const std::string& path, LevelData& pLevelData);
@@ -27,6 +30,7 @@ public:
 	bool m_bIsNew;
 	LevelData m_levelData;
 	ServerSideNetworkHandler* m_pConnection;
+	DimensionDataStorage* m_pDataStorage;
 	std::unordered_map<int, Level*> m_levels;
 };
 

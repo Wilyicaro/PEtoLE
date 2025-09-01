@@ -9,7 +9,7 @@ public:
 
 	virtual float getDestroySpeed(ItemInstance * instance, const Tile * tile) override;
 	virtual void hurtEnemy(ItemInstance* instance, Mob* mob) override;
-	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face) override;
+	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player*) override;
 	virtual int getAttackDamage(Entity* entity) override;
 	virtual bool isHandEquipped() override;
 

@@ -211,13 +211,13 @@ void LevelRenderer::allChanged()
 
 	LeafTile* pLeaves = (LeafTile*)Tile::leaves;
 
-	pLeaves->m_bTransparent = m_pMinecraft->getOptions()->m_bFancyGraphics;
+	pLeaves->m_bTransparent = m_pMinecraft->getOptions()->m_bFancyGraphics.get();
 	pLeaves->m_TextureFrame = !pLeaves->m_bTransparent + pLeaves->m_oTex;
 
 	TileRenderer::m_bFancyGrass = m_pMinecraft->getOptions()->m_bFancyGrass;
 	TileRenderer::m_bBiomeColors = m_pMinecraft->getOptions()->m_bBiomeColors;
 
-	m_lastViewDistance = m_pMinecraft->getOptions()->m_iViewDistance;
+	m_lastViewDistance = m_pMinecraft->getOptions()->m_iViewDistance.get();
 
 	int x1 = 64 << (3 - m_lastViewDistance);
 	if (x1 >= 400)
@@ -521,7 +521,7 @@ int LevelRenderer::render(Mob* pMob, int a, float b)
 		m_dirtyChunks.push_back(pChunk);
 	}
 
-	if (m_pMinecraft->getOptions()->m_iViewDistance != m_lastViewDistance)
+	if (m_pMinecraft->getOptions()->m_iViewDistance.get() != m_lastViewDistance)
 		allChanged();
 
 	if (!a)
@@ -542,7 +542,7 @@ int LevelRenderer::render(Mob* pMob, int a, float b)
 	}
 
 	// @NOTE: Field_B8 doesn't appear to be used??
-	if (m_bOcclusionVisible && !a && !m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_bOcclusionVisible && !a && !m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 	{
 		int c = 16;
 		checkQueryResults(0, c);
@@ -1223,7 +1223,7 @@ void LevelRenderer::renderSky(float alpha)
 	glDisable(GL_TEXTURE_2D);
 
 	Vec3f sc = m_pLevel->getSkyColor(m_pMinecraft->m_pMobPersp.get(), alpha);
-	if (m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 	{
 		sc.x = (((sc.x * 30.0f) + (sc.y * 59.0f)) + (sc.z * 11.0f)) / 100.0f;
 		sc.y = ((sc.x * 30.0f) + (sc.y * 70.0f)) / 100.0f;
@@ -1335,7 +1335,7 @@ void LevelRenderer::renderClouds(float partialTick)
 {
 	if (m_pMinecraft->m_pLevel->m_pDimension->m_bFoggy) return;
 
-	if (m_pMinecraft->getOptions()->m_bFancyGraphics)
+	if (m_pMinecraft->getOptions()->m_bFancyGraphics.get())
 	{
 		renderAdvancedClouds(partialTick);
 		return;
@@ -1425,7 +1425,7 @@ void LevelRenderer::renderAdvancedClouds(float partialTick)
     float vo;
     float scale;
     
-	if (m_pMinecraft->getOptions()->m_bAnaglyphs)
+	if (m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 	{
         uo = (cr * 30.0F + cg * 59.0F + cb * 11.0F) / 100.0F;
         vo = (cr * 30.0F + cg * 70.0F) / 100.0F;

@@ -15,9 +15,9 @@ public:
 
 	void tick() override;
 
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
 
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 
 	void playerTouch(Player*) override;
 
@@ -26,11 +26,10 @@ public:
 public:
 	std::shared_ptr<Mob> m_owner = nullptr;
 	int m_shakeTime = 0;
-
+	bool m_bFromPlayer = false;
 
 private:
 	bool m_bInGround = false;
-	bool m_bFromPlayer = false;
 	int m_lastTile = 0;
 	int m_life = 0;
 	int m_flightTime = 0;

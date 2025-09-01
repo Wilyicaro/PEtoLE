@@ -13,30 +13,18 @@
 class OptionsScreen : public Screen
 {
 public:
-	OptionsScreen();
+	OptionsScreen(Options*);
+	~OptionsScreen();
 	void init() override;
 	void render(int, int, float) override;
-	void removed() override;
 
-#ifndef ORIGINAL_CODE
 	void buttonClicked(Button* pButton) override;
 
-	void UpdateTexts();
+protected:
+	std::string m_title;
 
 private:
 	Button m_BackButton;
-	Button m_AOButton;
-	Button m_srvVisButton;
-	Button m_fancyGfxButton;
-	Button m_invertYButton;
-	Button m_anaglyphsButton;
-	Button m_viewBobButton;
-	Button m_viewDistButton;
-	Button m_dynamicHandButton;
-	Button m_flightHaxButton;
-	Button m_splitControlsButton;
-	Button m_autoJumpButton;
-	Button m_blockOutlinesButton;
-	Button m_mipmapsButton;
-#endif
+	Button m_videoButton;
+	std::vector<Button*> m_configButtons;
 };

@@ -20,6 +20,7 @@ public:
 	bool isSolidRender() const override;
 	int getResource(int, Random*) const override;
 	int getResourceCount(Random*) const override;
+	void playerDestroy(Level*, Player*, const TilePos& pos, int) override;
 	bool mayPlace(const Level*, const TilePos& pos) const override;
 	void neighborChanged(Level*, const TilePos& pos, TileID tile) override;
 	bool shouldRenderFace(const LevelSource*, const TilePos& pos, Facing::Name face) const override;

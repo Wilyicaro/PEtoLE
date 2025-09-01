@@ -116,7 +116,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 		return;
 	}
 #endif
-	Level* level = m_pMinecraft->m_pLevelManager->getLevel();
+	Level* level = m_pMinecraft->m_pMinecraftServer->getLevel();
 	level->validateSpawn();
 	auto pPlayer = std::make_shared<Player>(level, level->getLevelData().getGameType());
 	pPlayer->resetPos();
@@ -155,8 +155,6 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 
 	if (pPlayer->isCreative())
 		pPlayer->m_pInventory->prepareCreativeInventory();
-	else
-		pPlayer->m_pInventory->prepareSurvivalInventory();
 
 	m_pMinecraft->m_gui.addMessage(pPlayer->m_name + " joined the game");
 
@@ -330,7 +328,7 @@ void ServerSideNetworkHandler::allowIncomingConnections(bool b)
 {
 	if (b)
 	{
-		m_pRakNetInstance->announceServer(m_pMinecraft->getOptions()->m_playerName);
+		m_pRakNetInstance->announceServer(m_pMinecraft->getOptions()->m_playerName.get());
 	}
 	else
 	{

@@ -13,12 +13,12 @@ AABB* ButtonTile::getAABB(const Level*, const TilePos& pos)
 
 bool ButtonTile::mayPlace(const Level* level, const TilePos& pos, Facing::Name face) const
 {
-	return level->isSolidTile(pos.west()) && face == Facing::EAST || level->isSolidTile(pos.east()) && face == Facing::WEST || level->isSolidTile(pos.north()) && face == Facing::SOUTH || level->isSolidTile(pos.south()) && face == Facing::NORTH;
+	return level->isNormalTile(pos.west()) && face == Facing::EAST || level->isNormalTile(pos.east()) && face == Facing::WEST || level->isNormalTile(pos.north()) && face == Facing::SOUTH || level->isNormalTile(pos.south()) && face == Facing::NORTH;
 }
 
 bool ButtonTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.west()) || level->isSolidTile(pos.east()) || level->isSolidTile(pos.north()) || level->isSolidTile(pos.south());
+	return level->isNormalTile(pos.west()) || level->isNormalTile(pos.east()) || level->isNormalTile(pos.north()) || level->isNormalTile(pos.south());
 }
 
 void ButtonTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
@@ -26,19 +26,19 @@ void ButtonTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 	if (checkCanSurvive(level, pos)) {
 		int var6 = level->getData(pos) & 7;
 		bool var7 = false;
-		if (!level->isSolidTile(pos.west()) && var6 == 1) {
+		if (!level->isNormalTile(pos.west()) && var6 == 1) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.east()) && var6 == 2) {
+		if (!level->isNormalTile(pos.east()) && var6 == 2) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.north()) && var6 == 3) {
+		if (!level->isNormalTile(pos.north()) && var6 == 3) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.south()) && var6 == 4) {
+		if (!level->isNormalTile(pos.south()) && var6 == 4) {
 			var7 = true;
 		}
 
@@ -154,16 +154,16 @@ void ButtonTile::tick(Level* level, const TilePos& pos, Random*)
 
 void ButtonTile::onPlace(Level* pLevel, const TilePos& pos)
 {
-	if (pLevel->isSolidTile(pos.west())) {
+	if (pLevel->isNormalTile(pos.west())) {
 		pLevel->setData(pos, 1);
 	}
-	else if (pLevel->isSolidTile(pos.east())) {
+	else if (pLevel->isNormalTile(pos.east())) {
 		pLevel->setData(pos, 2);
 	}
-	else if (pLevel->isSolidTile(pos.north())) {
+	else if (pLevel->isNormalTile(pos.north())) {
 		pLevel->setData(pos, 3);
 	}
-	else if (pLevel->isSolidTile(pos.south())) {
+	else if (pLevel->isNormalTile(pos.south())) {
 		pLevel->setData(pos, 4);
 	}
 
@@ -274,22 +274,22 @@ void ButtonTile::setPlacedOnFace(Level* level, const TilePos& pos, Facing::Name 
 	int var6 = level->getData(pos);
 	int var7 = var6 & 8;
 	var6 &= 7;
-	if (face == Facing::NORTH && level->isSolidTile(pos.south()))
+	if (face == Facing::NORTH && level->isNormalTile(pos.south()))
 	{
 		var6 = 4;
 	}
-	else if (face == Facing::SOUTH && level->isSolidTile(pos.north()))
+	else if (face == Facing::SOUTH && level->isNormalTile(pos.north()))
 	{
 		var6 = 3;
 	}
-	else if (face == Facing::WEST && level->isSolidTile(pos.east()))
+	else if (face == Facing::WEST && level->isNormalTile(pos.east()))
 	{
 		var6 = 2;
 	}
-	else if (face == Facing::EAST && level->isSolidTile(pos.west())) {
+	else if (face == Facing::EAST && level->isNormalTile(pos.west())) {
 		var6 = 1;
 	}
-	else var6 = level->isSolidTile(pos.west()) ? 1 : (level->isSolidTile(pos.east()) ? 2 : (level->isSolidTile(pos.north()) ? 3 : (level->isSolidTile(pos.south()) ? 4 : 1)));
+	else var6 = level->isNormalTile(pos.west()) ? 1 : (level->isNormalTile(pos.east()) ? 2 : (level->isNormalTile(pos.north()) ? 3 : (level->isNormalTile(pos.south()) ? 4 : 1)));
 
 	level->setData(pos, var6 + var7);
 }

@@ -48,6 +48,7 @@ public:
 	int getMaxDamage() const;
 	int getMaxStackSize() const;
 	void hurt(int by);
+	void hurtAndBreak(int, Entity*);
 	void hurtEnemy(Mob*);
 	void interactEnemy(Mob*);
 	bool isDamageableItem();
@@ -56,15 +57,15 @@ public:
 	bool isStackedByData();
 	bool matches(const ItemInstance&) const;
 	bool sameItem(const std::shared_ptr<ItemInstance>) const;
-	void mineBlock(int tile, const TilePos& pos, Facing::Name face);
+	void mineBlock(int tile, const TilePos& pos, Facing::Name face, Player*);
 	std::shared_ptr<ItemInstance> remove(int amt);
 	void setDescriptionId(const std::string&);
 	void snap(Player*);
 	std::string toString();
 	std::shared_ptr<ItemInstance> use(Level*, Player*);
 	bool useOn(Player*, Level*, const TilePos& pos, Facing::Name face);
-	void onCrafting(Player*, Level*);
-	void onCrafting(Player*, Level*, int amount);
+	void onCraftedBy(Player*, Level*);
+	void onCraftedBy(Player*, Level*, int amount);
 
 	Item* getItem() const;
 	std::shared_ptr<ItemInstance> copy() const;
@@ -74,11 +75,11 @@ public:
 	// v0.2.0
 	int getAttackDamage(Entity *pEnt);
 	bool isNull() const;
-	void load(std::shared_ptr<CompoundTag> tag) 
+	void load(CompoundIO tag) 
 	{
 		_init(tag->getShort("id"), tag->getByte("Count"), tag->getShort("Damage"));
 	}
-	std::shared_ptr<CompoundTag> save(std::shared_ptr<CompoundTag> tag)
+	std::shared_ptr<CompoundTag> save(CompoundIO tag)
 	{
 		tag->putShort("id", m_itemID);
 		tag->putByte("Count", m_count);

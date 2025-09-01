@@ -147,19 +147,19 @@ bool ChestTile::use(Level* level, const TilePos& pos, Player* player)
     if (level->m_bIsOnline) {
         return true;
     }
-    if (level->isSolidTile(pos.above())) {
+    if (level->isNormalTile(pos.above())) {
         return true;
     }
-    else if (level->getTile(pos.west()) == m_ID && level->isSolidTile(pos.offset(-1, 1, 0))) {
+    else if (level->getTile(pos.west()) == m_ID && level->isNormalTile(pos.offset(-1, 1, 0))) {
         return true;
     }
-    else if (level->getTile(pos.east()) == m_ID && level->isSolidTile(pos.offset(1, 1, 0))) {
+    else if (level->getTile(pos.east()) == m_ID && level->isNormalTile(pos.offset(1, 1, 0))) {
         return true;
     }
-    else if (level->getTile(pos.north()) == m_ID && level->isSolidTile(pos.offset(0, 1, -1))) {
+    else if (level->getTile(pos.north()) == m_ID && level->isNormalTile(pos.offset(0, 1, -1))) {
         return true;
     }
-    else if (level->getTile(pos.south()) == m_ID && level->isSolidTile(pos.offset(0, 1, 1))) {
+    else if (level->getTile(pos.south()) == m_ID && level->isNormalTile(pos.offset(0, 1, 1))) {
         return true;
     }
     else {

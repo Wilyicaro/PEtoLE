@@ -88,7 +88,7 @@ public:
 	void handleBuildAction(const BuildActionIntention& action);
 	bool isLevelReady() const;
 	void changeDimension(int dim = -1);
-	void selectLevel(const std::string&, const std::string&, int64_t seed);
+	void selectLevel(const std::string&, std::function<void(LevelData&)> = {});
 	void setLevel(Level*, const std::string&, std::shared_ptr<LocalPlayer>);
 	void toggleDimension(int dim = -1);
 	bool pauseGame();
@@ -116,9 +116,10 @@ public:
 	virtual void initAssets();
 	virtual void onGraphicsReset();
 	virtual void sizeUpdate(int newWidth, int newHeight) override;
+	virtual void resizeDisplay(int guiScale, int newWidth = Minecraft::width, int newHeight = Minecraft::height);
 	virtual int getFpsIntlCounter();
 
-	float getBestScaleForThisScreenSize(int width, int height);
+	float getBestScaleForThisScreenSize(int guiScale, int width, int height);
 	void prepareLevel(const std::string& text);
 	bool isOnline() const;
 	bool isOnlineClient() const;
@@ -168,7 +169,7 @@ public:
 	int field_2B8;
 	User* m_pUser;
 	Level* m_pLevel;
-	LevelManager* m_pLevelManager;
+	MinecraftServer* m_pMinecraftServer;
 	std::shared_ptr<LocalPlayer> m_pPlayer;
 	std::shared_ptr<Mob> m_pMobPersp;
 	Gui m_gui;

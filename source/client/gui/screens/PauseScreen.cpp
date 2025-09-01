@@ -114,6 +114,6 @@ void PauseScreen::buttonClicked(Button* pButton)
 
 #ifdef ENH_ADD_OPTIONS_PAUSE
 	if (pButton->m_buttonId == m_btnOptions.m_buttonId)
-		m_pMinecraft->setScreen(new OptionsScreen);
+		m_pMinecraft->setScreen(new OptionsScreen(m_pMinecraft->getOptions()));
 #endif
 }

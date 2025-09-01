@@ -18,9 +18,9 @@ public:
 
 	void tick() override;
 
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
 
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 	 
 	float getShadowHeightOffs() const override;
 

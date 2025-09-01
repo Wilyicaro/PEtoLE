@@ -7,7 +7,7 @@ RailTile::RailTile(int id, int texture, bool isPowered) : Tile(id, texture, Mate
 
 bool RailTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.below());
+	return level->isNormalTile(pos.below());
 }
 
 void RailTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
@@ -22,23 +22,23 @@ void RailTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 
 		bool var7 = false;
 
-		if (!level->isSolidTile(pos.below())) {
+		if (!level->isNormalTile(pos.below())) {
 			var7 = true;
 		}
 
-		if (faceData == 2 && !level->isSolidTile(pos.east())) {
+		if (faceData == 2 && !level->isNormalTile(pos.east())) {
 			var7 = true;
 		}
 
-		if (faceData == 3 && !level->isSolidTile(pos.west())) {
+		if (faceData == 3 && !level->isNormalTile(pos.west())) {
 			var7 = true;
 		}
 
-		if (faceData == 4 && !level->isSolidTile(pos.north())) {
+		if (faceData == 4 && !level->isNormalTile(pos.north())) {
 			var7 = true;
 		}
 
-		if (faceData == 5 && !level->isSolidTile(pos.south())) {
+		if (faceData == 5 && !level->isNormalTile(pos.south())) {
 			var7 = true;
 		}
 

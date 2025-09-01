@@ -202,7 +202,7 @@ void Arrow::tick()
     setPos(m_pos);
 }
 
-void Arrow::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) 
+void Arrow::addAdditionalSaveData(CompoundIO tag) 
 {
     tag->putShort("xTile", m_tilePos.x);
     tag->putShort("yTile", m_tilePos.y);
@@ -213,7 +213,7 @@ void Arrow::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
     tag->putBoolean("player", m_bFromPlayer);
 }
 
-void Arrow::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void Arrow::readAdditionalSaveData(CompoundIO tag) {
     m_tilePos.x = tag->getShort("xTile");
     m_tilePos.y = tag->getShort("yTile");
     m_tilePos.z = tag->getShort("zTile");
@@ -226,7 +226,7 @@ void Arrow::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
 void Arrow::playerTouch(Player* player)
 {
     if (!m_pLevel->m_bIsOnline) {
-        if (m_bInGround && m_owner.get() == player && m_bFromPlayer && m_shakeTime <= 0 && player->m_pInventory->add(std::make_shared<ItemInstance>(Item::arrow, 1))) {
+        if (m_bInGround && m_bFromPlayer && m_shakeTime <= 0 && player->m_pInventory->add(std::make_shared<ItemInstance>(Item::arrow, 1))) {
             m_pLevel->playSound(this, "random.pop", 0.2F, ((m_random.nextFloat() - m_random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
             player->take(this, 1);
             remove();

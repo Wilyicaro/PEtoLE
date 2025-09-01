@@ -8,13 +8,10 @@
 
 #include "Material.hpp"
 
-Material::Material() :
-	m_bFlammable(false)
-{
-}
-
-Material::Material(bool bFlammable) :
-	m_bFlammable(bFlammable)
+Material::Material(MapColor* mapColor) :
+	m_pMapColor(mapColor),
+	m_bFlammable(false),
+	m_bMineable(true)
 {
 }
 
@@ -25,6 +22,7 @@ Material::~Material()
 Material
 * Material::air,
 * Material::dirt,
+* Material::grass,
 * Material::wood,
 * Material::stone,
 * Material::metal,
@@ -48,36 +46,39 @@ Material
 * Material::vegetable,
 * Material::portal,
 * Material::cake,
-* Material::web;
+* Material::web,
+* Material::piston;
 
 void Material::initMaterials()
 {
-	air        = new GasMaterial();
-	dirt       = new Material();
-	wood       = new Material(true);
-	stone      = new Material();
-	metal      = new Material();
-	water      = new LiquidMaterial();
-	lava       = new LiquidMaterial();
-	leaves     = new Material(true);
-	plant      = new DecorationMaterial();
-	sponge     = new Material();
-	cloth      = new Material(true);
-	fire       = new GasMaterial();
-	sand       = new Material();
-	decoration = new DecorationMaterial();
-	glass      = new Material();
-	explosive  = new Material(true);
-	coral      = new Material();
-	ice        = new Material();
-	topSnow    = new DecorationMaterial();
-	snow       = new Material();
-	cactus     = new Material();
-	clay       = new Material();
-	vegetable  = new Material();
-	portal     = new Material();
-	cake       = new Material();
-	web = new DecorationMaterial();
+	air  = new GasMaterial(MapColor::air);
+	grass = new Material(MapColor::grass);
+	dirt = new Material(MapColor::dirt);
+	wood = (new Material(MapColor::wood))->setFlammable();
+	stone = (new Material(MapColor::stone))->setNonMineable();
+	metal = (new Material(MapColor::metal))->setNonMineable();
+	water = new LiquidMaterial(MapColor::water);
+	lava = new LiquidMaterial(MapColor::red);
+	leaves = (new Material(MapColor::foliage))->setFlammable()->setTranslucent();
+	plant = new DecorationMaterial(MapColor::foliage);
+	sponge = new Material(MapColor::cloth);
+	cloth = (new Material(MapColor::cloth))->setFlammable();
+	fire = new GasMaterial(MapColor::air);
+	sand = new Material(MapColor::sand);
+	decoration = new DecorationMaterial(MapColor::air);
+	glass = (new Material(MapColor::air))->setTranslucent();
+	explosive = (new Material(MapColor::red))->setFlammable()->setTranslucent();
+	coral = new Material(MapColor::foliage);
+	ice = (new Material(MapColor::ice))->setTranslucent();
+	topSnow = (new DecorationMaterial(MapColor::snow))->setReplaceable()->setNonMineable();
+	snow = (new Material(MapColor::snow))->setNonMineable()->setTranslucent();
+	cactus = (new Material(MapColor::foliage))->setTranslucent();
+	clay = new Material(MapColor::clay);
+	vegetable = new Material(MapColor::foliage);
+	portal = new Material(MapColor::air);
+	cake = new Material(MapColor::air);
+	web = (new Material(MapColor::cloth))->setNonMineable();
+	piston = (new Material(MapColor::stone));
 }
 
 void Material::teardownMaterials()
@@ -108,6 +109,7 @@ void Material::teardownMaterials()
 	SAFE_DELETE(portal);
 	SAFE_DELETE(cake);
 	SAFE_DELETE(web);
+	SAFE_DELETE(piston);
 }
 
 bool Material::isLiquid() const
@@ -115,12 +117,19 @@ bool Material::isLiquid() const
 	return false;
 }
 
-bool Material::letsWaterThrough() const
+bool Material::isReplaceable() const
 {
-	if (isLiquid())
-		return false;
+	return false;
+}
 
-	return !isSolid();
+bool Material::isMineable() const
+{
+	return m_bMineable;
+}
+
+bool Material::isOpaque() const
+{
+	return !m_bTranslucent && isSolid();
 }
 
 bool Material::isSolid() const
@@ -133,6 +142,30 @@ bool Material::isFlammable() const
 	return m_bFlammable;
 }
 
+Material* Material::setReplaceable()
+{
+	m_bReplaceable = true;
+	return this;
+}
+
+Material* Material::setFlammable()
+{
+	m_bFlammable = true;
+	return this;
+}
+
+Material* Material::setNonMineable()
+{
+	m_bMineable = false;
+	return this;
+}
+
+Material* Material::setTranslucent()
+{
+	m_bTranslucent = true;
+	return this;
+}
+
 bool Material::blocksLight() const
 {
 	return true;
@@ -141,6 +174,11 @@ bool Material::blocksLight() const
 bool Material::blocksMotion() const
 {
 	return true;
+}
+
+GasMaterial::GasMaterial(MapColor* mapColor) : Material(mapColor)
+{
+	setReplaceable();
 }
 
 bool GasMaterial::isSolid() const
@@ -158,6 +196,10 @@ bool GasMaterial::blocksMotion() const
 	return false;
 }
 
+DecorationMaterial::DecorationMaterial(MapColor* mapColor) : Material(mapColor)
+{
+}
+
 bool DecorationMaterial::isSolid() const
 {
 	return false;
@@ -171,6 +213,11 @@ bool DecorationMaterial::blocksLight() const
 bool DecorationMaterial::blocksMotion() const
 {
 	return false;
+}
+
+LiquidMaterial::LiquidMaterial(MapColor* mapColor) : Material(mapColor)
+{
+	setReplaceable();
 }
 
 bool LiquidMaterial::isLiquid() const

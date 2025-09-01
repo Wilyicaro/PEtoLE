@@ -27,6 +27,7 @@ public:
 	virtual int  tick() = 0;
 	virtual bool shouldSave() = 0;
 	virtual void saveAll();
+	virtual LevelChunk* createFakeChunk(Level*, const ChunkPos&);
 	virtual std::string gatherStats() = 0;
 	virtual void save(bool force = true);
 	virtual bool save(bool force, ProgressListener&);

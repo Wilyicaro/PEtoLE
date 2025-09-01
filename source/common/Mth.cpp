@@ -99,6 +99,17 @@ float Mth::clamp(float a, float min, float max)
 	return max;
 }
 
+int Mth::clamp(int a, int min, int max)
+{
+	if (a > max)
+		return max;
+	if (a > min)
+		return a;
+	else
+		return min;
+	return max;
+}
+
 int Mth::floor(float f)
 {
 	int result = int(f);

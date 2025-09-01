@@ -11,9 +11,11 @@
 #include "common/Mth.hpp"
 #include "Lighting.hpp"
 #include "entity/HumanoidMobRenderer.hpp"
+#include "world/item/MapItem.hpp"
 
 ItemInHandRenderer::ItemInHandRenderer(Minecraft* pMC) :
-	m_pMinecraft(pMC)
+	m_pMinecraft(pMC),
+    m_mapRenderer(pMC->m_pFont, pMC->getOptions())
 {
     m_selectedItem = nullptr;
 	m_lastSlot = -1;
@@ -158,12 +160,13 @@ void ItemInHandRenderer::render(float f)
 
 	float h = m_oHeight + (m_height - m_oHeight) * f;
 	glPushMatrix();
-	glRotatef(pLP->m_rotPrev.x + (pLP->m_rot.x - pLP->m_rotPrev.x) * f, 1.0f, 0.0f, 0.0f);
+	float rotX = pLP->m_rotPrev.x + (pLP->m_rot.x - pLP->m_rotPrev.x) * f;
+	glRotatef(rotX, 1.0f, 0.0f, 0.0f);
 	glRotatef(pLP->m_rotPrev.y + (pLP->m_rot.y - pLP->m_rotPrev.y) * f, 0.0f, 1.0f, 0.0f);
     Lighting::turnOn(); // must be called before glPopMatrix()
 	glPopMatrix();
 
-	if (m_pMinecraft->getOptions()->m_bDynamicHand && m_pMinecraft->m_pMobPersp == pLP)
+	if (m_pMinecraft->getOptions()->m_bDynamicHand.get() && m_pMinecraft->m_pMobPersp == pLP)
 	{
 		float rYaw   = Mth::Lerp(pLP->m_lastRenderArmRot.y, pLP->m_renderArmRot.y, f);
 		float rPitch = Mth::Lerp(pLP->m_lastRenderArmRot.x, pLP->m_renderArmRot.x, f);
@@ -182,7 +185,66 @@ void ItemInHandRenderer::render(float f)
     float fAnim = pLP->getAttackAnim(f);
     constexpr float d = 0.8f;
     
-	if (pItem)
+	if (pItem && pItem->m_itemID == Item::map->m_itemID)
+	{
+		glPushMatrix();
+		float var14 = 0.8F;
+		float var8 = pLP->getAttackAnim(f);
+		float var9 = Mth::sin(var8 * M_PI);
+		float var10 = Mth::sin(Mth::sqrt(var8) * M_PI);
+		glTranslatef(-var10 * 0.4F, Mth::sin(Mth::sqrt(var8) * M_PI * 2.0F) * 0.2F, -var9 * 0.2F);
+		var8 = Mth::clamp(1.0F - rotX / 45.0F + 0.1F, 0.0f, 1.0f);
+
+		var8 = -Mth::cos(var8 * M_PI) * 0.5F + 0.5F;
+		glTranslatef(0.0F, 0.0F * var14 - (1.0F - h) * 1.2F - var8 * 0.5F + 0.04F, -0.9F * var14);
+		glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
+		glRotatef(var8 * -85.0F, 0.0F, 0.0F, 1.0F);
+		glEnable(GL_RESCALE_NORMAL);
+		m_pMinecraft->m_pTextures->loadAndBindTexture("mob/char.png");
+
+		for (int var17 = 0; var17 < 2; ++var17)
+		{
+			int var21 = var17 * 2 - 1;
+			glPushMatrix();
+			glTranslatef(-0.0F, -0.6F, 1.1F * (float)var21);
+			glRotatef((float)(-45 * var21), 1.0F, 0.0F, 0.0F);
+			glRotatef(-90.0F, 0.0F, 0.0F, 1.0F);
+			glRotatef(59.0F, 0.0F, 0.0F, 1.0F);
+			glRotatef((float)(-65 * var21), 0.0F, 1.0F, 0.0F);
+			HumanoidMobRenderer* pRenderer = (HumanoidMobRenderer*)EntityRenderDispatcher::getInstance()->getRenderer(pLP.get());
+			float var13 = 1.0F;
+			glScalef(var13, var13, var13);
+			pRenderer->renderHand();
+			glPopMatrix();
+		}
+
+		var9 = pLP->getAttackAnim(f);
+		var10 = Mth::sin(var9 * var9 * M_PI);
+		float var18 = Mth::sin(Mth::sqrt(var9) * M_PI);
+		glRotatef(-var10 * 20.0F, 0.0F, 1.0F, 0.0F);
+		glRotatef(-var18 * 20.0F, 0.0F, 0.0F, 1.0F);
+		glRotatef(-var18 * 80.0F, 1.0F, 0.0F, 0.0F);
+		var9 = 0.38F;
+		glScalef(var9, var9, var9);
+		glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
+		glRotatef(180.0F, 0.0F, 0.0F, 1.0F);
+		glTranslatef(-1.0F, -1.0F, 0.0F);
+		var10 = 0.015625F;
+		glScalef(var10, var10, var10);
+		m_pMinecraft->m_pTextures->loadAndBindTexture("misc/mapbg.png");
+		Tesselator& var19 = Tesselator::instance;
+		glNormal3f(0.0F, 0.0F, -1.0F);
+		var19.begin();
+		uint8_t var20 = 7;
+		var19.vertexUV((0 - var20), (128 + var20), 0.0, 0.0, 1.0);
+		var19.vertexUV((128 + var20), (128 + var20), 0.0, 1.0, 1.0);
+		var19.vertexUV((128 + var20), (0 - var20), 0.0, 1.0, 0.0);
+		var19.vertexUV((0 - var20), (0 - var20), 0.0, 0.0, 0.0);
+		var19.draw();
+		m_mapRenderer.render(m_pMinecraft->m_pPlayer, m_pMinecraft->m_pTextures, Item::map->getMapSavedData(pItem, m_pMinecraft->m_pLevel));
+		glPopMatrix();
+	}
+	else if (pItem)
 	{
         glTranslatef(-0.4f * Mth::sin(float(M_PI) * Mth::sqrt(fAnim)), 0.2f * Mth::sin(2.0f * float(M_PI) * Mth::sqrt(fAnim)), -0.2f * Mth::sin(float(M_PI) * fAnim));
         glTranslatef(0.7f * d, -0.65f * d - (1.0f - h) * 0.6f, -0.9f * d);

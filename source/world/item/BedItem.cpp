@@ -35,7 +35,7 @@ bool BedItem::useOn(ItemInstance* inst, Player* player, Level* level, const Tile
 			offTp.x += 1;
 		}
 
-		if (level->isEmptyTile(tp) && level->isEmptyTile(offTp) && level->isSolidTile(tp.below()) && level->isSolidTile(offTp.below()))
+		if (level->isEmptyTile(tp) && level->isEmptyTile(offTp) && level->isNormalTile(tp.below()) && level->isNormalTile(offTp.below()))
 		{
 			level->setTileAndData(tp, var8->m_ID, dir);
 			level->setTileAndData(offTp, var8->m_ID, dir + 8);

@@ -246,7 +246,7 @@ void LiquidTileDynamic::tick(Level* level, const TilePos& pos, Random* random)
 
 		if (field_6C >= 2 && m_pMaterial == Material::water)
 		{
-			if (level->isSolidTile(pos.below()))
+			if (level->isNormalTile(pos.below()))
 			{
 				newData = 0;
 			}

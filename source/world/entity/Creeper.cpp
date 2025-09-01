@@ -86,14 +86,14 @@ void Creeper::thunderHit(LightningBolt* bolt)
 	m_entityData.set<int8_t>(DATA_POWERED, 1);
 }
 
-void Creeper::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Creeper::addAdditionalSaveData(CompoundIO tag)
 {
 	Monster::addAdditionalSaveData(tag);
 	if (isPowered())
 		tag->putBoolean("powered", true);
 }
 
-void Creeper::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Creeper::readAdditionalSaveData(CompoundIO tag)
 {
 	Monster::readAdditionalSaveData(tag);
 	m_entityData.set<int8_t>(DATA_POWERED, tag->getBoolean("powered"));

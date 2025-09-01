@@ -23,13 +23,28 @@ SmallButton::SmallButton(int id, int x, int y, int width, int height, const std:
 {
 }
 
-SmallButton::SmallButton(int id, int x, int y, Options::Option* pOption, const std::string& str) :
+SmallButton::SmallButton(int id, int x, int y, Options::OptionEntry* pOption, const std::string& str) :
 	Button(id, x, y, 150, 20, str),
 	m_pOption(pOption)
 {
 }
 
-Options::Option* SmallButton::getOption()
+bool SmallButton::clicked(Minecraft* mc, int xPos, int yPos)
+{
+	if (Button::clicked(mc, xPos, yPos))
+	{
+		if (getOption())
+		{
+			getOption()->toggle();
+			m_text = mc->getOptions()->getMessage(*getOption());
+			mc->getOptions()->save();
+		}
+		return true;
+	}
+	return false;
+}
+
+Options::OptionEntry* SmallButton::getOption()
 {
 	return m_pOption;
 }

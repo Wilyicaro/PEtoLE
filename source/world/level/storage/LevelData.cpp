@@ -22,6 +22,8 @@ void LevelData::_init(int64_t seed, int version)
 	m_thunderTime = 0;
 	m_bRaining = false;
 	m_rainTime = 0;
+	m_bIsFlat = false;
+	m_gameType = GAME_TYPE_SURVIVAL;
 }
 
 void LevelData::_init(int64_t seed, int storageVersion, const std::string& name)
@@ -30,7 +32,7 @@ void LevelData::_init(int64_t seed, int storageVersion, const std::string& name)
 	m_levelName = name;
 }
 
-void LevelData::deserialize(std::shared_ptr<CompoundTag> tag)
+void LevelData::load(CompoundIO tag)
 {
 	m_seed = tag->getLong("RandomSeed");
 	m_spawnPos = TilePos(tag->getInt("SpawnX"), tag->getInt("SpawnY"), tag->getInt("SpawnZ"));
@@ -44,12 +46,23 @@ void LevelData::deserialize(std::shared_ptr<CompoundTag> tag)
 	m_bRaining = tag->getBoolean("raining");
 	m_thunderTime = tag->getInt("thunderTime");
 	m_bThundering = tag->getBoolean("thundering");
+	m_bIsFlat = tag->getString("generatorName") == "FLAT";
+	m_gameType = GameType(tag->getInt("GameType"));
+	auto list = tag->getList("LevelLimit");
+	if (list)
+	{
+		for (auto& tag : list->getValue())
+		{
+			auto limit = std::dynamic_pointer_cast<CompoundTag>(tag);
+			if (limit)
+				m_levelLimit[limit->getInt("Dimension")] = DimensionLimit(ChunkPos(limit->getInt("MinX"), limit->getInt("MinZ")), ChunkPos(limit->getInt("MaxX"), limit->getInt("MaxZ")));
+		}
+	}
 	if (m_LocalPlayerData) m_dimension = m_LocalPlayerData->getInt("Dimension");
 }
 
-std::shared_ptr<CompoundTag> LevelData::serialize() const
+void LevelData::save(CompoundIO tag) const
 {
-	auto tag = std::make_shared<CompoundTag>();
 	tag->putLong("RandomSeed", m_seed);
 	tag->putInt("SpawnX", m_spawnPos.x);
 	tag->putInt("SpawnY", m_spawnPos.y);
@@ -63,13 +76,31 @@ std::shared_ptr<CompoundTag> LevelData::serialize() const
 	tag->putBoolean("raining", m_bRaining);
 	tag->putInt("thunderTime", m_thunderTime);
 	tag->putBoolean("thundering", m_bThundering);
+	tag->putString("generatorName", m_bIsFlat ? "FLAT" : "DEFAULT");
+	tag->putInt("GameType", m_gameType);
+
+	if (!m_levelLimit.empty())
+	{
+		auto list = std::make_shared<ListTag>();
+		for (auto& p : m_levelLimit)
+		{
+			if (p.second == DimensionLimit::ZERO) continue;
+			auto limit = std::make_shared<CompoundTag>();
+			limit->putInt("Dimension", p.first);
+			limit->putInt("MinX", p.second.m_minPos.x);
+			limit->putInt("MinZ", p.second.m_minPos.z);
+			limit->putInt("MaxX", p.second.m_maxPos.x);
+			limit->putInt("MaxZ", p.second.m_maxPos.z);
+			list->add(limit);
+		}
+		tag->put("LevelLimit", list);
+	}
 	if (m_LocalPlayerData) tag->put("Player", m_LocalPlayerData);
-	return tag;
 }
 
 GameType LevelData::getGameType() const
 {
-	return GAME_TYPE_SURVIVAL;
+	return m_gameType;
 }
 
 void LevelData::setLoadedPlayerTo(Player* player)
@@ -80,3 +111,22 @@ void LevelData::setLoadedPlayerTo(Player* player)
 		m_LocalPlayerData = nullptr;
 	}
 }
+
+void LevelData::setLimit(int dim, DimensionLimit limit)
+{
+	m_levelLimit[dim] = limit;
+}
+
+bool LevelData::isValidPos(int dim, const ChunkPos& pos) const
+{
+	auto it = m_levelLimit.find(dim);
+	return it == m_levelLimit.end() || (pos.x >= it->second.m_minPos.x && pos.z >= it->second.m_minPos.z && pos.x < it->second.m_maxPos.x && pos.z < it->second.m_maxPos.z);
+}
+
+const DimensionLimit& LevelData::getLimit(int dim) const
+{
+	auto it = m_levelLimit.find(dim);
+	return it == m_levelLimit.end() ? DimensionLimit::ZERO : it->second;
+}
+
+DimensionLimit DimensionLimit::ZERO = DimensionLimit();

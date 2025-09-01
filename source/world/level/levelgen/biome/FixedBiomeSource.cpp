@@ -11,9 +11,6 @@
 
 FixedBiomeSource::FixedBiomeSource(Biome* biome, real temperature, real downfall) : BiomeSource(), m_pBiome(biome), m_temperature(temperature), m_downfall(downfall)
 {
-	m_biomes.assign(256, biome);
-	m_temperatures.assign(256, temperature);
-	m_downfalls.assign(256, downfall);
 }
 
 real FixedBiomeSource::getTemperature(int x, int y) {
@@ -22,11 +19,20 @@ real FixedBiomeSource::getTemperature(int x, int y) {
 
 const std::vector<Biome*>& FixedBiomeSource::getBiomeBlock(std::vector<Biome*>& pBiomes, const TilePos& pos, int c, int d)
 {
-	return m_biomes;
+	int size = c * d;
+	if (pBiomes.size() < size)
+		pBiomes.assign(size, m_pBiome);
+	if (m_temperatures.size() < size)
+		m_temperatures.assign(size, m_temperature);
+	if (m_downfalls.size() < size)
+		m_downfalls.assign(size, m_downfall);
+	return pBiomes;
 }
 
 const std::vector<real>& FixedBiomeSource::getTemperatureBlock(int a, int b, int c, int d)
 {
-
+	int size = c * d;
+	if (m_temperatures.size() < size)
+		m_temperatures.assign(size, m_temperature);
 	return m_temperatures;
 }

@@ -7,6 +7,8 @@
  ********************************************************************/
 
 #include "ChunkSource.hpp"
+#include "FakeLevelChunk.hpp"
+#include "world/level/Level.hpp"
 
 ChunkSource::~ChunkSource()
 {
@@ -15,6 +17,11 @@ ChunkSource::~ChunkSource()
 void ChunkSource::saveAll()
 {
 
+}
+
+LevelChunk* ChunkSource::createFakeChunk(Level* level, const ChunkPos& pos)
+{
+	return new FakeLevelChunk(level, nullptr, pos, level->getLevelData().isFlat() ? FakeLevelChunk::ContentType::FLAT : level->m_pDimension->m_bHasCeiling ? FakeLevelChunk::ContentType::NONE : FakeLevelChunk::ContentType::OCEAN);
 }
 
 void ChunkSource::save(bool force)

@@ -345,7 +345,7 @@ void Player::attack(Entity* pEnt)
 
 bool Player::canDestroy(const Tile* pTile) const
 {
-	if (pTile->m_pMaterial != Material::stone && pTile->m_pMaterial != Material::metal && pTile->m_pMaterial != Material::snow && pTile->m_pMaterial != Material::topSnow)
+	if (pTile->m_pMaterial->isMineable())
 		return true;
 	auto item = getSelectedItem();
 	return item && item->canDestroySpecial(pTile);
@@ -726,33 +726,33 @@ std::shared_ptr<ItemInstance> Player::getCarriedItem()
 	return m_pInventory->getSelected();
 }
 
-void Player::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
+void Player::addAdditionalSaveData(CompoundIO tag) {
 	Mob::addAdditionalSaveData(tag);
 	tag->put("Inventory", m_pInventory->save(std::make_shared<ListTag>()));
 	tag->putInt("playerGameType", getPlayerGameType());
 	tag->putInt("Dimension", m_dimension);
 	tag->putBoolean("Sleeping", m_bSleeping);
 	tag->putShort("SleepTimer", m_sleepTimer);
-	if (m_bSleeping)
-	{
-		setBedSleepPos(m_pos);
-		wake(true, true, false);
-	}
-
-	if (tag->contains("SpawnX") && tag->contains("SpawnY") && tag->contains("SpawnZ"))
-		setRespawnPos(TilePos(tag->getInt("SpawnX"), tag->getInt("SpawnY"), tag->getInt("SpawnZ")));
-}
-
-void Player::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) {
-	Mob::readAdditionalSaveData(tag);
-	m_pInventory->load(tag->getList("Inventory"));
-	m_dimension = tag->getInt("Dimension");
-	m_sleepTimer = tag->getInt("SleepTimer");
 	if (m_bHasRespawnPos)
 	{
 		tag->putInt("SpawnX", m_respawnPos.x);
 		tag->putInt("SpawnY", m_respawnPos.y);
 		tag->putInt("SpawnZ", m_respawnPos.z);
 	}
+	if (m_bSleeping)
+	{
+		setBedSleepPos(m_pos);
+		wake(true, true, false);
+	}
+
+}
+
+void Player::readAdditionalSaveData(CompoundIO tag) {
+	Mob::readAdditionalSaveData(tag);
+	m_pInventory->load(tag->getList("Inventory"));
+	m_dimension = tag->getInt("Dimension");
+	m_sleepTimer = tag->getInt("SleepTimer");
+	if (tag->contains("SpawnX") && tag->contains("SpawnY") && tag->contains("SpawnZ"))
+		setRespawnPos(TilePos(tag->getInt("SpawnX"), tag->getInt("SpawnY"), tag->getInt("SpawnZ")));
 	setPlayerGameType((GameType)tag->getInt("playerGameType"));
 }

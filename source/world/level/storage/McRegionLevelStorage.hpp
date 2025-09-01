@@ -17,12 +17,12 @@
 
 #ifndef DEMO
 
-class ExternalFileLevelStorage : public ChunkStorage
+class McRegionLevelStorage : public ChunkStorage
 {
 public:
-	ExternalFileLevelStorage(int i, const std::string& path);
-	ExternalFileLevelStorage(const std::string& path);
-	~ExternalFileLevelStorage();
+	McRegionLevelStorage(int i, const std::string& path);
+	McRegionLevelStorage(const std::string& path);
+	~McRegionLevelStorage();
 
 	// ChunkStorage
 	LevelChunk* load(Level* level, const ChunkPos& pos) override;

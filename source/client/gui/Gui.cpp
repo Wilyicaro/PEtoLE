@@ -40,7 +40,7 @@ Gui::Gui(Minecraft* pMinecraft)
 
 	m_pMinecraft = pMinecraft;
 
-	xglGenBuffers(1, &m_renderChunk.field_0);
+	xglGenBuffers(1, &m_renderChunk.m_glID);
 }
 
 void Gui::addMessage(const std::string& s)
@@ -201,7 +201,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 	int width = int(ceilf(Minecraft::width * InvGuiScale)),
 		height = int(ceilf(Minecraft::height * InvGuiScale));
 
-	if (mc->getOptions()->m_bFancyGraphics)
+	if (mc->getOptions()->m_bFancyGraphics.get())
 	{
 		renderVignette(player->getBrightness(f), width, height);
 	}

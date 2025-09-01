@@ -121,6 +121,29 @@ void ItemInstance::hurt(int by)
 	}
 }
 
+void ItemInstance::hurtAndBreak(int amount, Entity* ent)
+{
+	if (isDamageableItem())
+	{
+		m_auxValue += amount;
+		if (m_auxValue > getMaxDamage())
+		{
+			if (ent->isPlayer())
+			{
+				//((Player*)ent)->awardStat(Stats::STAT_ITEM_BREAK[m_itemID], 1);
+			}
+
+
+			--m_count;
+			if (m_count < 0)
+				m_count = 0;
+
+			m_auxValue = 0;
+		}
+
+	}
+}
+
 void ItemInstance::hurtEnemy(Mob* mob)
 {
 	getItem()->hurtEnemy(this, mob);
@@ -179,9 +202,9 @@ int ItemInstance::getAttackDamage(Entity *pEnt)
 	return getItem()->getAttackDamage(pEnt);
 }
 
-void ItemInstance::mineBlock(int tile, const TilePos& pos, Facing::Name face)
+void ItemInstance::mineBlock(int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
-	return getItem()->mineBlock(this, tile, pos, face);
+	return getItem()->mineBlock(this, tile, pos, face, player);
 }
 
 std::shared_ptr<ItemInstance> ItemInstance::remove(int count)
@@ -217,14 +240,14 @@ bool ItemInstance::useOn(Player* player, Level* level, const TilePos& pos, Facin
 	return getItem()->useOn(this, player, level, pos, face);
 }
 
-void ItemInstance::onCrafting(Player* player, Level* level)
+void ItemInstance::onCraftedBy(Player* player, Level* level)
 {
-	onCrafting(player, level, m_count);
+	onCraftedBy(player, level, m_count);
 }
 
-void ItemInstance::onCrafting(Player* player, Level* level, int amount)
+void ItemInstance::onCraftedBy(Player* player, Level* level, int amount)
 {
-	getItem()->onCrafting(shared_from_this(), player, level);
+	getItem()->onCraftedBy(shared_from_this(), player, level);
 }
 
 bool ItemInstance::isNull() const

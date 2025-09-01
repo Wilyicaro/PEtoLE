@@ -4,10 +4,11 @@
 
 FlintAndSteelItem::FlintAndSteelItem(int id) : Item(id)
 {
+    m_maxDamage = 64;
 	m_maxStackSize = 1;
 }
 
-bool FlintAndSteelItem::useOn(ItemInstance* item, Player*, Level* level, const TilePos& pos, Facing::Name face)
+bool FlintAndSteelItem::useOn(ItemInstance* item, Player* player, Level* level, const TilePos& pos, Facing::Name face)
 {
     TilePos tp = pos.relative(face);
     int var8 = level->getTile(tp);
@@ -16,6 +17,6 @@ bool FlintAndSteelItem::useOn(ItemInstance* item, Player*, Level* level, const T
         level->setTile(tp, Tile::fire->m_ID);
     }
 
-    item->hurt(1);
+    item->hurtAndBreak(1, player);
     return true;
 }

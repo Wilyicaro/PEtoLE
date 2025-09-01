@@ -76,7 +76,7 @@ bool DyeItem::useOn(ItemInstance* item, Player* player, Level* level, const Tile
 						tp.x += itemRand.nextInt(3) - 1;
 						tp.y += (itemRand.nextInt(3) - 1) * itemRand.nextInt(3) / 2;
 						tp.z += itemRand.nextInt(3) - 1;
-						if (level->getTile(tp.below()) != Tile::grass->m_ID || level->isSolidTile(tp)) {
+						if (level->getTile(tp.below()) != Tile::grass->m_ID || level->isNormalTile(tp)) {
 							goto label53;
 						}
 					}

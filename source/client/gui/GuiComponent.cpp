@@ -96,11 +96,11 @@ void GuiComponent::fillGradient(int a2, int a3, int a4, int a5, int a6, int a7, 
 
 	// note: for some stupid reason OG uses the float overload.
 	t.color(float(GET_RED(a6)) / 255.0f, float(GET_GREEN(a6)) / 255.0f, float(GET_BLUE(a6)) / 255.0f, float(GET_ALPHA(a6)) / 255.0f);
-	t.vertex(a2, a5, zLevel);
-	t.vertex(a4, a5, zLevel);
-	t.color(float(GET_RED(a7)) / 255.0f, float(GET_GREEN(a7)) / 255.0f, float(GET_BLUE(a7)) / 255.0f, float(GET_ALPHA(a7)) / 255.0f);
 	t.vertex(a4, a3, zLevel);
 	t.vertex(a2, a3, zLevel);
+	t.color(float(GET_RED(a7)) / 255.0f, float(GET_GREEN(a7)) / 255.0f, float(GET_BLUE(a7)) / 255.0f, float(GET_ALPHA(a7)) / 255.0f);
+	t.vertex(a2, a5, zLevel);
+	t.vertex(a4, a5, zLevel);
 
 	t.draw();
 

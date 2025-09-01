@@ -40,7 +40,7 @@ LevelChunk* ChunkCache::getChunk(const ChunkPos& pos)
 		return m_pLastChunk;
 	}
 
-	auto& chunkMap = pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z ? m_fakeChunkMap : m_chunkMap;
+	auto& chunkMap = m_pLevel->isValidPos(pos) ? m_chunkMap : m_fakeChunkMap;
 
 	if (!hasChunk(pos))
 	{
@@ -98,7 +98,7 @@ LevelChunk* ChunkCache::getChunkDontCreate(const ChunkPos& pos)
 			return m_pLastChunk;
 	}
 
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 		return m_pFakeChunk;
 
 	if (!hasChunk(pos))
@@ -130,7 +130,7 @@ bool ChunkCache::hasChunk(const ChunkPos& pos)
 	if (m_lastChunkPos == pos)
 		return true;
 
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 	{
 		return m_fakeChunkMap.find(pos.key()) != m_fakeChunkMap.end();
 	}
@@ -152,7 +152,7 @@ int ChunkCache::tick()
 
 void ChunkCache::postProcess(ChunkSource* pChkSrc, const ChunkPos& pos)
 {
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 		return;
 
 	LevelChunk* pChunk = getChunk(pos);
@@ -312,9 +312,9 @@ LevelChunk* ChunkCache::load(const ChunkPos& pos)
 	if (!m_pChunkStorage)
 		return m_pFakeChunk;
 
-	if (pos.x < C_MIN_CHUNKS_X || pos.z < C_MIN_CHUNKS_Z || pos.x >= C_MAX_CHUNKS_X || pos.z >= C_MAX_CHUNKS_Z)
+	if (!m_pLevel->isValidPos(pos))
 	{
-		return new FakeLevelChunk(m_pLevel, nullptr, pos);
+		return m_pChunkSource->createFakeChunk(m_pLevel, pos);
 	}
 
 	LevelChunk* pChk = m_pChunkStorage->load(m_pLevel, pos);

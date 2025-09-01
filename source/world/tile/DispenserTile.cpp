@@ -3,6 +3,7 @@
 #include "entity/DispenserTileEntity.hpp"
 #include <world/entity/projectile/Arrow.hpp>
 #include "FurnaceTile.hpp"
+#include <world/entity/projectile/ThrownEgg.hpp>
 
 DispenserTile::DispenserTile(int id, int texture) : Tile(id, texture, Material::stone)
 {
@@ -81,22 +82,19 @@ void DispenserTile::fireArrow(Level* level, const TilePos& pos, Random* random) 
     int var6 = level->getData(pos);
     float xDir = 0.0F;
     float zDir = 0.0F;
-    if (var6 == 3) {
+    if (var6 == 3)
         zDir = 1.0F;
-    }
-    else if (var6 == 2) {
+    else if (var6 == 2)
         zDir = -1.0F;
-    }
-    else if (var6 == 5) {
+    else if (var6 == 5)
         xDir = 1.0F;
-    }
-    else {
+    else
         xDir = -1.0F;
-    }
+   
 
     auto var11 = std::dynamic_pointer_cast<DispenserTileEntity>(level->getTileEntity(pos));
     auto randomItem = var11->removeRandomItem();
-    Vec3 vel(pos.x + xDir * 0.5 + 0.5, pos.y + 0.5, pos.z + zDir * 0.5 + 0.5);
+    Vec3 vel(pos.x + xDir * 0.6 + 0.5, pos.y + 0.5, pos.z + zDir * 0.6 + 0.5);
     if (!randomItem) {
         level->playSound(Vec3(pos), "random.click", 1.0F, 1.2F);
     }
@@ -105,24 +103,25 @@ void DispenserTile::fireArrow(Level* level, const TilePos& pos, Random* random) 
         if (randomItem->m_itemID == Item::arrow->m_itemID)
         {
             auto arrow = std::make_shared<Arrow>(level, vel);
+            arrow->m_bFromPlayer = true;
             arrow->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
             level->addEntity(arrow);
-            level->playSound(Vec3(pos), "random.bow", 1.0F, 1.2F);
+            level->levelEvent(1002, pos, 0);
         }
-        //else if (randomItem->m_itemID == Item::egg->m_itemID)
-        //{
-        //    auto egg = std::make_shared<ThrownEgg>(level, vel);
-        //     egg->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
-        //     level->addEntity(egg);
-        //     level->playSound(Vec3(pos), "random.bow", 1.0F, 1.2F);
-        //}
-        //else if (randomItem->m_itemID == Item::snowBall->m_itemID)
-        //{
-        //    auto snowball = std::make_shared<Snowball>(level, vel);
-        //    snowball.shoot((double)xDir, 0.1, (double)zDir, 1.1F, 6.0F);
-        //    level->addEntity(snowball);
-        //    level->playSound(Vec3(pos), "random.bow", 1.0F, 1.2F);
-        //}
+        else if (randomItem->m_itemID == Item::egg->m_itemID)
+        {
+            auto egg = std::make_shared<ThrownEgg>(level, vel);
+             egg->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
+             level->addEntity(egg);
+             level->levelEvent(1002, pos, 0);
+        }
+        else if (randomItem->m_itemID == Item::snowBall->m_itemID)
+        {
+            auto snowball = std::make_shared<Snowball>(level, vel);
+            snowball->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
+            level->addEntity(snowball);
+            level->levelEvent(1002, pos, 0);
+        }
         else {
             auto itemEnt = std::make_shared<ItemEntity>(level, vel.add(0, -0.3, 0), randomItem);
             var20 = random->nextDouble() * 0.1 + 0.2;
@@ -133,19 +132,10 @@ void DispenserTile::fireArrow(Level* level, const TilePos& pos, Random* random) 
             itemEnt->m_vel.y += random->nextGaussian() * 0.0075 * 6.0;
             itemEnt->m_vel.z += random->nextGaussian() * 0.0075 * 6.0;
             level->addEntity(itemEnt);
-            level->playSound(Vec3(pos), "random.click", 1.0F, 1.0F);
+            level->levelEvent(1000, pos, 0);
         }
 
-        for (int var37 = 0; var37 < 10; ++var37) {
-            var20 = random->nextDouble() * 0.2 + 0.01;
-            real var22 = vel.x + xDir * 0.01 + (random->nextDouble() - 0.5) * zDir * 0.5;
-            real var24 = vel.y + (random->nextDouble() - 0.5) * 0.5;
-            real var26 = vel.z + zDir * 0.01 + (random->nextDouble() - 0.5) * xDir * 0.5;
-            real var28 = xDir * var20 + random->nextGaussian() * 0.01;
-            real var30 = -0.03 + random->nextGaussian() * 0.01;
-            real var32 = zDir * var20 + random->nextGaussian() * 0.01;
-            level->addParticle("smoke", Vec3(var22, var24, var26), Vec3(var28, var30, var32));
-        }
+        level->levelEvent(2000, pos, xDir + 1 + (zDir + 1) * 3);
     }
 
 }

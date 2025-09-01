@@ -16,83 +16,80 @@
 #include "client/renderer/PatchManager.hpp"
 #include "client/renderer/GrassColor.hpp"
 #include "client/renderer/FoliageColor.hpp"
+#include <client/gui/components/SmallButton.hpp>
+#include <client/gui/components/SliderButton.hpp>
 
-Options::Option
-	Options::Option::MUSIC            (0,  "options.music",          true,  false),
-	Options::Option::SOUND            (1,  "options.sound",          true,  false),
-	Options::Option::INVERT_MOUSE     (2,  "options.invertMouse",    false, true),
-	Options::Option::SENSITIVITY      (3,  "options.sensitivity",    true,  false),
-	Options::Option::RENDER_DISTANCE  (4,  "options.renderDistance", false, false),
-	Options::Option::VIEW_BOBBING     (5,  "options.viewBobbing",    false, true),
-	Options::Option::ANAGLYPH         (6,  "options.anaglyph",       false, true),
-	Options::Option::LIMIT_FRAMERATE  (7,  "options.limitFramerate", false, true),
-	Options::Option::DIFFICULTY       (8,  "options.difficulty",     false, false),
-	Options::Option::GRAPHICS         (9,  "options.graphics",       false, false),
-	Options::Option::AMBIENT_OCCLUSION(10, "options.ao",             false, true),
-	Options::Option::GUI_SCALE        (11, "options.guiScale",       false, false);
-
-void Options::_initDefaultValues()
+Options::Options(Minecraft* mc) : 
+	m_pMinecraft(mc),
+	m_fMusicVolume("music", "options.music", 1.0f), 
+	m_fMasterVolume("sound", "options.sound", 1.0f),
+	m_bInvertMouse("invertYMouse", "options.invertMouse", false),
+	m_difficulty("difficulty", "options.difficulty", 2, { "options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard" }),
+	m_fSensitivity("sensitivity", "options.sensitivity", 0.5f),
+	m_iViewDistance("viewDistance", "options.renderDistance", 2, { "options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny" }),
+	m_bViewBobbing("bobView", "options.viewBobbing"),
+	m_bAnaglyphs("anaglyph3d", "options.anaglyph", false),
+	m_bFancyGraphics("fancyGraphics", "options.graphics", true, [mc](bool a) { if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged(); }),
+	m_bAmbientOcclusion("ao", "options.ao", Minecraft::useAmbientOcclusion, [mc](bool a) {
+	Minecraft::useAmbientOcclusion = a;
+	if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged();
+		}),
+	m_guiScale("guiScale", "options.guiScale", 0, { "options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large" }, [mc](float a) { mc->resizeDisplay(a); }),
+	m_limitFramerate("fpsLimit", "options.framerateLimit", 1, { "performance.max", "performance.balanced", "performance.powersaver" }),
+	m_bAutoJump("autoJump", "options.autoJump", false),
+	m_bMipmaps("mipmaps", "options.mipmaps", true, [mc](bool a) { if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged(); }),
+	m_moreWorldOptions("moreWorldOptions", "options.moreWorldOptions", false),
+	m_bBlockOutlines("blockOutlines", "options.blockOutlines"),
+	m_bDynamicHand("dynamicHand", "options.dynamicHand"),
+	m_bMenuPanorama("menuPanorama", "options.menuPanorama", false),
+	m_playerName("username", "options.username", "Steve"),
+	m_lang("lang", "options.lang", "en_us")
 {
-	m_difficulty = 2;
+	add(m_fMusicVolume);
+	add(m_fMasterVolume);
+	add(m_bInvertMouse);
+	add(m_difficulty);
+	add(m_fSensitivity);
+	add(m_iViewDistance);
+	add(m_bViewBobbing);
+	add(m_bAnaglyphs);
+	add(m_bFancyGraphics);
+	add(m_bAmbientOcclusion);
+	add(m_guiScale);
+	add(m_limitFramerate);
+	add(m_bAutoJump);
+	add(m_bMipmaps);
+	add(m_moreWorldOptions);
+	add(m_bBlockOutlines);
+	add(m_bDynamicHand);
+	add(m_bMenuPanorama);
+	add(m_playerName);
+	add(m_lang);
 	field_244 = 1.0f;
 	m_bDontRenderGui = false;
 	field_248 = 1.0f;
 	m_bThirdPerson = false;
-	m_fMusicVolume   = 1.0f;
-	field_23E = 0;
-	m_fMasterVolume = 1.0f;
 	m_bFlyCheat = false;
 	field_241 = false;
-	m_fSensitivity   = 0.5f;
 	field_24C = 0;
-	m_bInvertMouse = false;
-	m_bAnaglyphs = false;
-	field_16  = 0;
-	m_bAmbientOcclusion = Minecraft::useAmbientOcclusion;
+	field_16 = 0;
 	field_240 = 1;
-	m_iViewDistance = 2;
-	m_bViewBobbing  = 1;
-	m_bAutoJump = true;
-	m_bFancyGraphics = true;
 	field_1C = "Default";
-	m_playerName = "Steve";
 	m_bServerVisibleDefault = true;
 	m_bDebugText = false;
-	m_bBlockOutlines = true;
 	m_bFancyGrass = true;
 	m_bBiomeColors = true;
 	m_bSplitControls = false;
 	m_bUseController = false;
-	m_bDynamicHand = false;
 	m_bOldTitleLogo = false;
-	m_bMenuPanorama = false;
-	m_bMipmaps = true;
 	field_19 = 1;
-
-#ifdef ORIGINAL_CODE
-	m_iViewDistance = 2;
-	m_bThirdPerson = 0;
-	field_19 = 0;
-#endif
-
 	loadControls();
 }
 
-Options::Options()
-{
-	_initDefaultValues();
-}
-
-Options::Options(const std::string& folderPath)
+Options::Options(Minecraft* mc, const std::string& folderPath) : Options(mc)
 {
 	m_filePath = folderPath + "/options.txt";
-	_initDefaultValues();
 	_load();
-}
-
-std::string getMessage(const Options::Option& option)
-{
-	return "Options::getMessage - Not implemented";
 }
 
 void Options::_load()
@@ -103,24 +100,14 @@ void Options::_load()
 	{
 		std::string key = strings[i], value = strings[i + 1];
 
-		if (key == "mp_username")
-			m_playerName = value;
-		else if (key == "ctrl_invertmouse")
-			m_bInvertMouse = readBool(value);
-		else if (key == "ctrl_autojump")
-			m_bAutoJump = readBool(value);
-		else if (key == "ctrl_split")
+		auto opt = m_options.find(key);
+		if (opt != m_options.end())
+			opt->second->load(value);
+
+		if (key == "ctrl_split")
 			m_bSplitControls = readBool(value);
-		else if (key == "gfx_fancygraphics")
-			m_bFancyGraphics = readBool(value);
 		else if (key == "mp_server_visible_default")
 			m_bServerVisibleDefault = readBool(value);
-		else if (key == "gfx_smoothlighting")
-			Minecraft::useAmbientOcclusion = m_bAmbientOcclusion = readBool(value);
-		else if (key == "gfx_viewdistance")
-			m_iViewDistance = readInt(value);
-		else if (key == "gfx_blockoutlines")
-			m_bBlockOutlines = readBool(value);
 		else if (key == "gfx_fancygrass")
 			m_bFancyGrass = readBool(value);
 		else if (key == "gfx_biomecolors")
@@ -129,32 +116,22 @@ void Options::_load()
 			m_bDontRenderGui = readBool(value);
 		else if (key == "gfx_thirdperson")
 			m_bThirdPerson = readBool(value);
-		else if (key == "gfx_3danaglyphs")
-			m_bAnaglyphs = readBool(value);
-		else if (key == "gfx_dynamichand")
-			m_bDynamicHand = readBool(value);
 		else if (key == "misc_oldtitle")
 			m_bOldTitleLogo = readBool(value);
 		else if (key == "info_debugtext")
 			m_bDebugText = readBool(value);
-		else if (key == "misc_menupano")
-		{
-			m_bMenuPanorama = !Screen::isMenuPanoramaAvailable() ? false : readBool(value);
-		}
-		else if (key == "mipmaps")
-			m_bMipmaps = readBool(value);
-	
 	}
 }
 
 void Options::save()
 {
-	savePropertiesToFile(m_filePath, getOptionStrings());
+	if (!m_filePath.empty())
+		savePropertiesToFile(m_filePath, getOptionStrings());
 }
 
-std::string Options::getMessage(const Options::Option& option)
+std::string Options::getMessage(const Options::OptionEntry& option)
 {
-	return "Options::getMessage - Not implemented";
+	return Language::getInstance()->get("options.value", Language::getInstance()->get(option.getName()), Language::getInstance()->get(m_bFancyGraphics.getKey() == option.getKey() ? m_bFancyGraphics.get() ? "options.graphics.fancy" : "options.graphics.fast" : option.getDisplayValue()));
 }
 
 bool Options::readBool(const std::string& str)
@@ -178,6 +155,16 @@ int Options::readInt(const std::string& str)
 	return f;
 }
 
+float Options::readFloat(const std::string& str)
+{
+	float f;
+
+	if (!sscanf(str.c_str(), "%f", &f))
+		f = 0;
+
+	return f;
+}
+
 std::string Options::saveBool(bool b)
 {
 	return b ? "true" : "false";
@@ -187,6 +174,13 @@ std::string Options::saveInt(int i)
 {
 	std::stringstream ss;
 	ss << i;
+	return ss.str();
+}
+
+std::string Options::saveFloat(float f)
+{
+	std::stringstream ss;
+	ss << f;
 	return ss.str();
 }
 
@@ -251,25 +245,16 @@ std::vector<std::string> Options::getOptionStrings()
 
 #define SO(optname, value) do { vec.push_back(optname); vec.push_back(value); } while (0)
 
-	SO("mp_username", m_playerName);
-	SO("ctrl_invertmouse",          saveBool(m_bInvertMouse));
-	SO("ctrl_autojump",             saveBool(m_bAutoJump));
 	SO("ctrl_split",                saveBool(m_bSplitControls));
 	SO("mp_server_visible_default", saveBool(m_bServerVisibleDefault));
-	SO("gfx_fancygraphics",         saveBool(m_bFancyGraphics));
-	SO("gfx_smoothlighting",        saveBool(m_bAmbientOcclusion));
 	SO("gfx_hidegui",               saveBool(m_bDontRenderGui));
 	SO("gfx_thirdperson",           saveBool(m_bThirdPerson));
-	SO("gfx_3danaglyphs",           saveBool(m_bAnaglyphs));
-	SO("gfx_viewdistance",          saveInt (m_iViewDistance));
-	SO("gfx_blockoutlines",         saveBool(m_bBlockOutlines));
 	SO("gfx_fancygrass", 			saveBool(m_bFancyGrass));
 	SO("gfx_biomecolors",           saveBool(m_bBiomeColors));
-	SO("gfx_dynamichand",           saveBool(m_bDynamicHand));
 	SO("misc_oldtitle",             saveBool(m_bOldTitleLogo));
 	SO("info_debugtext",            saveBool(m_bDebugText));
-	SO("misc_menupano",			    saveBool(m_bMenuPanorama));
-	SO("mipmaps",					saveBool(m_bMipmaps));
+	for (auto& option : m_options)
+		SO(option.second->getKey(), option.second->save());
 
 	return vec;
 }
@@ -438,4 +423,19 @@ void Options::loadControls()
 #endif
 #undef KM
 	}
+}
+
+void Options::OptionEntry::addButton(std::vector<Button*>& buttons, const std::string& text)
+{
+	buttons.push_back(new SmallButton(0, 0, 0, this, text));
+}
+
+void Options::add(OptionEntry& entry)
+{
+	m_options[entry.getKey()] = &entry;
+}
+
+void Options::FloatOption::addButton(std::vector<Button*>& buttons, const std::string& text)
+{
+	buttons.push_back(new SliderButton(0, 0, 0, *this, text, get()));
 }

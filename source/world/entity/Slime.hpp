@@ -9,8 +9,8 @@ public:
 
 	void setSize(int);
 
-	void addAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
-	void readAdditionalSaveData(std::shared_ptr<CompoundTag> tag) override;
+	void addAdditionalSaveData(CompoundIO tag) override;
+	void readAdditionalSaveData(CompoundIO tag) override;
 	void tick() override;
 	void updateAi() override;
 	void remove() override;

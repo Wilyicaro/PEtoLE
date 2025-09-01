@@ -265,11 +265,11 @@ void Boat::animateHurt()
         m_damage += m_damage * 10;
 }
 
-void Boat::addAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Boat::addAdditionalSaveData(CompoundIO tag)
 {
 }
 
-void Boat::readAdditionalSaveData(std::shared_ptr<CompoundTag> tag)
+void Boat::readAdditionalSaveData(CompoundIO tag)
 {
 }
 

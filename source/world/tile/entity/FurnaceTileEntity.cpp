@@ -7,7 +7,7 @@ FurnaceTileEntity::FurnaceTileEntity() : SimpleContainer(3, "gui.furnace")
     m_pType = TileEntityType::furnace;
 }
 
-void FurnaceTileEntity::load(std::shared_ptr<CompoundTag> tag) 
+void FurnaceTileEntity::load(CompoundIO tag) 
 {
     TileEntity::load(tag);
     SimpleContainer::load(tag);
@@ -17,7 +17,7 @@ void FurnaceTileEntity::load(std::shared_ptr<CompoundTag> tag)
     m_litDuration = FurnaceRecipes::getInstance().getBurnDuration(getItem(1));
 }
 
-void FurnaceTileEntity::save(std::shared_ptr<CompoundTag> tag) 
+void FurnaceTileEntity::save(CompoundIO tag) 
 {
     TileEntity::save(tag);
     tag->putShort("BurnTime", m_litTime);

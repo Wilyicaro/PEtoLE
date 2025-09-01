@@ -134,8 +134,9 @@ public:
                 }
             }
         }
-
     }
+
+    bool contains(const std::shared_ptr<ItemInstance>&);
 
 public:
 	int m_selected;

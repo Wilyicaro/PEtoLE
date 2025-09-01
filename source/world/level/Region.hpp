@@ -20,6 +20,7 @@ public:
 	int getData(const TilePos& pos) const override;
 	Material* getMaterial(const TilePos& pos) const override;
 	bool isSolidTile(const TilePos& pos) const override;
+	bool isNormalTile(const TilePos& pos) const override;
 	BiomeSource* getBiomeSource() const override;
 	std::shared_ptr<TileEntity> getTileEntity(const TilePos& pos) const override;
 

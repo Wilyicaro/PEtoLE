@@ -24,6 +24,10 @@ public:
 	void stepOn(Level*, const TilePos& pos, Entity*) override;
 	void tick(Level*, const TilePos& pos, Random*) override;
 
+#ifdef ENH_b1_7
+	virtual void playerDestroy(Level*, Player*, const TilePos& pos, int) override;
+#endif
+
 	int getResource(int x, Random* random) const override;
 
 	int getSpawnResourcesAuxValue(int x) const override;

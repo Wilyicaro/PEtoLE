@@ -107,9 +107,9 @@ void Chunk::setPos(const TilePos& pos)
 		return;
 
 	m_pos = pos;
-	m_pos2 = pos + field_10 / 2;
+	m_pos2 = pos + m_size / 2;
 
-	m_aabb = AABB(m_pos - 1, m_pos + field_10 + 1);
+	m_aabb = AABB(m_pos - 1, m_pos + m_size + 1);
 
 	setDirty();
 }
@@ -137,7 +137,7 @@ void Chunk::rebuild()
 	empty[0] = true;
 	empty[1] = true;
 
-	TilePos min(m_pos), max(m_pos + field_10);
+	TilePos min(m_pos), max(m_pos + m_size);
 
 	Region region(m_pLevel, min - 1, max + 1);
 	TileRenderer tileRenderer(&region);
@@ -250,7 +250,7 @@ Chunk::Chunk(Level* level, std::vector<std::shared_ptr<TileEntity>>& renderableT
 	m_bDirty = false;
 
 	m_pLevel = level;
-	field_10 = TilePos(a, a, a);
+	m_size = TilePos(a, a, a);
 	m_pTesselator = &Tesselator::instance;
 	field_8C = b;
 	m_pos.x = -999;

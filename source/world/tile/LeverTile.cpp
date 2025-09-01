@@ -7,7 +7,7 @@ LeverTile::LeverTile(int id, int texture) : Tile(id, texture, Material::decorati
 
 bool LeverTile::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return level->isSolidTile(pos.west()) ? true : (level->isSolidTile(pos.east()) ? true : (level->isSolidTile(pos.north()) ? true : (level->isSolidTile(pos.south()) ? true : level->isSolidTile(pos.below()))));
+	return level->isNormalTile(pos.west()) ? true : (level->isNormalTile(pos.east()) ? true : (level->isNormalTile(pos.north()) ? true : (level->isNormalTile(pos.south()) ? true : level->isNormalTile(pos.below()))));
 }
 
 AABB* LeverTile::getAABB(const Level*, const TilePos& pos)
@@ -20,23 +20,23 @@ void LeverTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 	if (checkIfAttachedToBlock(level, pos)) {
 		int var6 = level->getData(pos) & 7;
 		bool var7 = false;
-		if (!level->isSolidTile(pos.west()) && var6 == 1) {
+		if (!level->isNormalTile(pos.west()) && var6 == 1) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.east()) && var6 == 2) {
+		if (!level->isNormalTile(pos.east()) && var6 == 2) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.north()) && var6 == 3) {
+		if (!level->isNormalTile(pos.north()) && var6 == 3) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.south()) && var6 == 4) {
+		if (!level->isNormalTile(pos.south()) && var6 == 4) {
 			var7 = true;
 		}
 
-		if (!level->isSolidTile(pos.below()) && (var6 == 5 || var6 == 6)) {
+		if (!level->isNormalTile(pos.below()) && (var6 == 5 || var6 == 6)) {
 			var7 = true;
 		}
 
@@ -145,19 +145,19 @@ void LeverTile::setPlacedBy(Level* level, const TilePos& pos, Mob* mob, Facing::
 {
 	int var7 = level->getData(pos);
 	int rot = Mth::floor(0.5f + (mob->m_rot.y * 4.0f / 360.0f)) & 3;
-	if (level->isSolidTile(pos.west())) {
+	if (level->isNormalTile(pos.west())) {
 		var7 = 1;
 	}
-	else if (level->isSolidTile(pos.east())) {
+	else if (level->isNormalTile(pos.east())) {
 		var7 = 2;
 	}
-	else if (level->isSolidTile(pos.north())) {
+	else if (level->isNormalTile(pos.north())) {
 		var7 = 3;
 	}
-	else if (level->isSolidTile(pos.south())) {
+	else if (level->isNormalTile(pos.south())) {
 		var7 = 4;
 	}
-	else if (level->isSolidTile(pos.below())) {
+	else if (level->isNormalTile(pos.below())) {
 		if (face != Facing::DOWN && face != Facing::NORTH) {
 			var7 = 6;
 		}
@@ -166,7 +166,7 @@ void LeverTile::setPlacedBy(Level* level, const TilePos& pos, Mob* mob, Facing::
 		}
 	}
 
-	if (face == Facing::UP && level->isSolidTile(pos.below())) {
+	if (face == Facing::UP && level->isNormalTile(pos.below())) {
 		if (rot != 0 && rot != 2) {
 			var7 = 6;
 		}
@@ -175,19 +175,19 @@ void LeverTile::setPlacedBy(Level* level, const TilePos& pos, Mob* mob, Facing::
 		}
 	}
 
-	if (face== Facing::NORTH && level->isSolidTile(pos.south())) {
+	if (face== Facing::NORTH && level->isNormalTile(pos.south())) {
 		var7 = 4;
 	}
 
-	if (face == Facing::SOUTH && level->isSolidTile(pos.north())) {
+	if (face == Facing::SOUTH && level->isNormalTile(pos.north())) {
 		var7 = 3;
 	}
 
-	if (face == Facing::WEST && level->isSolidTile(pos.east())) {
+	if (face == Facing::WEST && level->isNormalTile(pos.east())) {
 		var7 = 2;
 	}
 
-	if (face == Facing::EAST && level->isSolidTile(pos.west())) {
+	if (face == Facing::EAST && level->isNormalTile(pos.west())) {
 		var7 = 1;
 	}
 

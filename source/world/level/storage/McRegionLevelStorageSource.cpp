@@ -6,13 +6,13 @@
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
 
-#include "ExternalFileLevelStorageSource.hpp"
-#include "LevelManager.hpp"
+#include "McRegionLevelStorageSource.hpp"
+#include "MinecraftServer.hpp"
 #include "common/Util.hpp"
 
 #ifndef DEMO
 
-ExternalFileLevelStorageSource::ExternalFileLevelStorageSource(const std::string& path)
+McRegionLevelStorageSource::McRegionLevelStorageSource(const std::string& path)
 {
 	m_worldsPath = path;
 
@@ -34,17 +34,17 @@ ExternalFileLevelStorageSource::ExternalFileLevelStorageSource(const std::string
 	m_worldsPath = path + "/games" + "/com.mojang" + "/saves";
 }
 
-std::string ExternalFileLevelStorageSource::getName()
+std::string McRegionLevelStorageSource::getName()
 {
-	return "External File Level Storage";
+	return "Scaevolus\' McRegion";
 }
 
-LevelManager* ExternalFileLevelStorageSource::selectLevel(const std::string& name, bool b)
+MinecraftServer* McRegionLevelStorageSource::selectLevel(const std::string& name, bool b)
 {
-	return new LevelManager(name, m_worldsPath + "/" + name);
+	return new MinecraftServer(name, m_worldsPath + "/" + name);
 }
 
-void ExternalFileLevelStorageSource::getLevelList(std::vector<LevelSummary>& vls)
+void McRegionLevelStorageSource::getLevelList(std::vector<LevelSummary>& vls)
 {
 	DIR* dir = opendir(m_worldsPath.c_str());
 	if (!dir)
@@ -74,28 +74,28 @@ void ExternalFileLevelStorageSource::getLevelList(std::vector<LevelSummary>& vls
 	closedir(dir);
 }
 
-void ExternalFileLevelStorageSource::clearAll()
+void McRegionLevelStorageSource::clearAll()
 {
 }
 
-int ExternalFileLevelStorageSource::getDataTagFor(const std::string& str)
+int McRegionLevelStorageSource::getDataTagFor(const std::string& str)
 {
 	return 0;
 }
 
-bool ExternalFileLevelStorageSource::isNewLevelIdAcceptable(const std::string& levelID)
+bool McRegionLevelStorageSource::isNewLevelIdAcceptable(const std::string& levelID)
 {
 	return true;
 }
 
 static char g_EFLSSFilterArray[] = { '/','\n','\r','\x09','\0','\xC','`','?','*','\\','<','>','|','"',':' };
 
-void ExternalFileLevelStorageSource::deleteLevel(const std::string& levelName)
+void McRegionLevelStorageSource::deleteLevel(const std::string& levelName)
 {
 	std::filesystem::remove_all(m_worldsPath + "/" + levelName);
 }
 
-void ExternalFileLevelStorageSource::renameLevel(const std::string& oldName, const std::string& newName)
+void McRegionLevelStorageSource::renameLevel(const std::string& oldName, const std::string& newName)
 {
 	int accessResult = XPL_ACCESS((m_worldsPath + "/" + oldName).c_str(), 0);
 	if (accessResult)
@@ -127,33 +127,33 @@ void ExternalFileLevelStorageSource::renameLevel(const std::string& oldName, con
 		levelUniqueName = oldName;
 
 	LevelData ld;
-	LevelManager::readLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
+	MinecraftServer::readLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
 	ld.setLevelName(levelName);
-	LevelManager::writeLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
+	MinecraftServer::writeLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
 }
 
-bool ExternalFileLevelStorageSource::isConvertible(const std::string&)
+bool McRegionLevelStorageSource::isConvertible(const std::string&)
 {
 	return false;
 }
 
-bool ExternalFileLevelStorageSource::requiresConversion(const std::string&)
+bool McRegionLevelStorageSource::requiresConversion(const std::string&)
 {
 	return false;
 }
 
-int ExternalFileLevelStorageSource::convertLevel(const std::string&, ProgressListener*)
+int McRegionLevelStorageSource::convertLevel(const std::string&, ProgressListener*)
 {
 	return 0;
 }
 
-void ExternalFileLevelStorageSource::addLevelSummaryIfExists(std::vector<LevelSummary>& vls, const char* name)
+void McRegionLevelStorageSource::addLevelSummaryIfExists(std::vector<LevelSummary>& vls, const char* name)
 {
 	std::string levelDat = m_worldsPath + "/" + name + "/" + "level.dat";
 	
 	LevelData ld;
 	
-	if (!LevelManager::readLevelData(levelDat, ld))
+	if (!MinecraftServer::readLevelData(levelDat, ld))
 		return;
 
 	vls.push_back(LevelSummary(name, ld.getLevelName(), ld.getLastPlayed(), ld.getSizeOnDisk()));

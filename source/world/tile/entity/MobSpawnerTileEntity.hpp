@@ -108,13 +108,13 @@ public:
             spawnDelay = 200 + m_pLevel->m_random.nextInt(600);
     }
 
-    void load(const std::shared_ptr<CompoundTag> tag) override {
+    void load(CompoundIO tag) override {
         TileEntity::load(tag);
         entityId = tag->getString("EntityId");
         spawnDelay = tag->getShort("Delay");
     }
 
-    void save(std::shared_ptr<CompoundTag> tag) override {
+    void save(CompoundIO tag) override {
         TileEntity::save(tag);
         tag->putString("EntityId", entityId);
         tag->putShort("Delay", static_cast<short>(spawnDelay));

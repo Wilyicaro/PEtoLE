@@ -73,6 +73,8 @@ EntityRenderDispatcher::EntityRenderDispatcher()
 	registerRenderer(EntityType::giant, new GiantMobRenderer(new ZombieModel, 0.5f, 6.0f));
 	registerRenderer(EntityType::slime, new SlimeRenderer(new SlimeModel(16), new SlimeModel(0), 0.25f));
 	registerRenderer(EntityType::ghast, new GhastRenderer(new GhastModel, 0.5f));
+	registerRenderer(EntityType::mob, new MobRenderer(new HumanoidModel, 0.5f));
+	registerRenderer(EntityType::monster, getRenderer(EntityType::mob));
 	registerRenderer(EntityType::arrow, new ArrowRenderer);
 	registerRenderer(EntityType::snowball, new ItemSpriteRenderer(Item::snowBall->getIcon(nullptr)));
 	registerRenderer(EntityType::thrownEgg, new ItemSpriteRenderer(Item::egg->getIcon(nullptr)));

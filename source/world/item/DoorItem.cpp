@@ -50,10 +50,10 @@ bool DoorItem::useOn(ItemInstance* inst, Player* player, Level* level, const Til
 	}
 
 	// For polish, make sure the hinge is attached to the "correct" block
-	int solid1 = level->isSolidTile(TilePos(pos.x - offsetX, pos.y + 1, pos.z - offsetZ));
-	int solid2 = level->isSolidTile(TilePos(pos.x - offsetX, pos.y + 2, pos.z - offsetZ));
-	int solid3 = level->isSolidTile(TilePos(pos.x + offsetX, pos.y + 1, pos.z + offsetZ));
-	int solid4 = level->isSolidTile(TilePos(pos.x + offsetX, pos.y + 2, pos.z + offsetZ));
+	int solid1 = level->isNormalTile(TilePos(pos.x - offsetX, pos.y + 1, pos.z - offsetZ));
+	int solid2 = level->isNormalTile(TilePos(pos.x - offsetX, pos.y + 2, pos.z - offsetZ));
+	int solid3 = level->isNormalTile(TilePos(pos.x + offsetX, pos.y + 1, pos.z + offsetZ));
+	int solid4 = level->isNormalTile(TilePos(pos.x + offsetX, pos.y + 2, pos.z + offsetZ));
 	int equal5 = level->getTile(TilePos(pos.x - offsetX, pos.y + 1, pos.z - offsetZ)) == pTile->m_ID ||
 	             level->getTile(TilePos(pos.x - offsetX, pos.y + 2, pos.z - offsetZ)) == pTile->m_ID;
 	int equal6 = level->getTile(TilePos(pos.x + offsetX, pos.y + 1, pos.z + offsetZ)) == pTile->m_ID ||

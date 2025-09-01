@@ -89,25 +89,56 @@ void Screen::keyboardNewChar(char chr)
 
 static const char* g_panoramaList[] =
 {
-	"gui/background/panorama_0.png",
-	"gui/background/panorama_1.png",
-	"gui/background/panorama_2.png",
-	"gui/background/panorama_3.png",
-	"gui/background/panorama_4.png",
-	"gui/background/panorama_5.png",
+	"title/bg/panorama0.png",
+	"title/bg/panorama1.png",
+	"title/bg/panorama2.png",
+	"title/bg/panorama3.png",
+	"title/bg/panorama4.png",
+	"title/bg/panorama5.png",
 };
 
 static float g_panoramaAngle = 0.0f;
 
+void Screen::renderPanorama(float f)
+{
+	glViewport(0, 0, 256, 256);
+	renderPanoramaBackground(f);
+	glDisable(GL_TEXTURE_2D);
+	glEnable(GL_TEXTURE_2D);
+	for (int i = 0; i < 8; i++)
+		renderPanoramaBlur(f);
+	glViewport(0, 0, Minecraft::width, Minecraft::height);
+	Tesselator& var4 = Tesselator::instance;
+	var4.begin();
+	float var5 = m_width > m_height ? 120.0F / m_width : 120.0F / m_height;
+	float var6 = m_height * var5 / 256.0F;
+	float var7 = m_width * var5 / 256.0F;
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	var4.color(1.0F, 1.0F, 1.0F, 1.0F);
+	var4.vertexUV(0.0, m_height, zLevel, (0.5F - var6), (0.5F + var7));
+	var4.vertexUV(m_width, m_height,zLevel, (0.5F - var6), (0.5F - var7));
+	var4.vertexUV(m_width, 0.0, zLevel, (0.5F + var6), (0.5F - var7));
+	var4.vertexUV(0.0, 0.0,zLevel, (0.5F + var6), (0.5F + var7));
+	var4.draw();
+}
+
 void Screen::renderMenuBackground(float f)
 {
-	if (!m_pMinecraft->getOptions()->m_bMenuPanorama)
+	if (!m_pMinecraft->getOptions()->m_bMenuPanorama.get() || !isMenuPanoramaAvailable())
 	{
 		renderDirtBackground(0);
 		return;
 	}
 
-	g_panoramaAngle += float(30.0 * m_pMinecraft->m_fDeltaTime);
+	renderPanorama(f);
+	fillGradient(0, 0, m_width, m_height, 0x80FFFFFF, 0x00FFFFFF);
+	fillGradient(0, 0, m_width, m_height, 0x00000000, 0x80000000);
+}
+
+void Screen::renderPanoramaBackground(float f)
+{
+	Tesselator& t = Tesselator::instance;
 
 	float aspectRatio;
 
@@ -115,9 +146,6 @@ void Screen::renderMenuBackground(float f)
 	//aspectRatio = float(m_width) / float(m_height);
 
 	// not in 0.8
-	glDisable(GL_BLEND);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
@@ -127,16 +155,25 @@ void Screen::renderMenuBackground(float f)
 	glLoadIdentity();
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glRotatef(180.0f, 1.0f, 0.0f, 0.0f);
-	glRotatef(Mth::sin((f + g_panoramaAngle) / 400.0f) * 25.0f + 20.0f, 1.0f, 0.0f, 0.0f);
-	glRotatef(-0.1f * (f + g_panoramaAngle), 0.0f, 1.0f, 0.0f);
+	glEnable(GL_BLEND);
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_CULL_FACE);
+	glDepthMask(false);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	for (int i = 0; i < 6; i++)
+	for (int j = 0; j < 64; j++)
 	{
 		glPushMatrix();
-
-		float xm = 0.0f, ym = 0.0f, ang = 0.0f;
-		switch (i)
+		glTranslatef(((j % 8) / 8.0f - 0.5F) / 64.0F, ((j / 8) / 8.0f - 0.5F) / 64.0F, 0);
+		glRotatef(Mth::sin((f + g_panoramaAngle) / 400.0f) * 25.0f + 20.0f, 1.0f, 0.0f, 0.0f);
+		glRotatef(-0.1f * (f + g_panoramaAngle), 0.0f, 1.0f, 0.0f);
+		for (int i = 0; i < 6; i++)
 		{
+			glPushMatrix();
+
+			float xm = 0.0f, ym = 0.0f, ang = 0.0f;
+			switch (i)
+			{
 			case 1:
 				ang = 90.0f;
 				xm = 0.0f;
@@ -164,37 +201,63 @@ void Screen::renderMenuBackground(float f)
 				break;
 			default:
 				goto skip_rotate;
+			}
+
+			glRotatef(ang, xm, ym, 0.0f);
+
+		skip_rotate:
+			glBindTexture(GL_TEXTURE_2D, m_pMinecraft->m_pTextures->loadTexture(std::string(g_panoramaList[i])));
+
+			t.begin();
+			t.color(0xFFFFFF, 255 / (j + 1));
+			t.vertexUV(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
+			t.vertexUV(+1.0f, -1.0f, 1.0f, 1.0f, 0.0f);
+			t.vertexUV(+1.0f, +1.0f, 1.0f, 1.0f, 1.0f);
+			t.vertexUV(-1.0f, +1.0f, 1.0f, 0.0f, 1.0f);
+			t.draw();
+
+			glPopMatrix();
 		}
-
-		glRotatef(ang, xm, ym, 0.0f);
-
-	skip_rotate:
-		m_pMinecraft->m_pTextures->setSmoothing(true);
-		m_pMinecraft->m_pTextures->setClampToEdge(true);
-		m_pMinecraft->m_pTextures->loadAndBindTexture(std::string(g_panoramaList[i]));
-		m_pMinecraft->m_pTextures->setSmoothing(false);
-		m_pMinecraft->m_pTextures->setClampToEdge(false);
-
-		Tesselator& t = Tesselator::instance;
-		t.begin();
-		t.vertexUV(-1.0f, -1.0f, 1.0f, 0.0f, 0.0f);
-		t.vertexUV(+1.0f, -1.0f, 1.0f, 1.0f, 0.0f);
-		t.vertexUV(+1.0f, +1.0f, 1.0f, 1.0f, 1.0f);
-		t.vertexUV(-1.0f, +1.0f, 1.0f, 0.0f, 1.0f);
-		t.draw();
-
 		glPopMatrix();
+		glColorMask(true, true, true, false);
 	}
 
+	t.offset(0.0f, 0.0f, 0.0f);
+	glColorMask(true, true, true, true);
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-	glEnable(GL_BLEND);
+	glDepthMask(true);
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
+}
 
-	fillGradient(0, 0, m_width, m_height, 0x89000000, 0x89FFFFFF);
+void Screen::renderPanoramaBlur(float f)
+{
+	glBindTexture(GL_TEXTURE_2D, m_pMinecraft->m_pTextures->loadBlankTexture("panorama_blur", 256, 256));
+	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 256, 256);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glColorMask(true, true, true, false);
+	Tesselator& var2 = Tesselator::instance;
+	var2.begin();
+
+	for (int var4 = 0; var4 < 3; ++var4)
+	{
+		var2.color(1.0F, 1.0F, 1.0F, 1.0F / (float)(var4 + 1));
+		int var5 = m_width;
+		int var6 = m_height;
+		float var7 = (float)(var4 - 3 / 2) / 256.0F;
+		var2.vertexUV(var5, var6, zLevel, (0.0F + var7), 0.0);
+		var2.vertexUV(var5, 0.0, zLevel, (1.0F + var7), 0.0);
+		var2.vertexUV(0.0, 0.0, zLevel, (1.0F + var7), 1.0);
+		var2.vertexUV(0.0, var6, zLevel, (0.0F + var7), 1.0);
+	}
+
+	var2.draw();
+	glColorMask(true, true, true, true);
 }
 
 void Screen::mouseDragged(double x, double y, int button, double deltaX, double deltaY)

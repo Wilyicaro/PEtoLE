@@ -8,10 +8,11 @@
 
 #include "Dimension.hpp"
 #include "HellDimension.hpp"
-#include "world/level/levelgen/chunk/TestChunkSource.hpp"
+#include "world/level/levelgen/chunk/FlatLevelSource.hpp"
 #include "world/level/levelgen/chunk/RandomLevelSource.hpp"
 #include "world/level/levelgen/chunk/ChunkCache.hpp"
-#include "storage/ExternalFileLevelStorage.hpp"
+#include "storage/McRegionLevelStorage.hpp"
+#include "world/level/levelgen/biome/FixedBiomeSource.hpp"
 
 
 Dimension* Dimension::getNew(int type)
@@ -96,7 +97,10 @@ void Dimension::updateLightRamp()
 
 void Dimension::init()
 {
-	m_pBiomeSource = new BiomeSource(m_pLevel);
+	if (m_pLevel->getLevelData().isFlat())
+		m_pBiomeSource = new FixedBiomeSource(Biome::plains, 1.0, 0.0);
+	else
+		m_pBiomeSource = new BiomeSource(m_pLevel);
 }
 
 void Dimension::init(Level* pLevel)
@@ -129,24 +133,26 @@ bool Dimension::mayRespawn()
 
 ChunkSource* Dimension::createRandomLevelSource()
 {
-#ifdef MOD_USE_FLAT_WORLD
-	return new TestChunkSource(m_pLevel);
-#else
-	return new RandomLevelSource(m_pLevel, m_pLevel->getSeed());
-#endif
+	if (m_pLevel->getLevelData().isFlat())
+		return new FlatLevelSource(m_pLevel, m_pLevel->getSeed());
+	else
+		return new RandomLevelSource(m_pLevel, m_pLevel->getSeed());
 }
 
 ChunkStorage* Dimension::createStorage()
 {
-	if (m_ID == 0) return new ExternalFileLevelStorage(m_pLevel->getManager()->m_path);
-	return new ExternalFileLevelStorage(m_ID, m_pLevel->getManager()->m_path);
+	if (m_ID == 0) return new McRegionLevelStorage(m_pLevel->getServer()->m_path);
+	return new McRegionLevelStorage(m_ID, m_pLevel->getServer()->m_path);
 }
 
 bool Dimension::isValidSpawn(const TilePos& pos)
 {
 	TileID tile = m_pLevel->getTopTile(pos);
 	if (tile == 0)
-		return false;
+	{
+		tile = m_pLevel->getTopSolidBlock(pos);
+		if (tile <= 0) return false;
+	}
 
 	return Tile::tiles[tile]->isSolidRender();
 }

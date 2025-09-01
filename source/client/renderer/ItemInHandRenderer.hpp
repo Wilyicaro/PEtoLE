@@ -10,6 +10,7 @@
 
 #include "world/item/ItemInstance.hpp"
 #include "TileRenderer.hpp"
+#include "MapRenderer.hpp"
 
 class Minecraft;
 
@@ -35,5 +36,6 @@ private:
 	float m_height;
 	float m_oHeight;
 	TileRenderer m_tileRenderer;
+	MapRenderer m_mapRenderer;
 };
 

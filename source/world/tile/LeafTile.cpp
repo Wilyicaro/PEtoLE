@@ -176,6 +176,19 @@ void LeafTile::tick(Level* level, const TilePos& pos, Random* random)
 		level->setDataNoUpdate(pos, data & -9);
 }
 
+#ifdef ENH_b1_7
+void LeafTile::playerDestroy(Level* level, Player* player, const TilePos& pos, int meta)
+{
+	if (!level->m_bIsOnline && player->getSelectedItem() && player->getSelectedItem()->m_itemID == Item::shears->m_itemID)
+	{
+		//player->awardStat(Stats::STAT_MINE_BLOCK[m_ID], 1);
+		spawnResources(level, pos, std::make_shared<ItemInstance>(Tile::leaves->m_ID, 1, meta & 3));
+	}
+	else
+		TransparentTile::playerDestroy(level, player, pos, meta);
+}
+#endif
+
 int LeafTile::getResource(int x, Random* random) const
 {
 	return random->nextInt(20) == 0 ? Tile::sapling->m_ID : 0;

@@ -38,6 +38,8 @@ class Textures
 {
 public:
 	int loadTexture(const std::string& name, bool bRequired = true, int mipmap = 0, bool bindTexture = true);
+	int loadBlankTexture(const std::string& name, int width, int height, int mipmap = 0, bool bindTexture = true);
+	int loadTexture(const std::string& name, uint32_t* pixels, int width, int height, int mipmap = 0, bool bindTexture = true);
 
 	int loadAndBindTerrain()
 	{
@@ -96,7 +98,7 @@ public:
 
 	bool hasMipmaps() const
 	{
-		return hasTerrainMipmap() && m_pOptions->m_bMipmaps;
+		return hasTerrainMipmap() && m_pOptions->m_bMipmaps.get();
 	}
 
 	Textures(Options*, AppPlatform*);

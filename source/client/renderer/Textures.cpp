@@ -38,6 +38,38 @@ int Textures::loadTexture(const std::string& name, bool bIsRequired, int mipmap,
 	}
 }
 
+int Textures::loadBlankTexture(const std::string& name, int width, int height, int mipmap, bool bindTexture)
+{
+	auto i = m_textures.find(name);
+	if (i != m_textures.end())
+		return i->second;
+
+	Texture t;
+	t.m_width = width;
+	t.m_height = height;
+	t.m_pixels = new uint32_t[width * height];
+	std::fill(t.m_pixels, t.m_pixels + width * height, 0);
+
+	return assignTexture(name, t, mipmap, bindTexture);
+}
+
+int Textures::loadTexture(const std::string& name, uint32_t* pixels, int width, int height, int mipmap, bool bindTexture)
+{
+	int tex = loadBlankTexture(name, width, height, mipmap, bindTexture);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexSubImage2D(
+		GL_TEXTURE_2D,
+		0,
+		0,
+		0,
+		width, height,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		pixels
+	);
+	return tex;
+}
+
 
 void Textures::prepareTextureParams()
 {
@@ -201,7 +233,7 @@ void Textures::tick()
 	for (DynamicTexture* pDynaTex : m_dynamicTextures)
 	{
 		pDynaTex->bindTexture(this);
-		pDynaTex->m_bAnaglyph3d = m_pOptions->m_bAnaglyphs;
+		pDynaTex->m_bAnaglyph3d = m_pOptions->m_bAnaglyphs.get();
 		pDynaTex->tick();
 
 		uint8_t* basePixels = pDynaTex->m_pixels;

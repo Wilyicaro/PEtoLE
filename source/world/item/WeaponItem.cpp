@@ -1,5 +1,6 @@
 #include "WeaponItem.hpp"
 #include "world/entity/Mob.hpp"
+#include "world/entity/Player.hpp"
 
 WeaponItem::WeaponItem(int id, Tier& tier) : Item(id),  m_tier(tier), m_attackDamage(4 + tier.m_damage)
 {
@@ -14,12 +15,12 @@ float WeaponItem::getDestroySpeed(ItemInstance * instance, const Tile * tile)
 
 void WeaponItem::hurtEnemy(ItemInstance* instance, Mob* mob)
 {
-	instance->hurt(1);
+	instance->hurtAndBreak(1, mob);
 }
 
-void WeaponItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face)
+void WeaponItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
-	instance->hurt(2);
+	instance->hurtAndBreak(2, player);
 }
 
 int WeaponItem::getAttackDamage(Entity* entity)
