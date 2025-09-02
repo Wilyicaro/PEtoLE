@@ -23,6 +23,7 @@ CreateWorldScreen::CreateWorldScreen() :
 	m_btnWorldSize(7, ""),
 	m_btnWorldType(8, ""),
 	m_bMoreOptions(false),
+	m_bIsFlat(false),
 	m_gameType(GameType::GAME_TYPE_SURVIVAL),
 	m_worldSize(INFINITY_SIZE)
 {

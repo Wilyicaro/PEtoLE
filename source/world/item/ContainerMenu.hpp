@@ -3,6 +3,7 @@
 #include <vector>
 #include <unordered_set>
 #include <memory>
+#include <cstdint>
 
 class Player;
 class ItemInstance;
