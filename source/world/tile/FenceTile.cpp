@@ -13,6 +13,12 @@ FenceTile::FenceTile(int a, int b) : Tile(a, b, Material::wood)
 {
 }
 
+bool FenceTile::mayPlace(const Level* level, const TilePos& pos, Facing::Name face) const
+{
+	TilePos below = pos.below();
+	return level->getTile(below) == m_ID || (Tile::mayPlace(level, pos, face) && level->getMaterial(below)->isSolid());
+}
+
 AABB* FenceTile::getAABB(const Level* pLevel, const TilePos& pos)
 {
 	AABB* rAABB = Tile::getAABB(pLevel, pos);

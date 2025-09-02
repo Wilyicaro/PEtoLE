@@ -60,6 +60,7 @@ Generated\ Files/
 *.svclog
 *.scc
 *.o
+*.exe
 
 # Visual C++ cache files
 ipch/

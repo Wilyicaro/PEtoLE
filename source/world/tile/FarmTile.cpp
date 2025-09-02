@@ -21,15 +21,7 @@ FarmTile::FarmTile(int a, Material* c) : Tile(a, c)
 AABB* FarmTile::getAABB(const Level*, const TilePos& pos)
 {
 	// a full block
-	m_aabbReturned = AABB(
-		float(pos.x),
-		float(pos.y),
-		float(pos.z),
-		float(pos.x + 1),
-		float(pos.y + 1),
-		float(pos.z + 1)
-	);
-
+	m_aabbReturned = AABB(pos, pos + 1);
 	return &m_aabbReturned;
 }
 
@@ -102,7 +94,7 @@ void FarmTile::tick(Level* level, const TilePos& pos, Random* random)
 	if (level->m_bIsOnline || random->nextInt(5) != 0)
 		return;
 
-	if (isNearWater(level, pos))
+	if (isNearWater(level, pos) && !level->isRainingAt(pos.above()))
 	{
 		level->setData(pos, 7);
 	}
