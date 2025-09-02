@@ -52,10 +52,8 @@ LevelChunk* MultiPlayerChunkCache::getChunk(const ChunkPos& pos)
 		return fakeChunk;
 	}
 
-	auto& chunkMap = m_pLevel->isValidPos(pos) ? m_chunkMap : m_fakeChunkMap;
-
 	auto it = m_chunkMap.find(pos.key());
-	if (m_chunkMap.find(pos.key()) != m_chunkMap.end())
+	if (it != m_chunkMap.end())
 		return it->second;
 	return m_pFakeChunk;
 }

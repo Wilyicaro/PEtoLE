@@ -72,13 +72,13 @@ int DimensionDataStorage::getFreeMapId(const std::string& key)
 
     std::string path = m_server->m_path + "/data/idcounts.dat";
     FILE* f = fopen(path.c_str(), "wb");
-    if (f) {
+    if (f)
+    {
         auto tag = std::make_shared<CompoundTag>();
         for (auto& kv : m_usedAuxIds)
             tag->putShort(kv.first, kv.second);
 
         NbtIo::write(tag, f);
-        fclose(f);
     }
 
     return id;
@@ -98,7 +98,6 @@ void DimensionDataStorage::save(const std::shared_ptr<SavedData>& data)
     root->put("data", tag);
 
     NbtIo::write(root, f);
-    fclose(f);
 }
 
 void DimensionDataStorage::readMapIds()
