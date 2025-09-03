@@ -961,7 +961,6 @@ bool Tile::shouldRenderFace(const LevelSource* pSrc, const TilePos& pos, Facing:
 		if (m_aabb.max.x < 1.0f) return true;
 		break;
 	case Facing::DOWN:
-		if (pos.y < 0) return false;
 		if (m_aabb.min.y > 0.0f) return true;
 		break;
 	case Facing::UP:

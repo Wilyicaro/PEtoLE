@@ -41,7 +41,8 @@ These are the ports that have not been tested, but could certainly work with som
 
 Note: Just like ReMinecraftPE, it should work on all Android devices, but with worse performance due to some optimizations from Pocket Edition being removed for accuracy.
 
-### This is the main modded version. For the original decompilation, see [ReMinecraftPE/mcped](https://github.com/ReMinecraftPE/mcped)
+## Special Thanks
+- [LCE Decompilation Project](https://github.com/GRAnimated/MinecraftLCE/tree/main): Thanks to GRAnimated for allowing to use world gen code from their project
 
 ## License information
 

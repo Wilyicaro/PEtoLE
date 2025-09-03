@@ -34,6 +34,10 @@ public:
 	std::string gatherStats() override;
 	void postProcess(ChunkSource*, const ChunkPos& pos) override;
 
+	//@NOTE: Adapted LCE methods, thanks to GRAnimated for allowing to use them
+	float getHeightFalloff(int chunkX, int chunkZ, int& distance, const DimensionLimit&);
+	int distanceToEdge(float a, int x, int z, const DimensionLimit&);
+
 	const std::vector<real>& getHeights(std::vector<real>&, int, int, int, int, int, int);
 	void prepareHeights(const ChunkPos& pos, TileID*, const std::vector<real>&);
 	void buildSurfaces(const ChunkPos& pos, TileID*, const std::vector<Biome*>);

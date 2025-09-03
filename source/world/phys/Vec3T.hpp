@@ -248,6 +248,30 @@ public:
 	{
 		return Vec3T(x * scale, y * scale, z * scale);
 	}
+
+	//@NOTE: LCE Vec3 methods, not sure if they were used at some point in JE
+	Vec3T closestPointOnSegment(const Vec3T& segStart, const Vec3T& segEnd)
+	{
+		Vec3T v1 = *this - segStart;
+		Vec3T v2 = segEnd - segStart;
+
+		T dot = v1.dot(v2);
+		if (dot <= 0.0)
+			return segStart;
+
+		T len2 = v2.dot(v2);
+		if (len2 <= dot)
+			return segEnd;
+
+		T t = dot / len2;
+		return segStart + v2 * t;
+	}
+
+	T distanceToSegment(const Vec3T& segStart, const Vec3T& segEnd)
+	{
+		Vec3T diff = (*this - closestPointOnSegment(segStart, segEnd));
+		return diff.length();
+	}
 };
 
 template<typename T>

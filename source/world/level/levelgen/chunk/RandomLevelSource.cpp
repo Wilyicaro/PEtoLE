@@ -145,6 +145,7 @@ const std::vector<real>& RandomLevelSource::getHeights(std::vector<real>& fptr, 
 
 			real offset = 0.0f;
 
+#ifdef CUSTOM_HEIGHTFALLOFF
 			if (limit != DimensionLimit::ZERO)
 			{
 				int worldX = (a3 + j2) * 4;
@@ -165,6 +166,7 @@ const std::vector<real>& RandomLevelSource::getHeights(std::vector<real>& fptr, 
 					offset = (fadeDistance - distToBorder) * 0.03125f * 128.0f;
 				}
 			}
+#endif
 
 			for (int j3 = 0; j3 < a7; j3++)
 			{
@@ -205,6 +207,8 @@ void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, const
 {
 	auto& heightMap = getHeights(m_buffer, pos.x * 4, 0, pos.z * 4, 5, 17, 5);
 
+	auto& limit = m_pLevel->getLevelData().getLimit(m_pLevel->m_pDimension->m_ID);
+
 	for (int i = 0; i < 4; ++i)
 	{
 		for (int j = 0; j < 4; ++j)
@@ -237,23 +241,35 @@ void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, const
 						real density = d9;
 						real d13 = (d10 - d9) * 0.25;
 
-
 						for (int n = 0; n < 4; ++n)
 						{
 							TileID tile = TILE_AIR;
-							int globalY = y;
 
-							if (globalY < 64)
+							int distance = 32;
+
+							if ((limit == DimensionLimit::ZERO && density > 0.0) ||
+								(limit != DimensionLimit::ZERO && density > getHeightFalloff(pos.x * 16 + x, pos.z * 16 + z + n, distance, limit)))
 							{
-								real temp = noise[(j * 4 + n) + (i * 4 + m) * 16];
-								if (temp < 0.5 && globalY >= 63)
+								tile = Tile::stone->m_ID;
+							}
+
+							if (distance == 0)
+							{
+								int seaLevel = m_pLevel->getSeaLevel();
+								if (y <= seaLevel - 10)
+									tile = Tile::stone->m_ID;
+								else if (y < seaLevel)
+									tile = Tile::calmWater->m_ID;
+							}
+
+							if (!tile && y <= m_pLevel->getSeaLevel())
+							{
+								real temp = noise[(z + n) + x * 16];
+								if (temp < 0.5 && y >= m_pLevel->getSeaLevel())
 									tile = Tile::ice->m_ID;
 								else
 									tile = Tile::calmWater->m_ID;
 							}
-
-							if (density > 0.0)
-								tile = Tile::stone->m_ID;
 
 							tiles[index] = tile;
 							index += 128;
@@ -684,6 +700,43 @@ void RandomLevelSource::postProcess(ChunkSource* src, const ChunkPos& pos)
 
 	SandTile::instaFall = false;
 	m_pLevel->m_bPostProcessing = false;
+}
+
+float RandomLevelSource::getHeightFalloff(int chunkX, int chunkZ, int& distance, const DimensionLimit& limit)
+{
+	int nearestDist = distanceToEdge(32.0f, chunkX, chunkZ, limit);
+
+	float result = 0.0f;
+	if (nearestDist < 32)
+		result = (32 - nearestDist) * 0.03125f * 128.0f;
+
+	distance = nearestDist;
+	return result;
+}
+
+int RandomLevelSource::distanceToEdge(float a, int x, int z, const DimensionLimit& limit)
+{
+	Vec3 topLeft(limit.m_minPos.x * 16, 0.0f, limit.m_minPos.z * 16);
+	Vec3 topRight(limit.m_maxPos.x * 16 - 1, 0.0f, limit.m_minPos.z * 16);
+	Vec3 bottomLeft(limit.m_minPos.x * 16, 0.0f, limit.m_maxPos.z * 16 - 1);
+	Vec3 bottomRight(limit.m_maxPos.x * 16 - 1, 0.0f, limit.m_maxPos.z * 16 - 1);
+
+	float distance = a;
+
+	if (((x > (topLeft.x - a)) && (x < (topLeft.x + a))) || ((x > (bottomRight.x - a)) && (x < (bottomRight.x + a))))
+	{
+		distance = Vec3(x, 0.0, z).distanceToSegment(x < 1 ? topLeft : topRight, x < 1 ? bottomLeft : bottomRight);
+	}
+
+	if (((z > (topLeft.z - a)) && (z < (topLeft.z + a))) || ((z > (bottomRight.z - a)) && (z < (bottomRight.z + a))))
+	{
+		real verticalDistance = Vec3(x, 0.0, z).distanceToSegment(z < 1 ? topLeft : bottomLeft, z < 1 ? topRight : bottomRight);
+
+		if (verticalDistance < distance)
+			distance = verticalDistance;
+	}
+
+	return distance;
 }
 
 int RandomLevelSource::tick()

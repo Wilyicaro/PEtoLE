@@ -1,5 +1,6 @@
 #include "FakeLevelChunk.hpp"
 #include "world/tile/Tile.hpp"
+#include "world/level/Level.hpp"
 
 FakeLevelChunk::FakeLevelChunk(Level* pLevel, TileID* pBlockData, const ChunkPos& pos, ContentType content) : LevelChunk(pLevel, pBlockData, pos)
 {
@@ -54,8 +55,8 @@ TileID FakeLevelChunk::getTile(const ChunkTilePos& pos)
 {
 	if (contentType == ContentType::DATA) return LevelChunk::getTile(pos);
 	if (contentType == ContentType::FLAT) return pos.y <= 3 ? (pos.y == 0 ? Tile::bedrock : pos.y == 3 ? Tile::grass : Tile::dirt)->m_ID : TILE_AIR;
-	if (contentType == ContentType::NONE || pos.y > 63) return TILE_AIR;
-	return (pos.y == 0 ? Tile::bedrock : pos.y == 54 ? Tile::gravel : pos.y <= 53 ? Tile::stone : Tile::calmWater)->m_ID;
+	if (contentType == ContentType::NONE || pos.y > m_pLevel->getSeaLevel()) return TILE_AIR;
+	return (pos.y == 0 ? Tile::bedrock : pos.y == m_pLevel->getSeaLevel() - 10 ? Tile::gravel : pos.y <= m_pLevel->getSeaLevel() - 10 ? Tile::stone : Tile::calmWater)->m_ID;
 }
 
 bool FakeLevelChunk::setTile(const ChunkTilePos& pos, TileID tile)
