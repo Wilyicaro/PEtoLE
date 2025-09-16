@@ -235,6 +235,7 @@
     <ClInclude Include="..\..\..\..\source\client\renderer\MapRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\renderer\PistonRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\SignRenderer.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TextureProcessor.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.hpp" />
@@ -397,6 +398,7 @@
     <ClCompile Include="..\..\..\..\source\client\renderer\MapRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\MobSkinTextureProcessor.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\MobSpawnerRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\renderer\PistonRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\PortalTexture.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\SignRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.cpp" />

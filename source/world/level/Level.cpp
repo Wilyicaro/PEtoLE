@@ -65,6 +65,7 @@ Level::Level()
 	m_bIsNew = false;
 	m_bAllPlayersSleeping = false;
 	m_bAnyPlayersSleeping = false;
+	m_bUpdatingTileEntities = false;
 	//@Note: Using a way higher value for now, used in newer versions
 	m_saveInterval = 6000;
 	m_delayUntilNextMoodSound = 0;
@@ -251,16 +252,39 @@ std::shared_ptr<TileEntity> Level::getTileEntity(const TilePos& pos) const
 
 void Level::setTileEntity(const TilePos& pos, std::shared_ptr<TileEntity> tileEntity) 
 {
-	LevelChunk* pChunk = getChunk(pos);
-	if (pChunk)
-		pChunk->setTileEntity(pos, tileEntity);
+	if (!tileEntity->isRemoved())
+	{
+		if (m_bUpdatingTileEntities)
+		{
+			tileEntity->m_pos = pos;
+			m_pendingTileEntities.push_back(tileEntity);
+		}
+		else
+		{
+			m_tileEntityList.push_back(tileEntity);
+			LevelChunk* pChunk = getChunk(pos);
+			if (pChunk)
+				pChunk->setTileEntity(pos, tileEntity);
+		}
+	}
 }
 
 void Level::removeTileEntity(const TilePos& pos) 
 {
-	LevelChunk* pChunk = getChunk(pos);
-	if (pChunk)
-		pChunk->removeTileEntity(pos);
+	auto old = getTileEntity(pos);
+
+	if (old && m_bUpdatingTileEntities)
+	{
+		old->setRemoved();
+	}
+	else
+	{
+		if (old)
+			Util::remove(m_tileEntityList, old);
+		LevelChunk* pChunk = getChunk(pos);
+		if (pChunk)
+			pChunk->removeTileEntity(pos);
+	}
 }
 
 void Level::swap(const TilePos& pos1, const TilePos& pos2)
@@ -867,7 +891,11 @@ bool Level::setData(const TilePos& pos, int data)
 {
 	if (setDataNoUpdate(pos, data))
 	{
-		tileUpdated(pos, getTile(pos));
+		TileID tile = getTile(pos);
+		if (Tile::blockUpdate[tile])
+			tileUpdated(pos, tile);
+		else
+			updateNeighborsAt(pos, tile);
 		return true;
 	}
 	return false;
@@ -1690,13 +1718,17 @@ void Level::tickTiles()
 		}
 	}
 
+	if (m_delayUntilNextMoodSound > 0)
+		m_delayUntilNextMoodSound--;
+
 	for (std::set<ChunkPos>::iterator it = m_chunksToUpdate.begin(); it != m_chunksToUpdate.end(); it++)
 	{
 		ChunkPos pos = *it;
 		TilePos tPos(pos);
 		LevelChunk* pChunk = getChunk(pos);
 
-		if (m_delayUntilNextMoodSound == 0) {
+		if (m_delayUntilNextMoodSound == 0)
+		{
 			m_randValue = m_randValue * 3 + m_addend;
 			int rand = m_randValue >> 2;
 			TilePos tp(tPos.x + rand & 15, rand >> 16 & 127, tPos.z + (rand >> 8 & 15));
@@ -1759,7 +1791,7 @@ void Level::tickTiles()
 	}
 }
 
-void Level::advanceWeatherCycle()
+void Level::tickWeather()
 {
 	if (!m_pDimension->m_bHasCeiling)
 	{
@@ -1902,7 +1934,7 @@ int LASTTICKED = 0;
 
 void Level::tick()
 {
-	advanceWeatherCycle();
+	tickWeather();
 	if (isAllPlayersSleepingLongEnough())
 	{
 		bool var4 = false;
@@ -1974,17 +2006,60 @@ void Level::tickEntities()
 			if (pEnt->m_bInChunk && hasChunk(pEnt->m_chunkPos))
 				getChunk(pEnt->m_chunkPos)->removeEntity(pEnt);
 
+			entityRemoved(pEnt.get());
+
 			m_entities.erase(m_entities.begin() + i);
 			i--;
-
-			entityRemoved(pEnt.get());
 		}
 	}
 
-	for (auto& tileEntity : m_tileEntityList)
+	m_bUpdatingTileEntities = true;
+	for (auto it = m_tileEntityList.begin(); it != m_tileEntityList.end(); )
 	{
-		tileEntity->tick();
+		auto& tileEntity = *it;
+		if (!tileEntity->isRemoved())
+		{
+			tileEntity->tick();
+			it++;
+		}
+		else
+		{
+			LevelChunk* pChunk = getChunk(tileEntity->m_pos);
+			if (pChunk)
+				pChunk->removeTileEntity(tileEntity->m_pos);
+
+			it = m_tileEntityList.erase(it);
+		}
+
 	}
+	m_bUpdatingTileEntities = false;
+
+	if (!m_pendingTileEntities.empty())
+	{
+		for (auto& tileEntity : m_pendingTileEntities)
+		{
+			if (tileEntity->isRemoved()) continue;
+			if (std::find(m_tileEntityList.begin(), m_tileEntityList.end(), tileEntity) == m_tileEntityList.end())
+				m_tileEntityList.push_back(tileEntity);
+
+			LevelChunk* pChunk = getChunk(tileEntity->m_pos);
+			if (pChunk)
+				pChunk->setTileEntity(tileEntity->m_pos, tileEntity);
+
+			sendTileUpdated(tileEntity->m_pos);
+		}
+		m_pendingTileEntities.clear();
+	}
+}
+
+void Level::addAllPendingTileEntities(const std::unordered_map<ChunkTilePos, std::shared_ptr<TileEntity>>& tileEntities)
+{
+	if (m_bUpdatingTileEntities)
+		for (auto& it : tileEntities)
+			m_pendingTileEntities.push_back(it.second);
+	else
+		for (auto& it : tileEntities)
+			m_tileEntityList.push_back(it.second);
 }
 
 HitResult Level::clip(Vec3 v1, Vec3 v2, bool flag, bool flag1) const

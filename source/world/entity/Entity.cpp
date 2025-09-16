@@ -141,7 +141,7 @@ int Entity::move(const Vec3& pos)
 		bool validSneaking = m_bOnGround && isSneaking();
 		if (validSneaking) {
 			real var19;
-			for (var19 = 0.05; pos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.cloneMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x) {
+			for (var19 = 0.05; pos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x) {
 				if (newPos.x < var19 && newPos.x >= -var19) {
 					newPos.x = 0.0;
 				}
@@ -153,7 +153,7 @@ int Entity::move(const Vec3& pos)
 				}
 			}
 
-			for (; newPos.z != 0.0 && m_pLevel->getCubes(this, m_hitbox.cloneMove(0.0, -1.0, newPos.z))->size() == 0; cPosZ = newPos.z) {
+			for (; newPos.z != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(0.0, -1.0, newPos.z))->size() == 0; cPosZ = newPos.z) {
 				if (newPos.z < var19 && newPos.z >= -var19) {
 					newPos.z = 0.0;
 				}
@@ -331,7 +331,7 @@ int Entity::move(const Vec3& pos)
 
 		bool bIsInWater = isWet();
 
-		if (m_pLevel->containsFireTile(m_hitbox))
+		if (m_pLevel->containsFireTile(AABB(minPos, maxPos)))
 		{
 			burn(1);
 
@@ -472,13 +472,12 @@ void Entity::baseTick()
 	if (m_pRiding && m_pRiding->m_bRemoved) {
 		m_pRiding = nullptr;
 	}
-	//@TODO: untangle the gotos
 
 	m_walkDistO = m_walkDist;
 	m_oPos = m_pos;
     m_tickCount++;
 	m_rotPrev = m_rot;
-	if (isInWater())
+	if (checkInWater())
 	{
 		if (!m_bWasInWater && !m_bFirstTick)
 		{
@@ -528,52 +527,32 @@ void Entity::baseTick()
 		m_bWasInWater = true;
 		m_fireTicks = 0;
 		m_distanceFallen = 0;
-
-		if (m_pLevel->m_bIsOnline)
-			goto label_4;
 	}
 	else
-	{
 		m_bWasInWater = false;
 
-		if (m_pLevel->m_bIsOnline)
+	if (m_pLevel->m_bIsOnline)
+		m_fireTicks = 0;
+	else if (m_fireTicks > 0)
+	{
+		if (m_bFireImmune) {
+			m_fireTicks -= 4;
+			if (m_fireTicks < 0)
+				m_fireTicks = 0;
+		}
+		else
 		{
-		label_4:
-			m_fireTicks = 0;
-			goto label_5;
+			if (m_fireTicks % 20 == 0)
+				hurt(nullptr, 1);
+
+			m_fireTicks--;
 		}
 	}
 
-	if (m_fireTicks <= 0)
-	{
-	label_5:
-		if (!isInLava())
-			goto label_6;
-		goto label_15;
-	}
-
-	if (m_bFireImmune)
-	{
-		m_fireTicks -= 4;
-		if (m_fireTicks < 0)
-			m_fireTicks = 0;
-		goto label_5;
-	}
-
-	if (m_fireTicks % 20 == 0)
-	{
-		hurt(nullptr, 1);
-	}
-
-	m_fireTicks--;
-
 	if (isInLava())
-	{
-	label_15:
 		lavaHurt();
-	}
 
-label_6:
+
 	if (m_pos.y < -64.0f)
 		outOfWorld();
 
@@ -712,7 +691,7 @@ bool Entity::isInWall() const
 	return m_pLevel->isNormalTile(TilePos(m_pos.x, m_pos.y + getHeadHeight(), m_pos.z));
 }
 
-bool Entity::isInWater()
+bool Entity::checkInWater()
 {
 	AABB aabb = m_hitbox;
 	aabb.grow(0, -0.4f, 0);

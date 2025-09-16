@@ -2,6 +2,7 @@
 #include "TileEntityRenderer.hpp"
 #include "MobSpawnerRenderer.hpp"
 #include "SignRenderer.hpp"
+#include "PistonRenderer.hpp"
 
 Vec3 TileEntityRenderDispatcher::off = Vec3::ZERO;
 
@@ -11,6 +12,7 @@ TileEntityRenderDispatcher::TileEntityRenderDispatcher()
 {
     registerRenderer(TileEntityType::sign, new SignRenderer);
     registerRenderer(TileEntityType::mobSpawner, new MobSpawnerRenderer);
+    registerRenderer(TileEntityType::piston, new PistonRenderer);
 }
 
 void TileEntityRenderDispatcher::registerRenderer(TileEntityType* type, TileEntityRendererBase* tileEntityRenderer)

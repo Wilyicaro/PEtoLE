@@ -100,10 +100,7 @@ public:
 	virtual int  getBlocksAndData(uint8_t* pData, int, int, int, int, int, int, int);
 	virtual int  setBlocksAndData(uint8_t* pData, int, int, int, int, int, int, int);
 	virtual std::shared_ptr<TileEntity> getTileEntity(const ChunkTilePos& pos);
-	virtual void addTileEntity(std::shared_ptr<TileEntity> tileEntity)
-	{
-		setTileEntity(tileEntity->m_pos, tileEntity);
-	}
+	virtual void addTileEntity(std::shared_ptr<TileEntity> tileEntity);
 	virtual void setTileEntity(const ChunkTilePos& pos, std::shared_ptr<TileEntity> tileEntity);
 	virtual void removeTileEntity(const ChunkTilePos& pos);
 	virtual Random getRandom(int64_t l);

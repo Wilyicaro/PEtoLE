@@ -323,7 +323,7 @@ bool Wolf::hurt(Entity* ent, int dmg)
 				m_pAttackTarget = ent->shared_from_this();
 			}
 
-			if (ent->getType() == EntityType::arrow && ((Arrow*)ent)->m_owner)
+			if (ent && ent->getType() == EntityType::arrow && ((Arrow*)ent)->m_owner)
 				ent = ((Arrow*)ent)->m_owner.get();
 
 			if (ent->getCategory().contains(EntityCategories::MOB))

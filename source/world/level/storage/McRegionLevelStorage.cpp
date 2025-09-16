@@ -93,7 +93,7 @@ void McRegionLevelStorage::save(Level* level, LevelChunk* chunk)
 	std::string nbtData = oss.str();
 	std::vector<uint8_t> nbtBytes(nbtData.begin(), nbtData.end());
 
-	LOG_I("Saving chunk %d,%d, NBT size: %zu", chunk->m_chunkPos.x, chunk->m_chunkPos.z, nbtData.size());
+	//LOG_I("Saving chunk %d,%d, NBT size: %zu", chunk->m_chunkPos.x, chunk->m_chunkPos.z, nbtData.size());
 
 	regionFile->writeChunk(chunk->m_chunkPos, nbtBytes);
 	chunk->m_bUnsaved = false;

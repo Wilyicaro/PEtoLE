@@ -77,7 +77,7 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 
 		float scale = 0.5f;
 
-		if (Tile::tiles[itemID]->isCubeShaped() || pItemInstance->m_itemID == Tile::stoneSlabHalf->m_ID)
+		if (Tile::tiles[itemID]->isCubeShaped() || pItemInstance->m_itemID == Tile::stoneSlabHalf->m_ID || Tile::tiles[itemID]->getRenderShape() == SHAPE_PISTON)
 			scale = 0.25f;
 
 		glScalef(scale, scale, scale);

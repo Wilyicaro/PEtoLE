@@ -132,6 +132,7 @@ void FurnaceTile::setLit(bool var0, Level* level, const TilePos& pos) {
 	keepFurnaceInventory = false;
 
 	level->setData(pos, var5);
+	var6->clearRemoved();
 	level->setTileEntity(pos, var6);
 }
 

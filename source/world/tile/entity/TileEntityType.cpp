@@ -6,6 +6,7 @@
 #include "SignTileEntity.hpp"
 #include "MusicTileEntity.hpp"
 #include "RecordPlayerTileEntity.hpp"
+#include "PistonMovingTileEntity.hpp"
 
 std::unordered_map<std::string, const TileEntityType*> TileEntityType::entityTypeNameMap;
 std::vector<const TileEntityType*> TileEntityType::entityTypes;
@@ -23,6 +24,7 @@ void TileEntityType::initTypes()
 	mobSpawner = registerType<MobSpawnerTileEntity>("MobSpawner");
 	music = registerType<MusicTileEntity>("Music");
 	recordPlayer = registerType<RecordPlayerTileEntity>("RecordPlayer");
+	piston = registerType<PistonMovingTileEntity>("Piston");
 }
 
 void TileEntityType::teardownTypes()
@@ -38,3 +40,4 @@ TileEntityType* TileEntityType::sign;
 TileEntityType* TileEntityType::mobSpawner;
 TileEntityType* TileEntityType::music;
 TileEntityType* TileEntityType::recordPlayer;
+TileEntityType* TileEntityType::piston;

@@ -25,7 +25,7 @@ RenderList::RenderList()
 	m_remaining = 0;
 
 	field_C = new int[C_MAX_RENDERS];
-	m_renderChunks = new RenderChunk[C_MAX_RENDERS];
+	m_renderChunks = new RenderChunk*[C_MAX_RENDERS];
 }
 
 RenderList::~RenderList()
@@ -57,7 +57,7 @@ void RenderList::add(int x)
 
 }
 
-void RenderList::addR(const RenderChunk& rc)
+void RenderList::addR(RenderChunk& rc)
 {
 	// @BUG: If too many chunks are rendered, this has the potential to overflow.
 #ifndef ORIGINAL_CODE
@@ -71,7 +71,7 @@ void RenderList::addR(const RenderChunk& rc)
 #endif
 	
 
-	m_renderChunks[m_index] = rc;
+	m_renderChunks[m_index] = &rc;
 
 	m_index++;
 
@@ -100,11 +100,11 @@ inline static bool sameSlice(int x0, int x1)
 }
 
 
-bool RenderList::isAt(const RenderChunk& rc)
+bool RenderList::isAt(const RenderChunk& rc) const
 {
 	if (!inited) return false;
-	auto& actual = m_renderChunks[0];
-	return sameSlice(actual.m_posX, rc.m_posX) && sameSlice(actual.m_posZ, rc.m_posZ);
+	auto actual = m_renderChunks[0];
+	return sameSlice(actual->m_posX, rc.m_posX) && sameSlice(actual->m_posZ, rc.m_posZ);
 }
 
 void RenderList::render()
@@ -137,7 +137,7 @@ void RenderList::renderChunks()
 	{
 		for (int i = 0; i < m_remaining; i++)
 		{
-			RenderChunk& chk = m_renderChunks[i];
+			RenderChunk& chk = *m_renderChunks[i];
 			glPushMatrix();
 
 			glTranslatef(chk.m_posX, chk.m_posY, chk.m_posZ);

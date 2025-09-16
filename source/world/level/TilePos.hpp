@@ -22,7 +22,7 @@ private:
 public:
 	TilePos();
 	TilePos(int _x, int _y, int _z);
-	TilePos(int* xyz);
+	TilePos(const int* xyz);
 	TilePos(float _x, float _y, float _z);
 	TilePos(double _x, double _y, double _z);
 	TilePos(const Vec3& pos);

@@ -191,14 +191,10 @@ void LevelChunk::unload()
 {
 	m_bLoaded = false;
 
-	m_pLevel->m_tileEntityList.erase(std::remove_if(m_pLevel->m_tileEntityList.begin(), m_pLevel->m_tileEntityList.end(),
-		[&](const std::shared_ptr<TileEntity>& val) {
-			for (const auto& [k, v] : m_tileEntities) {
-				if (v == val)
-					return true;
-			}
-			return false;
-		}), m_pLevel->m_tileEntityList.end());
+	for (auto& te : m_tileEntities)
+	{
+		te.second->setRemoved();
+	}
 
 	for (auto& t : m_entities)
 		m_pLevel->removeEntities(t);
@@ -665,8 +661,7 @@ void LevelChunk::load()
 {
 	m_bLoaded = true;
 
-	for (auto& v : m_tileEntities)
-		m_pLevel->m_tileEntityList.push_back(v.second);
+	m_pLevel->addAllPendingTileEntities(m_tileEntities);
 
 	for (auto& v : m_entities)
 		m_pLevel->addEntities(v);
@@ -955,8 +950,8 @@ int LevelChunk::setBlocksAndData(uint8_t* pData, int xStart, int yStart, int zSt
 
 std::shared_ptr<TileEntity> LevelChunk::getTileEntity(const ChunkTilePos& pos)
 {
-	auto var5 = m_tileEntities.find(pos);
-	if (var5 == m_tileEntities.end()) {
+	auto it = m_tileEntities.find(pos);
+	if (it == m_tileEntities.end()) {
 		int var6 = getTile(pos);
 		if (!var6 || !Tile::isEntityTile[var6]) {
 			return nullptr;
@@ -967,7 +962,20 @@ std::shared_ptr<TileEntity> LevelChunk::getTileEntity(const ChunkTilePos& pos)
 		return m_tileEntities[pos];
 	}
 
-	return var5->second;
+	if (!it->second || it->second->isRemoved())
+	{
+		m_tileEntities.erase(it);
+		return nullptr;
+	}
+	else
+		return it->second;
+}
+
+void LevelChunk::addTileEntity(std::shared_ptr<TileEntity> tileEntity)
+{
+	setTileEntity(tileEntity->m_pos, tileEntity);
+	if (m_bLoaded)
+		m_pLevel->m_tileEntityList.push_back(tileEntity);
 }
 
 // This function appears to be unused, and is completely removed as of 0.9.2
@@ -1056,31 +1064,23 @@ void LevelChunk::setTileEntity(const ChunkTilePos& pos, std::shared_ptr<TileEnti
 	tileEntity->m_pLevel = m_pLevel;
 	auto tile = getTile(pos);
 	tileEntity->m_pos = pos.toTilePos(m_chunkPos);
-	if (tile && Tile::isEntityTile[tile]) {
-		if (m_bLoaded) {
-			auto it = m_tileEntities.find(pos);
-			if (it != m_tileEntities.end()) {
-				auto& list = m_pLevel->m_tileEntityList;
-				list.erase(std::remove(list.begin(), list.end(), it->second), list.end());
-			}
-
-			m_pLevel->m_tileEntityList.push_back(tileEntity);
-		}
-
+	if (tile && Tile::isEntityTile[tile])
+	{
+		tileEntity->clearRemoved();
 		m_tileEntities[pos] = tileEntity;
 	}
-	else {
+	else
 		LOG_I("Attempted to place a tile entity where there was no entity tile! %d", tile);
-	}
 }
 
 void LevelChunk::removeTileEntity(const ChunkTilePos& pos)
 {
-	if (m_bLoaded) {
+	if (m_bLoaded)
+	{
 		auto it = m_tileEntities.find(pos);
-		if (it != m_tileEntities.end()) {
-			auto& list = m_pLevel->m_tileEntityList;
-			list.erase(std::remove(list.begin(), list.end(), it->second), list.end());
+		if (it != m_tileEntities.end())
+		{
+			if (it->second) it->second->setRemoved();
 			m_tileEntities.erase(it);
 		}
 	}

@@ -35,6 +35,11 @@ public:
 		return !isVertical(facing);
 	}
 
+	static bool isPositive(Name facing)
+	{
+		return facing == UP || facing == SOUTH || facing == EAST;
+	}
+
 	static constexpr const int CORNERS[8][3] = {
 		{0, 1, 2},
 		{3, 1, 2},
@@ -73,7 +78,7 @@ public:
 		{ {0, 1}, {1, 1}, {1, 0}, {0, 0} }
 	};
 
-	static constexpr const int UV_CHECKERS[3][4] = {
+	static constexpr const int UV_AXES[3][4] = {
 		{0, 3, 2, 5},
 		{0, 3, 1, 4},
 		{2, 5, 1, 4}
@@ -83,7 +88,7 @@ public:
 		{0, 1, 2, 3}, // 0°
 		{1, 2, 3, 0}, // 90°
 		{3, 0, 1, 2},  // 270°
-		{ 2, 3, 0, 1 } // 180°
+		{2, 3, 0, 1} // 180°
 	};
 
 	static constexpr const float LIGHT[] = { 0.5f, 1.0f, 0.8f, 0.8f, 0.6f, 0.6f };

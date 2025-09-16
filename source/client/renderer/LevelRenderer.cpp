@@ -432,10 +432,12 @@ void LevelRenderer::checkQueryResults(int a, int b)
 void LevelRenderer::renderSameAsLast(int a, float b)
 {
 	for (auto& list : m_renderLists)
+	{
 		list.render();
+	}
 }
 
-int LevelRenderer::renderChunks(int start, int end, int a, float b)
+int LevelRenderer::renderChunks(int start, int end, int a, float b, bool render)
 {
 	m_pChunks.clear();
 
@@ -499,12 +501,12 @@ int LevelRenderer::renderChunks(int start, int end, int a, float b)
 
 		m_renderLists[list].addR(renderChunk);
 	}
-
-	renderSameAsLast(a, b);
+	if (render)
+		renderSameAsLast(a, b);
 	return result;
 }
 
-int LevelRenderer::render(Mob* pMob, int a, float b)
+int LevelRenderer::render(Mob* pMob, int a, float b, bool render)
 {
 	for (int i = 0; i < 10; i++)
 	{
@@ -529,9 +531,7 @@ int LevelRenderer::render(Mob* pMob, int a, float b)
 
 	Vec3 mobPos = pMob->m_posPrev + (pMob->m_pos - pMob->m_posPrev) * b;
 
-	float dX = pMob->m_pos.x - m_oPos.x, dY = pMob->m_pos.y - m_oPos.y, dZ = pMob->m_pos.z - m_oPos.z;
-
-	if (dX * dX + dY * dY + dZ * dZ > 16.0f)
+	if (pMob->distanceToSqr(m_oPos) > 16.0f)
 	{
 		m_oPos.x = pMob->m_pos.x;
 		m_oPos.y = pMob->m_pos.y;
@@ -620,7 +620,7 @@ int LevelRenderer::render(Mob* pMob, int a, float b)
 			glEnable(GL_ALPHA_TEST);
 			glEnable(GL_FOG);
 
-			d += renderChunks(cold, c, a, b);
+			d += renderChunks(cold, c, a, b, render);
 		}
 		while (c < m_chunksLength);
 
@@ -628,7 +628,7 @@ int LevelRenderer::render(Mob* pMob, int a, float b)
 	}
 	else
 	{
-		return renderChunks(0, m_chunksLength, a, b);
+		return renderChunks(0, m_chunksLength, a, b, render);
 	}
 }
 
@@ -825,7 +825,7 @@ void LevelRenderer::renderHit(Player* pPlayer, const HitResult& hr, int i, void*
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 
-	if (!i && m_destroyProgress > 0.0f)
+	if (m_destroyProgress > 0.0f)
 	{
 		glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
 

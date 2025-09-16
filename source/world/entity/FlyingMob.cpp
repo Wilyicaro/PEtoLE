@@ -10,7 +10,7 @@ void FlyingMob::causeFallDamage(float)
 
 void FlyingMob::travel(const Vec2& vec)
 {
-    if (isInWater())
+    if (checkInWater())
     {
         moveRelative(Vec3(vec.y, 0.02, vec.x));
         move(m_vel);

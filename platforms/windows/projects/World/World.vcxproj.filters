@@ -911,6 +911,21 @@
     <ClCompile Include="..\..\..\..\source\world\item\ShearsItem.cpp">
       <Filter>Source Files\Item</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\entity\PistonMovingTileEntity.cpp">
+      <Filter>Source Files\Tile\Entity</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\PistonBaseTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\PistonHeadTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\tile\MovingPistonTile.cpp">
+      <Filter>Source Files\Tile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\PistonItem.cpp">
+      <Filter>Source Files\Item</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\world\entity\Entity.hpp">
@@ -1634,6 +1649,21 @@
       <Filter>Header Files\Item</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\source\world\item\ShearsItem.hpp">
+      <Filter>Header Files\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\entity\PistonMovingTileEntity.hpp">
+      <Filter>Header Files\Tile\Entity</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\PistonBaseTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\PistonHeadTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\tile\MovingPistonTile.hpp">
+      <Filter>Header Files\Tile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\world\item\PistonItem.hpp">
       <Filter>Header Files\Item</Filter>
     </ClInclude>
   </ItemGroup>

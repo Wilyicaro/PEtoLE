@@ -527,9 +527,9 @@ void GameRenderer::renderLevel(float f)
 		// render the alpha layer
 		m_pMinecraft->m_pTextures->loadAndBindTerrain();
 		if (bFancy) {
-			//@TODO: fix alpha layer dissapearing for thousandths when entering a world or moving the camera fast
+			int c = pLR->render(pMob.get(), 1, f, false);
 			glColorMask(false, false, false, false);
-			int c = pLR->render(pMob.get(), 1, f);
+			pLR->renderSameAsLast(1, f);
 			if (bAnaglyph) {
 				if (!i) 
 					glColorMask(false, true, true, true);
@@ -537,7 +537,8 @@ void GameRenderer::renderLevel(float f)
 					glColorMask(true, false, false, true);
 			} else glColorMask(true, true, true, true);
 			
-			if (c > 0) pLR->renderSameAsLast(1, f);
+			if (c > 0)
+				pLR->renderSameAsLast(1, f);
 
 		} else pLR->render(pMob.get(), 1, f);
 

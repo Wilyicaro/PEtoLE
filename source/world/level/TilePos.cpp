@@ -18,7 +18,7 @@ TilePos::TilePos(int _x, int _y, int _z)
     _init(_x, _y, _z);
 }
 
-TilePos::TilePos(int* xyz)
+TilePos::TilePos(const int* xyz)
 {
 	_init(xyz[0], xyz[1], xyz[2]);
 }

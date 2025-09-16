@@ -187,16 +187,16 @@ void AABB::move(real x, real y, real z)
 	move(Vec3(x, y, z));
 }
 
-AABB AABB::cloneMove(const Vec3& vec)
+AABB AABB::copyMove(const Vec3& vec)
 {
 	AABB copy(*this);
 	copy.move(vec);
 	return copy;
 }
 
-AABB AABB::cloneMove(real x, real y, real z)
+AABB AABB::copyMove(real x, real y, real z)
 {
-	return cloneMove(Vec3(x, y, z));
+	return copyMove(Vec3(x, y, z));
 }
 
 // same thing

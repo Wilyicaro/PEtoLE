@@ -12,11 +12,11 @@ public:
     }
 
     void addFurnaceRecipe(Tile* tile, std::shared_ptr<ItemInstance> result) {
-        addFurnaceRecipe(std::make_shared<ItemInstance>(tile), result);
+        addFurnaceRecipe(std::make_shared<ItemInstance>(tile, 1, -1), result);
     }
 
     void addFurnaceRecipe(Item* item, std::shared_ptr<ItemInstance> result) {
-        addFurnaceRecipe(std::make_shared<ItemInstance>(item), result);
+        addFurnaceRecipe(std::make_shared<ItemInstance>(item, 1, -1), result);
     }
 
     void addFurnaceRecipe(std::shared_ptr<ItemInstance> ingredient, std::shared_ptr<ItemInstance> result) {

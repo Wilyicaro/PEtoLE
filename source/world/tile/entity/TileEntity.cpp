@@ -33,6 +33,21 @@ void TileEntity::save(CompoundIO tag)
     tag->putInt("z", m_pos.z);
 }
 
+bool TileEntity::isRemoved() const
+{
+    return m_bRemove;
+}
+
+void TileEntity::setRemoved()
+{
+    m_bRemove = true;
+}
+
+void TileEntity::clearRemoved()
+{
+    m_bRemove = false;
+}
+
 int TileEntity::getData() const
 {
     return m_pLevel->getData(m_pos);

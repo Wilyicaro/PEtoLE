@@ -46,8 +46,8 @@ public:
 	// @NOTE: Why not use the leaked verson of b1.2? lol
 	void move(const Vec3& vec);
 	void move(real x, real y, real z);
-	AABB cloneMove(const Vec3& vec);
-	AABB cloneMove(real x, real y, real z);
+	AABB copyMove(const Vec3& vec);
+	AABB copyMove(real x, real y, real z);
 	// same thing
 	void grow(const Vec3& vec);
 	void grow(real x, real y, real z);

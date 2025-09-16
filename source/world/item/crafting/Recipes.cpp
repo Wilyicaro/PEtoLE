@@ -252,6 +252,18 @@ Recipes::Recipes()
         .add('#', Tile::cloth)
         .add('X', Tile::wood));
 
+#ifdef ENH_b1_7
+    add(ShapedRecipeBuilder({ "###", "XIX", "XRX" }, std::make_shared<ItemInstance>(Tile::piston))
+        .add('#', Tile::wood)
+        .add('X', Tile::cobblestone)
+        .add('I', Item::ironIngot)
+        .add('R', Item::redStone));
+
+    add(ShapedRecipeBuilder({ "X", "#" }, std::make_shared<ItemInstance>(Tile::stickyPiston))
+        .add('X', Item::slimeBall)
+        .add('#', Tile::piston));
+#endif
+
     for (int i = 0; i < 16; ++i)
     {
         add(ShapelessRecipeBuilder(std::make_shared<ItemInstance>(Tile::cloth, 1, ClothTile::getColorFromData(i)))

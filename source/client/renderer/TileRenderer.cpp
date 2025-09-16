@@ -17,6 +17,8 @@
 #include <world/tile/BedTile.hpp>
 #include <world/tile/RailTile.hpp>
 #include <world/tile/RepeaterTile.hpp>
+#include <world/tile/PistonBaseTile.hpp>
+#include <world/tile/PistonHeadTile.hpp>
 
 bool TileRenderer::m_bFancyGrass = true;
 bool TileRenderer::m_bBiomeColors = true;
@@ -68,7 +70,7 @@ void TileRenderer::_init()
 	field_B7 = false;
 }
 
-TileRenderer::TileRenderer()
+TileRenderer::TileRenderer() : m_faceRotation{}
 {
 	_init();
 #ifndef ORIGINAL_CODE
@@ -77,7 +79,7 @@ TileRenderer::TileRenderer()
 #endif
 }
 
-TileRenderer::TileRenderer(LevelSource* pLevelSource)
+TileRenderer::TileRenderer(LevelSource* pLevelSource) : m_faceRotation{}
 {
 	_init();
 	m_pLevelSource = pLevelSource;
@@ -123,7 +125,7 @@ float TileRenderer::getWaterHeight(const TilePos& pos, const Material* pCheckMtl
 
 bool TileRenderer::canRender(int renderShape)
 {
-	return renderShape == SHAPE_SOLID || renderShape == SHAPE_STAIRS || renderShape == SHAPE_FENCE || renderShape == SHAPE_CACTUS;
+	return renderShape == SHAPE_SOLID || renderShape == SHAPE_STAIRS || renderShape == SHAPE_FENCE || renderShape == SHAPE_CACTUS || renderShape == SHAPE_PISTON;
 }
 
 void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b, int rot)
@@ -152,11 +154,33 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 
 	AABB& aabb = tile->m_aabb;
 
-	const auto& uvCheck = Facing::UV_CHECKERS[face / 2];
+	const auto& uvAxes = Facing::UV_AXES[face / 2];
 
-	float minU = aabb.byIndex(uvCheck[0]);
-	float maxU = aabb.byIndex(uvCheck[1]);
+	float minU = aabb.byIndex(uvAxes[0]);
+	float maxU = aabb.byIndex(uvAxes[1]);
+	float minV = aabb.byIndex(uvAxes[2]);
+	float maxV = aabb.byIndex(uvAxes[3]);
 
+	if (rot == 1 || rot == 2)
+	{
+		std::swap(minU, minV);
+		std::swap(maxU, maxV);
+
+		if (face == Facing::UP || face == Facing::NORTH || face == Facing::EAST)
+		{
+			std::swap(minV, maxV);
+			minV = 1.0 - minV;
+			maxV = 1.0 - maxV;
+		}
+	}
+
+	if (rot == 3 || rot == 2)
+	{
+		std::swap(minV, maxV);
+		minV = 1.0 - minV;
+		maxV = 1.0 - maxV;
+	}
+	
 	if (minU < 0.0f || maxU > 1.0f)
 	{
 		u1 = C_RATIO * (texX);
@@ -167,9 +191,6 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 		u1 = C_RATIO * (texX + 16.0f * minU);
 		u2 = C_RATIO * (texX + 16.0f * maxU - 0.01f);
 	}
-
-	float minV = aabb.byIndex(uvCheck[2]);
-	float maxV = aabb.byIndex(uvCheck[3]);
 
 	if (minV < 0.0f || maxV > 1.0f)
 	{
@@ -189,8 +210,9 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 		v2 = C_RATIO * (texY + 16.0f * maxV - 0.01f);
 	}
 	
-
 	const auto& baseUVs = Facing::UVS[face];
+
+	const auto& rotatedIndex = Facing::ROTATED_INDEX[rot];
 
 	Tesselator& t = Tesselator::instance;
 
@@ -199,7 +221,7 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 	for (int i = 0; i < 4; ++i) {
 		const auto vertex = Facing::CORNERS[Facing::VERTICES[face][i]];
 		if (m_bAmbientOcclusion) t.color(m_vtxRed[i] * r, m_vtxGreen[i] * g, m_vtxBlue[i] * b);
-		int rotIndex = Facing::ROTATED_INDEX[rot % 4][i];
+		int rotIndex = rotatedIndex[i];
 		bool useU2 = baseUVs[rotIndex][0];
 		if (flip) useU2 = !useU2;
 		t.vertexUV(aabb.byIndex(vertex[0]) + pos.x, aabb.byIndex(vertex[1]) + pos.y, aabb.byIndex(vertex[2]) + pos.z, useU2 ? u2 : u1, baseUVs[rotIndex][1] ? v2 : v1);
@@ -208,6 +230,11 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 	if (renderShape == SHAPE_CACTUS && Facing::isHorizontal(face)) {
 		tile->updateShape(m_pLevelSource, pos);
 	}
+}
+
+void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b)
+{
+	renderFace(tile, pos, texture, face, r, g, b, m_faceRotation[face]);
 }
 
 void TileRenderer::renderEast(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
@@ -238,6 +265,42 @@ void TileRenderer::renderDown(Tile* tile, const Vec3& pos, int texture, float r,
 void TileRenderer::renderUp(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
 {
 	renderFace(tile, pos, texture, Facing::UP, r, g, b);
+}
+
+void TileRenderer::renderPistonFace(real minX, real minY, real minZ, real maxX, real maxY, real maxZ, float bright, real offY, Facing::Name dir)
+{
+	int tex = 108;
+	if (m_textureOverride >= 0)
+		tex = m_textureOverride;
+
+	int texX = (tex & 15) << 4;
+	int texY = tex & 240;
+	Tesselator& t = Tesselator::instance;
+	float u1 = texX / 256.0f;
+	float u2 = texY / 256.0f;
+	float v1 = (texX + offY - 0.01f) / 256.0f;
+	float v2 = ((texY + 4.0F) - 0.01f) / 256.0;
+	t.color(bright, bright, bright);
+	switch (dir)
+	{
+	case Facing::UP: case Facing::DOWN:
+		t.vertexUV(minX, maxX, maxY, v1, u2);
+		t.vertexUV(minX, minZ, maxY, u1, u2);
+		t.vertexUV(minY, minZ, maxZ, u1, v2);
+		t.vertexUV(minY, maxX, maxZ, v1, v2);
+		break;
+	case Facing::NORTH: case Facing::SOUTH:
+		t.vertexUV(minX, minZ, maxZ, v1, u2);
+		t.vertexUV(minX, minZ, maxY, u1, u2);
+		t.vertexUV(minY, maxX, maxY, u1, v2);
+		t.vertexUV(minY, maxX, maxZ, v1, v2);
+		break;
+	case Facing::WEST: case Facing::EAST:
+		t.vertexUV(minY, minZ, maxY, v1, u2);
+		t.vertexUV(minX, minZ, maxY, u1, u2);
+		t.vertexUV(minX, maxX, maxZ, u1, v2);
+		t.vertexUV(minY, maxX, maxZ, v1, v2);
+	}
 }
 
 void TileRenderer::tesselateCrossTexture(Tile* tile, int data, const Vec3& pos)
@@ -712,64 +775,56 @@ bool TileRenderer::tesselateStairsInWorld(Tile* tile, const TilePos& pos)
 bool TileRenderer::tesselateFenceInWorld(Tile* tile, const TilePos& pos)
 {
 	tile->setShape(0.375f, 0.0f, 0.375f, 0.625f, 1.0f, 0.625f);
-	bool bRenderedAnything = tesselateBlockInWorld(tile, pos);
+	bool rendered = tesselateBlockInWorld(tile, pos);
 
+	int id = tile->m_ID;
+	bool west = m_pLevelSource->getTile(pos.west()) == id;
+	bool east = m_pLevelSource->getTile(pos.east()) == id;
+	bool north = m_pLevelSource->getTile(pos.north()) == id;
+	bool south = m_pLevelSource->getTile(pos.south()) == id;
 
-	bool var10 = m_pLevelSource->getTile(pos.west()) == tile->m_ID;
-	bool var11 = m_pLevelSource->getTile(pos.east()) == tile->m_ID;
-	bool var12 = m_pLevelSource->getTile(pos.north()) == tile->m_ID;
-	bool var13 = m_pLevelSource->getTile(pos.south()) == tile->m_ID;
+	bool connectX = west || east;
+	bool connectZ = north || south;
 
-	bool var8 = var10 || var11;
-	bool var9 = var12 || var13;
+	if (!connectX && !connectZ)
+		connectX = true;
 
-	if (!var8 && !var9) {
-		var8 = true;
+	float low = 7.0f / 16.0f;
+	float high = 9.0f / 16.0f;
+	float y1 = 12.0f / 16.0f;
+	float y2 = 15.0f / 16.0f;
+
+	float minX = west ? 0.0f : low;
+	float maxX = east ? 1.0f : high;
+	float minZ = north ? 0.0f : low;
+	float maxZ = south ? 1.0f : high;
+
+	if (connectX) {
+		tile->setShape(minX, y1, low, maxX, y2, high);
+		if (tesselateBlockInWorld(tile, pos)) rendered = true;
 	}
 
-	float var6 = 7.0F / 16.0F;
-	float var7 = 9.0F / 16.0F;
-	float var14 = 12.0F / 16.0F;
-	float var15 = 15.0F / 16.0F;
-	float var16 = var10 ? 0.0F : var6;
-	float var17 = var11 ? 1.0F : var7;
-	float var18 = var12 ? 0.0F : var6;
-	float var19 = var13 ? 1.0F : var7;
-
-	if (var8) 
-	{
-		tile->setShape(var16, var14, var6, var17, var15, var7);
-		if (tesselateBlockInWorld(tile, pos)) bRenderedAnything = true;
-
+	if (connectZ) {
+		tile->setShape(low, y1, minZ, high, y2, maxZ);
+		if (tesselateBlockInWorld(tile, pos)) rendered = true;
 	}
 
-	if (var9)
-	{
-		tile->setShape(var6, var14, var18, var7, var15, var19);
-		if (tesselateBlockInWorld(tile, pos)) bRenderedAnything = true;
+	y1 = 6.0f / 16.0f;
+	y2 = 9.0f / 16.0f;
+
+	if (connectX) {
+		tile->setShape(minX, y1, low, maxX, y2, high);
+		if (tesselateBlockInWorld(tile, pos)) rendered = true;
 	}
 
-	var14 = 6.0F / 16.0F;
-	var15 = 9.0F / 16.0F;
-
-	if (var8)
-	{
-		tile->setShape(var16, var14, var6, var17, var15, var7);
-		if (tesselateBlockInWorld(tile, pos)) bRenderedAnything = true;
-	}
-
-	if (var9)
-	{
-		tile->setShape(var6, var14, var18, var7, var15, var19);
-		if (tesselateBlockInWorld(tile, pos)) bRenderedAnything = true;
+	if (connectZ) {
+		tile->setShape(low, y1, minZ, high, y2, maxZ);
+		if (tesselateBlockInWorld(tile, pos)) rendered = true;
 	}
 
 	tile->setShape(0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f);
-
-	return bRenderedAnything;
+	return rendered;
 }
-
-
 
 void TileRenderer::tesselateTorch(Tile* tile, const Vec3& pos, float a, float b)
 {
@@ -1364,9 +1419,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 	float br = tile->getBrightness(m_pLevelSource, pos);
 	float power = data / 15.0F;
 	float red = power * 0.6F + 0.4F;
-	if (data == 0) {
+	if (data == 0)
 		red = 0.3F;
-	}
 
 	float green = Mth::Max(0.0f, power * power * 0.7F - 0.5F);
 	float blue = Mth::Max(0.0f, power * power * 0.6F - 0.7F);
@@ -1394,7 +1448,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 	bool n = RedStoneDustTile::shouldConnectTo(m_pLevelSource, north, 2) || (!m_pLevelSource->isNormalTile(north) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, north.below(), -1));
 	bool s = RedStoneDustTile::shouldConnectTo(m_pLevelSource, south, 0) || (!m_pLevelSource->isNormalTile(south) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, south.below(), -1));
 
-	if (!m_pLevelSource->isNormalTile(above)) {
+	if (!m_pLevelSource->isNormalTile(above))
+	{
 		if (m_pLevelSource->isNormalTile(west) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, west.above(), -1)) w = true;
 		if (m_pLevelSource->isNormalTile(east) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, east.above(), -1)) e = true;
 		if (m_pLevelSource->isNormalTile(north) && RedStoneDustTile::shouldConnectTo(m_pLevelSource, north.above(), -1)) n = true;
@@ -1417,7 +1472,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 		u1 = (xt + 16 + 15.99) / 256.0;
 	}
 
-	if (pic == 0) {
+	if (pic == 0)
+	{
 		if (w || e || n || s) {
 			if (!w) { x0 += d; u0 += d / 16.0; }
 			if (!e) { x1 -= d; u1 -= d / 16.0; }
@@ -1436,7 +1492,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 		t.vertexUV(x0 - o, pos.y + r, z1 + o, u0, v1 + tOff);
 	}
 
-	if (pic == 1) {
+	if (pic == 1)
+	{
 		t.vertexUV(x1 + o, pos.y + r, z1 + o, u1, v1);
 		t.vertexUV(x1 + o, pos.y + r, z0 - o, u1, v0);
 		t.vertexUV(x0 - o, pos.y + r, z0 - o, u0, v0);
@@ -1448,7 +1505,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 		t.vertexUV(x0 - o, pos.y + r, z1 + o, u0, v1 + tOff);
 	}
 
-	if (pic == 2) {
+	if (pic == 2)
+	{
 		t.vertexUV(x1 + o, pos.y + r, z1 + o, u1, v1);
 		t.vertexUV(x1 + o, pos.y + r, z0 - o, u0, v1);
 		t.vertexUV(x0 - o, pos.y + r, z0 - o, u0, v0);
@@ -1465,8 +1523,10 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 	v0 = yt / 256.0;
 	v1 = (yt + 15.99) / 256.0;
 
-	if (!m_pLevelSource->isNormalTile(above)) {
-		if (m_pLevelSource->isNormalTile(west) && m_pLevelSource->getTile(west.above()) == Tile::redstoneDust->m_ID) {
+	if (!m_pLevelSource->isNormalTile(above))
+	{
+		if (m_pLevelSource->isNormalTile(west) && m_pLevelSource->getTile(west.above()) == Tile::redstoneDust->m_ID)
+		{
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + r, pos.y + 1 + o, pos.z + 1 + o, u1, v0);
 			t.vertexUV(pos.x + r, pos.y - o, pos.z + 1 + o, u0, v0);
@@ -1479,7 +1539,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 			t.vertexUV(pos.x + r, pos.y + 1 + o, pos.z - o, u1, v1 + tOff);
 		}
 
-		if (m_pLevelSource->isNormalTile(east) && m_pLevelSource->getTile(east.above()) == Tile::redstoneDust->m_ID) {
+		if (m_pLevelSource->isNormalTile(east) && m_pLevelSource->getTile(east.above()) == Tile::redstoneDust->m_ID)
+		{
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + 1 - r,pos.y - o, pos.z + 1 + o, u0, v1);
 			t.vertexUV(pos.x + 1 - r, pos.y + 1 + o, pos.z + 1 + o, u1, v1);
@@ -1492,7 +1553,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 			t.vertexUV(pos.x + 1 - r, pos.y - o, pos.z - o, u0, v0 + tOff);
 		}
 
-		if (m_pLevelSource->isNormalTile(north) && m_pLevelSource->getTile(north.above()) == Tile::redstoneDust->m_ID) {
+		if (m_pLevelSource->isNormalTile(north) && m_pLevelSource->getTile(north.above()) == Tile::redstoneDust->m_ID)
+		{
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + 1 + o, pos.y - o, pos.z + r, u0, v1);
 			t.vertexUV(pos.x + 1 + o, pos.y + 1 + o, pos.z + r, u1, v1);
@@ -1505,7 +1567,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 			t.vertexUV(pos.x - o, pos.y - o, pos.z + r, u0, v0 + tOff);
 		}
 
-		if (m_pLevelSource->isNormalTile(south) && m_pLevelSource->getTile(south.above()) == Tile::redstoneDust->m_ID) {
+		if (m_pLevelSource->isNormalTile(south) && m_pLevelSource->getTile(south.above()) == Tile::redstoneDust->m_ID)
+		{
 			t.color(br * red, br * green, br * blue);
 			t.vertexUV(pos.x + 1 + o, pos.y + 1 + o, pos.z + 1 - r, u1, v0);
 			t.vertexUV(pos.x + 1 + o, pos.y  - o, pos.z + 1 - r, u0, v0);
@@ -1556,34 +1619,41 @@ bool TileRenderer::tesselateRailInWorld(Tile* tile, const TilePos& pos)
 	float y1 = (float)pos.y + r;
 	float y2 = (float)pos.y + r;
 	float y3 = (float)pos.y + r;
-	if (data != 1 && data != 2 && data != 3 && data != 7) {
-		if (data == 8) {
+	if (data != 1 && data != 2 && data != 3 && data != 7)
+	{
+		if (data == 8)
+		{
 			x0 = x1 = (float)(pos.x + 0);
 			x2 = x3 = (float)(pos.x + 1);
 			z0 = z3 = (float)(pos.z + 1);
 			z1 = z2 = (float)(pos.z + 0);
 		}
-		else if (data == 9) {
+		else if (data == 9)
+		{
 			x0 = x3 = (float)(pos.x + 0);
 			x1 = x2 = (float)(pos.x + 1);
 			z0 = z1 = (float)(pos.z + 0);
 			z2 = z3 = (float)(pos.z + 1);
 		}
 	}
-	else {
+	else
+	{
 		x0 = x3 = (float)(pos.x + 1);
 		x1 = x2 = (float)(pos.x + 0);
 		z0 = z1 = (float)(pos.z + 1);
 		z2 = z3 = (float)(pos.z + 0);
 	}
 
-	if (data != 2 && data != 4) {
-		if (data == 3 || data == 5) {
+	if (data != 2 && data != 4)
+	{
+		if (data == 3 || data == 5)
+		{
 			++y1;
 			++y2;
 		}
 	}
-	else {
+	else
+	{
 		++y0;
 		++y3;
 	}
@@ -1601,49 +1671,56 @@ bool TileRenderer::tesselateRailInWorld(Tile* tile, const TilePos& pos)
 
 bool TileRenderer::tesselateRepeaterInWorld(Tile* tile, const TilePos& pos)
 {
-	int var5 = m_pLevelSource->getData(pos);
-	int var6 = var5 & 3;
-	int var7 = (var5 & 12) >> 2;
-	tesselateBlockInWorld(tile, pos);
-	Tesselator& t = Tesselator::instance;
-	float var9 = tile->getBrightness(m_pLevelSource, pos);
-	if (Tile::lightBlock[tile->m_ID] > 0)
-		var9 = (var9 + 1.0F) * 0.5F;
+	int data = m_pLevelSource->getData(pos);
+	int facing = data & 3;
+	int delay = (data & 12) >> 2;
 
-	t.color(var9, var9, var9);
-	real var10 = -0.1875;
-	real var12 = 0.0;
-	real var14 = 0.0;
-	real var16 = 0.0;
-	real var18 = 0.0;
-	switch (var6) {
+	tesselateBlockInWorld(tile, pos);
+
+	Tesselator& t = Tesselator::instance;
+	float brightness = tile->getBrightness(m_pLevelSource, pos);
+	if (Tile::lightBlock[tile->m_ID] > 0)
+		brightness = (brightness + 1.0f) * 0.5f;
+
+	t.color(brightness, brightness, brightness);
+
+	constexpr real torchYOffset = -0.1875;
+	real tx = 0.0, tz = 0.0;
+	real tx1 = 0.0, tz1 = 0.0;
+
+	switch (facing) {
 	case 0:
-		var18 = -0.3125;
-		var14 = RepeaterTile::repeaterFacing[var7];
+		tz1 = -0.3125;
+		tz = RepeaterTile::repeaterFacing[delay];
 		break;
 	case 1:
-		var16 = 0.3125;
-		var12 = -RepeaterTile::repeaterFacing[var7];
+		tx1 = 0.3125;
+		tx = -RepeaterTile::repeaterFacing[delay];
 		break;
 	case 2:
-		var18 = 0.3125;
-		var14 = -RepeaterTile::repeaterFacing[var7];
+		tz1 = 0.3125;
+		tz = -RepeaterTile::repeaterFacing[delay];
 		break;
 	case 3:
-		var16 = -0.3125;
-		var12 = RepeaterTile::repeaterFacing[var7];
+		tx1 = -0.3125;
+		tx = RepeaterTile::repeaterFacing[delay];
+		break;
 	}
 
-	tesselateTorch(tile, Vec3(pos.x + var12, pos.y + var10, pos.z + var14), 0.0, 0.0);
-	tesselateTorch(tile, Vec3(pos.x + var16, pos.y + var10, pos.z + var18), 0.0, 0.0);
-	int var20 = tile->getTexture(Facing::UP);
-	int var21 = (var20 & 15) << 4;
-	int var22 = var20 & 240;
-	real var23 = (real)((float)var21 / 256.0F);
-	real var25 = (real)(((float)var21 + 15.99F) / 256.0F);
-	real var27 = (real)((float)var22 / 256.0F);
-	real var29 = (real)(((float)var22 + 15.99F) / 256.0F);
-	float var31 = 2.0F / 16.0F;
+	tesselateTorch(tile, Vec3(pos.x + tx, pos.y + torchYOffset, pos.z + tz), 0.0, 0.0);
+	tesselateTorch(tile, Vec3(pos.x + tx1, pos.y + torchYOffset, pos.z + tz1), 0.0, 0.0);
+
+	int tex = tile->getTexture(Facing::UP);
+	int u = (tex & 15) << 4;
+	int v = tex & 240;
+
+	float u0 = u / 256.0f;
+	float u1 = (u + 15.99f) / 256.0f;
+	float v0 = v / 256.0f;
+	float v1 = (v + 15.99f) / 256.0f;
+
+	const constexpr float inset = 2.0f / 16.0f;
+
 	float var32 = (float)(pos.x + 1);
 	float var33 = (float)(pos.x + 1);
 	float var34 = (float)(pos.x + 0);
@@ -1652,8 +1729,8 @@ bool TileRenderer::tesselateRepeaterInWorld(Tile* tile, const TilePos& pos)
 	float var37 = (float)(pos.z + 1);
 	float var38 = (float)(pos.z + 1);
 	float var39 = (float)(pos.z + 0);
-	float var40 = (float)pos.y + var31;
-	if (var6 == 2) {
+	float var40 = (float)pos.y + inset;
+	if (facing == 2) {
 		var33 = (float)(pos.x + 0);
 		var32 = var33;
 		var35 = (float)(pos.x + 1);
@@ -1663,7 +1740,7 @@ bool TileRenderer::tesselateRepeaterInWorld(Tile* tile, const TilePos& pos)
 		var38 = (float)(pos.z + 0);
 		var37 = var38;
 	}
-	else if (var6 == 3) {
+	else if (facing == 3) {
 		var35 = (float)(pos.x + 0);
 		var32 = var35;
 		var34 = (float)(pos.x + 1);
@@ -1673,7 +1750,7 @@ bool TileRenderer::tesselateRepeaterInWorld(Tile* tile, const TilePos& pos)
 		var39 = (float)(pos.z + 1);
 		var38 = var39;
 	}
-	else if (var6 == 1) {
+	else if (facing == 1) {
 		var35 = (float)(pos.x + 1);
 		var32 = var35;
 		var34 = (float)(pos.x + 0);
@@ -1684,10 +1761,199 @@ bool TileRenderer::tesselateRepeaterInWorld(Tile* tile, const TilePos& pos)
 		var38 = var39;
 	}
 
-	t.vertexUV(var35, var40, var39, var23, var27);
-	t.vertexUV(var34, var40, var38, var23, var29);
-	t.vertexUV(var33, var40, var37, var25, var29);
-	t.vertexUV(var32, var40, var36, var25, var27);
+	t.vertexUV(var35, var40, var39, u0, v0);
+	t.vertexUV(var34, var40, var38, u0, v1);
+	t.vertexUV(var33, var40, var37, u1, v1);
+	t.vertexUV(var32, var40, var36, u1, v0);
+
+	return true;
+}
+
+
+void TileRenderer::tesselatePistonInWorldNoCulling(Tile* tile, const TilePos& pos)
+{
+	m_bDisableCulling = true;
+	tesselatePistonInWorld(tile, pos, true);
+	m_bDisableCulling = false;
+}
+
+bool TileRenderer::tesselatePistonInWorld(Tile* tile, const TilePos& pos, bool head)
+{
+	int var6 = m_pLevelSource->getData(pos);
+	bool withShape = head || (var6 & 8) != 0;
+	int facing = PistonBaseTile::getFacing(var6);
+	if (withShape)
+	{
+		switch (facing) {
+		case Facing::DOWN:
+			for (Facing::Name side : Facing::HORIZONTAL)
+				m_faceRotation[side] = 3;
+			tile->setShape(0.0F, 0.25F, 0.0F, 1.0F, 1.0F, 1.0F);
+			break;
+		case Facing::UP:
+			tile->setShape(0.0F, 0.0F, 0.0F, 1.0F, 12.0F / 16.0F, 1.0F);
+			break;
+		case Facing::NORTH:
+			m_faceRotation[Facing::EAST] = 1;
+			m_faceRotation[Facing::WEST] = 2;
+			tile->setShape(0.0F, 0.0F, 0.25F, 1.0F, 1.0F, 1.0F);
+			break;
+		case Facing::SOUTH: 
+			m_faceRotation[Facing::EAST] = 2;
+			m_faceRotation[Facing::WEST] = 1;
+			m_faceRotation[Facing::UP] = 3;
+			m_faceRotation[Facing::DOWN] = 3;
+			tile->setShape(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 12.0F / 16.0F);
+			break;
+		case Facing::WEST:
+			m_faceRotation[Facing::NORTH] = 1;
+			m_faceRotation[Facing::SOUTH] = 2;
+			m_faceRotation[Facing::UP] = 2;
+			m_faceRotation[Facing::DOWN] = 1;
+			tile->setShape(0.25F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+			break;
+		case Facing::EAST:
+			m_faceRotation[Facing::NORTH] = 2;
+			m_faceRotation[Facing::SOUTH] = 1;
+			m_faceRotation[Facing::UP] = 1;
+			m_faceRotation[Facing::DOWN] = 2;
+			tile->setShape(0.0F, 0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F);
+		}
+
+		tesselateBlockInWorld(tile, pos);
+
+		for (Facing::Name face : Facing::ALL)
+			m_faceRotation[face] = 0;
+
+		tile->setShape(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+	}
+	else
+	{
+		switch (facing) {
+		case Facing::DOWN:
+			for (Facing::Name side : Facing::HORIZONTAL)
+				m_faceRotation[side] = 3;
+			break;
+		case Facing::UP:
+		default:
+			break;
+		case Facing::NORTH:
+			m_faceRotation[Facing::EAST] = 1;
+			m_faceRotation[Facing::WEST] = 2;
+			break;
+		case Facing::SOUTH:
+			m_faceRotation[Facing::EAST] = 2;
+			m_faceRotation[Facing::WEST] = 1;
+			m_faceRotation[Facing::UP] = 3;
+			m_faceRotation[Facing::DOWN] = 3;
+			break;
+		case Facing::WEST:
+			m_faceRotation[Facing::NORTH] = 1;
+			m_faceRotation[Facing::SOUTH] = 2;
+			m_faceRotation[Facing::UP] = 2;
+			m_faceRotation[Facing::DOWN] = 1;
+			break;
+		case Facing::EAST:
+			m_faceRotation[Facing::NORTH] = 2;
+			m_faceRotation[Facing::SOUTH] = 1;
+			m_faceRotation[Facing::UP] = 1;
+			m_faceRotation[Facing::DOWN] = 2;
+		}
+
+		tesselateBlockInWorld(tile, pos);
+
+		for (Facing::Name face : Facing::ALL)
+			m_faceRotation[face] = 0;
+	}
+
+	return true;
+}
+
+void TileRenderer::tesselateHeadPistonInWorldNoCulling(Tile* tile, const TilePos& pos, bool extended)
+{
+	m_bDisableCulling = true;
+	tesselateHeadPistonInWorld(tile, pos, extended);
+	m_bDisableCulling = false;
+}
+
+bool TileRenderer::tesselateHeadPistonInWorld(Tile* tile, const TilePos& pos, bool extended)
+{
+	int data = m_pLevelSource->getData(pos);
+	int dir = PistonHeadTile::getDirection(data);
+	float bright = tile->getBrightness(m_pLevelSource, pos);
+	float headDepth = extended ? 1.0F : 0.5F;
+	real offY = extended ? 16.0 : 8.0;
+	switch (dir)
+	{
+	case Facing::DOWN:
+		for (Facing::Name side : Facing::HORIZONTAL)
+			m_faceRotation[side] = 3;
+		tile->setShape(0.0F, 0.0F, 0.0F, 1.0F, 0.25F, 1.0F);
+		tesselateBlockInWorld(tile, pos);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y + 0.25F), (pos.y + 0.25F + headDepth), (pos.z + 10.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright * 0.8F, offY, Facing::DOWN);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y + 0.25F), (pos.y + 0.25F + headDepth), (pos.z + 6.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.8F, offY, Facing::DOWN);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y + 0.25F), (pos.y + 0.25F + headDepth), (pos.z + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright * 0.6F, offY, Facing::DOWN);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y + 0.25F), (pos.y + 0.25F + headDepth), (pos.z + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.6F, offY, Facing::DOWN);
+		break;
+	case Facing::UP:
+		tile->setShape(0.0F, 12.0F / 16.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+		tesselateBlockInWorld(tile, pos);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y - 0.25F + 1.0F - headDepth), (pos.y - 0.25F + 1.0F), (pos.z + 10.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright * 0.8F, offY, Facing::UP);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y - 0.25F + 1.0F - headDepth), (pos.y - 0.25F + 1.0F), (pos.z + 6.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.8F, offY, Facing::UP);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y - 0.25F + 1.0F - headDepth), (pos.y - 0.25F + 1.0F), (pos.z + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright * 0.6F, offY, Facing::UP);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y - 0.25F + 1.0F - headDepth), (pos.y - 0.25F + 1.0F), (pos.z + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.6F, offY, Facing::UP);
+		break;
+	case Facing::NORTH:
+		m_faceRotation[Facing::EAST] = 1;
+		m_faceRotation[Facing::WEST] = 2;
+		tile->setShape(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 0.25F);
+		tesselateBlockInWorld(tile, pos);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z + 0.25F), (pos.z + 0.25F + headDepth), bright * 0.6F, offY, Facing::NORTH);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z + 0.25F), (pos.z + 0.25F + headDepth), bright * 0.6F, offY, Facing::NORTH);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z + 0.25F), (pos.z + 0.25F + headDepth), bright * 0.5F, offY, Facing::NORTH);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z + 0.25F), (pos.z + 0.25F + headDepth), bright, offY, Facing::NORTH);
+		break;
+	case Facing::SOUTH:
+		m_faceRotation[Facing::EAST] = 2;
+		m_faceRotation[Facing::WEST] = 1;
+		m_faceRotation[Facing::UP] = 3;
+		m_faceRotation[Facing::DOWN] = 3;
+		tile->setShape(0.0F, 0.0F, 12.0F / 16.0F, 1.0F, 1.0F, 1.0F);
+		tesselateBlockInWorld(tile, pos);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z - 0.25F + 1.0F - headDepth), (pos.z - 0.25F + 1.0F), bright * 0.6F, offY, Facing::SOUTH);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z - 0.25F + 1.0F - headDepth), (pos.z - 0.25F + 1.0F), bright * 0.6F, offY, Facing::SOUTH);
+		renderPistonFace((pos.x + 6.0F / 16.0F), (pos.x + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z - 0.25F + 1.0F - headDepth), (pos.z - 0.25F + 1.0F), bright * 0.5F, offY, Facing::SOUTH);
+		renderPistonFace((pos.x + 10.0F / 16.0F), (pos.x + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z - 0.25F + 1.0F - headDepth), (pos.z - 0.25F + 1.0F), bright, offY, Facing::SOUTH);
+		break;
+	case Facing::WEST:
+		m_faceRotation[Facing::NORTH] = 1;
+		m_faceRotation[Facing::SOUTH] = 2;
+		m_faceRotation[Facing::UP] = 2;
+		m_faceRotation[Facing::DOWN] = 1;
+		tile->setShape(0.0F, 0.0F, 0.0F, 0.25F, 1.0F, 1.0F);
+		tesselateBlockInWorld(tile, pos);
+		renderPistonFace((pos.x + 0.25F), (pos.x + 0.25F + headDepth), (pos.y + 6.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.5F, offY, Facing::WEST);
+		renderPistonFace((pos.x + 0.25F), (pos.x + 0.25F + headDepth), (pos.y + 10.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright, offY, Facing::WEST);
+		renderPistonFace((pos.x + 0.25F), (pos.x + 0.25F + headDepth), (pos.y + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.6F, offY, Facing::WEST);
+		renderPistonFace((pos.x + 0.25F), (pos.x + 0.25F + headDepth), (pos.y + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright * 0.6F, offY, Facing::WEST);
+		break;
+	case Facing::EAST:
+		m_faceRotation[Facing::NORTH] = 2;
+		m_faceRotation[Facing::SOUTH] = 1;
+		m_faceRotation[Facing::UP] = 1;
+		m_faceRotation[Facing::DOWN] = 2;
+		tile->setShape(12.0F / 16.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
+		tesselateBlockInWorld(tile, pos);
+		renderPistonFace((pos.x - 0.25F + 1.0F - headDepth), (pos.x - 0.25F + 1.0F), (pos.y + 6.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.5F, offY, Facing::EAST);
+		renderPistonFace((pos.x - 0.25F + 1.0F - headDepth), (pos.x - 0.25F + 1.0F), (pos.y + 10.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright, offY, Facing::EAST);
+		renderPistonFace((pos.x - 0.25F + 1.0F - headDepth), (pos.x - 0.25F + 1.0F), (pos.y + 6.0F / 16.0F), (pos.y + 10.0F / 16.0F), (pos.z + 6.0F / 16.0F), (pos.z + 6.0F / 16.0F), bright * 0.6F, offY, Facing::EAST);
+		renderPistonFace((pos.x - 0.25F + 1.0F - headDepth), (pos.x - 0.25F + 1.0F), (pos.y + 10.0F / 16.0F), (pos.y + 6.0F / 16.0F), (pos.z + 10.0F / 16.0F), (pos.z + 10.0F / 16.0F), bright * 0.6F, offY, Facing::EAST);
+	}
+
+	for (Facing::Name face : Facing::ALL)
+		m_faceRotation[face] = 0;
+
+	tile->setShape(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
 	return true;
 }
 
@@ -1736,6 +2002,10 @@ bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos)
 			return tesselateBedInWorld(tile, pos);
 		case SHAPE_REPEATER:
 			return tesselateRepeaterInWorld(tile, pos);
+		case SHAPE_PISTON:
+			return tesselatePistonInWorld(tile, pos, false);
+		case SHAPE_PISTON_HEAD:
+			return tesselateHeadPistonInWorld(tile, pos, true);
 	}
 
 	return false;

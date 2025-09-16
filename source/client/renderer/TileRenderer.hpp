@@ -29,13 +29,15 @@ public:
 	bool tesselateInWorldNoCulling(Tile*, const TilePos& pos);
 	bool tesselateInWorld(Tile*, const TilePos& pos, int textureOverride);
 
-	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b, int rot = 0);
+	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b, int rot);
+	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b);
 	void renderEast(Tile*, const Vec3& pos, int texture, float r, float g, float b);
 	void renderWest(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void renderSouth(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void renderNorth(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void renderDown(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
 	void renderUp(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
+	void renderPistonFace(real, real, real, real, real, real, float, real, Facing::Name dir);
 	void tesselateCrossTexture(Tile* tile, int data, const Vec3& pos);
 	void tesselateRowTexture(Tile* tile, int data, const Vec3& pos);
 	void tesselateTorch(Tile*, const Vec3& pos, float a, float b);
@@ -55,6 +57,10 @@ public:
 	bool tesselateDustInWorld(Tile* tile, const TilePos& pos);
 	bool tesselateRailInWorld(Tile* tile, const TilePos& pos);
 	bool tesselateRepeaterInWorld(Tile* tile, const TilePos& pos);
+	void tesselatePistonInWorldNoCulling(Tile* tile, const TilePos& pos);
+	bool tesselatePistonInWorld(Tile* tile, const TilePos& pos, bool head);
+	void tesselateHeadPistonInWorldNoCulling(Tile* tile, const TilePos& pos, bool extended);
+	bool tesselateHeadPistonInWorld(Tile* tile, const TilePos& pos, bool extended);
 	bool tesselateBlockInWorldWithAmbienceOcclusionV2(Tile*, const TilePos& pos, float r, float g, float b);
 
 	int getTileColor(Tile*, const TilePos& pos);
@@ -65,8 +71,9 @@ public:
 	static bool m_bFancyGrass;
 	static bool m_bBiomeColors;
 
-private:
 	LevelSource* m_pLevelSource;
+
+private:
 	int m_textureOverride;
 	bool m_bDisableCulling;
 	bool m_bAmbientOcclusion;
@@ -106,6 +113,8 @@ private:
 	float m_vtxGreen[4];
 	//blue
 	float m_vtxBlue[4];
+
+	int m_faceRotation[6];
 
 	bool field_AC;
 	bool field_AD;

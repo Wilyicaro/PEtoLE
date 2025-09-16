@@ -223,6 +223,9 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addLocalSound("portal.travel", "newsound/portal/travel.ogg");
 	addLocalSound("portal.trigger", "newsound/portal/trigger.ogg");
 
+	addLocalSound("tile.piston.in", "newsound/tile/piston/in.ogg");
+	addLocalSound("tile.piston.out", "newsound/tile/piston/out.ogg");
+
 	addLocalSound("13", "streaming/13.ogg");
 	addLocalSound("cat", "streaming/cat.ogg");
 

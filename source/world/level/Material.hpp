@@ -28,10 +28,13 @@ public:
 	virtual bool blocksLight() const;
 	virtual bool blocksMotion() const;
 	virtual bool isFlammable() const;
+	virtual int getPushReaction() const;
 	virtual Material* setReplaceable();
 	virtual Material* setFlammable();
 	virtual Material* setNonMineable();
 	virtual Material* setTranslucent();
+	virtual Material* destroyOnPush();
+	virtual Material* notPushable();
 
 public:
 	static Material
@@ -71,6 +74,7 @@ public:
 	bool m_bReplaceable;
 	bool m_bMineable;
 	bool m_bTranslucent;
+	int m_pushReaction;
 };
 
 class GasMaterial : public Material

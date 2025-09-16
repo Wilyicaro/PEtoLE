@@ -17,10 +17,10 @@ public:
 	~RenderList();
 
 	void add(int x);
-	void addR(const RenderChunk&);
+	void addR(RenderChunk&);
 	void clear();
 	void init(float, float, float);
-	bool isAt(const RenderChunk& rc);
+	bool isAt(const RenderChunk& rc) const;
 	void render();
 	void renderChunks();
 
@@ -29,7 +29,7 @@ public:
 	float m_offY;
 	float m_offZ;
 	int* field_C;
-	RenderChunk* m_renderChunks;
+	RenderChunk** m_renderChunks;
 	int m_index;
 	bool inited;
 	bool rendered;

@@ -23,8 +23,6 @@ public:
     bool isLit();
     bool stillValid(Player* player) override;
 
-
-
     virtual void setChanged() override;
 
     int m_litTime = 0;

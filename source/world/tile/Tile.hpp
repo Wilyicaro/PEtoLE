@@ -30,6 +30,8 @@ class LiquidTile;
 class Sapling;
 class RecordPlayerTile;
 class PortalTile;
+class MovingPistonTile;
+class PistonHeadTile;
 
 class Tile
 {
@@ -112,8 +114,10 @@ public: // virtual functions
 	virtual Tile* setExplodeable(float);
 	virtual Tile* setDestroyTime(float);
 	virtual Tile* setTicking(bool);
+	virtual Tile* setBlockUpdate();
 	virtual int getSpawnResourcesAuxValue(int) const;
 	virtual std::shared_ptr<TileEntity> newTileEntity();
+	virtual int getPistonPushReaction();
 
 private:
 	void _init();
@@ -154,6 +158,7 @@ public: // static variables
 	static bool  solid        [C_MAX_TILES];
 	static bool  translucent  [C_MAX_TILES];
 	static bool  isEntityTile [C_MAX_TILES];
+	static bool  blockUpdate [C_MAX_TILES];
 
 	static Tile* sand;
 	static Tile* sandStone;
@@ -246,6 +251,10 @@ public: // static variables
 	static Tile* repeaterLit;
 	static Tile* trapDoor;
 	static PortalTile* portal;
+	static Tile* piston;
+	static Tile* stickyPiston;
+	static PistonHeadTile* pistonHead;
+	static MovingPistonTile* movingPiston;
 
 public:
 	int m_TextureFrame;

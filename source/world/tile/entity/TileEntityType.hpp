@@ -55,6 +55,7 @@ public:
 	static TileEntityType* mobSpawner;
 	static TileEntityType* music;
 	static TileEntityType* recordPlayer;
+	static TileEntityType* piston;
 
 private:
 	std::string m_name;

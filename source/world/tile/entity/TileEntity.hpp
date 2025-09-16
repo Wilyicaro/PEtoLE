@@ -26,17 +26,21 @@ public:
     virtual void save(CompoundIO tag);
     virtual void tick() {}
 
+    bool isRemoved() const;
+    void setRemoved();
+    void clearRemoved();
+
     virtual Packet* getUpdatePacket() { return nullptr; }
 
     const TileEntityType* getType() const { return m_pType; }
 
-    int getData() const;
+    virtual int getData() const;
     void setData(int data);
     void setChanged();
 
     real distanceToSqr(const Vec3& vec) const;
 
-    Tile* getTile() const;
+    virtual Tile* getTile() const;
 
     Level* m_pLevel = nullptr;
     TilePos m_pos;
@@ -44,6 +48,7 @@ public:
 
 protected:
     const TileEntityType* m_pType;
+    bool m_bRemove = false;
 
     virtual std::string getId() const;
 };

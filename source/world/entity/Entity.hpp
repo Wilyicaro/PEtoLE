@@ -90,7 +90,7 @@ public:
 	virtual bool isFree(const Vec3& off) const;
 	virtual bool isFree(const Vec3& off, float expand) const;
 	virtual bool isInWall() const;
-	virtual bool isInWater();
+	virtual bool checkInWater();
 	virtual bool isWet();
 	virtual bool wasInWater();
 	virtual bool isInLava() const;

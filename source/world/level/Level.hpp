@@ -41,6 +41,7 @@ private:
 	bool m_bAllPlayersSleeping;
 	bool m_bAnyPlayersSleeping;
 	int m_netherTravelRatio;
+	bool m_bUpdatingTileEntities;
 
 private:
 	// @NOTE: LevelListeners do NOT get updated here
@@ -154,8 +155,9 @@ public:
 	virtual void tick();
 	virtual bool tickPendingTicks(bool b);
 	virtual void tickTiles();
-	virtual void advanceWeatherCycle();
+	virtual void tickWeather();
 	void tickEntities();
+	void addAllPendingTileEntities(const std::unordered_map<ChunkTilePos, std::shared_ptr<TileEntity>>&);
 	virtual void addToTickNextTick(const TilePos& tilePos, int, int);
 	void takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* pOwner);
 	void addParticle(const std::string& name, const Vec3& pos, const Vec3& dir = Vec3::ZERO);
@@ -283,6 +285,7 @@ public:
 	std::set<ChunkPos> m_chunksToUpdate;
 	std::vector<LightUpdate> m_lightUpdates;
 	std::vector<std::shared_ptr<TileEntity>> m_tileEntityList;
+	std::vector<std::shared_ptr<TileEntity>> m_pendingTileEntities;
 	bool m_bUpdateLights;
 	int m_maxRecurse;
 	bool m_bIsNew;

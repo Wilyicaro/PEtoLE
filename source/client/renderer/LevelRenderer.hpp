@@ -91,14 +91,14 @@ public:
 	std::string gatherStats2();
 	void onGraphicsReset();
 	void renderAABBOutline(const AABB& aabb) const;
-	int render(Mob* pMob, int a, float b);
+	int render(Mob* pMob, int a, float b, bool render = true);
 	void renderEntities(Vec3 pos, Culler*, float f);
 	void renderSky(float);
 	void renderClouds(float);
 	void renderAdvancedClouds(float);
 	void checkQueryResults(int, int);
 	void renderSameAsLast(int, float);
-	int  renderChunks(int start, int end, int a, float b);
+	int  renderChunks(int start, int end, int a, float b, bool render = true);
 	void setLevel(Level*);
 	void setDirty(const TilePos& min, const TilePos& max);
 	void tick();

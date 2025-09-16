@@ -11,7 +11,8 @@
 Material::Material(MapColor* mapColor) :
 	m_pMapColor(mapColor),
 	m_bFlammable(false),
-	m_bMineable(true)
+	m_bMineable(true),
+	m_pushReaction(0)
 {
 }
 
@@ -57,28 +58,28 @@ void Material::initMaterials()
 	wood = (new Material(MapColor::wood))->setFlammable();
 	stone = (new Material(MapColor::stone))->setNonMineable();
 	metal = (new Material(MapColor::metal))->setNonMineable();
-	water = new LiquidMaterial(MapColor::water);
-	lava = new LiquidMaterial(MapColor::red);
-	leaves = (new Material(MapColor::foliage))->setFlammable()->setTranslucent();
-	plant = new DecorationMaterial(MapColor::foliage);
+	water = (new LiquidMaterial(MapColor::water))->destroyOnPush();
+	lava = (new LiquidMaterial(MapColor::red))->destroyOnPush();
+	leaves = (new Material(MapColor::foliage))->setFlammable()->setTranslucent()->destroyOnPush();
+	plant = (new DecorationMaterial(MapColor::foliage))->destroyOnPush();
 	sponge = new Material(MapColor::cloth);
 	cloth = (new Material(MapColor::cloth))->setFlammable();
-	fire = new GasMaterial(MapColor::air);
+	fire = (new GasMaterial(MapColor::air))->destroyOnPush();
 	sand = new Material(MapColor::sand);
-	decoration = new DecorationMaterial(MapColor::air);
+	decoration = (new DecorationMaterial(MapColor::air))->destroyOnPush();
 	glass = (new Material(MapColor::air))->setTranslucent();
 	explosive = (new Material(MapColor::red))->setFlammable()->setTranslucent();
-	coral = new Material(MapColor::foliage);
+	coral = (new Material(MapColor::foliage))->destroyOnPush();
 	ice = (new Material(MapColor::ice))->setTranslucent();
-	topSnow = (new DecorationMaterial(MapColor::snow))->setReplaceable()->setNonMineable();
+	topSnow = (new DecorationMaterial(MapColor::snow))->setReplaceable()->setNonMineable()->destroyOnPush();
 	snow = (new Material(MapColor::snow))->setNonMineable()->setTranslucent();
-	cactus = (new Material(MapColor::foliage))->setTranslucent();
+	cactus = (new Material(MapColor::foliage))->setTranslucent()->destroyOnPush();
 	clay = new Material(MapColor::clay);
-	vegetable = new Material(MapColor::foliage);
+	vegetable = (new Material(MapColor::foliage))->destroyOnPush();;
 	portal = new Material(MapColor::air);
-	cake = new Material(MapColor::air);
-	web = (new Material(MapColor::cloth))->setNonMineable();
-	piston = (new Material(MapColor::stone));
+	cake = (new Material(MapColor::air))->destroyOnPush();
+	web = (new Material(MapColor::cloth))->setNonMineable()->destroyOnPush();
+	piston = (new Material(MapColor::stone))->notPushable();
 }
 
 void Material::teardownMaterials()
@@ -142,6 +143,11 @@ bool Material::isFlammable() const
 	return m_bFlammable;
 }
 
+int Material::getPushReaction() const
+{
+	return m_pushReaction;
+}
+
 Material* Material::setReplaceable()
 {
 	m_bReplaceable = true;
@@ -163,6 +169,18 @@ Material* Material::setNonMineable()
 Material* Material::setTranslucent()
 {
 	m_bTranslucent = true;
+	return this;
+}
+
+Material* Material::destroyOnPush()
+{
+	m_pushReaction = 1;
+	return this;
+}
+
+Material* Material::notPushable()
+{
+	m_pushReaction = 2;
 	return this;
 }
 

@@ -18,7 +18,7 @@ SquidModel::SquidModel() :
     m_body.addBox(-6.0F, -8.0F, -6.0F, 12, 16, 12);
     m_body.m_pos.y += (float)(24 + yoffs);
 
-    for (int i = 0; i < 9; ++i)
+    for (int i = 0; i < 8; ++i)
     {
         m_tentacles[i] = new ModelPart(48, 0);
         m_tentacles[i]->setModel(this);
