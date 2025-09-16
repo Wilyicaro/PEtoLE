@@ -42,7 +42,7 @@ float PistonMovingTileEntity::getProgress(float partialTick) const
 
 Vec3f PistonMovingTileEntity::getOff(float partialTick) const
 {
-	Vec3f normal = Facing::NORMALS[m_direction];
+	Vec3f normal = Vec3f(Facing::NORMALS[m_direction]);
 	return m_bExtending ? normal * (getProgress(partialTick) - 1.0F) : normal * (1.0F - getProgress(partialTick));
 }
 
