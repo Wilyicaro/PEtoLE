@@ -26,10 +26,10 @@ float TripodCameraRenderer::getFlashTime(TripodCamera* camera, float f)
 	return 0.125f * (float(camera->field_B90) - f);
 }
 
-void TripodCameraRenderer::render(Entity* entity, float x, float y, float z, float a, float b)
+void TripodCameraRenderer::render(Entity* entity, const Vec3& pos, float a, float b)
 {
 	glPushMatrix();
-	glTranslatef(x, y, z);
+	glTranslatef(pos.x, pos.y, pos.z);
 	m_modelPart.m_rot.x  = 0.017453f * (180.0f + 0.5f * entity->m_rot.x);
 	m_modelPart.m_rot.y = -0.017453f * entity->m_rot.y;
 

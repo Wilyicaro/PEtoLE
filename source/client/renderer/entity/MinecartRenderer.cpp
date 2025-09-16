@@ -7,15 +7,17 @@ MinecartRenderer::MinecartRenderer() : m_pModel(new MinecartModel())
 	m_shadowRadius = 0.5f;
 }
 
-void MinecartRenderer::render(Entity* entity, float x, float y, float z, float rot, float a)
+void MinecartRenderer::render(Entity* entity, const Vec3& pos, float rot, float a)
 {
     Minecart* cart = (Minecart*)entity;
+    Vec3 cPos = pos;
     glPushMatrix();
     Vec3 smoothPos = cart->m_oPos + (cart->m_pos - cart->m_oPos) * a;
     real r = 0.3;
     Vec3* p = cart->getPos(smoothPos);
     float xRot = cart->m_rotPrev.x + (cart->m_rot.x - cart->m_rotPrev.x) * a;
-    if (p) {
+    if (p)
+    {
         Vec3* p0 = cart->getPosOffs(smoothPos, r);
         Vec3* p1 = cart->getPosOffs(smoothPos, -r);
         if (!p0)
@@ -24,9 +26,9 @@ void MinecartRenderer::render(Entity* entity, float x, float y, float z, float r
         if (!p1)
             p1 = p;
 
-        x += p->x - smoothPos.x;
-        y += (p0->y + p1->y) / 2.0 - smoothPos.y;
-        z += p->z - smoothPos.z;
+        cPos.x += p->x - smoothPos.x;
+        cPos.y += (p0->y + p1->y) / 2.0 - smoothPos.y;
+        cPos.z += p->z - smoothPos.z;
         Vec3 dir = *p1 - *p0;
         if (dir.length() != 0.0) {
             dir = dir.normalize();
@@ -41,7 +43,7 @@ void MinecartRenderer::render(Entity* entity, float x, float y, float z, float r
         SAFE_DELETE(p);
     }
 
-    glTranslatef(x, y, z);
+    glTranslatef(cPos.x, cPos.y, cPos.z);
     glRotatef(180.0F - rot, 0.0F, 1.0F, 0.0F);
     glRotatef(-xRot, 0.0F, 0.0F, 1.0F);
     float hurt = cart->m_hurtTime - a;

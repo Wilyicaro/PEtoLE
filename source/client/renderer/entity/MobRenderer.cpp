@@ -78,7 +78,7 @@ void MobRenderer::setupRotations(Entity* entity, float x, float y, float z)
 	}
 }
 
-void MobRenderer::render(Entity* entity, float x, float y, float z, float unused, float f)
+void MobRenderer::render(Entity* entity, const Vec3& pos, float unused, float f)
 {
 	Mob* pMob = (Mob*)entity;
 
@@ -100,7 +100,7 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	float fBob   = getBob(pMob, f);
 	float fSmth  = pMob->m_yBodyRotO + (pMob->m_yBodyRot - pMob->m_yBodyRotO) * f;
 
-	setupPosition(pMob, x, y - pMob->m_heightOffset, z);
+	setupPosition(pMob, pos.x, pos.y - pMob->m_heightOffset, pos.z);
 	setupRotations(pMob, fBob, fSmth, f);
 
 	float fScale = 0.0625f; // the scale variable according to b1.2_02
@@ -188,10 +188,10 @@ void MobRenderer::render(Entity* entity, float x, float y, float z, float unused
 	glDisable(GL_RESCALE_NORMAL);
 	glEnable(GL_CULL_FACE);
 	glPopMatrix();
-	renderName(pMob, x, y, z);
+	renderName(pMob, pos);
 }
 
-void MobRenderer::renderName(Mob* mob, float x, float y, float z)
+void MobRenderer::renderName(Mob* mob, const Vec3& pos)
 {
 	if (!mob->isPlayer())
 		return;
@@ -201,7 +201,7 @@ void MobRenderer::renderName(Mob* mob, float x, float y, float z)
 		return;
 
 	// @TODO: don't know why but I have to add this correction. look into it and fix it!
-	renderNameTag(mob, player->m_name, x, y - 1.5f, z, mob->isSneaking() ? 32 : 64);
+	renderNameTag(mob, player->m_name, pos.x, pos.y - 1.5f, pos.z, mob->isSneaking() ? 32 : 64);
 }
 
 void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float y, float z, int a)

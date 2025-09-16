@@ -35,7 +35,7 @@ ItemRenderer::ItemRenderer()
 	m_shadowStrength = 0.75f;
 }
 
-void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, float b)
+void ItemRenderer::render(Entity* pEntity, const Vec3& pos, float a, float b)
 {
 	m_random.setSeed(187);
 	ItemEntity* pItemEntity = (ItemEntity*)pEntity;
@@ -66,7 +66,7 @@ void ItemRenderer::render(Entity* pEntity, float x, float y, float z, float a, f
 	//	glColor4f(var30, var30, var30, 1.0F);
 	//}
 
-	glTranslatef(x, y + 0.1f + yOffset * 0.1f, z);
+	glTranslatef(pos.x, pos.y + 0.1f + yOffset * 0.1f, pos.z);
 	glEnable(GL_RESCALE_NORMAL);
 
 	int itemID = pItemInstance->m_itemID;

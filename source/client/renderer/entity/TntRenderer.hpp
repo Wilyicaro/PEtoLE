@@ -16,7 +16,7 @@ class TntRenderer : public EntityRenderer
 public:
 	TntRenderer();
 
-	void render(Entity*, float, float, float, float, float) override;
+	void render(Entity*, const Vec3&, float, float) override;
 
 public:
 	TileRenderer m_tileRenderer;

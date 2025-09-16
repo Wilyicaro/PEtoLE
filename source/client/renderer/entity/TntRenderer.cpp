@@ -14,12 +14,12 @@ TntRenderer::TntRenderer()
 	m_shadowRadius = 0.5f;
 }
 
-void TntRenderer::render(Entity* entity, float x, float y, float z, float a6, float a7)
+void TntRenderer::render(Entity* entity, const Vec3& pos, float a6, float a7)
 {
 	PrimedTnt* tnt = (PrimedTnt*)entity;
 
 	glPushMatrix();
-	glTranslatef(x, y, z);
+	glTranslatef(pos.x, pos.y, pos.z);
 
 	float m = 1.0f + float(tnt->m_fuseTimer) - a7;
 	if (m < 10.0f)

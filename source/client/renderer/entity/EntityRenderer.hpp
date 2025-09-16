@@ -36,7 +36,7 @@ public:
 	static void renderFlat(const AABB&);
 	void postRender(Entity* entity, const Vec3& pos, float rot, float a);
 
-	virtual void render(Entity*, float, float, float, float, float) = 0;
+	virtual void render(Entity*, const Vec3&, float, float) = 0;
 	virtual void onGraphicsReset();
 	virtual float getBrightness(Entity* e, float g);
 

@@ -163,7 +163,7 @@ void EntityRenderDispatcher::render(Entity* entity, const Vec3& pos, float rot, 
 	EntityRenderer* pRenderer = getRenderer(entity);
 	if (pRenderer)
 	{
-		pRenderer->render(entity, pos.x, pos.y, pos.z, rot, a);
+		pRenderer->render(entity, pos, rot, a);
 		if (postRender) pRenderer->postRender(entity, pos, rot, a);
 	}
 }

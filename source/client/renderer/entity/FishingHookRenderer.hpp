@@ -6,5 +6,5 @@ class FishingHookRenderer : public EntityRenderer
 {
 public:
 	FishingHookRenderer();
-	void render(Entity*, float x, float y, float z, float a, float b) override;
+	void render(Entity*, const Vec3&, float a, float b) override;
 };

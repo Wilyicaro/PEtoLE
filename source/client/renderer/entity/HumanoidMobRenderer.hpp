@@ -16,7 +16,7 @@ public:
 	HumanoidMobRenderer(HumanoidModel*, float);
 	virtual bool prepareArmor(Mob* mob, int a, float b) override;
 	virtual void additionalRendering(Mob*, float) override;
-	virtual void render(Entity*, float, float, float, float, float) override;
+	virtual void render(Entity*, const Vec3&, float, float) override;
 	virtual void onGraphicsReset() override;
 	virtual void setupPosition(Entity*, float, float, float) override;
 	virtual void setupRotations(Entity*, float, float, float) override;

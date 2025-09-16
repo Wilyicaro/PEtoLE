@@ -8,10 +8,10 @@ FishingHookRenderer::FishingHookRenderer()
 {
 }
 
-void FishingHookRenderer::render(Entity* pEntity, float x, float y, float z, float rot, float a)
+void FishingHookRenderer::render(Entity* pEntity, const Vec3& pos, float rot, float a)
 {
     glPushMatrix();
-    glTranslatef(x, y, z);
+    glTranslatef(pos.x, pos.y, pos.z);
     glEnable(GL_RESCALE_NORMAL);
     glScalef(0.5F, 0.5F, 0.5F);
     int xi = 1;
@@ -77,7 +77,7 @@ void FishingHookRenderer::render(Entity* pEntity, float x, float y, float z, flo
 
         for (int i = 0; i <= steps; ++i) {
             float aa = (float)i / (float)steps;
-            t.vertex(x + xa * aa, y + ya * (aa * aa + aa) * 0.5 + 0.25, z + za * aa);
+            t.vertex(pos.x + xa * aa, pos.y + ya * (aa * aa + aa) * 0.5 + 0.25, pos.z + za * aa);
         }
 
         t.draw();

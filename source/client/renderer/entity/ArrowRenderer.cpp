@@ -5,14 +5,14 @@ ArrowRenderer::ArrowRenderer()
 {
 }
 
-void ArrowRenderer::render(Entity* entity, float x, float y, float z, float rot, float a)
+void ArrowRenderer::render(Entity* entity, const Vec3& pos, float rot, float a)
 {
     Arrow* arrow = (Arrow*)entity;
     if (!arrow) return;
 
     bindTexture("item/arrows.png");
     glPushMatrix();
-    glTranslatef(x, y, z);
+    glTranslatef(pos.x, pos.y, pos.z);
     glRotatef(arrow->m_rotPrev.y + (arrow->m_rot.y - arrow->m_rotPrev.y) * a - 90.0F, 0.0F, 1.0F, 0.0F);
     glRotatef(arrow->m_rotPrev.x + (arrow->m_rot.x - arrow->m_rotPrev.x) * a, 0.0F, 0.0F, 1.0F);
     Tesselator& t = Tesselator::instance;

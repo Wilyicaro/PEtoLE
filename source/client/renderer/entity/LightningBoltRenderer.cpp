@@ -8,7 +8,7 @@ LightningBoltRenderer::LightningBoltRenderer()
 {
 }
 
-void LightningBoltRenderer::render(Entity* pEntity, float x, float y, float z, float rot, float a)
+void LightningBoltRenderer::render(Entity* pEntity, const Vec3& pos, float rot, float a)
 {
 	Tesselator& var10 = Tesselator::instance;
 	LightningBolt* lightning = (LightningBolt*)pEntity;
@@ -72,8 +72,8 @@ void LightningBoltRenderer::render(Entity* pEntity, float x, float y, float z, f
 				}
 
 				for (int var36 = 0; var36 < 5; ++var36) {
-					float var37 = x + 0.5 - var32;
-					float var39 = z + 0.5 - var32;
+					float var37 = pos.x + 0.5 - var32;
+					float var39 = pos.z + 0.5 - var32;
 					if (var36 == 1 || var36 == 2) {
 						var37 += var32 * 2.0;
 					}
@@ -82,8 +82,8 @@ void LightningBoltRenderer::render(Entity* pEntity, float x, float y, float z, f
 						var39 += var32 * 2.0;
 					}
 
-					float var41 = x + 0.5 - var34;
-					float var43 = z + 0.5 - var34;
+					float var41 = pos.x + 0.5 - var34;
+					float var43 = pos.z + 0.5 - var34;
 					if (var36 == 1 || var36 == 2) {
 						var41 += var34 * 2.0;
 					}
@@ -92,8 +92,8 @@ void LightningBoltRenderer::render(Entity* pEntity, float x, float y, float z, f
 						var43 += var34 * 2.0;
 					}
 
-					var10.vertex(var41 + var22, y + (var26 * 16), var43 + var24);
-					var10.vertex(var37 + var27, y + ((var26 + 1) * 16), var39 + var29);
+					var10.vertex(var41 + var22, pos.y + (var26 * 16), var43 + var24);
+					var10.vertex(var37 + var27, pos.y + ((var26 + 1) * 16), var39 + var29);
 				}
 
 				var10.draw();

@@ -104,7 +104,7 @@ void HumanoidMobRenderer::additionalRendering(Mob* mob, float f)
 	}
 }
 
-void HumanoidMobRenderer::render(Entity* entity, float x, float y, float z, float unused, float f)
+void HumanoidMobRenderer::render(Entity* entity, const Vec3& pos, float unused, float f)
 {
 	if (entity->isPlayer())
 	{
@@ -112,9 +112,10 @@ void HumanoidMobRenderer::render(Entity* entity, float x, float y, float z, floa
 		auto item = player->getSelectedItem();
 		m_armorParts1->m_bHoldingRightHand = m_armorParts2->m_bHoldingRightHand = m_pHumanoidModel->m_bHoldingRightHand = item != nullptr;
 	}
+	Vec3 cPos = pos;
 	m_armorParts1->m_bSneaking = m_armorParts2->m_bSneaking = m_pHumanoidModel->m_bSneaking = entity->isSneaking();
-	if (entity->isSneaking() && entity != m_pDispatcher->m_pMinecraft->m_pPlayer.get()) y -= 0.125;
-	MobRenderer::render(entity, x, y, z, unused, f);
+	if (entity->isSneaking() && entity != m_pDispatcher->m_pMinecraft->m_pPlayer.get()) cPos.y -= 0.125;
+	MobRenderer::render(entity, cPos, unused, f);
 	m_armorParts1->m_bSneaking = m_armorParts2->m_bSneaking = m_pHumanoidModel->m_bSneaking = false;
 	m_armorParts1->m_bHoldingRightHand = m_armorParts2->m_bHoldingRightHand = m_pHumanoidModel->m_bHoldingRightHand = false;
 }

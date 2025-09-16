@@ -16,12 +16,12 @@ FallingTileRenderer::FallingTileRenderer()
 	m_shadowRadius = 0.5f;
 }
 
-void FallingTileRenderer::render(Entity* entity, float x, float y, float z, float a6, float a7)
+void FallingTileRenderer::render(Entity* entity, const Vec3& pos, float a6, float a7)
 {
 	FallingTile* fallingTile = (FallingTile*)entity;
 
 	glPushMatrix();
-	glTranslatef(x, y, z);
+	glTranslatef(pos.x, pos.y, pos.z);
 
 	bindTexture(C_TERRAIN_NAME);
 	// Render the base

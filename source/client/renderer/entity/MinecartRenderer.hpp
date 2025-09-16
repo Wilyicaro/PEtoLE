@@ -8,7 +8,7 @@ class MinecartRenderer : public EntityRenderer
 public:
 	MinecartRenderer();
 
-	void render(Entity*, float, float, float, float, float) override;
+	void render(Entity*, const Vec3&, float, float) override;
 
 protected:
 	Model* m_pModel;

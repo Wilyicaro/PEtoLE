@@ -6,11 +6,11 @@ PaintingRenderer::PaintingRenderer()
 {
 }
 
-void PaintingRenderer::render(Entity* pEntity, float x, float y, float z, float rot, float b)
+void PaintingRenderer::render(Entity* pEntity, const Vec3& pos, float rot, float b)
 {
     m_random.setSeed(187L);
     glPushMatrix();
-    glTranslatef((float)x, (float)y, (float)z);
+    glTranslatef(pos.x, pos.y, pos.z);
     glRotatef(rot, 0.0F, 1.0F, 0.0F);
     glEnable(32826);
     bindTexture("art/kz.png");

@@ -17,7 +17,7 @@ class ItemRenderer : public EntityRenderer
 public:
 	ItemRenderer();
 
-	void render(Entity*, float, float, float, float, float) override;
+	void render(Entity*, const Vec3&, float, float) override;
 
 	static void renderGuiItem(Textures*, std::shared_ptr<ItemInstance>, int, int);
 	static void renderGuiItemDecorations(Font*, Textures*, std::shared_ptr<ItemInstance>, int, int);

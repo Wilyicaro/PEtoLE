@@ -198,7 +198,6 @@ void EntityRenderer::render(const AABB& aabb, float offX, float offY, float offZ
 	Tesselator& t = Tesselator::instance;
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	t.begin();
-	//t.vertex(offX, offY, offZ); // Why were we doing this?
 	t.offset(offX, offY, offZ);
 	t.normal(0.0f, 0.0f, -1.0f);
 	t.vertex(aabb.min.x, aabb.max.y, aabb.min.z);

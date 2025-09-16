@@ -5,10 +5,10 @@ ItemSpriteRenderer::ItemSpriteRenderer(int sprite, float scale) : m_sprite(sprit
 {
 }
 
-void ItemSpriteRenderer::render(Entity* pEntity, float x, float y, float z, float a, float b)
+void ItemSpriteRenderer::render(Entity* pEntity, const Vec3& pos, float a, float b)
 {
 	glPushMatrix();
-	glTranslatef(x, y, z);
+	glTranslatef(pos.x, pos.y, pos.z);
 	glEnable(GL_RESCALE_NORMAL);
 	glScalef(m_scale, m_scale, m_scale);
 	bindTexture(C_ITEMS_NAME);
