@@ -14,6 +14,7 @@
 #include "world/phys/Vec3T.hpp"
 #include "SoundSystem.hpp"
 #include "SoundRepository.hpp"
+#include "world/entity/Mob.hpp"
 #include <vector>
 
 class SoundEngine
@@ -21,9 +22,11 @@ class SoundEngine
 private:
 	float _getVolumeMult(const Vec3& pos);
 public:
-	SoundEngine(SoundSystem* soundSystem);
+	SoundEngine(SoundSystem* soundSystem, float distance = 20.0f);
 	void init(Options* options, AppPlatform*);
-	void addLocalSound(std::string name, std::string path);
+	void addLocalSound(SoundRepository& repo, std::string name, std::string path, bool streaming = false);
+	void addSound(std::string name, std::string path, bool streaming = false);
+	void addStreamSound(std::string name, std::string path);
 	void addMusic(std::string name);
 	void enable(bool b);
 	void updateOptions();
@@ -31,22 +34,29 @@ public:
 	void unMute();
 	void destroy();
 	void play(const std::string& name, const Vec3& pos = Vec3::ZERO, float volume = 1.0f, float pitch = 1.0f);
+	void playDesc(const SoundDesc& desc, const Vec3& pos = Vec3::ZERO, float volume = 1.0f, float pitch = 1.0f, bool isUI = false);
+	void playUI(const std::string& name, float volume = 1.0f, float pitch = 1.0f);
 	void playStreaming(const std::string& name, const Vec3& pos = Vec3::ZERO, float volume = 1.0f, float pitch = 1.0f);
 	void playMusicTick();
+	void update(const Mob*, float);
 
 public:
-	std::vector<SoundDesc> m_musics;
 	SoundSystem* m_pSoundSystem;
 	Options* m_pOptions;
 	AppPlatform* m_pPlatform;
 	int field_40;
 	Random m_random;
-	SoundRepository m_repository;
+	SoundRepository m_sounds;
+	SoundRepository m_songs;
+	SoundRepository m_streamingSounds;
 	int field_A1C;
 	int field_A20;
 	int m_bNoMusicDelay;
 	bool m_muted;
 	std::string m_lastStreaming;
 	std::string m_lastMusic;
+	Vec3 m_listenerPosition;
+	Vec2 m_listenerOrientation;
+	float m_soundDistance;
 };
 

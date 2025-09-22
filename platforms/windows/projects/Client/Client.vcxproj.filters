@@ -575,6 +575,9 @@
     <ClInclude Include="..\..\..\..\source\client\renderer\PistonRenderer.hpp">
       <Filter>Header Files\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\sound\SoundStream.hpp">
+      <Filter>Header Files\Sound</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.cpp">
@@ -1056,6 +1059,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\client\renderer\PistonRenderer.cpp">
       <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\sound\SoundStream.cpp">
+      <Filter>Source Files\Sound</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

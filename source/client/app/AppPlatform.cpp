@@ -260,31 +260,40 @@ std::string AppPlatform::getAssetPath(const std::string &path) const
 	return realPath;
 }
 
-std::optional<std::string> AppPlatform::readFile(const std::string& path) const
+std::string AppPlatform::readFile(const std::string& path) const
 {
-	std::ifstream file(getAssetPath(path), std::ios::binary);
-	if (!file) return std::nullopt;
-
-	std::string buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-	return buffer;
+	std::vector<uint8_t> data = loadFile(path);
+	return std::string(data.begin(), data.end());
 }
 
-std::optional<nlohmann::json> AppPlatform::loadJson(const std::string& path) {
+std::vector<uint8_t> AppPlatform::loadFile(const std::string& path) const
+{
+	std::ifstream file(getAssetPath(path), std::ios::binary);
+	if (!file) return {};
+	return std::vector<uint8_t>((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+}
+
+void AppPlatform::loadJson(const std::string& path, nlohmann::json& json)
+{
 	auto raw = readFile(path);
-	if (!raw) return std::nullopt;
+	if (raw.empty()) return;
 
 	try {
-		auto json = nlohmann::json::parse(*raw);
-		return json;
+		json = nlohmann::json::parse(raw);
 	}
 	catch (...) {
-		return std::nullopt;
 	}
 }
 
 int AppPlatform::loadOgg(const std::string path, int* channels, int* sample_rate, short** output) const
 {
-	return stb_vorbis_decode_filename(getAssetPath(path).c_str(), channels, sample_rate, output);
+	std::vector<uint8_t> data = loadFile(path);
+
+	if (data.empty()) return 0;
+
+	int samples = decodeOgg(data.data(), data.size(), channels, sample_rate, output);
+
+	return samples;
 }
 
 int AppPlatform::decodeOgg(const unsigned char* mem, int len, int* channels, int* sample_rate, short** output)

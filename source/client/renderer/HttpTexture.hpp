@@ -7,12 +7,13 @@
 #include "Texture.hpp"
 #include "TextureProcessor.hpp"
 
-class HttpTexture {
+class HttpTexture
+{
 public:
     Texture* loadedImage = nullptr;
     int count = 1;
     GLuint id = -1;
-    std::atomic<bool> isLoaded = false;
+    std::atomic<bool> isLoaded = {false};
 
     HttpTexture(const std::string& url, TextureProcessor* processor = nullptr);
 };

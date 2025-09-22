@@ -61,8 +61,7 @@ public:
 	void setScreenSize(int width, int height);
 	void initAndroidApp(android_app* ptr);
 	void setExternalStoragePath(const std::string& path);
-	int loadOgg(const std::string path, int* channels, int* sample_rate, short** output) const override;
-	std::optional<std::string> readFile(const std::string& path) const override;
+	std::vector<uint8_t> loadFile(const std::string& path) const override;
 
 private:
 	void changeKeyboardVisibility(bool bShown);

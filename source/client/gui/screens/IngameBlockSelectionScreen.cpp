@@ -277,6 +277,6 @@ void IngameBlockSelectionScreen::selectSlotAndClose()
 	
 	pInv->setItem(pInv->m_selected, std::make_shared<ItemInstance>(*m_items.at(m_selectedSlot)));
 
-	m_pMinecraft->m_pSoundEngine->play("random.click");
+	m_pMinecraft->m_pSoundEngine->playUI("random.click");
 	m_pMinecraft->setScreen(nullptr);
 }

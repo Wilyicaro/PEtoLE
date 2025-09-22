@@ -194,6 +194,23 @@ bool AppPlatform_sdl::doesTextureExist(const std::string& path) const
 	}
 }
 
+std::vector<uint8_t> AppPlatform_sdl::loadFile(const std::string& path) const
+{
+	SDL_RWops* rw = SDL_RWFromFile(getAssetPath(path).c_str(), "rb");
+	if (!rw)
+	{
+		LOG_E("Couldn't find file: %s", path.c_str());
+		return {};
+	}
+	else
+	{
+		std::vector<uint8_t> data(SDL_RWsize(rw));
+		SDL_RWread(rw, data.data(), data.size(), 1);
+		SDL_RWclose(rw);
+		return data;
+	}
+}
+
 bool AppPlatform_sdl::hasFileSystemAccess()
 {
 	return true;

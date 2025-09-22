@@ -12,18 +12,19 @@ void Language::init(Options* options)
 
 bool Language::loadLanguageFile(const std::string& path)
 {
-    auto json = AppPlatform::singleton()->loadJson(path);
+    nlohmann::json json;
+    AppPlatform::singleton()->loadJson(path, json);
 
-    if (!json) return false;
+    if (json.empty()) return false;
 
 
-    for (auto it = json->begin(); it != json->end(); ++it)
+    for (auto it = json.begin(); it != json.end(); ++it)
     {
         if (it->is_string())
             m_translations[it.key()] = it->get<std::string>();
     }
 
-	return false;
+    return false;
 }
 
 bool Language::contains(const std::string& key) const

@@ -6,7 +6,10 @@
 SoundSystemAL::SoundSystemAL()
 {
 	_initialized = false;
-    _listenerVolume = 1.0;
+    _listenerVolume = 1.0f;
+	_musicStream = nullptr;
+	_lastListenerPos = Vec3::ZERO;
+	_listenerYaw = 0.0f;
     
     startEngine();
 }
@@ -15,18 +18,6 @@ SoundSystemAL::~SoundSystemAL()
 {
     stopEngine();
 }
-
-// Error Checking
-#define AL_ERROR_CHECK() AL_ERROR_CHECK_MANUAL(alGetError())
-#define AL_ERROR_CHECK_MANUAL(val) \
-	{ \
-		ALenum __err = val; \
-		if (__err != AL_NO_ERROR) \
-		{ \
-			LOG_E("(%s:%i) OpenAL Error: %s", __FILE__, __LINE__, alGetString(__err)); \
-			assert(!"An OpenAL error occurred!"); \
-		} \
-	}
 
 // Delete Sources
 void SoundSystemAL::delete_sources()
@@ -108,78 +99,43 @@ bool SoundSystemAL::isAvailable()
 	return _initialized;
 }
 
-void SoundSystemAL::setListenerPos(float x, float y, float z)
+void SoundSystemAL::update(float)
 {
-	// Update Listener Position
-	alListener3f(AL_POSITION, x, y, z);
-	AL_ERROR_CHECK();
-	_lastListenerPos = Vec3(x, y, z);
-	update();
+	_musicStream->update();
 }
 
-void SoundSystemAL::setListenerAngle(float yaw, float pitch)
+void SoundSystemAL::setListenerPos(const Vec3& pos)
 {
-	// Update Listener Orientation
-	float radian_yaw = yaw * (M_PI / 180);
-	ALfloat orientation[] = { -sinf(radian_yaw), 0.0f, cosf(radian_yaw), 0.0f, 1.0f, 0.0f };
-	alListenerfv(AL_ORIENTATION, orientation);
-	AL_ERROR_CHECK();
-}
-
-void SoundSystemAL::update()
-{
-	// Check
-	if (!_initialized)
-	{
+	if (_lastListenerPos == pos)
 		return;
-	}
+
+	// Update Listener Position
+	alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
+	AL_ERROR_CHECK();
+	_lastListenerPos = pos;
 
 	// Update Listener Volume
 	alListenerf(AL_GAIN, _listenerVolume);
 	AL_ERROR_CHECK();
+}
 
-	// Clear Finished Sources
-	auto it = m_sources.begin();
-	while (it != m_sources.end())
-	{
-		ALuint source = it->m_id;
-		bool remove = false;
-		// Check
-		if (source && alIsSource(source))
-		{
-			// Is Valid Source
-			ALint source_state;
-			alGetSourcei(source, AL_SOURCE_STATE, &source_state);
-			AL_ERROR_CHECK();
-			if (source_state != AL_PLAYING)
-			{
-				// Finished Playing
-				remove = true;
-				if (m_sources_idle.size() < MAX_IDLE_SOURCES)
-				{
-					m_sources_idle.push_back(source);
-				}
-				else
-				{
-					alDeleteSources(1, &source);
-					AL_ERROR_CHECK();
-				}
-			}
-		}
-		else
-		{
-			// Not A Source
-			remove = true;
-		}
-		// Remove If Needed
-		if (remove) {
-			it = m_sources.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
+void SoundSystemAL::setListenerAngle(const Vec2& rot)
+{
+	if (_listenerYaw == rot.y)
+		return; // No need to waste time doing math and talking to OpenAL
+	// Update Listener Orientation
+	float radian_yaw = rot.y * (M_PI / 180);
+	ALfloat orientation[] = { -sinf(radian_yaw), 0.0f, cosf(radian_yaw), 0.0f, 1.0f, 0.0f };
+	alListenerfv(AL_ORIENTATION, orientation);
+	AL_ERROR_CHECK();
+	_listenerYaw = rot.y;
+}
+
+void SoundSystemAL::setMusicVolume(float vol)
+{
+	assert(_musicStream != nullptr);
+
+	_musicStream->setVolume(vol);
 }
 
 void SoundSystemAL::stop(const std::string& sound)
@@ -210,7 +166,7 @@ bool SoundSystemAL::playing(const std::string& sound)
 	return false;
 }
 
-void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch)
+void SoundSystemAL::playAt(const SoundDesc& sound, const Vec3& pos, float volume, float pitch, bool isUI)
 {
 	// Check
 	if (!_initialized)
@@ -221,15 +177,10 @@ void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	if (volume <= 0.0f)
 		return;
 
-	bool bIsGUI = AL_FALSE;
 	float distance = 0.0f;
-	if (x == 0 && y == 0 && z == 0)
+	if (pos.x != 0 || pos.y != 0 || pos.z != 0)
 	{
-		bIsGUI = AL_TRUE;
-	}
-	else
-	{
-		distance = Vec3(x, y, z).distanceTo(_lastListenerPos);
+		distance = pos.distanceTo(_lastListenerPos);
 		if (distance >= MAX_DISTANCE)
 			return;
 	}
@@ -272,13 +223,13 @@ void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, fl
     // https://stackoverflow.com/questions/6960731/openal-problem-changing-gain-of-source
 	alSourcef(al_source, AL_GAIN, volume);
 	AL_ERROR_CHECK();
-	alSource3f(al_source, AL_POSITION, x, y, z);
+	alSource3f(al_source, AL_POSITION, pos.x, pos.y, pos.z);
 	AL_ERROR_CHECK();
 	alSource3f(al_source, AL_VELOCITY, 0, 0, 0);
 	AL_ERROR_CHECK();
 	alSourcei(al_source, AL_LOOPING, AL_FALSE);
 	AL_ERROR_CHECK();
-	alSourcei(al_source, AL_SOURCE_RELATIVE, bIsGUI);
+	alSourcei(al_source, AL_SOURCE_RELATIVE, isUI);
 	AL_ERROR_CHECK();
 
 	// Set Attenuation
@@ -297,6 +248,33 @@ void SoundSystemAL::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	alSourcePlay(al_source);
 	AL_ERROR_CHECK();
 	m_sources.push_back(SoundSource(al_source, sound.m_name));
+}
+
+bool SoundSystemAL::allowStreaming()
+{
+	return true;
+}
+
+void SoundSystemAL::playMusic(const std::string& soundPath)
+{
+	LOG_I("trying to play: %s", soundPath.c_str());
+	if (_musicStream->open(soundPath))
+		LOG_I("successful!");
+}
+
+bool SoundSystemAL::isPlayingMusic() const
+{
+	return _musicStream->isPlaying();
+}
+
+void SoundSystemAL::stopMusic()
+{
+	_musicStream->close();
+}
+
+void SoundSystemAL::pauseMusic(bool state)
+{
+	_musicStream->setPausedState(state);
 }
 
 void SoundSystemAL::startEngine()
@@ -330,6 +308,8 @@ void SoundSystemAL::startEngine()
     
 	// Set Distance Model
 	alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED);
+
+	_musicStream = new SoundStreamAL();
     
 	// Mark As loaded
 	_initialized = true;
@@ -338,6 +318,8 @@ void SoundSystemAL::startEngine()
 void SoundSystemAL::stopEngine()
 {
     if (!_initialized) return;
+
+	delete _musicStream;
     
 	// Delete Audio Sources
 	delete_sources();

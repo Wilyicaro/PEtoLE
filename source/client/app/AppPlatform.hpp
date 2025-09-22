@@ -10,7 +10,6 @@
 
 #include <string>
 #include <vector>
-#include <optional>
 
 #include "client/renderer/Texture.hpp"
 #include "client/sound/SoundSystem.hpp"
@@ -93,8 +92,9 @@ public:
 
 public:
 	virtual std::string getAssetPath(const std::string& path) const;
-	virtual std::optional<std::string> readFile(const std::string& path) const;
-	std::optional<nlohmann::json> loadJson(const std::string& path);
+	virtual std::string readFile(const std::string& path) const;
+	virtual std::vector<uint8_t> loadFile(const std::string& path) const;
+	void loadJson(const std::string& path, nlohmann::json& json);
 	virtual int loadOgg(const std::string path, int* channels, int* sample_rate, short** output) const;
 	static int decodeOgg(const unsigned char* mem, int len, int* channels, int* sample_rate, short** output);
 

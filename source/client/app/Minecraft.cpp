@@ -777,13 +777,13 @@ void Minecraft::tick()
 
 #ifndef ORIGINAL_CODE
 			if (m_pMobPersp)
-			{
-				m_pSoundEngine->m_pSoundSystem->setListenerPos(m_pMobPersp->m_pos.x, m_pMobPersp->m_pos.y, m_pMobPersp->m_pos.z);
-				m_pSoundEngine->m_pSoundSystem->setListenerAngle(m_pMobPersp->m_rot.y, m_pMobPersp->m_rot.x);
-			}
+				m_pSoundEngine->update(m_pMobPersp.get(), m_timer.m_renderTicks);
 #endif
-
 		}
+
+		assert(m_pSoundEngine->m_pSoundSystem->isAvailable());
+
+		m_pSoundEngine->m_pSoundSystem->update(m_timer.m_renderTicks);
 
 		if (m_pScreen)
 			m_pScreen->tick();

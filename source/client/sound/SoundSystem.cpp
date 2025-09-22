@@ -7,6 +7,7 @@
  ********************************************************************/
 
 #include "SoundSystem.hpp"
+#include "SoundEngine.hpp"
 
 SoundSystem::~SoundSystem()
 {
@@ -17,11 +18,19 @@ bool SoundSystem::isAvailable()
 	return false;
 }
 
-void SoundSystem::setListenerPos(float x, float y, float z)
+void SoundSystem::setListenerPos(const Vec3& pos)
 {
 }
 
-void SoundSystem::setListenerAngle(float yaw, float pitch)
+void SoundSystem::setListenerAngle(const Vec2& rot)
+{
+}
+
+void SoundSystem::update(float)
+{
+}
+
+void SoundSystem::setMusicVolume(float vol)
 {
 }
 
@@ -46,7 +55,30 @@ bool SoundSystem::playing(const std::string& sound)
 	return false;
 }
 
-void SoundSystem::playAt(const SoundDesc& sound, float x, float y, float z, float a, float b)
+void SoundSystem::playAt(const SoundDesc& sound, const Vec3& pos, float a, float b, bool is2D)
+{
+}
+
+bool SoundSystem::allowStreaming()
+{
+	return false;
+}
+
+
+void SoundSystem::playMusic(const std::string& soundPath)
+{
+}
+
+bool SoundSystem::isPlayingMusic() const
+{
+	return false;
+}
+
+void SoundSystem::stopMusic()
+{
+}
+
+void SoundSystem::pauseMusic(bool state)
 {
 }
 

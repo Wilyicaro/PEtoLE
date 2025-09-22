@@ -61,6 +61,7 @@ SoundSystemDS::SoundSystemDS()
 	}
 
 	m_available = true;
+	_musicStream = new SoundStreamDS();
 }
 
 
@@ -83,25 +84,25 @@ bool SoundSystemDS::isAvailable()
 	return m_available;
 }
 
-void SoundSystemDS::setListenerPos(float x, float y, float z)
+void SoundSystemDS::setListenerPos(const Vec3& pos)
 {
 	if (!isAvailable())
 	{
 		return;
 	}
-	m_listener->SetPosition(x, y, -z, DS3D_IMMEDIATE);
+	m_listener->SetPosition(pos.x, pos.y, -pos.z, DS3D_IMMEDIATE);
 }
 
 
-void SoundSystemDS::setListenerAngle(float degyaw, float degpitch)
+void SoundSystemDS::setListenerAngle(const Vec2& rot)
 {
 	if (!isAvailable())
 	{
 		return;
 	}
 
-	float yaw = degyaw * M_PI / 180.f;
-	float pitch = degpitch * M_PI / 180.f;
+	float yaw = rot.y * M_PI / 180.f;
+	float pitch = rot.x * M_PI / 180.f;
 
 	float lx = cosf(pitch) * sinf(yaw);
 	float ly = -sinf(pitch);
@@ -149,7 +150,7 @@ bool SoundSystemDS::playing(const std::string& sound)
 	return false;
 }
 
-void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch)
+void SoundSystemDS::playAt(const SoundDesc& sound, const Vec3& pos, float volume, float pitch, bool isUI)
 {
 	//Directsound failed to initialize return to avoid crash.
 	if (!isAvailable())
@@ -177,11 +178,8 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	unsigned char* bufferPtr;
 	unsigned long bufferSize;
 
-
-	bool is2D = sqrtf(x * x + y * y + z * z) == 0.f;
-
 	//For some reason mojang made 3D sounds are REALLY quiet, with some of their volumes literally going below 0.1
-	if (!is2D)
+	if (!isUI)
 	{
 		volume *= 5.f;
 	}
@@ -290,7 +288,7 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	info.object3d = NULL;
 
 	//Check if position is not 0,0,0 and for mono to play 3D sound
-	if (!is2D && sound.m_header.m_channels == 1) 
+	if (!isUI && sound.m_header.m_channels == 1) 
 	{
 		LPDIRECTSOUND3DBUFFER object3d;
 
@@ -302,9 +300,9 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 		}
 
 		object3d->SetPosition(
-			x, 
-			y,
-			-z, 
+			pos.x, 
+			pos.y,
+			-pos.z, 
 		DS3D_IMMEDIATE); 
 
 		//Im not really sure what values original MCPE would use.
@@ -317,4 +315,36 @@ void SoundSystemDS::playAt(const SoundDesc& sound, float x, float y, float z, fl
 	soundbuffer->Play(0, 0, 0);
 
 	m_buffers.push_back(info);
+}
+
+bool SoundSystemDS::allowStreaming()
+{
+	return true;
+}
+
+void SoundSystemDS::playMusic(const std::string& soundPath)
+{
+	LOG_I("trying to play: %s", soundPath.c_str());
+	if (_musicStream->open(soundPath))
+		LOG_I("successful!");
+}
+
+bool SoundSystemDS::isPlayingMusic() const
+{
+	return _musicStream->isPlaying();
+}
+
+void SoundSystemDS::stopMusic()
+{
+	_musicStream->close();
+}
+
+void SoundSystemDS::pauseMusic(bool state)
+{
+	_musicStream->setPausedState(state);
+}
+
+void SoundSystemDS::update(float)
+{
+	_musicStream->update();
 }

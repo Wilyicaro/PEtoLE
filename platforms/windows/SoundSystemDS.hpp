@@ -23,6 +23,7 @@
 
 #include "client/sound/SoundSystem.hpp"
 #include "client/sound/SoundData.hpp"
+#include "SoundStreamDS.hpp"
 
 class SoundSystemDS : public SoundSystem
 {
@@ -30,14 +31,20 @@ public:
 	SoundSystemDS();
 	~SoundSystemDS();
 	virtual bool isAvailable();
-	virtual void setListenerPos(float x, float y, float z);
-	virtual void setListenerAngle(float yaw, float pitch);
-	virtual void load(const std::string& sound);
-	virtual void play(const std::string& sound);
-	virtual void pause(const std::string& sound);
+	virtual void setListenerPos(const Vec3& pos) override;
+	virtual void setListenerAngle(const Vec2& rot) override;
+	virtual void load(const std::string& sound) override;
+	virtual void play(const std::string& sound) override;
+	virtual void pause(const std::string& sound) override;
 	virtual void stop(const std::string& sound) override;
 	virtual bool playing(const std::string& sound) override;
-	virtual void playAt(const SoundDesc& sound, float x, float y, float z, float a, float b) override;
+	virtual void playAt(const SoundDesc& sound, const Vec3& pos, float a, float b, bool is2D) override;
+	virtual void update(float) override;
+	virtual bool allowStreaming() override;
+	virtual void playMusic(const std::string& soundPath) override;
+	virtual bool isPlayingMusic() const override;
+	virtual void stopMusic() override;
+	virtual void pauseMusic(bool state) override;
 private:
 
 	struct BufferInfo
@@ -51,4 +58,5 @@ private:
 	IDirectSound* m_directsound;
 	LPDIRECTSOUND3DLISTENER m_listener;
 	std::vector<BufferInfo> m_buffers;
+	SoundStreamDS* _musicStream;
 };

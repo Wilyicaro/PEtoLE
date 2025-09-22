@@ -176,22 +176,21 @@ real AABB::getSize() const
 	return (diff.x + diff.y + diff.z) / 3.0;
 }
 
-void AABB::move(const Vec3& vec)
+AABB& AABB::move(const Vec3& vec)
 {
 	min += vec;
 	max += vec;
+	return *this;
 }
 
-void AABB::move(real x, real y, real z)
+AABB& AABB::move(real x, real y, real z)
 {
-	move(Vec3(x, y, z));
+	return move(Vec3(x, y, z));
 }
 
 AABB AABB::copyMove(const Vec3& vec)
 {
-	AABB copy(*this);
-	copy.move(vec);
-	return copy;
+	return AABB(*this).move(vec);
 }
 
 AABB AABB::copyMove(real x, real y, real z)
@@ -200,25 +199,27 @@ AABB AABB::copyMove(real x, real y, real z)
 }
 
 // same thing
-void AABB::grow(const Vec3& vec)
+AABB& AABB::grow(const Vec3& vec)
 {
 	min -= vec;
 	max += vec;
+	return *this;
 }
 
-void AABB::grow(real x, real y, real z)
+AABB& AABB::grow(real x, real y, real z)
 {
-	grow(Vec3(x, y, z));
+	return grow(Vec3(x, y, z));
 }
 
 // same thing
-void AABB::grow(real x)
+AABB& AABB::grow(real x)
 {
 	min -= Vec3(x, x, x);
 	max += Vec3(x, x, x);
+	return *this;
 }
 
-void AABB::expand(real x, real y, real z)
+AABB& AABB::expand(real x, real y, real z)
 {
 	if (x < 0) min.x += x;
 	if (x > 0) max.x += x;
@@ -226,11 +227,14 @@ void AABB::expand(real x, real y, real z)
 	if (y > 0) max.y += y;
 	if (z < 0) min.z += z;
 	if (z > 0) max.z += z;
+	return *this;
 }
 
-void AABB::expand(const Vec3& vec)
+AABB& AABB::expand(const Vec3& vec)
 {
 	expand(vec.x, vec.y, vec.z);
+
+	return *this;
 }
 
 bool AABB::contains(const Vec3& v) const

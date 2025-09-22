@@ -64,7 +64,7 @@ void LocalPlayer::aiStep()
 			ride(nullptr);
 
 		if (m_portalTime == 0.0F)
-			m_pMinecraft->m_pSoundEngine->play("portal.trigger", Vec3::ZERO, 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
+			m_pMinecraft->m_pSoundEngine->playUI("portal.trigger", 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
 
 		if (m_pMinecraft->m_pScreen)
 		{
@@ -78,14 +78,15 @@ void LocalPlayer::aiStep()
 			if (!m_pLevel->m_bIsOnline)
 			{
 				m_changingDimensionDelay = 10;
-				m_pMinecraft->m_pSoundEngine->play("portal.travel", Vec3::ZERO, 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
+				m_pMinecraft->m_pSoundEngine->playUI("portal.travel", 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
 				m_pMinecraft->changeDimension();
 			}
 		}
 
 		m_bIsInsidePortal = false;
 	}
-	else {
+	else
+	{
 		if (m_portalTime > 0.0F)
 			m_portalTime -= 0.05F;
 

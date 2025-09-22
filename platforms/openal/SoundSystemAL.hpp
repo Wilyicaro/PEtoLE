@@ -2,17 +2,7 @@
 
 #ifdef USE_OPENAL
 
-#ifdef _WIN32
-#include <AL/al.h>
-#include <AL/alc.h>
-#pragma comment( lib, "OpenAL32.lib" )
-#elif defined(__APPLE__)
-#include <OpenAL/al.h>
-#include <OpenAL/alc.h>
-#else
-#include <AL/al.h>
-#include <AL/alc.h>
-#endif
+#include "thirdparty/OpenAL.h"
 
 #include <string>
 #include <vector>
@@ -20,6 +10,7 @@
 
 #include "client/sound/SoundSystem.hpp"
 #include "world/phys/Vec3T.hpp"
+#include "SoundStreamAL.hpp"
 
 #define MAX_IDLE_SOURCES 50
 #define MAX_DISTANCE 16.0f
@@ -30,14 +21,22 @@ public:
 	SoundSystemAL();
 	~SoundSystemAL();
 	virtual bool isAvailable() override;
-	void update();
+	virtual void update(float) override;
 	virtual void stop(const std::string& sound) override;
 	virtual bool playing(const std::string& sound) override;
-	virtual void playAt(const SoundDesc& sound, float x, float y, float z, float volume, float pitch) override;
+	virtual void playAt(const SoundDesc& sound, const Vec3& pos, float volume, float pitch, bool isUI) override;
 
-	virtual void setListenerPos(float x, float y, float z);
-	virtual void setListenerAngle(float yaw, float pitch);
-    
+	virtual bool allowStreaming() override;
+
+	virtual void playMusic(const std::string& soundPath) override;
+	virtual bool isPlayingMusic() const override;
+	virtual void stopMusic() override;
+	virtual void pauseMusic(bool state) override;
+
+	virtual void setListenerPos(const Vec3& pos) override;
+	virtual void setListenerAngle(const Vec2& rot) override;
+	virtual void setMusicVolume(float vol) override;
+
     virtual void startEngine();
     virtual void stopEngine();
     
@@ -60,9 +59,11 @@ private:
 	std::vector<SoundSource> m_sources;
 	std::vector<ALuint> m_sources_idle;
 	std::unordered_map<void*, ALuint> m_buffers;
+	SoundStreamAL* _musicStream;
 
 	Vec3 _lastListenerPos;
     float _listenerVolume;
+	float _listenerYaw;
 };
 
 #endif

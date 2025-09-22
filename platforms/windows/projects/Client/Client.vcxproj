@@ -240,6 +240,7 @@
     <ClInclude Include="..\..\..\..\source\client\renderer\TextureProcessor.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.hpp" />
     <ClInclude Include="..\..\..\..\source\client\renderer\TileEntityRenderer.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\sound\SoundStream.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\app\App.cpp" />
@@ -402,6 +403,7 @@
     <ClCompile Include="..\..\..\..\source\client\renderer\PortalTexture.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\SignRenderer.cpp" />
     <ClCompile Include="..\..\..\..\source\client\renderer\TileEntityRenderDispatcher.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\sound\SoundStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Common\Common.vcxproj">

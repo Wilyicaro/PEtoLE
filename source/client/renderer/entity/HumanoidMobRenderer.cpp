@@ -138,14 +138,14 @@ void HumanoidMobRenderer::setupPosition(Entity* ent, float x, float y, float z)
 
 void HumanoidMobRenderer::setupRotations(Entity* ent, float x, float y, float z)
 {
-	if (ent->isAlive() && ent->isPlayer() && ((Player*)ent)->isSleeping()) {
+	if (ent->isAlive() && ent->isPlayer() && ((Player*)ent)->isSleeping())
+	{
 		glRotatef(((Player*)ent)->getBedSleepRot(), 0.0F, 1.0F, 0.0F);
 		glRotatef(getFlipDegrees((Mob*)ent), 0.0F, 0.0F, 1.0F);
 		glRotatef(270.0F, 0.0F, 1.0F, 0.0F);
 	}
-	else {
+	else
 		MobRenderer::setupRotations(ent, x, y, z);
-	}
 }
 
 void HumanoidMobRenderer::renderHand()

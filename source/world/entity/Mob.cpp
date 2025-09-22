@@ -692,6 +692,14 @@ Vec3 Mob::getPos(float f) const
 	);
 }
 
+Vec2 Mob::getRot(float f) const
+{
+	return Vec2(
+		Mth::Lerp(m_rotPrev.y, m_rot.y, f),
+		Mth::Lerp(m_rotPrev.x, m_rot.x, f)
+	);
+}
+
 Vec3 Mob::getViewVector(float f) const
 {
 	constexpr float C_180_OVER_PI = 0.017453f;

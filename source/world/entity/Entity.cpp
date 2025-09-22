@@ -115,156 +115,123 @@ void Entity::remove()
 
 int Entity::move(const Vec3& pos)
 {
-	if (m_bNoPhysics) {
+	if (m_bNoPhysics)
+	{
 		m_hitbox.move(pos);
 		m_pos.x = (m_hitbox.min.x + m_hitbox.max.x) / 2.0;
 		m_pos.y = m_hitbox.min.y + m_heightOffset - m_ySlideOffset;
 		m_pos.z = (m_hitbox.min.z + m_hitbox.max.z) / 2.0;
 	}
-	else {
+	else
+	{
 		m_ySlideOffset *= 0.4;
 		Vec3 newPos(pos);
-		if (m_bInWeb) {
+		if (m_bInWeb)
+		{
 			m_bInWeb = false;
 			newPos.x *= 0.25;
 			newPos.y *= 0.05;
 			newPos.z *= 0.25;
-			m_vel *= 0;
-			m_distanceFallen = 0.0F;
+			m_vel = Vec3::ZERO;
+			m_distanceFallen = 0.0f;
 		}
 		real aPosX = m_pos.x;
 		real aPosZ = m_pos.z;
 		real cPosX = newPos.x;
 		real cPosY = newPos.y;
 		real cPosZ = newPos.z;
-		AABB var17 = m_hitbox;
+		AABB oldHit = m_hitbox;
 		bool validSneaking = m_bOnGround && isSneaking();
-		if (validSneaking) {
-			real var19;
-			for (var19 = 0.05; pos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x) {
-				if (newPos.x < var19 && newPos.x >= -var19) {
+		if (validSneaking)
+		{
+			const real off = 0.05;
+			for (; pos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x)
+			{
+				if (newPos.x < off && newPos.x >= -off)
 					newPos.x = 0.0;
-				}
-				else if (newPos.x > 0.0) {
-					newPos.x -= var19;
-				}
-				else {
-					newPos.x += var19;
-				}
+				else if (newPos.x > 0.0)
+					newPos.x -= off;
+				else
+					newPos.x += off;
 			}
 
-			for (; newPos.z != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(0.0, -1.0, newPos.z))->size() == 0; cPosZ = newPos.z) {
-				if (newPos.z < var19 && newPos.z >= -var19) {
+			for (; newPos.z != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(0.0, -1.0, newPos.z))->size() == 0; cPosZ = newPos.z)
+			{
+				if (newPos.z < off && newPos.z >= -off)
 					newPos.z = 0.0;
-				}
-				else if (newPos.z > 0.0) {
-					newPos.z -= var19;
-				}
-				else {
-					newPos.z += var19;
-				}
+				else if (newPos.z > 0.0)
+					newPos.z -= off;
+				else
+					newPos.z += off;
 			}
 		}
 
-		AABB toExpand = m_hitbox;
-		toExpand.expand(newPos.x, newPos.y, newPos.z);
-		auto var35 = m_pLevel->getCubes(this, toExpand);
+		AABBVector* cubes = m_pLevel->getCubes(this, AABB(m_hitbox).expand(newPos.x, newPos.y, newPos.z));
 
-		for (int var20 = 0; var20 < var35->size(); ++var20) {
-			newPos.y = var35->at(var20).clipYCollide(m_hitbox, newPos.y);
-		}
+		for (int i = 0; i < cubes->size(); ++i)
+			newPos.y = cubes->at(i).clipYCollide(m_hitbox, newPos.y);
 
 		m_hitbox.move(0.0, newPos.y, 0.0);
-		if (!m_bSlide && cPosY != newPos.y) {
-			newPos.z = 0.0;
-			newPos.y = 0.0;
-			newPos.x = 0.0;
-		}
+		if (!m_bSlide && cPosY != newPos.y)
+			newPos = Vec3::ZERO;
 
-		bool var36 = m_bOnGround || cPosY != newPos.y && cPosY < 0.0;
+		bool lastsOnGround = m_bOnGround || cPosY != newPos.y && cPosY < 0.0;
 
-		int var21;
-		for (var21 = 0; var21 < var35->size(); ++var21) {
-			newPos.x = var35->at(var21).clipXCollide(m_hitbox, newPos.x);
-		}
+		for (int i = 0; i < cubes->size(); ++i)
+			newPos.x = cubes->at(i).clipXCollide(m_hitbox, newPos.x);
 
 		m_hitbox.move(newPos.x, 0.0, 0.0);
-		if (!m_bSlide && cPosX != newPos.x) {
-			newPos.z = 0.0;
-			newPos.y = 0.0;
-			newPos.x = 0.0;
-		}
+		if (!m_bSlide && cPosX != newPos.x)
+			newPos = Vec3::ZERO;
 
-		for (var21 = 0; var21 < var35->size(); ++var21) {
-			newPos.z = var35->at(var21).clipZCollide(m_hitbox, newPos.z);
-		}
+		for (int i = 0; i < cubes->size(); ++i)
+			newPos.z = cubes->at(i).clipZCollide(m_hitbox, newPos.z);
 
 		m_hitbox.move(0.0, 0.0, newPos.z);
-		if (!m_bSlide && cPosZ != newPos.z) {
-			newPos.z = 0.0;
-			newPos.y = 0.0;
-			newPos.x = 0.0;
-		}
+		if (!m_bSlide && cPosZ != newPos.z)
+			newPos = Vec3::ZERO;
 
-		real var23;
-		int var28;
-		real var37;
-		if (m_footSize > 0.0F && var36 && m_ySlideOffset < 0.05F && (cPosX != newPos.x || cPosZ != newPos.z)) {
-			var37 = newPos.x;
-			var23 = newPos.y;
-			real var25 = newPos.z;
+		if (m_footSize > 0.0F && lastsOnGround && m_ySlideOffset < 0.05F && (cPosX != newPos.x || cPosZ != newPos.z))
+		{
+			Vec3 lastPos = newPos;
 			newPos.x = cPosX;
 			newPos.y = m_footSize;
 			newPos.z = cPosZ;
-			AABB var27 = m_hitbox;
-			toExpand = m_hitbox = var17;
-			toExpand.expand(cPosX, newPos.y, cPosZ);
-			var35 = m_pLevel->getCubes(this, toExpand);
+			AABB lastHit = m_hitbox;
+			m_hitbox = oldHit;
+			cubes = m_pLevel->getCubes(this, AABB(m_hitbox).expand(cPosX, newPos.y, cPosZ));
 
-			for (var28 = 0; var28 < var35->size(); ++var28) {
-				newPos.y = var35->at(var28).clipYCollide(m_hitbox, newPos.y);
-			}
+			for (int i = 0; i < cubes->size(); ++i)
+				newPos.y = cubes->at(i).clipYCollide(m_hitbox, newPos.y);
 
 			m_hitbox.move(0.0, newPos.y, 0.0);
-			if (!m_bSlide && cPosY != newPos.y) {
-				newPos.z = 0.0;
-				newPos.y = 0.0;
-				newPos.x = 0.0;
-			}
+			if (!m_bSlide && cPosY != newPos.y)
+				newPos = Vec3::ZERO;
 
-			for (var28 = 0; var28 < var35->size(); ++var28) {
-				newPos.x = var35->at(var28).clipXCollide(m_hitbox, newPos.x);
-			}
+			for (int i = 0; i < cubes->size(); ++i)
+				newPos.x = cubes->at(i).clipXCollide(m_hitbox, newPos.x);
 
 			m_hitbox.move(newPos.x, 0.0, 0.0);
-			if (!m_bSlide && cPosX != newPos.x) {
-				newPos.z = 0.0;
-				newPos.y = 0.0;
-				newPos.x = 0.0;
-			}
+			if (!m_bSlide && cPosX != newPos.x)
+				newPos = Vec3::ZERO;
 
-			for (var28 = 0; var28 < var35->size(); ++var28) {
-				newPos.z = var35->at(var28).clipZCollide(m_hitbox, newPos.z);
-			}
+			for (int i = 0; i < cubes->size(); ++i)
+				newPos.z = cubes->at(i).clipZCollide(m_hitbox, newPos.z);
 
 			m_hitbox.move(0.0, 0.0, newPos.z);
-			if (!m_bSlide && cPosZ != newPos.z) {
-				newPos.z = 0.0;
-				newPos.y = 0.0;
-				newPos.x = 0.0;
-			}
+			if (!m_bSlide && cPosZ != newPos.z)
+				newPos = Vec3::ZERO;
 
-			if (var37 * var37 + var25 * var25 >= newPos.x * newPos.x + newPos.z * newPos.z) {
-				newPos.x = var37;
-				newPos.y = var23;
-				newPos.z = var25;
-				m_hitbox = var27;
+			if (lastPos.x * lastPos.x + lastPos.z * lastPos.z >= newPos.x * newPos.x + newPos.z * newPos.z)
+			{
+				newPos = lastPos;
+				m_hitbox = lastHit;
 			}
-			else {
-				real var40 = m_hitbox.min.y - ((int)m_hitbox.min.y);
-				if (var40 > 0.0) {
-					m_ySlideOffset = m_ySlideOffset + var40 + 0.01;
-				}
+			else
+			{
+				real yHitOff = m_hitbox.min.y - int(m_hitbox.min.y);
+				if (yHitOff > 0.0)
+					m_ySlideOffset = m_ySlideOffset + yHitOff + 0.01;
 			}
 		}
 
@@ -276,40 +243,40 @@ int Entity::move(const Vec3& pos)
 		m_bOnGround = cPosY != newPos.y && cPosY < 0.0;
 		m_bCollision = m_bHorizontalCollision || m_bVerticalCollision;
 		checkFallDamage(newPos.y, m_bOnGround);
-		if (cPosX != newPos.x) {
+		if (cPosX != newPos.x)
 			m_vel.x = 0.0;
-		}
 
-		if (cPosY != newPos.y) {
+		if (cPosY != newPos.y)
 			m_vel.y = 0.0;
-		}
 
-		if (cPosZ != newPos.z) {
+		if (cPosZ != newPos.z)
 			m_vel.z = 0.0;
-		}
 
-		var37 = m_pos.x - aPosX;
-		var23 = m_pos.z - aPosZ;
-		if (m_bMakeStepSound && !validSneaking) {
-			m_walkDist = float(m_walkDist + Mth::sqrt(var37 * var37 + var23 * var23) * 0.6);
+		real diffX = m_pos.x - aPosX;
+		real diffZ = m_pos.z - aPosZ;
+		if (m_bMakeStepSound && !validSneaking)
+		{
+			m_walkDist = float(m_walkDist + Mth::sqrt(diffX * diffX + diffZ * diffZ) * 0.6);
 			TilePos tp(m_pos.x, m_pos.y - real(0.2) - m_heightOffset, m_pos.z);
-			var28 = m_pLevel->getTile(tp);
+			TileID tile = m_pLevel->getTile(tp);
 
 			if (m_pLevel->getTile(tp.below()) == Tile::fence->m_ID)
-				var28 = Tile::fence->m_ID;
+				tile = Tile::fence->m_ID;
 
-			if (m_walkDist > m_nextStep && var28 > 0) {
+			if (m_walkDist > m_nextStep && tile > 0)
+			{
 				m_nextStep = m_walkDist + 1;
-				if (m_pLevel->getTile(tp.above()) == Tile::topSnow->m_ID) {
-					auto sound = Tile::topSnow->m_pSound;
-					m_pLevel->playSound(this, sound->m_name, sound->volume * 0.15F, sound->pitch);
-				}
-				else if (!Tile::tiles[var28]->m_pMaterial->isLiquid()) {
-					auto sound = Tile::tiles[var28]->m_pSound;
-					m_pLevel->playSound(this, sound->m_name, sound->volume * 0.15F, sound->pitch);
-				}
+				const Tile::SoundType* sound = nullptr;
 
-				Tile::tiles[var28]->stepOn(m_pLevel, tp, this);
+				if (m_pLevel->getTile(tp.above()) == Tile::topSnow->m_ID)
+					sound = Tile::topSnow->m_pSound;
+				else if (!Tile::tiles[tile]->m_pMaterial->isLiquid())
+					sound = Tile::tiles[tile]->m_pSound;
+
+				if (sound)
+					m_pLevel->playSound(this, sound->m_name, sound->volume * 0.15F, sound->pitch);
+
+				Tile::tiles[tile]->stepOn(m_pLevel, tp, this);
 			}
 		}
 
@@ -343,9 +310,7 @@ int Entity::move(const Vec3& pos)
 			}
 		}
 		else if (m_fireTicks <= 0)
-		{
 			m_fireTicks = -m_flameTime;
-		}
 
 		if (bIsInWater && m_fireTicks > 0)
 		{

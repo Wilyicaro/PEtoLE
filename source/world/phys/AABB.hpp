@@ -44,20 +44,23 @@ public:
 
 	// @NOTE: Names for `move`, `grow` and `expand` were taken from really early minecraft (rd-132211 to be exact).
 	// @NOTE: Why not use the leaked verson of b1.2? lol
-	void move(const Vec3& vec);
-	void move(real x, real y, real z);
+	AABB& move(const Vec3& vec);
+	AABB& move(real x, real y, real z);
 	AABB copyMove(const Vec3& vec);
 	AABB copyMove(real x, real y, real z);
 	// same thing
-	void grow(const Vec3& vec);
-	void grow(real x, real y, real z);
+	AABB& grow(const Vec3& vec);
+	AABB& grow(real x, real y, real z);
 	// same thing
-	void grow(real x);
-	void expand(real x, real y, real z);
-	void expand(const Vec3& vec);
+	AABB& grow(real x);
+	AABB& expand(real x, real y, real z);
+	AABB& expand(const Vec3& vec);
 	bool contains(const Vec3& v) const;
-	float byIndex(int index) {
-		switch (index) {
+
+	real byIndex(int index)
+	{
+		switch (index)
+		{
 			case 0: return min.x;
 			case 1: return min.y;
 			case 2: return min.z;

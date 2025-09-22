@@ -144,6 +144,34 @@ bool ChunkCache::hasChunk(const ChunkPos& pos)
 
 int ChunkCache::tick()
 {
+	//for (auto it = m_fakeChunkMap.begin(); it != m_fakeChunkMap.end(); )
+	//{
+	//	if (it->second && m_pLevel->canChunkExist(it->second->m_chunkPos))
+	//		it++;
+	//	else
+	//	{
+	//		SAFE_DELETE(it->second);
+	//		it = m_fakeChunkMap.erase(it);
+	//	}
+	//}
+
+	//for (auto it = m_chunkMap.begin(); it != m_chunkMap.end(); )
+	//{
+	//	if (it->second && m_pLevel->canChunkExist(it->second->m_chunkPos))
+	//		it++;
+	//	else
+	//	{
+	//		if (it->second)
+	//		{
+	//			it->second->unload();
+	//			save(it->second);
+	//		}
+	//		SAFE_DELETE(it->second);
+	//		it = m_chunkMap.erase(it);
+	//	}
+	//}
+
+
 	if (m_pChunkStorage)
 		m_pChunkStorage->tick();
 

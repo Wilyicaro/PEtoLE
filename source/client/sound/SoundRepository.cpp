@@ -12,7 +12,7 @@
 
 void SoundRepository::add(const std::string& name, const SoundDesc& sd)
 {
-	std::map<std::string, std::vector<SoundDesc> >::iterator iter = m_repo.find(name);
+	std::unordered_map<std::string, std::vector<SoundDesc> >::iterator iter = m_repo.find(name);
 	if (iter == m_repo.end())
 	{
 		std::vector<SoundDesc> sdv;
@@ -23,12 +23,13 @@ void SoundRepository::add(const std::string& name, const SoundDesc& sd)
 	{
 		iter->second.push_back(sd);
 	}
+	m_all.push_back(sd);
 }
 
 bool SoundRepository::get(const std::string& name, SoundDesc& sd)
 {
 	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum?
-	std::map<std::string, std::vector<SoundDesc> >::iterator iter = m_repo.find(name);
+	std::unordered_map<std::string, std::vector<SoundDesc> >::iterator iter = m_repo.find(name);
 	if (iter == m_repo.end())
 	{
 		LOG_E("Couldn't find a sound with id: %s", name.c_str());
@@ -40,4 +41,9 @@ bool SoundRepository::get(const std::string& name, SoundDesc& sd)
 	sd = iter->second[index];
 
 	return true;
+}
+
+const SoundDesc& SoundRepository::any()
+{
+	return m_all[m_random.nextInt(int(m_all.size()))];
 }

@@ -30,6 +30,9 @@
     <ClInclude Include="$(MC_ROOT)\platforms\windows\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\SoundStreamDS.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\thirdparty\stb_image\src\stb_image_impl.c">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="$(MC_ROOT)\platforms\windows\SoundSystemDS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SoundStreamDS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

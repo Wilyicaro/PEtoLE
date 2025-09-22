@@ -10,7 +10,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include "SoundData.hpp"
 #include "common/Random.hpp"
 
@@ -20,8 +20,11 @@ public:
 	void add(const std::string& name, const SoundDesc& sd);
 	bool get(const std::string& name, SoundDesc& sd);
 
+	const SoundDesc& any();
+
 public:
-	std::map<std::string, std::vector<SoundDesc> > m_repo;
+	std::unordered_map<std::string, std::vector<SoundDesc>> m_repo;
+	std::vector<SoundDesc> m_all;
 
 private:
 	Random m_random;
