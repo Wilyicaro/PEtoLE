@@ -39,6 +39,7 @@ public:
 	void destroy();
 	bool checkErr(SLresult res);
 	void removeStoppedSounds();
+	bool isAvailable() override;
 	void setListenerPos(const Vec3& pos) override;
 	void setListenerAngle(const Vec2& rot) override;
 	void load(const std::string& sound) override;

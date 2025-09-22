@@ -68,6 +68,11 @@ void SoundSystemSL::init()
 	checkErr((*m_slOutputMix)->Realize(m_slOutputMix, false));
 }
 
+bool SoundSystemSL::isAvailable()
+{
+	return m_bAvailable;
+}
+
 bool SoundSystemSL::checkErr(SLresult res)
 {
 	if (res == SL_RESULT_SUCCESS)
