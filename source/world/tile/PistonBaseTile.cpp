@@ -34,14 +34,12 @@ void PistonBaseTile::triggerEvent(Level* level, const TilePos& pos, int b0, int 
 	{
 		if (moveBlocks(level, pos, (Facing::Name) b1))
 		{
-			LOG_I("EXTENDING");
 			level->setData(pos, b1 | 8);
 			level->playSound(pos.center(), "tile.piston.out", 0.5F, level->m_random.nextFloat() * 0.25F + 0.6F);
 		}
 	}
 	else if (b0 == 1)
 	{
-		LOG_I("BACKING");
 		TilePos relative = pos.relative((Facing::Name)b1);
 		auto piston = std::dynamic_pointer_cast<PistonMovingTileEntity>(level->getTileEntity(relative));
 		if (piston)

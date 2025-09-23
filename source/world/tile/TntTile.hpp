@@ -19,5 +19,7 @@ public:
 	int getTexture(Facing::Name face) const override;
 	void neighborChanged(Level*, const TilePos& pos, TileID tile) override;
 	void destroy(Level*, const TilePos& pos, int data) override;
+	void onPlace(Level*, const TilePos& pos) override;
 	void wasExploded(Level*, const TilePos& pos) override;
+	void attack(Level*, const TilePos& pos, Player*) override;
 };

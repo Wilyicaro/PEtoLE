@@ -38,7 +38,24 @@ void TntTile::destroy(Level* level, const TilePos& pos, int data)
 	// prevent players from using this in multiplayer, to prevent a desync of player IDs
 	if (level->m_bIsOnline) return;
 
-	level->addEntity(std::make_shared<PrimedTnt>(level, Vec3(pos) + 0.5f));
+	if ((data & 1) == 0)
+		spawnResources(level, pos, std::make_shared<ItemInstance>(Tile::tnt->m_ID, 1, 0));
+	else
+	{
+		auto tnt = std::make_shared<PrimedTnt>(level, Vec3(pos) + 0.5f);
+		level->addEntity(tnt);
+		level->playSound(tnt.get(), "random.fuse", 1.0F, 1.0F);
+	}
+}
+
+void TntTile::onPlace(Level* level, const TilePos& pos)
+{
+	Tile::onPlace(level, pos);
+	if (level->hasNeighborSignal(pos))
+	{
+		destroy(level, pos, 1);
+		level->setTile(pos, 0);
+	}
 }
 
 void TntTile::wasExploded(Level* level, const TilePos& pos)
@@ -48,12 +65,19 @@ void TntTile::wasExploded(Level* level, const TilePos& pos)
 	level->addEntity(tnt);
 }
 
+void TntTile::attack(Level* level, const TilePos& pos, Player* player)
+{
+	if (player->getSelectedItem() && player->getSelectedItem()->m_itemID == Item::flintAndSteel->m_itemID)
+		level->setDataNoUpdate(pos, 1);
+
+	Tile::attack(level, pos, player);
+}
+
 void TntTile::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 {
-	// @NOTE: Unused redstone
 	if (tile > 0 && Tile::tiles[tile]->isSignalSource() && level->hasNeighborSignal(pos))
 	{
-		destroy(level, pos, 0);
+		destroy(level, pos, 1);
 		level->setTile(pos, TILE_AIR);
 	}
 }

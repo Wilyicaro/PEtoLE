@@ -34,6 +34,9 @@ Level* MinecraftServer::getLevel(int dim)
 void MinecraftServer::saveLevelData()
 {
 	m_pConnection->m_pMinecraft->m_pPlayer->saveWithoutId(m_levelData.m_LocalPlayerData = std::make_shared<CompoundTag>());
+	LevelData oldData;
+	if (readLevelData(m_path + "/level.dat", oldData))
+		writeLevelData(m_path + "/level.dat_old", oldData);
 	writeLevelData(m_path + "/level.dat", m_levelData);
 }
 

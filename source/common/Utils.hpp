@@ -592,6 +592,7 @@ std::string getFormattedDate(int64_t time);
 void sleepMs(int ms);
 
 bool createFolderIfNotExists(const char* pDir);
+bool createFoldersIfNotExists(const char* pDir);
 bool DeleteDirectory(const std::string& name, bool unused);
 
 // compress and decompress stuff with zlib: ( you must SAFE_DELETE_ARRAY what it returns )

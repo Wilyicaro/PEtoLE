@@ -135,6 +135,73 @@ bool createFolderIfNotExists(const char* pDir)
 	return XPL_MKDIR(pDir, 0755) == 0;
 }
 
+bool createFoldersIfNotExists(const char* pDir)
+{
+	if (!pDir || !*pDir)
+		return false;
+
+	std::string path = pDir;
+
+	size_t last_slash = path.find_last_of("/\\");
+	if (last_slash == std::string::npos)
+		return true;
+
+	std::string parent_path = path.substr(0, last_slash);
+	if (parent_path.empty())
+		return true;
+
+	std::string current_path;
+	bool is_absolute = (path[0] == '/' || (path.length() >= 2 && path[1] == ':'));
+
+	size_t start = 0;
+	if (is_absolute && path[0] == '/')
+	{
+		current_path = "/";
+		start = 1;
+	}
+	else if (is_absolute && path[1] == ':')
+	{
+		current_path = path.substr(0, 2);  // e.g., "C:"
+		start = 2;
+		if (path.length() > 2 && (path[2] == '/' || path[2] == '\\'))
+			start = 3;  // Skip "C:/" or "C:\"
+	}
+
+	while (start < parent_path.length())
+	{
+		size_t end = parent_path.find_first_of("/\\", start);
+		if (end == std::string::npos)
+			end = parent_path.length();
+
+		if (!current_path.empty() && current_path.back() != '/' && current_path.back() != '\\')
+			current_path += "/";
+
+		current_path += parent_path.substr(start, end - start);
+		start = end + 1;
+
+		while (start < parent_path.length() && (parent_path[start] == '/' || parent_path[start] == '\\'))
+			++start;
+
+		// Check if the current path exists
+		if (XPL_ACCESS(current_path.c_str(), 0) == 0)
+		{
+			struct stat st;
+			if (stat(current_path.c_str(), &st) == 0)
+			{
+				if (!S_ISDIR(st.st_mode))
+					return false;
+			}
+			continue;  // Exists and is a directory
+		}
+
+		// Create the directory
+		if (XPL_MKDIR(current_path.c_str(), 0755) != 0)
+			return false;
+	}
+
+	return true;
+}
+
 bool DeleteDirectory(const std::string& name2, bool unused)
 {
 	std::string name = name2;

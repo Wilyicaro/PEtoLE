@@ -2,7 +2,7 @@
 
 #include <cstring>
 #include <algorithm>
-#include <thirdparty/stb_image/include/stb_image.h>
+#include "thirdparty/stb_image/include/stb_image.h"
 #include "common/Utils.hpp"
 
 HttpTexture::HttpTexture(const std::string& url, TextureProcessor* processor) {

@@ -257,9 +257,7 @@ bool SoundSystemAL::allowStreaming()
 
 void SoundSystemAL::playMusic(const std::string& soundPath)
 {
-	LOG_I("trying to play: %s", soundPath.c_str());
-	if (_musicStream->open(soundPath))
-		LOG_I("successful!");
+	_musicStream->open(soundPath);
 }
 
 bool SoundSystemAL::isPlayingMusic() const

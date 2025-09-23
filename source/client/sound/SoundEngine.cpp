@@ -8,6 +8,7 @@
 
 #include "SoundEngine.hpp"
 #include "SoundDefs.hpp"
+#include "client/app/Minecraft.hpp"
 #include "common/Mth.hpp"
 
 SoundEngine::SoundEngine(SoundSystem* soundSystem, float distance) : m_lastStreaming(Util::EMPTY_STRING), m_lastMusic(Util::EMPTY_STRING)
@@ -114,7 +115,6 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addSound("mob.cowhurt", "newsound/mob/cowhurt1.ogg");
 	addSound("mob.cowhurt", "newsound/mob/cowhurt2.ogg");
 	addSound("mob.cowhurt", "newsound/mob/cowhurt3.ogg");
-	addSound("mob.cowhurt", "newsound/mob/cowhurt4.ogg");
 
 	addSound("mob.chicken", "newsound/mob/chicken1.ogg");
 	addSound("mob.chicken", "newsound/mob/chicken2.ogg");
@@ -245,7 +245,28 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 void SoundEngine::addLocalSound(SoundRepository& repo, std::string name, std::string path, bool streaming)
 {
 	if (streaming && m_pSoundSystem->allowStreaming())
-		repo.add(name, SoundDesc(name, m_pPlatform->getAssetPath(path)));
+	{
+		std::string asset = m_pPlatform->getAssetPath(path);
+		std::string loadPath = asset;
+
+#ifdef ANDROID
+		//Copying streaming audios to the external directory, as the streaming with stb_vorbis doesn't have integration with SDL or Android Asset Manager
+
+		loadPath = m_pOptions->m_pMinecraft->m_externalStorageDir + '/' + asset;
+		std::vector<uint8_t> data = m_pPlatform->loadFile(path);
+
+		createFoldersIfNotExists(loadPath.c_str());
+
+		FILE* pFile = fopen(loadPath.c_str(), "wb");
+		if (pFile)
+		{
+			fwrite(data.data(), 1, data.size(), pFile);
+			fclose(pFile);
+		}
+#endif
+
+		repo.add(name, SoundDesc(name, loadPath));
+	}
 	else
 	{
 		int channels, sample_rate;
