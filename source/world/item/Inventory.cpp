@@ -264,7 +264,7 @@ void Inventory::selectSlot(int slotNo)
 	m_selected = slotNo;
 }
 
-void Inventory::selectItemById(int itemID, int maxHotBarSlot)
+void Inventory::selectItem(int itemID, int data, int maxHotBarSlot)
 {
 	Item* selectItem = Item::items[itemID];
 
@@ -272,7 +272,7 @@ void Inventory::selectItemById(int itemID, int maxHotBarSlot)
 
 	for (int i = 0; i < m_items.size(); i++)
 	{
-		if (!m_items[i] || m_items[i]->m_itemID != itemID)
+		if (!m_items[i] || m_items[i]->m_itemID != itemID || m_items[i]->getAuxValue() != data)
 			continue;
 
 		if (i < maxHotBarSlot) m_selected = i;
@@ -289,7 +289,7 @@ void Inventory::selectItemById(int itemID, int maxHotBarSlot)
 	if (m_pPlayer->isCreative())
 	{
 		auto oldSelected = getSelected();
-		setItem(m_selected, std::make_shared<ItemInstance>(selectItem));
+		setItem(m_selected, std::make_shared<ItemInstance>(selectItem, 1, data));
 		if (oldSelected) addResource(oldSelected);
 	}
 }

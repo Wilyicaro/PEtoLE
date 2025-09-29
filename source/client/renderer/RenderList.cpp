@@ -16,9 +16,7 @@ constexpr int C_MAX_RENDERS = 3072;
 
 RenderList::RenderList()
 {
-	m_offX = 0.0f;
-	m_offY = 0.0f;
-	m_offZ = 0.0f;
+	m_off = Vec3::ZERO;
 	m_index = 0;
 	inited = false;
 	rendered = false;
@@ -44,7 +42,7 @@ void RenderList::add(int x)
 	if (m_index == C_MAX_RENDERS)
 	{
 		render();
-		init(m_offX, m_offY, m_offZ);
+		init(m_off);
 		m_remaining = 0;
 		rendered = false;
 	}
@@ -64,7 +62,7 @@ void RenderList::addR(RenderChunk& rc)
 	if (m_index == C_MAX_RENDERS)
 	{
 		render();
-		init(m_offX, m_offY, m_offZ);
+		init(m_off);
 		m_remaining = 0;
 		rendered = false;
 	}
@@ -85,11 +83,9 @@ void RenderList::clear()
 	rendered = false;
 }
 
-void RenderList::init(float x, float y, float z)
+void RenderList::init(const Vec3& off)
 {
-	m_offX = x;
-	m_offY = y;
-	m_offZ = z;
+	m_off = off;
 	m_index = 0;
 	inited = true;
 }
@@ -104,7 +100,7 @@ bool RenderList::isAt(const RenderChunk& rc) const
 {
 	if (!inited) return false;
 	auto actual = m_renderChunks[0];
-	return sameSlice(actual->m_posX, rc.m_posX) && sameSlice(actual->m_posZ, rc.m_posZ);
+	return sameSlice(actual->m_pos.x, rc.m_pos.x) && sameSlice(actual->m_pos.z, rc.m_pos.z);
 }
 
 void RenderList::render()
@@ -120,10 +116,7 @@ void RenderList::render()
 
 	if (m_index < m_remaining)
 	{
-		glPushMatrix();
-		glTranslatef(-m_offX, -m_offY, -m_offZ);
 		renderChunks();
-		glPopMatrix();
 	}
 }
 
@@ -140,7 +133,7 @@ void RenderList::renderChunks()
 			RenderChunk& chk = *m_renderChunks[i];
 			glPushMatrix();
 
-			glTranslatef(chk.m_posX, chk.m_posY, chk.m_posZ);
+			glTranslatef(chk.m_pos.x - m_off.x, chk.m_pos.y - m_off.y, chk.m_pos.z - m_off.z);
 			xglBindBuffer(GL_ARRAY_BUFFER, chk.m_glID);
 			xglVertexPointer  (3, GL_FLOAT,         sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_x));
 			xglTexCoordPointer(2, GL_FLOAT,         sizeof(Tesselator::Vertex), (void*)offsetof(Tesselator::Vertex, m_u));

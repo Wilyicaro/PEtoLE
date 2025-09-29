@@ -16,7 +16,7 @@ public:
 	SmallButton(int id, int x, int y, const std::string& str);
 	SmallButton(int id, int x, int y, int width, int height, const std::string& str);
 	SmallButton(int id, int x, int y, Options::OptionEntry* pOption, const std::string& str);
-	bool clicked(Minecraft*, int xPos, int yPos) override;
+	void pressed(Minecraft*, int xPos, int yPos) override;
 	Options::OptionEntry* getOption();
 
 private:

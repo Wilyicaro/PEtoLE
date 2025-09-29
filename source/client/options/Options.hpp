@@ -276,5 +276,6 @@ public:
 	bool m_bOldTitleLogo;
 	BoolOption m_bMenuPanorama;
 	BoolOption m_bMipmaps;
+	BoolOption m_vSync;
 };
 

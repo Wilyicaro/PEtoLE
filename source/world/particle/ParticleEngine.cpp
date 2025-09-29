@@ -115,18 +115,16 @@ void ParticleEngine::destroyEffect(const TilePos& pos)
 
 	Tile* pTile = Tile::tiles[tileID];
 
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		for (int j = 0; j < 3; j++)
+		for (int j = 0; j < 4; j++)
 		{
-			for (int k = 0; k < 3; k++)
+			for (int k = 0; k < 4; k++)
 			{
-				Vec3 vec1(float(pos.x) + (float(i) + 0.5f) / 3.0f,
-					     float(pos.y) + (float(j) + 0.5f) / 3.0f,
-					     float(pos.z) + (float(k) + 0.5f) / 3.0f);
-				Vec3 vec2(vec1.x - float(pos.x) - 0.5f,
-					      vec1.y - float(pos.y) - 0.5f,
-					      vec1.z - float(pos.z) - 0.5f);
+				Vec3 vec1(real(pos.x) + (i + 0.5f) / 4.0f,
+					     real(pos.y) + (j + 0.5f) / 4.0f,
+					     real(pos.z) + (k + 0.5f) / 4.0f);
+				Vec3 vec2 = vec1 - pos - 0.5f;
 
 				add((new TerrainParticle(m_pLevel, vec1, vec2, pTile))->init(pos));
 			}
@@ -159,9 +157,10 @@ void ParticleEngine::render(Entity* ent, float f)
 	float x5 = x1 * Mth::sin(float(M_PI) * ent->m_rot.x / 180.0f);
 	float x2 = Mth::cos(float(M_PI) * ent->m_rot.x / 180.0f);
 
-	Particle::xOff = Mth::Lerp(ent->m_posPrev.x, ent->m_pos.x, f);
-	Particle::yOff = Mth::Lerp(ent->m_posPrev.y, ent->m_pos.y, f);
-	Particle::zOff = Mth::Lerp(ent->m_posPrev.z, ent->m_pos.z, f);
+
+	Particle::off.x = Mth::Lerp(ent->m_posPrev.x, ent->m_pos.x, f);
+	Particle::off.y = Mth::Lerp(ent->m_posPrev.y, ent->m_pos.y, f);
+	Particle::off.z = Mth::Lerp(ent->m_posPrev.z, ent->m_pos.z, f);
 
 	// @BUG: Ignoring the last particle array. Invisible?
 	Tesselator& t = Tesselator::instance;

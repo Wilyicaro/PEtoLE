@@ -64,6 +64,8 @@ public:
 	void handleButtonEvent(SDL_JoystickID controllerIndex, uint8_t button, uint8_t state);
 	void handleControllerAxisEvent(SDL_JoystickID controllerIndex, uint8_t axis, int16_t value);
 
+	void setVSync(bool vsync) override;
+
 private:
 	SDL_Window *_window;
 	SDL_GameController* _controller;

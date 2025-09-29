@@ -114,18 +114,18 @@ void LocalPlayer::aiStep()
 	checkInTile(Vec3(m_pos.x + m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z - m_bbWidth * 0.35f));
 	checkInTile(Vec3(m_pos.x + m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z + m_bbWidth * 0.35f));
 
-	if (getAbilities().m_mayFly && m_pMoveInput->m_bJumping && !wasJumping)
+	if (getAbilities().m_bMayFly && m_pMoveInput->m_bJumping && !wasJumping)
 	{
 		if (m_jumpTriggerTime == 0) {
 			m_jumpTriggerTime = 7;
 		}
 		else {
-			getAbilities().m_flying = !getAbilities().m_flying;
+			getAbilities().m_bFlying = !getAbilities().m_bFlying;
 			m_jumpTriggerTime = 0;
 		}
 	}
 
-	if (getAbilities().m_flying)
+	if (getAbilities().m_bFlying)
 	{
 		int yd = 0;
 		if (m_pMoveInput->m_bJumping)
@@ -140,8 +140,8 @@ void LocalPlayer::aiStep()
 
 	Player::aiStep();
 
-	if (getAbilities().m_flying && m_bOnGround)
-		getAbilities().m_flying = false;
+	if (getAbilities().m_bFlying && m_bOnGround)
+		getAbilities().m_bFlying = false;
 
 }
 

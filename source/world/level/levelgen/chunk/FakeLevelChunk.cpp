@@ -33,6 +33,24 @@ void FakeLevelChunk::skyBrightnessChanged()
 
 }
 
+void FakeLevelChunk::recalcBlockLights()
+{
+	if (contentType != ContentType::NONE)
+		LevelChunk::recalcBlockLights();
+}
+
+int FakeLevelChunk::getRawBrightness(const ChunkTilePos& pos, int skySubtract)
+{
+	return contentType == ContentType::NONE ? 7 : LevelChunk::getRawBrightness(pos, skySubtract);
+}
+
+
+bool FakeLevelChunk::isSkyLit(const ChunkTilePos& pos)
+{
+	return contentType != ContentType::NONE && LevelChunk::isSkyLit(pos);
+}
+
+
 void FakeLevelChunk::load()
 {
 	if (!m_bLoaded && contentType != ContentType::NONE) {
@@ -82,4 +100,9 @@ void FakeLevelChunk::setData(const ChunkTilePos& pos, int data)
 void FakeLevelChunk::recalcHeight(const ChunkTilePos& pos)
 {
 
+}
+
+bool FakeLevelChunk::isEmpty()
+{
+	return contentType == ContentType::NONE;
 }

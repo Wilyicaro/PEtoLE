@@ -257,7 +257,7 @@ RenderChunk Tesselator::end(int vboIdx)
 
 	RenderChunk rchk(vboIdx, count);
 
-	m_VboIdxToRenderChunkID[vboIdx] = rchk.m_id;
+	//m_VboIdxToRenderChunkID[vboIdx] = rchk.m_id;
 
 	return rchk;
 }
@@ -291,7 +291,7 @@ void Tesselator::normal(float x, float y, float z)
 #endif
 }
 
-void Tesselator::offset(float x, float y, float z)
+void Tesselator::offset(real x, real y, real z)
 {
 	m_offsetX = x;
 	m_offsetY = y;
@@ -310,13 +310,13 @@ void Tesselator::tex(float u, float v)
 	m_bHasTexture = true;
 }
 
-void Tesselator::vertexUV(float x, float y, float z, float u, float v)
+void Tesselator::vertexUV(real x, real y, real z, float u, float v)
 {
 	tex(u, v);
 	vertex(x, y, z);
 }
 
-void Tesselator::vertex(float x, float y, float z)
+void Tesselator::vertex(real x, real y, real z)
 {
 	if (m_nVertices >= m_maxVertices) {
 		LOG_W("Overwriting the vertex buffer! This chunk/entity won't show up");

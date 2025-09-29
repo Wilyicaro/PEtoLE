@@ -11,6 +11,7 @@
 #include "common/Utils.hpp"
 #include "compat/PlatformDefinitions.h"
 #include <ostream>
+#include <iostream>
 #include <stdexcept>
 
 #if defined(_WIN32) && !defined(_XBOX)
@@ -19,6 +20,7 @@
 #include <Windows.h>
 #include <io.h>
 #include <direct.h>
+#include <psapi.h>
 
 // Why are we not using GetTickCount64()? It's simple -- getTimeMs has the exact same problem as using regular old GetTickCount.
 #pragma warning(disable : 28159)
@@ -26,12 +28,17 @@
 #elif defined(_XBOX)
 
 #else
-
+#include <fstream>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
 #endif
+
+#if MC_PLATFORM_MAC
+#include <mach/mach.h>
+#endif
+
 
 // include zlib stuff
 // cant get zlib to build on android, they include prebuilt one anyways. using that one
@@ -714,4 +721,76 @@ bool https_get(const std::string& host, const std::string& path, std::vector<uns
 {
 	// @TODO implement with libcurl
 	return false;
+}
+
+int64_t getProcessMemoryUsage()
+{
+	try {
+#ifdef _WIN32
+		PROCESS_MEMORY_COUNTERS pmc;
+		if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+			return static_cast<int64_t>(pmc.WorkingSetSize / 1024);
+		else
+			return -1;
+#elif MC_PLATFORM_MAC
+		task_basic_info info;
+		mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
+		if (task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS)
+			return static_cast<int64_t>(info.resident_size / 1024);
+		else
+			return -1;
+#else
+		std::ifstream statm("/proc/self/statm");
+		if (!statm.is_open())
+			return -1;
+		uint64_t size, resident, shared, text, lib, data, dt;
+		statm >> size >> resident >> shared >> text >> lib >> data >> dt;
+		statm.close();
+		long pageSize = sysconf(_SC_PAGESIZE);
+		if (pageSize == -1)
+			return -1;
+		return static_cast<int64_t>(resident * pageSize / 1024);
+#endif
+	}
+	catch (const std::exception& e)
+	{
+		return -1;
+	}
+}
+
+int64_t getAvailableSystemMemory() {
+	try {
+#ifdef _WIN32
+		MEMORYSTATUSEX memInfo;
+		memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+		if (GlobalMemoryStatusEx(&memInfo))
+			return static_cast<int64_t>(memInfo.ullAvailPhys / 1024);
+		return -1;
+#elif MC_PLATFORM_MAC
+		vm_size_t pageSize;
+		vm_statistics64_data_t vmStats;
+		mach_msg_type_number_t count = HOST_VM_INFO64_COUNT;
+		host_page_size(mach_host_self(), &pageSize);
+		if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&vmStats, &count) == KERN_SUCCESS)
+		{
+			int64_t freePages = vmStats.free_count + vmStats.inactive_count;
+			return static_cast<int64_t>(freePages * pageSize / 1024);
+		}
+		return -1;
+#else
+		std::ifstream meminfo("/proc/meminfo");
+		std::string key;
+		int64_t value;
+		std::string unit;
+		while (meminfo >> key >> value >> unit)
+		{
+			if (key == "MemAvailable:")
+				return value;
+		}
+#endif
+	}
+	catch (const std::exception& e)
+	{
+		return -1;
+	}
 }

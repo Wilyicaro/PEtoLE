@@ -213,13 +213,12 @@ void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstanc
 		glPushMatrix();
 		glTranslatef(x - 2, y + 3, 0.0F);
 		glScalef(10.0F, 10.0F, 10.0F);
-		glTranslatef(1.0F, 0.5F, 8.0F);
+		glTranslatef(1.0F, 0.5F, 1.0F);
 		glScalef(1.0F, 1.0F, -1.0F);
 		glRotatef(210.0F, 1.0F, 0.0F, 0.0F);
 		glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
-		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		glScalef(1.0F, 1.0F, 1.0F);
 		
+		glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
 		tileRenderer->renderTile(Tile::tiles[itemID], instance->getAuxValue(), 1.0f, true);
 		#undef PARM_HACK
 

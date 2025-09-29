@@ -12,6 +12,7 @@
 #include "common/Util.hpp"
 #include <stdio.h>
 #include <inttypes.h>
+#include <set>
 
 CreateWorldScreen::CreateWorldScreen() :
 	m_textName(this, 1, 0, 0, 0, 0, "", Language::getInstance()->get("selectWorld.newWorld")),
@@ -185,10 +186,14 @@ void CreateWorldScreen::buttonClicked(Button* pButton)
 		m_pMinecraft->selectLevel(m_levelId, [levelNickname, seed, this](LevelData& data) {
 			data.setLevelName(levelNickname);
 			data.setSeed(seed);
-			data.setGameType(this->m_gameType);
+			data.setGameType(m_gameType);
 			data.setFlat(m_bIsFlat);
-			switch (this->m_worldSize)
+			switch (m_worldSize)
 			{
+			case OLD_SIZE:
+				data.setLimit(0, DimensionLimit(ChunkPos(0, 0), ChunkPos(16, 16), false));
+				data.setLimit(-1, DimensionLimit(ChunkPos(0, 0), ChunkPos(16, 16), false));
+				break;
 			case CLASSIC_SIZE:
 				data.setLimit(0, DimensionLimit(ChunkPos(27, 27)));
 				data.setLimit(-1, DimensionLimit(ChunkPos(9, 9)));
@@ -225,7 +230,7 @@ void CreateWorldScreen::buttonClicked(Button* pButton)
 
 	if (pButton->m_buttonId == m_btnWorldSize.m_buttonId)
 	{
-		m_worldSize = WorldSize((m_worldSize + 1) % 5);
+		m_worldSize = WorldSize((m_worldSize + 1) % ALL_WORLD_SIZES);
 		setSize(m_width, m_height);
 	}
 

@@ -71,6 +71,10 @@ int Button::getYImage(bool bHovered)
 	return 1;
 }
 
+void Button::pressed(Minecraft*, int xPos, int yPos)
+{
+}
+
 void Button::released(int xPos, int yPos)
 {
 
@@ -86,7 +90,7 @@ void Button::render(Minecraft* pMinecraft, int xPos, int yPos)
 	if (!m_bVisible) return;
 
 	if (!pMinecraft->useController())
-		m_bHoveredOrFocused = Button::clicked(pMinecraft, xPos, yPos);
+		m_bHoveredOrFocused = clicked(pMinecraft, xPos, yPos);
 
 	Font* pFont = pMinecraft->m_pFont;
 	Textures* pTexs = pMinecraft->m_pTextures;

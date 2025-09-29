@@ -14,15 +14,17 @@
 #include "world/item/Inventory.hpp"
 
 
-struct DimensionLimit {
+struct DimensionLimit
+{
 	ChunkPos m_minPos, m_maxPos;
-	DimensionLimit() : m_minPos(ChunkPos()), m_maxPos(ChunkPos())
+	bool m_bFakeChunks;
+	DimensionLimit(bool fakeChunks = true) : m_minPos(ChunkPos()), m_maxPos(ChunkPos()), m_bFakeChunks(fakeChunks)
 	{
 	}
-	DimensionLimit(ChunkPos pos) : m_minPos(-pos), m_maxPos(pos)
+	DimensionLimit(ChunkPos pos, bool fakeChunks = true) : m_minPos(-pos), m_maxPos(pos), m_bFakeChunks(fakeChunks)
 	{
 	}
-	DimensionLimit(ChunkPos minPos, ChunkPos maxPos) : m_minPos(minPos), m_maxPos(maxPos)
+	DimensionLimit(ChunkPos minPos, ChunkPos maxPos, bool fakeChunks = true) : m_minPos(minPos), m_maxPos(maxPos), m_bFakeChunks(fakeChunks)
 	{
 	}
 

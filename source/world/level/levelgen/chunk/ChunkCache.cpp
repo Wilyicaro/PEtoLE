@@ -23,7 +23,7 @@ ChunkCache::ChunkCache(Level* pLevel, ChunkStorage* pStor, ChunkSource* pSrc)
 	m_pChunkStorage = pStor;
 	m_pLevel = pLevel;
 
-	m_pFakeChunk = new FakeLevelChunk(m_pLevel, nullptr, ChunkPos(0, 0), FakeLevelChunk::NONE);
+	m_pEmptyChunk = new FakeLevelChunk(m_pLevel, nullptr, ChunkPos(0, 0), FakeLevelChunk::NONE);
 }
 
 
@@ -39,6 +39,9 @@ LevelChunk* ChunkCache::getChunk(const ChunkPos& pos)
 	{
 		return m_pLastChunk;
 	}
+
+	if (!m_pLevel->hasFakeChunks() && !m_pLevel->isValidPos(pos))
+		return m_pEmptyChunk;
 
 	auto& chunkMap = m_pLevel->isValidPos(pos) ? m_chunkMap : m_fakeChunkMap;
 
@@ -58,7 +61,7 @@ LevelChunk* ChunkCache::getChunk(const ChunkPos& pos)
 		}
 		else
 		{
-			pChunk = m_pFakeChunk;
+			pChunk = m_pEmptyChunk;
 			if (m_pChunkSource)
 				pChunk = m_pChunkSource->getChunk(pos);
 
@@ -99,7 +102,7 @@ LevelChunk* ChunkCache::getChunkDontCreate(const ChunkPos& pos)
 	}
 
 	if (!m_pLevel->isValidPos(pos))
-		return m_pFakeChunk;
+		return m_pEmptyChunk;
 
 	if (!hasChunk(pos))
 	{
@@ -113,7 +116,7 @@ LevelChunk* ChunkCache::getChunkDontCreate(const ChunkPos& pos)
 		}
 
 		// create an empty chunk
-		LevelChunk* pChunk = m_pFakeChunk;
+		LevelChunk* pChunk = m_pEmptyChunk;
 		if (m_pChunkSource)
 			pChunk = m_pChunkSource->getChunkDontCreate(pos);
 
@@ -132,7 +135,7 @@ bool ChunkCache::hasChunk(const ChunkPos& pos)
 
 	if (!m_pLevel->isValidPos(pos))
 	{
-		return m_fakeChunkMap.find(pos.key()) != m_fakeChunkMap.end();
+		return !m_pLevel->hasFakeChunks() || m_fakeChunkMap.find(pos.key()) != m_fakeChunkMap.end();
 	}
 
 	LevelChunk* pChunk = m_chunkMap[pos.key()];
@@ -144,16 +147,16 @@ bool ChunkCache::hasChunk(const ChunkPos& pos)
 
 int ChunkCache::tick()
 {
-	//for (auto it = m_fakeChunkMap.begin(); it != m_fakeChunkMap.end(); )
-	//{
-	//	if (it->second && m_pLevel->canChunkExist(it->second->m_chunkPos))
-	//		it++;
-	//	else
-	//	{
-	//		SAFE_DELETE(it->second);
-	//		it = m_fakeChunkMap.erase(it);
-	//	}
-	//}
+	for (auto it = m_fakeChunkMap.begin(); it != m_fakeChunkMap.end(); )
+	{
+		if (it->second && m_pLevel->canChunkExist(it->second->m_chunkPos))
+			it++;
+		else
+		{
+			SAFE_DELETE(it->second);
+			it = m_fakeChunkMap.erase(it);
+		}
+	}
 
 	//for (auto it = m_chunkMap.begin(); it != m_chunkMap.end(); )
 	//{
@@ -309,10 +312,8 @@ std::string ChunkCache::gatherStats()
 ChunkCache::~ChunkCache()
 {
 	SAFE_DELETE(m_pChunkSource);
-	SAFE_DELETE(m_pFakeChunk);
-
-	ChunkPos pos = ChunkPos(0, 0);
-
+	SAFE_DELETE(m_pChunkStorage);
+	SAFE_DELETE(m_pEmptyChunk);
 
 	for (auto it = m_chunkMap.begin(); it != m_chunkMap.end(); ) {
 		if (!it->second) {
@@ -338,7 +339,7 @@ ChunkCache::~ChunkCache()
 LevelChunk* ChunkCache::load(const ChunkPos& pos)
 {
 	if (!m_pChunkStorage)
-		return m_pFakeChunk;
+		return m_pEmptyChunk;
 
 	if (!m_pLevel->isValidPos(pos))
 	{

@@ -8,7 +8,7 @@
 
 #include "Particle.hpp"
 
-float Particle::xOff, Particle::yOff, Particle::zOff;
+Vec3 Particle::off;
 
 void Particle::_init()
 {
@@ -81,9 +81,9 @@ void Particle::render(Tesselator& t, float f, float a4, float a5, float a6, floa
 	float texU_1 = float(texX) / 16.0f;
 	float texV_1 = float(texture >> 4) / 16.0f;
 
-	float posX = Mth::Lerp(m_oPos.x, m_pos.x, f) - xOff;
-	float posY = Mth::Lerp(m_oPos.y, m_pos.y, f) - yOff;
-	float posZ = Mth::Lerp(m_oPos.z, m_pos.z, f) - zOff;
+	real posX = Mth::Lerp(m_oPos.x, m_pos.x, f) - off.x;
+	real posY = Mth::Lerp(m_oPos.y, m_pos.y, f) - off.y;
+	real posZ = Mth::Lerp(m_oPos.z, m_pos.z, f) - off.z;
 	float fBright = m_bIsUnlit ? 1.0f : getBrightness(f);
 
 	float sizeX = a4 * m_size * 0.1f;

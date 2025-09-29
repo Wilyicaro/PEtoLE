@@ -92,7 +92,10 @@ static char g_EFLSSFilterArray[] = { '/','\n','\r','\x09','\0','\xC','`','?','*'
 
 void McRegionLevelStorageSource::deleteLevel(const std::string& levelName)
 {
-	std::filesystem::remove_all(m_worldsPath + "/" + levelName);
+	std::error_code _Ec;
+	std::filesystem::remove_all(m_worldsPath + "/" + levelName, _Ec);
+	if (_Ec)
+		LOG_I("Failed to delete level %s: %s", levelName.c_str(), _Ec.message().c_str());
 }
 
 void McRegionLevelStorageSource::renameLevel(const std::string& oldName, const std::string& newName)

@@ -13,8 +13,6 @@
 
 #ifndef DEMO
 
-#define C_CHUNKS_TO_SAVE_PER_TICK (2)
-
 McRegionLevelStorage::McRegionLevelStorage(int i, const std::string& path) : m_path(path + "/DIM" + std::to_string(i))
 {
 	createFolderIfNotExists(m_path.c_str());
@@ -28,6 +26,7 @@ McRegionLevelStorage::McRegionLevelStorage(const std::string& path) : m_path(pat
 McRegionLevelStorage::~McRegionLevelStorage()
 {
 	for (auto it = m_pRegionMap.begin(); it != m_pRegionMap.end(); ) {
+		it->second->close();
 		SAFE_DELETE(it->second);
 		it = m_pRegionMap.erase(it);
 	}

@@ -31,6 +31,7 @@ void GameRenderer::_init()
 	m_renderDistance = 0.0f;
 	m_ticks = 0;
 	m_rainSoundTime = 0;
+	m_nanoTime = 0L;
 	m_hovered = nullptr;
 	field_14 = 0.0f;
 	field_18 = 0.0f;
@@ -415,7 +416,7 @@ float GameRenderer::getFov(float f)
 	return field_54 + x1 + f * (field_50 - field_54);
 }
 
-void GameRenderer::renderLevel(float f)
+void GameRenderer::renderLevel(float f, int64_t nano)
 {
 	if (!m_pMinecraft->m_pMobPersp)
 	{
@@ -482,7 +483,14 @@ void GameRenderer::renderLevel(float f)
 		frustumCuller.prepare(fCamPos.x, fCamPos.y, fCamPos.z);
 
 		pLR->cull(&frustumCuller, f);
-		if (!i) {
+		if (!i)
+		{
+			while (!pLR->updateDirtyChunks(pMob.get(), false) && nano != 0L)
+			{
+				int64_t diff = nano - getTimeNano();
+				if (diff < 0L || diff > 1000000000L)
+					break;
+			}
 		  pLR->updateDirtyChunks(pMob.get(), false);
 		}
 
@@ -588,6 +596,14 @@ void GameRenderer::renderLevel(float f)
 
 void GameRenderer::render(float f)
 {
+	std::vector<GLuint>& buffers = m_pMinecraft->m_pLevelRenderer->m_invalidChunkBuffers;
+
+	if (!buffers.empty())
+	{
+		xglDeleteBuffers(buffers.size(), buffers.data());
+		buffers.clear();
+	}
+
 	if (m_pMinecraft->m_pPlayer && m_pMinecraft->m_bGrabbedMouse)
 	{
 		Minecraft *pMC = m_pMinecraft;
@@ -599,11 +615,11 @@ void GameRenderer::render(float f)
 		if (pMC->getOptions()->m_bInvertMouse.get())
 			multPitch = 1.0f;
 
+		float mult1 = 2.0f * (0.2f + pMC->getOptions()->m_fSensitivity.get() * 0.6f);
+		mult1 = pow(mult1, 3);
+
 		if (pMC->m_mouseHandler.smoothTurning())
 		{
-			float mult1 = 2.0f * (0.2f + pMC->getOptions()->m_fSensitivity.get() * 0.6f);
-			mult1 = pow(mult1, 3);
-
 			float xd = 4.0f * mult1 * pMC->m_mouseHandler.m_delta.x;
 			float yd = 4.0f * mult1 * pMC->m_mouseHandler.m_delta.y;
 
@@ -643,8 +659,8 @@ void GameRenderer::render(float f)
 		else
 		{
 			diff_field_84 = 1.0f;
-			field_7C = pMC->m_mouseHandler.m_delta.x;
-			field_80 = pMC->m_mouseHandler.m_delta.y;
+			field_7C = pMC->m_mouseHandler.m_delta.x * mult1;
+			field_80 = pMC->m_mouseHandler.m_delta.y * mult1;
 		}
 
 		Vec2 rot(field_7C * diff_field_84,
@@ -671,11 +687,29 @@ void GameRenderer::render(float f)
 		}
 	}
 
+	int fpsOption = m_pMinecraft->getOptions()->m_limitFramerate.get();
+	short limitedFps = 200;
+	if (fpsOption == 1)
+		limitedFps = 120;
+
+	if (fpsOption == 2)
+		limitedFps = 40;
+
+
 	if (m_pMinecraft->isLevelReady())
 	{
 		if (t_keepPic < 0)
 		{
-			renderLevel(f);
+			
+			renderLevel(f, fpsOption == 0 ? 0 : m_nanoTime + (1000000000 / limitedFps));
+
+			if (fpsOption == 2)
+			{
+				int64_t sleepTime = (m_nanoTime + (1000000000 / limitedFps) - getTimeNano()) / 1000000L;
+				if (sleepTime > 0L && sleepTime < 500L)
+					std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+			}
+			m_nanoTime = getTimeNano();
 
 			m_pMinecraft->m_gui.render(f, m_pMinecraft->m_pScreen != nullptr, mouseX, mouseY);
 		}
@@ -688,6 +722,18 @@ void GameRenderer::render(float f)
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
 		setupGuiScreen();
+
+		if (fpsOption == 2)
+		{
+			int64_t sleepTime = (m_nanoTime + (1000000000 / limitedFps) - getTimeNano()) / 1000000L;
+
+			if (sleepTime < 0L)
+				sleepTime += 10L;
+
+			if (sleepTime > 0L && sleepTime < 500L)
+				std::this_thread::sleep_for(std::chrono::milliseconds(sleepTime));
+		}
+		m_nanoTime = getTimeNano();
 	}
 
 	if (m_pMinecraft->m_pPlayer &&
@@ -702,12 +748,21 @@ void GameRenderer::render(float f)
 	}
 
 	// @TODO: Move to its own function
-	std::stringstream debugText;
-	debugText << "ReMinecraftPE " << m_pMinecraft->getVersionString();
-	debugText << " (" << m_shownFPS << " fps, " << m_shownChunkUpdates << " chunk updates)" << "\n";
 
 	if (m_pMinecraft->getOptions()->m_bDebugText)
 	{
+		std::stringstream debugText;
+		std::stringstream rightDebugText;
+		debugText << "ReMinecraftPE " << m_pMinecraft->getVersionString();
+		debugText << " (" << m_shownFPS << " fps, " << m_shownChunkUpdates << " chunk updates)" << "\n";
+
+		int64_t used = getProcessMemoryUsage() / 1024;
+		int64_t available = getAvailableSystemMemory() / 1024;
+		int64_t total = used + available;
+		int32_t percentage = used / total;
+
+		rightDebugText << "Used memory: " << percentage << "% (" << used << "MB) of " << total << "MB";
+
 		if (m_pMinecraft->m_pPlayer && m_pMinecraft->isLevelReady())
 		{
 			char posStr[96];
@@ -774,6 +829,9 @@ void GameRenderer::render(float f)
 		debugText << "\nGameRenderer::field_80: "      << field_80;*/
 
 		m_pMinecraft->m_pFont->drawShadow(debugText.str(), 2, 2, 0xFFFFFF);
+
+		int width = ceilf(Minecraft::width * Gui::InvGuiScale);
+		m_pMinecraft->m_pFont->drawShadow(rightDebugText.str(), width - 2 - m_pMinecraft->m_pFont->width(rightDebugText.str()), 2, 0xFFFFFF);
 
 #ifdef SHOW_VERTEX_COUNTER_GRAPHIC
 		g_nVertices = 0;

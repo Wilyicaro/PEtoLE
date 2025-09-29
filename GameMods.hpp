@@ -31,12 +31,12 @@
 #define ENH_USE_OWN_AO          	 // Use own ambient occlusion engine - looks pretty much the same except it fixes the corners
 #define ENH_ADD_OPTIONS_PAUSE    	 // Add an 'options' button in the pause menu
 #define ENH_ALLOW_SAND_GRAVITY  	 // Allow sand to fall.
-#define ENH_USE_GUI_SCALE_2     	 // Use a 2x GUI scale instead of 3x. Looks better on PC
 #define ENH_ALLOW_SCROLL_WHEEL  	 // Allow use of the scroll wheel to change selected inventory slots
 #define ENH_3D_INVENTORY_TILES  	 // Uses 3D rendered inventory tiles, use with ENH_SHADE_HELD_TILES to render correctly.
 #define ENH_MENU_BACKGROUND 		 // Renders a spinning panorama (if it's available) in the background of the main menu
 #define ENH_GUI_ITEM_POP             // Calls Inventory::tick() to create the "pop" animation for items that enter the hotbar. This function was not present on Pocket Edition.
 #define ENH_b1_7                     // Enables b1.7.3 features (WIP)
+#define ENH_INITIAL_SPAWN			 // Improves the initial spawn from vanilla, allowing any solid block be valid to spawn, instead of just sand, similar to Legacy Console Edition
 
 // Toggle Demo Mode
 //#define DEMO

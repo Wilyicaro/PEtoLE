@@ -600,7 +600,7 @@ uint8_t* ZlibInflateToMemory(uint8_t* pInput, size_t compressedSize, size_t deco
 uint8_t* ZlibDeflateToMemory(uint8_t* pInput, size_t sizeBytes, size_t *compressedSizeOut);
 uint8_t* ZlibDeflateToMemoryLvl(uint8_t* pInput, size_t sizeBytes, size_t* compressedSizeOut, int level);
 
-std::vector<uint8_t> compressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip = false, int compressionLevel = 9);
+std::vector<uint8_t> compressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip = false, int compressionLevel = 6);
 
 std::vector<uint8_t> decompressZlibStream(const uint8_t* inputData, size_t inputSize, bool useGzip = false);
 
@@ -614,6 +614,10 @@ bool w_get(const std::string& url, std::vector<unsigned char>& outData);
 
 bool http_get(const std::string& host, const std::string& path, std::vector<unsigned char>& outData);
 bool https_get(const std::string& host, const std::string& path, std::vector<unsigned char>& outData);
+
+int64_t getProcessMemoryUsage();
+
+int64_t getAvailableSystemMemory();
 
 // things that we added:
 

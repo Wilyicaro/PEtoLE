@@ -13,6 +13,7 @@
 #include "StartMenuScreen.hpp"
 #include "common/Util.hpp"
 #include <stdint.h>
+#include <set>
 
 SelectWorldScreen::SelectWorldScreen() :
 	m_btnDelete   (1, "Delete"),

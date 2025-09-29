@@ -43,7 +43,8 @@ Options::Options(Minecraft* mc) :
 	m_bDynamicHand("dynamicHand", "options.dynamicHand"),
 	m_bMenuPanorama("menuPanorama", "options.menuPanorama", false),
 	m_playerName("username", "options.username", "Steve"),
-	m_lang("lang", "options.lang", "en_us")
+	m_lang("lang", "options.lang", "en_us"),
+	m_vSync("enableVsync", "options.enableVsync", true, [mc](bool a) { mc->m_pPlatform->setVSync(a); })
 {
 	add(m_fMusicVolume);
 	add(m_fMasterVolume);

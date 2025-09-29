@@ -23,7 +23,7 @@ TickNextTickData::TickNextTickData(const TilePos& tilePos, int d)
 
 int TickNextTickData::hashCode() const
 {
-	return m_tileId + ((m_pos.y + ((m_pos.z + (m_pos.x << 10)) << 7)) << 8);
+	return (m_pos.x * 128 * 1024 + m_pos.z * 128 + m_pos.y) * 256 + m_tileId;
 }
 
 bool TickNextTickData::operator<(const TickNextTickData& other) const
@@ -43,7 +43,7 @@ bool TickNextTickData::operator==(const TickNextTickData& other) const
 		m_tileId == other.m_tileId;
 }
 
-void TickNextTickData::setDelay(int32_t l)
+void TickNextTickData::setDelay(int64_t l)
 {
 	m_delay = l;
 }

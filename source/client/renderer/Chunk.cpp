@@ -126,6 +126,9 @@ bool Chunk::isDirty()
 
 void Chunk::rebuild()
 {
+	if (!m_buffers[0] && !m_buffers[1])
+		xglGenBuffers(2, m_buffers);
+
 	if (!m_bDirty)
 		return;
 
@@ -191,13 +194,12 @@ void Chunk::rebuild()
 
 		if (bTesselatedAnything)
 		{
-			RenderChunk rchk = t.end(field_90[layer]);
+			t.setAccessMode(1);
+			RenderChunk rchk = t.end(m_buffers[layer]);
 			RenderChunk* pRChk = &m_renderChunks[layer];
 
 			*pRChk = rchk;
-			pRChk->m_posX  = float(m_pos.x);
-			pRChk->m_posY = float(m_pos.y);
-			pRChk->m_posZ = float(m_pos.z);
+			pRChk->m_pos = m_pos;
 
 			t.offset(0.0f, 0.0f, 0.0f);
 
@@ -242,7 +244,7 @@ void Chunk::translateToPos()
 	glTranslatef(float(m_pos.x), float(m_pos.y), float(m_pos.z));
 }
 
-Chunk::Chunk(Level* level, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int a, int b, GLuint* bufs) : m_globalRenderableTileEntities(renderableTileEntities)
+Chunk::Chunk(Level* level, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int a, int b) : m_globalRenderableTileEntities(renderableTileEntities), m_buffers{}
 {
 	m_bOcclusionVisible = true;
 	field_4E = false;
@@ -255,7 +257,6 @@ Chunk::Chunk(Level* level, std::vector<std::shared_ptr<TileEntity>>& renderableT
 	field_8C = b;
 	m_pos.x = -999;
 	field_2C = Vec3(pos).lengthSqr() / 2;
-	field_90 = bufs;
 
 	setPos(pos);
 }

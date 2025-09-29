@@ -65,7 +65,7 @@ void Player::reset()
 
 bool Player::hurt(Entity* pEnt, int damage)
 {
-	if (getAbilities().m_invulnerable)
+	if (getAbilities().m_bInvulnerable)
 		return false;
 
 	m_noActionTime = 0;
@@ -376,7 +376,7 @@ void Player::removeSelectedItem()
 
 void Player::travel(const Vec2& pos)
 {
-	if (getAbilities().m_flying)
+	if (getAbilities().m_bFlying)
 	{
 		real yd = m_vel.y;
 		float oldFlyingFriction = m_flyingFriction;

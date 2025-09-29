@@ -59,7 +59,7 @@ public:
 	float m_bCol;
 	bool m_bIsUnlit;
 
-	static float xOff, yOff, zOff;
+	static Vec3 off;
 };
 
 class TerrainParticle : public Particle

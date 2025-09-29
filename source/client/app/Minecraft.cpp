@@ -350,7 +350,11 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 		else if (action.isPick())
 		{
 			// Try to pick the tile.
-			player->m_pInventory->selectItemById(pTile->m_ID, C_MAX_HOTBAR_ITEMS);
+
+			int data = 0;
+			Item* item = Item::items[pTile->m_ID];
+			if (item) data = item->getLevelDataForAuxValue(m_pLevel->getData(m_hitResult.m_tilePos));
+			player->m_pInventory->selectItem(pTile->m_ID, data);
 		}
 		else if (action.isPlace() && canInteract)
 		{
@@ -664,9 +668,9 @@ void Minecraft::respawnPlayer(std::shared_ptr<Player> player)
 std::string Minecraft::getVersionString() const
 {
 #ifdef ENH_b1_7
-	return "b1.7.3 - PEtoLE";
+	return "Beta 1.7.3 - PEtoLE";
 #else
-	return "b1.6.6 - PEtoLE";
+	return "Beta 1.6.6 - PEtoLE";
 #endif
 }
 

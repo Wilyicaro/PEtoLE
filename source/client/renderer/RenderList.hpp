@@ -9,6 +9,7 @@
 #pragma once
 
 #include "RenderChunk.hpp"
+#include <world/phys/Vec3T.hpp>
 
 class RenderList
 {
@@ -19,15 +20,13 @@ public:
 	void add(int x);
 	void addR(RenderChunk&);
 	void clear();
-	void init(float, float, float);
+	void init(const Vec3& off);
 	bool isAt(const RenderChunk& rc) const;
 	void render();
 	void renderChunks();
 
 public:
-	float m_offX;
-	float m_offY;
-	float m_offZ;
+	Vec3 m_off;
 	int* field_C;
 	RenderChunk** m_renderChunks;
 	int m_index;

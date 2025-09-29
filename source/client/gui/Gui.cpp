@@ -17,11 +17,7 @@
 #pragma warning(disable : 4244)
 #endif
 
-#ifdef ENH_USE_GUI_SCALE_2
-float Gui::InvGuiScale = 1.0f / 2.0f;
-#else
-float Gui::InvGuiScale = 1.0f / 3.0f;
-#endif
+float Gui::InvGuiScale = 1.0f;
 
 Gui::Gui(Minecraft* pMinecraft)
 {

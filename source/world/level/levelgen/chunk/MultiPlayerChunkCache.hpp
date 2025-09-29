@@ -33,7 +33,7 @@ public:
 	void postProcess(ChunkSource*, const ChunkPos& pos) override;
 
 public:
-	LevelChunk* m_pFakeChunk;
+	LevelChunk* m_pEmptyChunk;
 	std::unordered_map<uint64_t, LevelChunk*> m_chunkMap;
 	std::unordered_map<uint64_t, LevelChunk*> m_fakeChunkMap;
 	Level* m_pLevel;

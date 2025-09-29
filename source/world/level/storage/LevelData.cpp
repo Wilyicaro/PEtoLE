@@ -55,7 +55,7 @@ void LevelData::load(CompoundIO tag)
 		{
 			auto limit = std::dynamic_pointer_cast<CompoundTag>(tag);
 			if (limit)
-				m_levelLimit[limit->getInt("Dimension")] = DimensionLimit(ChunkPos(limit->getInt("MinX"), limit->getInt("MinZ")), ChunkPos(limit->getInt("MaxX"), limit->getInt("MaxZ")));
+				m_levelLimit[limit->getInt("Dimension")] = DimensionLimit(ChunkPos(limit->getInt("MinX"), limit->getInt("MinZ")), ChunkPos(limit->getInt("MaxX"), limit->getInt("MaxZ")), limit->getBoolean("FakeChunks", true));
 		}
 	}
 	if (m_LocalPlayerData) m_dimension = m_LocalPlayerData->getInt("Dimension");
@@ -91,6 +91,7 @@ void LevelData::save(CompoundIO tag) const
 			limit->putInt("MinZ", p.second.m_minPos.z);
 			limit->putInt("MaxX", p.second.m_maxPos.x);
 			limit->putInt("MaxZ", p.second.m_maxPos.z);
+			limit->putBoolean("FakeChunks", p.second.m_bFakeChunks);
 			list->add(limit);
 		}
 		tag->put("LevelLimit", list);

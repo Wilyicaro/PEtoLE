@@ -39,13 +39,58 @@ void SoundSystemAL::delete_sources()
 	m_sources.clear();
 }
 
+// Clear Finished Sources
+void SoundSystemAL::_cleanSources()
+{
+	std::vector<SoundSource>::iterator it = m_sources.begin();
+	while (it != m_sources.end())
+	{
+		ALuint source = it->m_id;
+		bool remove = false;
+		// Check
+		if (source && alIsSource(source))
+		{
+			// Is Valid Source
+			ALint source_state;
+			alGetSourcei(source, AL_SOURCE_STATE, &source_state);
+			AL_ERROR_CHECK();
+			if (source_state != AL_PLAYING)
+			{
+				// Finished Playing
+				remove = true;
+				m_sources_idle.push_back(source);
+
+				// Reset playback state of source to prevent buffer ghosting on legacy Mac OS X and Windows.
+				// see: https://stackoverflow.com/questions/6960731/openal-problem-changing-gain-of-source
+				alSourceStop(source);
+				AL_ERROR_CHECK();
+				alSourceRewind(source);
+				AL_ERROR_CHECK();
+			}
+		}
+		else
+		{
+			// Not A Source
+			remove = true;
+		}
+		// Remove If Needed
+		if (remove)
+		{
+			it = m_sources.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
 // Delete Buffers
 void SoundSystemAL::delete_buffers()
 {
 	if (_initialized)
 	{
 		for (auto it = m_buffers.begin(); it != m_buffers.end(); it++)
-		//for (auto &it : m_buffers)
 		{
 			if (it->second && alIsBuffer(it->second))
 			{
@@ -55,6 +100,71 @@ void SoundSystemAL::delete_buffers()
 		}
 	}
 	m_buffers.clear();
+}
+
+
+ALuint SoundSystemAL::_getIdleSource()
+{
+	ALuint al_source = AL_NONE;
+
+	if (m_sources_idle.size() > 0)
+	{
+		// Use Idle Source
+		al_source = m_sources_idle.back();
+		m_sources_idle.pop_back();
+	}
+
+	return al_source;
+}
+
+bool SoundSystemAL::_hasMaxSources() const
+{
+	return m_sources.size() + m_sources_idle.size() >= MAX_IDLE_SOURCES;
+}
+
+ALuint SoundSystemAL::_getSource(bool& isNew, bool tryClean)
+{
+	isNew = false;
+	ALuint al_source = _getIdleSource(); // Try to fetch pre-existing idle source
+	if (!al_source)
+	{
+		// Could not find pre-existing idle source
+
+		if (_hasMaxSources())
+		{
+			if (tryClean)
+			{
+				// Clean finished sources since no idle ones are available
+				_cleanSources();
+
+				// Did some cleaning, lets try again...
+				return _getSource(isNew, false);
+			}
+			else
+			{
+				// Too many sources already exist and they're all in-use, sucks to suck...
+				return AL_NONE;
+			}
+		}
+
+		// Create Source
+		alGenSources(1, &al_source);
+		// Special Out-Of-Memory Handling
+		{
+			ALenum err = alGetError();
+			if (err == AL_OUT_OF_MEMORY)
+			{
+				return AL_NONE;
+			}
+			else
+			{
+				AL_ERROR_CHECK_MANUAL(err);
+			}
+		}
+		isNew = true;
+	}
+
+	return al_source;
 }
 
 // Get Buffer
@@ -191,54 +301,46 @@ void SoundSystemAL::playAt(const SoundDesc& sound, const Vec3& pos, float volume
 		return;
 	
 	// Get Source
-	ALuint al_source;
-	if (m_sources_idle.size() > 0)
+	bool isNew;
+	ALuint al_source = _getSource(isNew);
+	if (!al_source)
 	{
-		// Use Idle Source
-		al_source = m_sources_idle.back();
-		m_sources_idle.pop_back();
-	}
-	else
-	{
-		// Create Source
-		alGenSources(1, &al_source);
-		// Special Out-Of-Memory Handling
-		{
-			ALenum err = alGetError();
-			if (err == AL_OUT_OF_MEMORY)
-			{
-				return;
-			}
-			else
-			{
-				AL_ERROR_CHECK_MANUAL(err);
-			}
-		}
+		// Couldn't get a source, just give up.
+		return;
 	}
 
 	// Set Properties
 	alSourcef(al_source, AL_PITCH, pitch);
 	AL_ERROR_CHECK();
-    // There is a problem with Apple's OpenAL implementation on older Mac OS X versions
-    // https://stackoverflow.com/questions/6960731/openal-problem-changing-gain-of-source
 	alSourcef(al_source, AL_GAIN, volume);
 	AL_ERROR_CHECK();
 	alSource3f(al_source, AL_POSITION, pos.x, pos.y, pos.z);
 	AL_ERROR_CHECK();
-	alSource3f(al_source, AL_VELOCITY, 0, 0, 0);
-	AL_ERROR_CHECK();
-	alSourcei(al_source, AL_LOOPING, AL_FALSE);
-	AL_ERROR_CHECK();
 	alSourcei(al_source, AL_SOURCE_RELATIVE, isUI);
 	AL_ERROR_CHECK();
 
-	// Set Attenuation
-	alSourcef(al_source, AL_MAX_DISTANCE, MAX_DISTANCE);
-	AL_ERROR_CHECK();
-	alSourcef(al_source, AL_ROLLOFF_FACTOR, 1.0f);
-	AL_ERROR_CHECK();
-	alSourcef(al_source, AL_REFERENCE_DISTANCE, 5.0f);
-	AL_ERROR_CHECK();
+	// Only set constant parameters if source isn't reused
+	if (isNew)
+	{
+		// Set Attenuation
+		alSourcef(al_source, AL_MAX_DISTANCE, MAX_DISTANCE);
+		AL_ERROR_CHECK();
+		alSourcef(al_source, AL_ROLLOFF_FACTOR, 0.9f); // 0.9f is audibly on-par with b1.2_02's rolloff factor. So you probably shouldn't change it. 0.03f is default value for Paulscode.
+		AL_ERROR_CHECK();
+		alSourcef(al_source, AL_REFERENCE_DISTANCE, 5.0f); // Sounds the same regardless of being set. Paulscode doesn't set this.
+		AL_ERROR_CHECK();
+
+		alSource3f(al_source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+		AL_ERROR_CHECK();
+		alSourcei(al_source, AL_LOOPING, AL_FALSE);
+		AL_ERROR_CHECK();
+	}
+	else
+	{
+		// Detach all of the buffers from the source
+		alSourcei(al_source, AL_BUFFER, AL_NONE);
+		AL_ERROR_CHECK();
+	}
 
 	// Set Buffer
 	alSourcei(al_source, AL_BUFFER, buffer);

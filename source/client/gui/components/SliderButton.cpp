@@ -15,9 +15,9 @@ SliderButton::SliderButton(int id, int x, int y, Options::FloatOption& option, c
 {
 }
 
-bool SliderButton::clicked(Minecraft* mc, int xPos, int yPos)
+void SliderButton::pressed(Minecraft* mc, int xPos, int yPos)
 {
-	if (Button::clicked(mc, xPos, yPos))
+	if (clicked(mc, xPos, yPos))
 	{
 		m_value = (xPos - (m_xPos + 4)) / float(m_width - 8);
 
@@ -26,10 +26,7 @@ bool SliderButton::clicked(Minecraft* mc, int xPos, int yPos)
 		if (oldValue != m_option.get()) mc->saveOptions();
 		m_text = mc->getOptions()->getMessage(getOption());
 		m_bDragging = true;
-		return true;
 	}
-	else
-		return false;
 }
 
 int SliderButton::getYImage(bool bHovered)

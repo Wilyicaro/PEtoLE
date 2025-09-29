@@ -9,6 +9,7 @@
 #pragma once
 
 #include "thirdparty/GL/GL.hpp"
+#include <world/phys/Vec3T.hpp>
 
 class RenderChunk
 {
@@ -18,26 +19,20 @@ public:
 	GLuint m_glID;
 	int field_4;
 	int m_id;
-	float m_posX;
-	float m_posY;
-	float m_posZ;
+	Vec3 m_pos;
 
 public:
 	RenderChunk()
 	{
 		m_glID = -1;
 		field_4 = 0;
-		m_posX = 0.0f;
-		m_posY = 0.0f;
-		m_posZ = 0.0f;
+		m_pos = Vec3::ZERO;
 
 		m_id = ++runningId;
 	}
 	RenderChunk(GLuint a1, int a2)
 	{
-		m_posX = 0.0f;
-		m_posY = 0.0f;
-		m_posZ = 0.0f;
+		m_pos = Vec3::ZERO;
 
 		m_id = ++runningId;
 		m_glID = a1;

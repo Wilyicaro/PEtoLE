@@ -74,6 +74,7 @@ public:
   #endif
 	virtual void vibrate(int milliSeconds);
 	
+	virtual void setVSync(bool);
 	void _fireLowMemory();
 	void _fireAppSuspended();
 	void _fireAppResumed();

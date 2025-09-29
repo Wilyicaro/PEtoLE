@@ -148,13 +148,12 @@ ChunkStorage* Dimension::createStorage()
 bool Dimension::isValidSpawn(const TilePos& pos)
 {
 	TileID tile = m_pLevel->getTopTile(pos);
-	if (tile == 0)
-	{
-		tile = m_pLevel->getTopSolidBlock(pos);
-		if (tile <= 0) return false;
-	}
-
+	if (!tile) return false;
+#ifdef ENH_INITIAL_SPAWN
 	return Tile::tiles[tile]->isSolidRender();
+#else
+	return Tile::tiles[tile]->m_ID = Tile::sand->m_ID
+#endif
 }
 
 float Dimension::getCloudHeight()

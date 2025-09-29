@@ -194,14 +194,18 @@ void MobRenderer::render(Entity* entity, const Vec3& pos, float unused, float f)
 void MobRenderer::renderName(Mob* mob, const Vec3& pos)
 {
 	if (!mob->isPlayer())
+	{
+		if (m_pDispatcher->m_pMinecraft->getOptions()->m_bDebugText)
+			renderNameTag(mob, std::to_string(mob->m_EntityID), pos.x, pos.y, pos.z, 64);
+		return;
+	}
+
+	if (mob == m_pDispatcher->m_pMob.get())
 		return;
 
 	Player* player = (Player*)mob;
-	if (player == m_pDispatcher->m_pMinecraft->m_pPlayer.get())
-		return;
 
-	// @TODO: don't know why but I have to add this correction. look into it and fix it!
-	renderNameTag(mob, player->m_name, pos.x, pos.y - 1.5f, pos.z, mob->isSneaking() ? 32 : 64);
+	renderNameTag(mob, player->m_name, pos.x, pos.y  - 1.5f, pos.z, mob->isSneaking() ? 32 : 64);
 }
 
 void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float y, float z, int a)
@@ -219,6 +223,7 @@ void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float
 	glRotatef(+m_pDispatcher->m_rot.x, 1.0f, 0.0f, 0.0f);
 	glScalef(-0.026667f, -0.026667f, 0.026667f);
 	glDepthMask(false);
+	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -239,12 +244,12 @@ void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float
 
 	glEnable(GL_TEXTURE_2D);
 
-	font->draw(str, -font->width(str) / 2, 0, 0x20FFFFFF);
+	font->draw(str, -width / 2, 0, 0x20FFFFFF);
 	glEnable(GL_DEPTH_TEST);
 	glDepthMask(true);
 
-	font->draw(str, -font->width(str) / 2, 0, 0xFFFFFFFF);
-
+	font->draw(str, -width / 2, 0, 0xFFFFFFFF);
+	glEnable(GL_LIGHTING);
 	glDisable(GL_BLEND);
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	glPopMatrix();

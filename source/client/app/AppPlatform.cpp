@@ -192,6 +192,10 @@ void AppPlatform::vibrate(int milliSeconds)
 {
 }
 
+void AppPlatform::setVSync(bool vsync)
+{
+}
+
 void AppPlatform::_fireLowMemory()
 {
 	

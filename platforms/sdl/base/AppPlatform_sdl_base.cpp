@@ -416,3 +416,14 @@ void AppPlatform_sdl_base::handleControllerAxisEvent(SDL_JoystickID controllerIn
 		break;
 	}
 }
+
+void AppPlatform_sdl_base::setVSync(bool vsync)
+{
+	if (vsync)
+	{
+		if (SDL_GL_SetSwapInterval(-1) == -1)
+			SDL_GL_SetSwapInterval(1);
+	}
+	else
+		SDL_GL_SetSwapInterval(0);
+}

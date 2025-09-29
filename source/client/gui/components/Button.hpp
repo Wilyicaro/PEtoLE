@@ -25,6 +25,7 @@ public:
 	// I can't possibly explain why Minecraft is referenced here
 	virtual bool clicked(Minecraft*, int xPos, int yPos);
 	virtual int  getYImage(bool bHovered);
+	virtual void pressed(Minecraft*, int xPos, int yPos);
 	virtual void released(int xPos, int yPos);
 	virtual void renderBg(Minecraft*, int, int);
 	virtual void render(Minecraft*, int xPos, int yPos);

@@ -32,7 +32,7 @@ public:
 	void renderNoCamera();
 #endif
 
-	void renderLevel(float);
+	void renderLevel(float, int64_t);
 	void render(float);
 	void tick();
 	void setupGuiScreen();
@@ -55,6 +55,7 @@ public:
 
 	float m_renderDistance;
 	int m_ticks;
+	int64_t m_nanoTime;
 	int m_rainSoundTime;
 	std::shared_ptr<Entity> m_hovered;
 	float field_14;

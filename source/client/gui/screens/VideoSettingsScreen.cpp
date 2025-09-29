@@ -12,7 +12,7 @@
 VideoSettingsScreen::VideoSettingsScreen(Options* o)
 	: m_BackButton(1, 0, 0, 200, 20, "Done"), m_title("Video Settings")
 {
-	Options::OptionEntry* entries[] = { &o->m_bFancyGraphics, &o->m_iViewDistance, &o->m_bAmbientOcclusion, &o->m_limitFramerate, &o->m_bAnaglyphs, &o->m_bViewBobbing, &o->m_guiScale, &o->m_bMipmaps, &o->m_bBlockOutlines, &o->m_bDynamicHand, &o->m_bMenuPanorama };
+	Options::OptionEntry* entries[] = { &o->m_bFancyGraphics, &o->m_iViewDistance, &o->m_bAmbientOcclusion, &o->m_limitFramerate, &o->m_bAnaglyphs, &o->m_bViewBobbing, &o->m_guiScale, &o->m_bMipmaps, &o->m_bBlockOutlines, &o->m_bDynamicHand, &o->m_bMenuPanorama, &o->m_vSync };
 	for (auto e : entries)
 	{
 		bool mipmaps = e->getKey() == o->m_bMipmaps.getKey(), panorama = e->getKey() == o->m_bMenuPanorama.getKey();

@@ -47,14 +47,10 @@ LevelRenderer::LevelRenderer(Minecraft* pMC, Textures* pTexs)
 	m_bOcclusionVisible = false;
 	m_lastViewDistance = -1;
 	m_ticksSinceStart = 0;
-	m_nBuffers = 26136;
 
 	m_pMinecraft = pMC;
 	m_pTextures = pTexs;
 	m_oPos = Vec3(-9999, -9999, -9999);
-	m_pBuffers = new GLuint[m_nBuffers];
-	xglGenBuffers(m_nBuffers, m_pBuffers);
-	LOG_I("numBuffers: %d", m_nBuffers);
 
 	xglGenBuffers(1, &m_starBuffer);
 	generateStars();
@@ -166,20 +162,27 @@ void LevelRenderer::generateStars()
 
 void LevelRenderer::deleteChunks()
 {
-	for (int i = 0; i < m_zChunks; i++)
+	if (m_chunks)
 	{
-		for (int j = 0; j < m_yChunks; j++)
+		for (int i = 0; i < m_zChunks; i++)
 		{
-			for (int k = 0; k < m_xChunks; k++)
+			for (int j = 0; j < m_yChunks; j++)
 			{
-				int index = k + m_xChunks * (j + m_yChunks * i);
-				delete m_chunks[index];
+				for (int k = 0; k < m_xChunks; k++)
+				{
+					int index = k + m_xChunks * (j + m_yChunks * i);
+					Chunk* chunk = m_chunks[index];
+					if (chunk->m_buffers[0] && chunk->m_buffers[1])
+					{
+						m_invalidChunkBuffers.push_back(chunk->m_buffers[0]);
+						m_invalidChunkBuffers.push_back(chunk->m_buffers[1]);
+					}
+					delete chunk;
+				}
 			}
 		}
-	}
-
-	if (m_chunks)
 		delete[] m_chunks;
+	}
 	m_chunks = nullptr;
 
 	if (m_sortedChunks)
@@ -258,7 +261,7 @@ void LevelRenderer::allChanged()
 			{
 				int index = cp.x + m_xChunks * (cp.y + m_yChunks * cp.z);
 
-				Chunk* pChunk = new Chunk(m_pLevel, m_renderableTileEntities, cp * 16, 16, x3 + field_B0, &m_pBuffers[x3]);
+				Chunk* pChunk = new Chunk(m_pLevel, m_renderableTileEntities, cp * 16, 16, x3 + field_B0);
 
 				if (m_bOcclusionVisible)
 					pChunk->field_50 = 0;
@@ -287,7 +290,7 @@ void LevelRenderer::allChanged()
 			std::sort(&m_sortedChunks[0], &m_sortedChunks[m_chunksLength], DistanceChunkSorter(pMob.get()));
 		}
 
-		m_pLevel->viewDistance = x1 / 16 + 1;
+		m_pLevel->m_viewDistance = x1 / 16 + 1;
 	}
 
 	m_noEntityRenderFrames = 2;
@@ -385,7 +388,6 @@ std::string LevelRenderer::gatherStats2()
 
 void LevelRenderer::onGraphicsReset()
 {
-	xglGenBuffers(m_nBuffers, m_pBuffers);
 	allChanged();
 
 	xglGenBuffers(1, &m_starBuffer);
@@ -474,9 +476,7 @@ int LevelRenderer::renderChunks(int start, int end, int a, float b, bool render)
 
 	auto& pMob = m_pMinecraft->m_pMobPersp;
 
-	float fPosX = pMob->m_posPrev.x + (pMob->m_pos.x - pMob->m_posPrev.x) * b;
-	float fPosY = pMob->m_posPrev.y + (pMob->m_pos.y - pMob->m_posPrev.y) * b;
-	float fPosZ = pMob->m_posPrev.z + (pMob->m_pos.z - pMob->m_posPrev.z) * b;
+	Vec3 pos = pMob->m_posPrev + (pMob->m_pos - pMob->m_posPrev) * b;
 
 	int lists = 0;
 
@@ -496,7 +496,7 @@ int LevelRenderer::renderChunks(int start, int end, int a, float b, bool render)
 
 		if (list < 0) {
 			list = lists++;
-			m_renderLists[list].init(fPosX, fPosY, fPosZ);
+			m_renderLists[list].init(pos);
 		}
 
 		m_renderLists[list].addR(renderChunk);
@@ -655,6 +655,8 @@ void LevelRenderer::setLevel(Level* level)
 		level->addListener(this);
 		allChanged();
 	}
+	else
+		deleteChunks();
 }
 
 void LevelRenderer::setDirty(const TilePos& min, const TilePos& max)
@@ -1402,8 +1404,8 @@ void LevelRenderer::renderAdvancedClouds(float partialTick)
 	constexpr float h = 4.0f;
 
 	// @NOTE: Using Mth::Lerp will use incorrect logic
-	float xo = (m_pMinecraft->m_pMobPersp->m_oPos.x + (m_pMinecraft->m_pMobPersp->m_pos.x - m_pMinecraft->m_pMobPersp->m_oPos.x) * partialTick + ((float(m_ticksSinceStart) + partialTick) * 0.03f)) / ss;
-	float zo = (m_pMinecraft->m_pMobPersp->m_oPos.z + (m_pMinecraft->m_pMobPersp->m_pos.z - m_pMinecraft->m_pMobPersp->m_oPos.z) * partialTick) / ss + 0.33f;
+	real xo = (m_pMinecraft->m_pMobPersp->m_oPos.x + (m_pMinecraft->m_pMobPersp->m_pos.x - m_pMinecraft->m_pMobPersp->m_oPos.x) * partialTick + ((float(m_ticksSinceStart) + partialTick) * 0.03f)) / ss;
+	real zo = (m_pMinecraft->m_pMobPersp->m_oPos.z + (m_pMinecraft->m_pMobPersp->m_pos.z - m_pMinecraft->m_pMobPersp->m_oPos.z) * partialTick) / ss + 0.33f;
 
 	float yy = ((float)m_pLevel->m_pDimension->getCloudHeight() - yOffs) + 0.33f;
 
@@ -1445,8 +1447,8 @@ void LevelRenderer::renderAdvancedClouds(float partialTick)
 	uo = Mth::floor(xo) * scale;
 	vo = Mth::floor(zo) * scale;
 
-	float xoffs = xo - Mth::floor(xo);
-	float zoffs = zo - Mth::floor(zo);
+	real xoffs = xo - Mth::floor(xo);
+	real zoffs = zo - Mth::floor(zo);
 
 	constexpr int D = 8;
 	constexpr int radius = 3;
@@ -1468,8 +1470,8 @@ void LevelRenderer::renderAdvancedClouds(float partialTick)
 				t.begin();
 				float xx = xPos * D;
 				float zz = zPos * D;
-				float xp = xx - xoffs;
-				float zp = zz - zoffs;
+				real xp = xx - xoffs;
+				real zp = zz - zoffs;
 
 				if (yy > -h - 1.0f)
 				{

@@ -58,9 +58,9 @@ void TerrainParticle::render(Tesselator& t, float f, float a4, float a5, float a
 	float texU_1 = (float(texX)         + 0.25f * m_uo) / 16.0f;
 	float texV_1 = (float(texture >> 4) + 0.25f * m_vo) / 16.0f;
 
-	float posX = Mth::Lerp(m_oPos.x, m_pos.x, f) - xOff;
-	float posY = Mth::Lerp(m_oPos.y, m_pos.y, f) - yOff;
-	float posZ = Mth::Lerp(m_oPos.z, m_pos.z, f) - zOff;
+	real posX = Mth::Lerp(m_oPos.x, m_pos.x, f) - off.x;
+	real posY = Mth::Lerp(m_oPos.y, m_pos.y, f) - off.y;
+	real posZ = Mth::Lerp(m_oPos.z, m_pos.z, f) - off.z;
 	float fBright = getBrightness(f);
 
 	float sizeX = a4 * m_size * 0.1f;

@@ -56,6 +56,8 @@ bool LiquidTileDynamic::isWaterBlocking(Level* level, const TilePos& pos)
 
 bool LiquidTileDynamic::canSpreadTo(Level* level, const TilePos& pos)
 {
+	if (!level->isValidPos(pos)) 
+		return false;
 	Material* pMtl = level->getMaterial(pos);
 	if (pMtl == m_pMaterial || pMtl == Material::lava)
 		return false;

@@ -247,7 +247,7 @@ void RandomLevelSource::prepareHeights(const ChunkPos& pos, TileID* tiles, const
 
 							int distance = 32;
 
-							if ((limit == DimensionLimit::ZERO && density > 0.0) ||
+							if (((limit == DimensionLimit::ZERO || !limit.m_bFakeChunks) && density > 0.0) ||
 								(limit != DimensionLimit::ZERO && density > getHeightFalloff(pos.x * 16 + x, pos.z * 16 + z + n, distance, limit)))
 							{
 								tile = Tile::stone->m_ID;

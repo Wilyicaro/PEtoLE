@@ -25,9 +25,9 @@ class FishingHook;
 
 struct Abilities
 {
-	bool m_invulnerable;
-	bool m_flying;
-	bool m_mayFly;
+	bool m_bInvulnerable = false;
+	bool m_bFlying = false;
+	bool m_bMayFly = false;
 };
 
 class Player : public Mob
@@ -117,8 +117,8 @@ public:
 	void setPlayerGameType(GameType playerGameType) 
 	{ 
 		_playerGameType = playerGameType; 
-		getAbilities().m_invulnerable = m_abilities.m_mayFly = playerGameType == GameType::GAME_TYPE_CREATIVE;
-		if (playerGameType == GAME_TYPE_SURVIVAL) m_abilities.m_flying = false;
+		getAbilities().m_bInvulnerable = m_abilities.m_bMayFly = playerGameType == GameType::GAME_TYPE_CREATIVE;
+		if (playerGameType == GAME_TYPE_SURVIVAL) m_abilities.m_bFlying = false;
 	}
 	virtual void wake(bool, bool, bool);
 	virtual BedSleepingProblem sleep(const TilePos&);

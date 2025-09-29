@@ -74,7 +74,7 @@ void MinecraftServer::tick()
 	{
 		if (it.second->m_pPlayer != m_pConnection->m_pMinecraft->m_pPlayer)
 		{
-			const int viewDistance = it.second->m_pPlayer->m_pLevel->viewDistance;
+			const int viewDistance = it.second->m_pPlayer->m_pLevel->m_viewDistance;
 			ChunkPos pos;
 			for (int dx = -viewDistance; dx <= viewDistance; ++dx)
 			{

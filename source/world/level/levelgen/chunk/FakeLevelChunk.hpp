@@ -20,6 +20,9 @@ public:
 	void removeEntity(std::shared_ptr<Entity>) override;
 	void removeEntity(std::shared_ptr<Entity>, int vec) override;
 	void lightLava() override;
+	void recalcBlockLights() override;
+	int getRawBrightness(const ChunkTilePos& pos, int skySubtract) override;
+	bool isSkyLit(const ChunkTilePos& pos) override;
 	void skyBrightnessChanged() override;
 	void load() override;
 	void unload() override;
@@ -30,4 +33,5 @@ public:
 	int  getData(const ChunkTilePos& pos) override;
 	void setData(const ChunkTilePos& pos, int data) override;
 	void recalcHeight(const ChunkTilePos& pos) override;
+	bool isEmpty() override;
 };

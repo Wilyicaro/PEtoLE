@@ -60,5 +60,10 @@ public:
 	{
 		return a + progress * (b - a);
 	}
+
+	static inline constexpr double Lerp(double a, double b, float progress)
+	{
+		return a + progress * (b - a);
+	}
 };
 

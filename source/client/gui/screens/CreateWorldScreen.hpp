@@ -20,10 +20,12 @@ public:
 	enum WorldSize
 	{
 		INFINITY_SIZE,
+		OLD_SIZE,
 		CLASSIC_SIZE,
 		SMALL_SIZE,
 		MEDIUM_SIZE,
-		LARGE_SIZE
+		LARGE_SIZE,
+		ALL_WORLD_SIZES
 
 	};
 
@@ -47,7 +49,7 @@ public:
 	Button m_btnWorldSize;
 	Button m_btnWorldType;
 
-	static const constexpr char* worldSizeNames[5] = { "selectWorld.worldSize.infinity", "selectWorld.worldSize.classic", "selectWorld.worldSize.small", "selectWorld.worldSize.medium", "selectWorld.worldSize.large" };
+	static const constexpr char* worldSizeNames[ALL_WORLD_SIZES] = { "selectWorld.worldSize.infinity", "selectWorld.worldSize.old", "selectWorld.worldSize.classic", "selectWorld.worldSize.small", "selectWorld.worldSize.medium", "selectWorld.worldSize.large" };
 };
 
 #endif

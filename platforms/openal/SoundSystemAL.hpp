@@ -49,8 +49,12 @@ private:
 		}
 	};
 
+	bool _hasMaxSources() const;
 	void delete_sources();
+	void _cleanSources();
 	void delete_buffers();
+	ALuint _getIdleSource();
+	ALuint _getSource(bool& isNew, bool tryClean = true);
 	ALuint get_buffer(const SoundDesc& sound);
 
 	ALCdevice *_device;

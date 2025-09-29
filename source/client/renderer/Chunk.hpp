@@ -20,8 +20,7 @@ class TileEntity;
 class Chunk
 {
 public:
-	Chunk(Level*, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int, int, GLuint*);
-
+	Chunk(Level*, std::vector<std::shared_ptr<TileEntity>>& renderableTileEntities, const TilePos& pos, int, int);
 	float distanceToSqr(const Entity*) const;
 	float squishedDistanceToSqr(const Entity*) const;
 	void reset();
@@ -60,7 +59,7 @@ public:
 	RenderChunk m_renderChunks[2];
 	Tesselator* m_pTesselator;
 	int field_8C;
-	GLuint* field_90;
+	GLuint m_buffers[2];
 	bool m_bCompiled;
 	bool m_bDirty;
 };

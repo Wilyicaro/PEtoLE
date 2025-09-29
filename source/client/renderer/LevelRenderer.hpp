@@ -115,6 +115,7 @@ public:
 	int m_renderedEntities;
 	int m_culledEntities;
 	std::vector<Chunk*> m_pChunks;
+	std::vector<GLuint> m_invalidChunkBuffers;
 	int m_cullStep;
 	RenderList m_renderLists[4];
 	int m_totalChunks;
@@ -144,8 +145,6 @@ public:
 	int m_lastViewDistance;
 	int m_ticksSinceStart;
 	//...
-	int m_nBuffers;
-	GLuint* m_pBuffers;
 	GLuint  m_skyBuffer;
 	int     m_skyBufferCount;
 	GLuint  m_starBuffer;

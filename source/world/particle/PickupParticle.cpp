@@ -23,15 +23,15 @@ void PickupParticle::render(Tesselator& t, float f, float a, float b, float c, f
 {
 	float var8 = (m_age + f) / m_lifetime;
 	var8 *= var8;
-	float var15 = Mth::Lerp(thrower->m_posPrev.x, thrower->m_pos.x, f);
-	float var17 = Mth::Lerp(thrower->m_posPrev.y, thrower->m_pos.y, f) + vel;
-	float var19 = Mth::Lerp(thrower->m_posPrev.z, thrower->m_pos.z, f);
-	float var21 = m_pos.x + (var15 - m_pos.x) * var8;
-	float var23 = m_pos.y + (var17 - m_pos.y) * var8;
-	float var25 = m_pos.z + (var19 - m_pos.z) * var8;
-	float var30 = m_pLevel->getBrightness(TilePos(var21, var23 + (m_heightOffset / 2.0F), var25));
+	Vec3 tPos(
+		Mth::Lerp(thrower->m_posPrev.x, thrower->m_pos.x, f),
+		Mth::Lerp(thrower->m_posPrev.y, thrower->m_pos.y, f) + vel,
+		Mth::Lerp(thrower->m_posPrev.z, thrower->m_pos.z, f)
+	);
+	Vec3 pos = m_pos + (tPos - m_pos) * var8;
+	float var30 = m_pLevel->getBrightness(TilePos(pos.x, pos.y + (m_heightOffset / 2.0F), pos.z));
 	glColor4f(var30, var30, var30, 1.0F);
-	EntityRenderDispatcher::getInstance()->render(throwed.get(), Vec3(var21 - xOff, var23 - yOff, var25 - zOff), throwed->m_rot.y, f);
+	EntityRenderDispatcher::getInstance()->render(throwed.get(), pos - off, throwed->m_rot.y, f);
 
 }
 

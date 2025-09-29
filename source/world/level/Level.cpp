@@ -68,7 +68,7 @@ Level::Level()
 	m_bUpdatingTileEntities = false;
 	//@Note: Using a way higher value for now, used in newer versions
 	m_saveInterval = 6000;
-	m_delayUntilNextMoodSound = 0;
+	m_delayUntilNextMoodSound = m_random.nextInt(12000);
 	m_oThunderLevel = 0;
 	m_thunderLevel = 0;
 	m_oRainLevel = 0;
@@ -97,6 +97,11 @@ Level::~Level()
 bool Level::isValidPos(const ChunkPos& pos) const
 {
 	return getLevelData().isValidPos(m_pDimension->m_ID, pos);
+}
+
+bool Level::hasFakeChunks() const
+{
+	return getLevelData().getLimit(m_pDimension->m_ID).m_bFakeChunks;
 }
 
 ChunkSource* Level::createChunkSource()
@@ -1220,7 +1225,7 @@ void Level::validateSpawn()
 {
 	if (getLevelData().isFlat())
 	{
-		getLevelData().setYSpawn(getTopSolidBlock(TilePos(0, 0, 0)));
+		getLevelData().setYSpawn(getTopSolidBlock(TilePos(0, 0, 0)) - 1);
 		return;
 	}
 
@@ -1470,15 +1475,36 @@ void Level::setInitialSpawn()
 {
 	if (getLevelData().isFlat()) return;
 
-	m_bCalculatingInitialSpawn = true;
+	TilePos spawn(0, 64, 0);
 
-	int spawnX = 0, spawnZ;
+	const DimensionLimit& limit = getLevelData().getLimit(m_pDimension->m_ID);
 
-	for (spawnZ = 0; !m_pDimension->isValidSpawn(TilePos(spawnX, 64, spawnZ)); spawnZ += m_random.nextInt(64) - m_random.nextInt(64)) {
-		spawnX += m_random.nextInt(64) - m_random.nextInt(64);
+	if (limit != DimensionLimit::ZERO && (limit.m_minPos.x >= 0 || limit.m_minPos.z >= 0))
+	{
+		if (limit.m_minPos.x >= 0)
+			spawn.x = (limit.m_maxPos.x - limit.m_minPos.x) / 2 * 16;
+		if (limit.m_minPos.z >= 0)
+			spawn.z = (limit.m_maxPos.z - limit.m_minPos.z) / 2 * 16;
+
+		spawn.y = getTopSolidBlock(spawn) - 1;
+		getLevelData().setSpawn(spawn);
+		return;
 	}
 
-	getLevelData().setSpawn(TilePos(spawnX, 64, spawnZ));
+	m_bCalculatingInitialSpawn = true;
+
+	for (; !m_pDimension->isValidSpawn(spawn); spawn.z += m_random.nextInt(64) - m_random.nextInt(64)) {
+		spawn.x += m_random.nextInt(64) - m_random.nextInt(64);
+
+		if (limit != DimensionLimit::ZERO && !isValidPos(spawn))
+		{
+			spawn = getLevelData().getSpawn();
+			spawn.y = getTopSolidBlock(spawn) - 1;
+			break;
+		}
+	}
+
+	getLevelData().setSpawn(spawn);
 
 	m_bCalculatingInitialSpawn = false;
 }
@@ -1606,7 +1632,7 @@ bool Level::canChunkExist(const ChunkPos& pos) {
         int dx = Mth::abs(pos.x - player->m_chunkPos.x);
         int dz = Mth::abs(pos.z - player->m_chunkPos.z);
 
-        if (dx <= viewDistance && dz <= viewDistance)
+        if (dx <= m_viewDistance && dz <= m_viewDistance)
             return true;
     }
 
@@ -1721,7 +1747,7 @@ void Level::tickTiles()
 	if (m_delayUntilNextMoodSound > 0)
 		m_delayUntilNextMoodSound--;
 
-	for (std::set<ChunkPos>::iterator it = m_chunksToUpdate.begin(); it != m_chunksToUpdate.end(); it++)
+	for (std::unordered_set<ChunkPos>::iterator it = m_chunksToUpdate.begin(); it != m_chunksToUpdate.end(); it++)
 	{
 		ChunkPos pos = *it;
 		TilePos tPos(pos);
@@ -1737,8 +1763,8 @@ void Level::tickTiles()
 			if (tile == TILE_AIR && getTileRawBrightness(tp) <= m_random.nextInt(8) && getBrightness(LightLayer::Sky, tp) <= 0)
 			{
 				Vec3 soundPos = tp.center();
-				auto var11 = getNearestPlayer(soundPos, 8.0);
-				if (var11 && var11->distanceToSqr(soundPos) > 4.0)
+				auto nearest = getNearestPlayer(soundPos, 8.0);
+				if (nearest && nearest->distanceToSqr(soundPos) > 4.0)
 				{
 					playSound(soundPos, "ambient.cave.cave", 0.7F, 0.8F + m_random.nextFloat() * 0.2F);
 					m_delayUntilNextMoodSound = m_random.nextInt(12000) + 6000;
@@ -2177,22 +2203,17 @@ HitResult Level::clip(const Vec3& a, const Vec3& b) const
 
 void Level::addToTickNextTick(const TilePos& tilePos, int d, int delay)
 {
+	if (!hasChunksAt(tilePos, 8))
+		return;
 	TickNextTickData tntd(tilePos, d);
 	if (m_bInstantTicking)
 	{
-		// @NOTE: Don't know why this check wasn't just placed at the beginning.
-		if (!hasChunksAt(tilePos, 8))
-			return;
-
 		TileID tile = getTile(tntd.m_pos);
 		if (tile > 0 && tile == tntd.m_tileId)
 			Tile::tiles[tntd.m_tileId]->tick(this, tntd.m_pos, &m_random);
 	}
 	else
 	{
-		if (!hasChunksAt(tilePos, 8))
-			return;
-
 		if (d > 0)
 			tntd.setDelay(delay + getTime());
 

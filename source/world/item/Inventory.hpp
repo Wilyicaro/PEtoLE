@@ -48,7 +48,7 @@ public:
 	int getSelectedItemId();
 	void selectSlot(int slotNo);
 
-	void selectItemById(int itemID, int maxHotBarSlot);
+	void selectItem(int itemID, int data = 0, int maxHotBarSlot = C_MAX_HOTBAR_ITEMS);
 
 	int getAttackDamage(Entity*);
 

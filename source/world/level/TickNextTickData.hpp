@@ -19,11 +19,19 @@ struct TickNextTickData
 	int hashCode() const;
 	bool operator<(const TickNextTickData& other) const;
 	bool operator==(const TickNextTickData& other) const;
-	void setDelay(int32_t);
+	void setDelay(int64_t);
 
 	int m_ID;
 	TilePos m_pos;
 	int m_tileId;
-	int32_t m_delay;
+	int64_t m_delay;
 };
 
+namespace std {
+	template <>
+	struct hash<TickNextTickData> {
+		std::size_t operator()(const TickNextTickData& tick) const noexcept {
+			return tick.hashCode();
+		}
+	};
+}

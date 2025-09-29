@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <unordered_set>
 #include <set>
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -56,6 +57,7 @@ public:
 	~Level();
 
 	bool isValidPos(const ChunkPos& pos) const;
+	bool hasFakeChunks() const;
 
 	TileID getTile(const TilePos& pos) const override;
 	float getBrightness(const TilePos& pos) const override;
@@ -282,15 +284,16 @@ public:
 	DimensionDataStorage* m_pDataStorage;
 	EntityVector m_pendingEntityRemovals;
 	std::set<TickNextTickData> m_pendingTicks;
-	std::set<ChunkPos> m_chunksToUpdate;
+	std::unordered_set<ChunkPos> m_chunksToUpdate;
 	std::vector<LightUpdate> m_lightUpdates;
 	std::vector<std::shared_ptr<TileEntity>> m_tileEntityList;
 	std::vector<std::shared_ptr<TileEntity>> m_pendingTileEntities;
 	bool m_bUpdateLights;
 	int m_maxRecurse;
 	bool m_bIsNew;
-	int field_B10;
-	int viewDistance = 10;
+	//Unused
+	//int field_B10;
+	int m_viewDistance = 10;
 	PathFinder* m_pPathFinder;
 };
 

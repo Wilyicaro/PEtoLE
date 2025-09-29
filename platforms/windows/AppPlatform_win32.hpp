@@ -64,6 +64,8 @@ public:
 
 	void swapBuffers() override;
 
+	void setVSync(bool) override;
+
 	static MouseButtonType GetMouseButtonType(UINT iMsg);
 	static bool GetMouseButtonState(UINT iMsg, WPARAM wParam);
 	static Keyboard::KeyState GetKeyState(UINT iMsg);

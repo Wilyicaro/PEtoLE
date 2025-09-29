@@ -72,11 +72,11 @@ public:
 	void init();
 	void noColor();
 	void normal(float, float, float);
-	void offset(float, float, float);
+	void offset(real x, real y, real z);
 	void setAccessMode(int mode); // sets m_DrawArraysMode
 	void tex(float u, float v);
-	void vertex(float x, float y, float z);
-	void vertexUV(float x, float y, float z, float u, float v);
+	void vertex(real x, real y, real z);
+	void vertexUV(real x, real y, real z, float u, float v);
 	void voidBeginAndEndCalls(bool b);
 
 	RenderChunk end(int);
@@ -101,9 +101,9 @@ private:
 
 	GLenum m_drawArraysMode; // draw_mode
 
-	float m_offsetX;
-	float m_offsetY;
-	float m_offsetZ;
+	real m_offsetX;
+	real m_offsetY;
+	real m_offsetZ;
 
 	uint32_t m_nextVtxNormal; // normalValue
 
@@ -127,7 +127,7 @@ private:
 
 	int m_accessMode;
 
-	std::map<uint32_t, uint32_t> m_VboIdxToRenderChunkID;
+	//std::map<uint32_t, uint32_t> m_VboIdxToRenderChunkID;
 };
 
 void drawArrayVT(GLuint buffer, int count);

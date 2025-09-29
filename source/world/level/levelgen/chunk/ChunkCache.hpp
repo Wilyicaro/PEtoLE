@@ -42,7 +42,7 @@ public:
 
 public:
 	bool field_4;
-	LevelChunk* m_pFakeChunk;
+	LevelChunk* m_pEmptyChunk;
 	ChunkSource* m_pChunkSource;
 	ChunkStorage* m_pChunkStorage;
 	std::unordered_map<uint64_t, LevelChunk*> m_chunkMap;

@@ -287,7 +287,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, PlayerE
 		return;
 	}
 
-	pPlayer->m_pInventory->selectItemById(pPlayerEquipmentPkt->m_itemID, C_MAX_HOTBAR_ITEMS);
+	pPlayer->m_pInventory->selectItem(pPlayerEquipmentPkt->m_itemID, C_MAX_HOTBAR_ITEMS);
 }
 
 //@Note: this will be removed

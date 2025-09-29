@@ -18,7 +18,7 @@ MultiPlayerChunkCache::MultiPlayerChunkCache(Level* pLevel)
 
 	m_pLevel = pLevel;
 
-	m_pFakeChunk = new FakeLevelChunk(m_pLevel, nullptr, ChunkPos(0, 0), FakeLevelChunk::NONE);
+	m_pEmptyChunk = new FakeLevelChunk(m_pLevel, nullptr, ChunkPos(0, 0), FakeLevelChunk::NONE);
 }
 
 
@@ -44,6 +44,8 @@ LevelChunk* MultiPlayerChunkCache::getChunk(const ChunkPos& pos)
 {
 	if (!m_pLevel->isValidPos(pos))
 	{
+		if (!m_pLevel->hasFakeChunks())
+			return m_pEmptyChunk;
 		auto it = m_fakeChunkMap.find(pos.key());
 		if (it != m_fakeChunkMap.end())
 			return it->second;
@@ -55,7 +57,7 @@ LevelChunk* MultiPlayerChunkCache::getChunk(const ChunkPos& pos)
 	auto it = m_chunkMap.find(pos.key());
 	if (it != m_chunkMap.end())
 		return it->second;
-	return m_pFakeChunk;
+	return m_pEmptyChunk;
 }
 
 
@@ -63,7 +65,7 @@ bool MultiPlayerChunkCache::hasChunk(const ChunkPos& pos)
 {
 	if (!m_pLevel->isValidPos(pos))
 	{
-		return m_fakeChunkMap.find(pos.key()) != m_fakeChunkMap.end();
+		return !m_pLevel->hasFakeChunks() || m_fakeChunkMap.find(pos.key()) != m_fakeChunkMap.end();
 	}
 
 	return m_chunkMap.find(pos.key()) != m_chunkMap.end();
@@ -95,7 +97,7 @@ std::string MultiPlayerChunkCache::gatherStats()
 
 MultiPlayerChunkCache::~MultiPlayerChunkCache()
 {
-	SAFE_DELETE(m_pFakeChunk);
+	SAFE_DELETE(m_pEmptyChunk);
 
 	ChunkPos pos = ChunkPos(0, 0);
 

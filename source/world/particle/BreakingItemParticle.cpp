@@ -25,9 +25,9 @@ void BreakingItemParticle::render(Tesselator& t, float a, float xa, float ya, fl
     float v0 = ((float)(m_tex / 16) + m_vo / 4.0F) / 16.0F;
     float v1 = v0 + 0.015609375F;
     float r = 0.1F * m_size;
-    float x = (m_oPos.x + (m_pos.x - m_oPos.x) * a - xOff);
-    float y = (m_oPos.y + (m_pos.y - m_oPos.y) * a - yOff);
-    float z = (m_oPos.z + (m_pos.z - m_oPos.z) * a - zOff);
+    float x = (m_oPos.x + (m_pos.x - m_oPos.x) * a - off.x);
+    float y = (m_oPos.y + (m_pos.y - m_oPos.y) * a - off.y);
+    float z = (m_oPos.z + (m_pos.z - m_oPos.z) * a - off.z);
     float br = getBrightness(a);
     t.color(br * m_rCol, br * m_gCol, br * m_bCol);
     t.vertexUV((x - xa * r - xa2 * r), (y - ya * r), (z - za * r - za2 * r), u0, v1);
