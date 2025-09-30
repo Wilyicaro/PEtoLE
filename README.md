@@ -1,14 +1,14 @@
 # PEtoLE
 
-This project aims to port all the features from Minecraft Java Edition b1.7.3 to the early Minecraft: Pocket Edition, forked from the [ReMinecraftPE](https://github.com/ReMinecraftPE/)
+This project aims to port all the features from Minecraft Java Edition b1.7.3 to the early Minecraft: Pocket Edition, forked from the [ReMinecraftPE](https://github.com/ReMinecraftPE/)  
 My thanks to the contributors of ReMinecraftPE, without them this project would not be possible
 
 ## TO-DO List
 * Make screens accurate, like Options and Select World screens
 * Texture Packs System
+* Stats and Achievements
 * Completely functional integrated servers
 * Optimization in general, mainly RAM Usage
-* Audio Streaming Implementation (helps with less RAM Usage and faster initial loading)
 
 ## FAQ
 

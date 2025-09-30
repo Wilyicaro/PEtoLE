@@ -491,7 +491,6 @@ void GameRenderer::renderLevel(float f, int64_t nano)
 				if (diff < 0L || diff > 1000000000L)
 					break;
 			}
-		  pLR->updateDirtyChunks(pMob.get(), false);
 		}
 
 		setupFog(0);
@@ -759,7 +758,7 @@ void GameRenderer::render(float f)
 		int64_t used = getProcessMemoryUsage() / 1024;
 		int64_t available = getAvailableSystemMemory() / 1024;
 		int64_t total = used + available;
-		int32_t percentage = used / total;
+		int32_t percentage = used * 100 / total;
 
 		rightDebugText << "Used memory: " << percentage << "% (" << used << "MB) of " << total << "MB";
 
