@@ -8,9 +8,18 @@
 
 #include "Player.hpp"
 #include "world/level/Level.hpp"
+#include "world/level/EntityTracker.hpp"
 #include "world/tile/BedTile.hpp"
+#include "world/item/Slot.hpp"
+#include "world/item/CraftingMenu.hpp"
+#include "world/item/TrapMenu.hpp"
+#include "world/item/ChestMenu.hpp"
+#include "world/item/FurnaceMenu.hpp"
 #include "projectile/Arrow.hpp"
 #include "Wolf.hpp"
+#include "network/Packet.hpp"
+#include "network/ServerSideNetworkHandler.hpp"
+#include "world/level/PortalForcer.hpp"
 
 Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel), m_portalTime(0), m_oPortalTime(0)
 {
@@ -30,6 +39,8 @@ Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel), m_portalTi
 	m_bSleeping = false;
 	m_changingDimensionDelay = 20;
 	m_bIsInsidePortal = false;
+	m_pGameMode = new GameMode(this);
+	m_pGameMode->initLevel(m_pLevel);
 
 	setPlayerGameType(playerGameType);
 
@@ -49,11 +60,15 @@ Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel), m_portalTi
 
 	m_flameTime = 20;
 	m_rotOffs = 180.0f;
+	m_bIgnoreSlotUpdates = false;
+	m_containerCounter = 0;
 }
 
 Player::~Player()
 {
 	delete m_pInventory;
+	delete m_pGameMode;
+	delete m_inventoryMenu;
 }
 
 void Player::reset()
@@ -195,6 +210,41 @@ void Player::die(Entity* pCulprit)
 
 void Player::aiStep()
 {
+	m_oPortalTime = m_portalTime;
+	if (isLocalPlayer() && m_pLevel->m_bIsOnline || !m_pLevel->m_bIsOnline)
+	{
+		if (m_bIsInsidePortal)
+		{
+
+			if (!m_pLevel->m_bIsOnline && m_pRiding)
+				ride(nullptr);
+
+			m_portalTime += 0.0125F;
+			if (m_portalTime >= 1.0F)
+			{
+				m_portalTime = 1.0F;
+				if (!m_pLevel->m_bIsOnline)
+				{
+					m_changingDimensionDelay = 10;
+					toggleDimension();
+				}
+			}
+
+			m_bIsInsidePortal = false;
+		}
+		else
+		{
+			if (m_portalTime > 0.0F)
+				m_portalTime -= 0.05F;
+
+			if (m_portalTime < 0.0F)
+				m_portalTime = 0.0F;
+		}
+
+		if (m_changingDimensionDelay > 0)
+			--m_changingDimensionDelay;
+	}
+
 	if (m_jumpTriggerTime > 0)
 		m_jumpTriggerTime--;
 
@@ -255,19 +305,18 @@ void Player::aiStep()
 
 void Player::tick()
 {
-	if (isSleeping()) {
+	if (isSleeping())
+	{
 		++m_sleepTimer;
 		if (m_sleepTimer > 100)
 			m_sleepTimer = 100;
 
 		if (!m_pLevel->m_bIsOnline)
 		{
-			if (!isInBed()) {
+			if (!isInBed())
 				wake(true, true, false);
-			}
-			else if (m_pLevel->isDay()) {
+			else if (m_pLevel->isDay())
 				wake(false, true, true);
-			}
 		}
 	}
 	else if (m_sleepTimer > 0)
@@ -278,8 +327,35 @@ void Player::tick()
 	}
 
 	Mob::tick();
+
 	if (!m_pLevel->m_bIsOnline && m_containerMenu && !m_containerMenu->stillValid(this)) {
 		closeContainer();
+	}
+
+	if (!m_pLevel->m_bIsOnline)
+	{
+		if (!isLocalPlayer())
+		{
+			m_pGameMode->tick();
+			if (m_containerMenu)
+				m_containerMenu->broadcastChanges();
+
+			if (m_lastHealth != m_health)
+			{
+				m_lastHealth = m_health;
+				getConnection()->send(this, new SetHealthPacket(m_health));
+			}
+		}
+
+		for (int i = 0; i < m_equipment.size(); ++i)
+		{
+			std::shared_ptr<ItemInstance> gear = getGear(i);
+			if (gear != m_equipment[i])
+			{
+				m_pLevel->getServer()->getEntityTracker(m_dimension).broadcast(std::dynamic_pointer_cast<Player>(shared_from_this()), new SetEquippedItemPacket(m_EntityID, i, gear));
+				m_equipment[i] = gear;
+			}
+		}
 	}
 }
 
@@ -300,6 +376,16 @@ void Player::updateAi()
 	}
 
 	m_attackAnim = m_swingTime / 8.0f;
+}
+
+void Player::swing()
+{
+	if (!m_bSwinging && !m_pLevel->m_bIsOnline)
+	{
+		EntityTracker& tracker = getServer()->getEntityTracker(m_dimension);
+		tracker.broadcast(std::dynamic_pointer_cast<Player>(shared_from_this()), new AnimatePacket(m_EntityID, 1));
+	}
+	Mob::swing();
 }
 
 void Player::animateRespawn()
@@ -325,12 +411,12 @@ void Player::attack(Entity* pEnt)
 		if (m_vel.y < 0.0)
 			++atkDmg;
 		pEnt->hurt(this, atkDmg);
-		auto var3 = getSelectedItem();
-		if (var3 && pEnt->getCategory().contains(EntityCategories::MOB))
+		auto item = getSelectedItem();
+		if (item && pEnt->getCategory().contains(EntityCategories::MOB))
 		{
-			var3->hurtEnemy((Mob*)pEnt);
-			if (var3->m_count <= 0) {
-				var3->snap(this);
+			item->hurtEnemy((Mob*)pEnt);
+			if (item->m_count <= 0) {
+				item->snap(this);
 				removeSelectedItem();
 			}
 		}
@@ -353,7 +439,9 @@ bool Player::canDestroy(const Tile* pTile) const
 
 void Player::closeContainer()
 {
-	m_containerMenu = m_inventoryMenu;
+	if (isServerPlayer())
+		getConnection()->send(new ContainerClosePacket(m_containerMenu->m_containerId));
+	m_pGameMode->handleCloseInventory(m_containerMenu->m_containerId, this);
 }
 
 void Player::remove()
@@ -390,7 +478,7 @@ void Player::travel(const Vec2& pos)
 
 real Player::getRidingHeight()
 {
-	return m_heightOffset - 0.5f;
+	return - 0.5f;
 }
 
 void Player::handleInsidePortal()
@@ -408,7 +496,7 @@ void Player::displayClientMessage(const std::string& msg)
 
 void Player::drop(std::shared_ptr<ItemInstance> itemInstance, bool b)
 {
-
+	if (!itemInstance) return;
 	auto pItemEntity = std::make_shared<ItemEntity>(m_pLevel, Vec3(m_pos.x, m_pos.y - 0.3f + getHeadHeight(), m_pos.z), itemInstance);
 	pItemEntity->m_throwTime = 40;
 
@@ -440,7 +528,7 @@ void Player::drop(std::shared_ptr<ItemInstance> itemInstance, bool b)
 
 void Player::drop()
 {
-
+	drop(m_pInventory->removeItem(m_pInventory->m_selected, 1), false);
 }
 
 float Player::getDestroySpeed(const Tile* tile) const
@@ -459,10 +547,9 @@ float Player::getDestroySpeed(const Tile* tile) const
 	return speed;
 }
 
-
-int Player::getInventorySlot(int x) const
+std::shared_ptr<ItemInstance> Player::getGear(int x) const
 {
-	return 0;
+	return x == 0 ? getSelectedItem() : m_pInventory->getArmor(x - 1);
 }
 
 void Player::prepareCustomTextures()
@@ -478,6 +565,92 @@ void Player::reallyDrop(std::shared_ptr<ItemEntity> pEnt)
 void Player::respawn()
 {
 
+}
+
+void Player::respawn(int dim)
+{
+	std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(shared_from_this());
+	getServer()->getEntityTracker(m_dimension).removePairing(player);
+	getServer()->getEntityTracker(m_dimension).untrackEntity(player);
+	//getServer()->getChunkMap(m_dimension).removePlayer(player);
+	getServer()->getLevel(m_dimension)->removeEntityImmediately(player);
+	player->m_dimension = dim;
+	player->reset();
+	player->setLevel(getServer()->getLevel(player->m_dimension));
+
+	TilePos& pos = m_pLevel->getSharedSpawnPos();
+	if (player->m_bHasRespawnPos)
+	{
+		TilePos respawnPos = player->getRespawnPosition();
+		TilePos checkedPos = Player::checkRespawnPos(m_pLevel, respawnPos);
+		if (checkedPos != respawnPos)
+		{
+			pos = checkedPos;
+			player->setRespawnPos(pos);
+		}
+		else
+			getConnection()->send(this, new GameEventPacket(0));
+	}
+
+	player->setPos(Vec3(pos.x + 0.5, pos.y + 0.1, pos.z + 0.5));
+	player->m_pLevel->m_pChunkSource->getChunk(player->m_pos);
+	player->resetPos();
+
+	getConnection()->send(this, new PlayerChangeDimensionPacket(player->m_dimension));
+	getConnection()->send(this, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
+	player->m_pLevel->sendLevelInfo(this);
+	//getServer()->getChunkMap(player->m_dimension).addPlayer(player);
+	player->m_pLevel->addEntity(player);
+}
+
+void Player::toggleDimension(int dim)
+{
+	//getServer()->getChunkMap(m_dimension).removePlayer(player);
+	std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(shared_from_this());
+	Level* oldLevel = getServer()->getLevel(m_dimension);
+	m_dimension = m_dimension == dim ? 0 : dim;
+	Level* level = getServer()->getLevel(m_dimension);
+	getConnection()->send(this, new PlayerChangeDimensionPacket(m_dimension));
+	oldLevel->removeEntityImmediately(player);
+	m_bRemoved = false;
+	Level* newLevel;
+	Vec3 fPos(m_pos);
+	const real teleportConst = m_pLevel->getNetherTravelRatio();
+	if (m_dimension == dim)
+	{
+		fPos.x /= teleportConst;
+		fPos.z /= teleportConst;
+		moveTo(fPos, m_rot);
+		if (isAlive())
+			m_pLevel->tick(player, false);
+		newLevel = getServer()->getLevel(dim);
+	}
+	else
+	{
+		fPos.x *= teleportConst;
+		fPos.z *= teleportConst;
+		moveTo(fPos, m_rot);
+		if (isAlive())
+			m_pLevel->tick(player, false);
+		newLevel = getServer()->getLevel(0);
+	}
+
+	if (isAlive())
+	{
+		level->addEntity(player);
+		moveTo(fPos, m_rot);
+		m_pLevel->tick(player, false);
+		PortalForcer().force(newLevel, this);
+	}
+
+	//getServer()->getChunkMap(m_dimension).addPlayer(player);
+	newLevel->m_pChunkSource->getChunk(player->m_pos);
+	getConnection()->send(this, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
+	player->setLevel(newLevel);
+	newLevel->sendLevelInfo(this);
+	player->refreshContainerItems(player->m_containerMenu);
+	m_lastHealth = -99999999;
+	getServer()->m_pConnection->getPlayerByGUID(m_guid)->m_sentChunks.clear();
 }
 
 void Player::rideTick()
@@ -573,38 +746,82 @@ Abilities& Player::getAbilities()
 
 void Player::startCrafting(const TilePos& pos)
 {
-
+	nextContainerCounter();
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 1, "Crafting", 9));
+	m_containerMenu = new CraftingMenu(m_pInventory, pos, m_pLevel);
+	m_containerMenu->m_containerId = m_containerCounter;
+	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
 }
 
 void Player::openFurnace(std::shared_ptr<FurnaceTileEntity> tileEntity)
 {
+	nextContainerCounter();
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 2, tileEntity->getName(), tileEntity->getContainerSize()));
+	m_containerMenu = new FurnaceMenu(m_pInventory, tileEntity);
+	m_containerMenu->m_containerId = m_containerCounter;
+	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
 }
 
 void Player::openContainer(Container* container)
 {
+	nextContainerCounter();
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 0, container->getName(), container->getContainerSize()));
+	m_containerMenu = new ChestMenu(m_pInventory, container);
+	m_containerMenu->m_containerId = m_containerCounter;
+	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
 }
 
 void Player::openTrap(std::shared_ptr<DispenserTileEntity> tileEntity)
 {
+	nextContainerCounter();
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 3, tileEntity->getName(), tileEntity->getContainerSize()));
+	m_containerMenu = new TrapMenu(m_pInventory, tileEntity);
+	m_containerMenu->m_containerId = m_containerCounter;
+	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
 }
 
 void Player::openTextEdit(std::shared_ptr<SignTileEntity> tileEntity)
 {
+
 }
 
-void Player::startDestroying()
+void Player::initMenu()
 {
-	m_destroyingBlock = true;
+	m_inventoryMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
 }
 
-void Player::stopDestroying()
+void Player::refreshContainer(ContainerMenu* menu, std::vector<std::shared_ptr<ItemInstance>>& items)
 {
-	m_destroyingBlock = false;
+	getConnection()->send(this, new ContainerSetContentPacket(menu->m_containerId, items));
+	getConnection()->send(this, new ContainerSetSlotPacket(-1, -1, m_pInventory->getCarried()));
 }
 
-void Player::take(Entity* pEnt, int x)
+void Player::slotChanged(ContainerMenu* menu, int index, std::shared_ptr<ItemInstance> item)
 {
+	if (!m_bIgnoreSlotUpdates && menu->getSlot(index)->canSync())
+		getConnection()->send(this, new ContainerSetSlotPacket(menu->m_containerId, index, item));
+}
 
+void Player::setContainerData(ContainerMenu* menu, int id, int value)
+{
+	getConnection()->send(this, new ContainerSetDataPacket(menu->m_containerId, id, value));
+}
+
+bool Player::isServerPlayer() const
+{
+	return !isLocalPlayer() && !m_pLevel->m_bIsOnline;;
+}
+
+void Player::take(const std::shared_ptr<Entity>& pEnt, int x)
+{
+	if (!m_pLevel->m_bIsOnline)
+	{
+		m_pLevel->getServer()->m_pConnection->m_pMinecraft->m_pParticleEngine->add(new PickupParticle(m_pLevel, pEnt, shared_from_this(), -0.5f));
+		EntityTracker& tracker = getServer()->getEntityTracker(m_dimension);
+		if (pEnt->getType() == EntityType::item || pEnt->getType() == EntityType::arrow)
+			tracker.broadcast(pEnt, new TakeItemEntityPacket(pEnt->m_EntityID, m_EntityID));
+		m_containerMenu->broadcastChanges();
+	}
 }
 
 void Player::touch(Entity* pEnt)
@@ -616,11 +833,12 @@ void Player::interact(Entity* pEnt)
 {
 	if (!pEnt->interact(this))
 	{
-		auto var2 = getSelectedItem();
-		if (var2 && pEnt->getCategory().contains(EntityCategories::MOB)) {
-			var2->interactEnemy((Mob*) pEnt);
-			if (var2->m_count <= 0) {
-				var2->snap(this);
+		auto item = getSelectedItem();
+		if (item && pEnt->getCategory().contains(EntityCategories::MOB)) {
+			item->interactEnemy((Mob*) pEnt);
+			if (item->m_count <= 0)
+			{
+				item->snap(this);
 				m_pInventory->setItem(m_pInventory->m_selected, nullptr);
 			}
 		}
@@ -632,33 +850,48 @@ bool Player::isInBed()
 	return m_pLevel->getTile(m_bedSleepPos) == Tile::bed->m_ID;
 }
 
-void Player::wake(bool var1, bool var2, bool var3)
+void Player::nextContainerCounter()
 {
+	m_containerCounter = m_containerCounter % 100 + 1;
+}
+
+void Player::wake(bool resetCounter, bool update, bool setRespawn)
+{
+	if (!m_pLevel->m_bIsOnline && isSleeping())
+	{
+		EntityTracker& tracker = getServer()->getEntityTracker(m_dimension);
+		tracker.broadcastAndSend(shared_from_this(), new AnimatePacket(m_EntityID, 3));
+	}
+
 	setSize(0.6F, 1.8F);
 	setDefaultHeadHeight();
 	TilePos checkBedPos = m_bedSleepPos;
-	if (m_bHasBedSleepPos && m_pLevel->getTile(checkBedPos) == Tile::bed->m_ID) {
+	if (m_bHasBedSleepPos && m_pLevel->getTile(checkBedPos) == Tile::bed->m_ID)
+	{
 		BedTile::setBedOccupied(m_pLevel, checkBedPos, false);
 		checkBedPos = BedTile::getRespawnTilePos(m_pLevel, checkBedPos, 0);
 		if (checkBedPos == m_bedSleepPos)
 			checkBedPos = checkBedPos.above();
 
-		setPos(Vec3(checkBedPos.x + 0.5F, checkBedPos.y + m_heightOffset + 0.1F, checkBedPos.z + 0.5F));
+		setPos(Vec3(checkBedPos.x + 0.5F, checkBedPos.y + 0.1F, checkBedPos.z + 0.5F));
 	}
 
 	m_bSleeping = false;
-	if (!m_pLevel->m_bIsOnline && var2)
+	if (!m_pLevel->m_bIsOnline && update)
 		m_pLevel->updateSleeping();
 
-	if (var1) {
+	if (resetCounter)
 		m_sleepTimer = 0;
-	}
-	else {
+	else
 		m_sleepTimer = 100;
-	}
 
-	if (var3) {
+	if (setRespawn)
 		setRespawnPos(m_bedSleepPos);
+
+	if (isServerPlayer())
+	{
+		std::shared_ptr<Player> pt = std::dynamic_pointer_cast<Player>(shared_from_this());
+		getConnection()->send(pt, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
 	}
 }
 
@@ -681,7 +914,8 @@ Player::BedSleepingProblem Player::sleep(const TilePos& pos)
 
 	setSize(0.2F, 0.2F);
 	m_heightOffset = 0.2F;
-	if (!m_pLevel->isEmptyTile(pos)) {
+	if (!m_pLevel->isEmptyTile(pos))
+	{
 		int var4 = m_pLevel->getData(pos);
 		int var5 = BedTile::getDirectionFromData(var4);
 		float var6 = 0.5F;
@@ -711,7 +945,24 @@ Player::BedSleepingProblem Player::sleep(const TilePos& pos)
 	setBedSleepPos(pos);
 	m_vel = Vec3::ZERO;
 	if (!m_pLevel->m_bIsOnline)
+	{
 		m_pLevel->updateSleeping();
+		EntityTracker& tracker = getServer()->getEntityTracker(m_dimension);
+
+		if (tracker.needsBroadcasting())
+		{
+			InteractionPacket* packet = new InteractionPacket(m_EntityID, 0, m_pos);
+			tracker.broadcast(shared_from_this(), packet, false);
+			if (!isLocalPlayer())
+			{
+				std::shared_ptr<Player> pt = std::dynamic_pointer_cast<Player>(shared_from_this());
+				//TODO: Make this more accurate to the Java
+				getConnection()->send(pt, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
+				getConnection()->send(pt, packet, false);
+			}
+			delete packet;
+		}
+	}
 
 	return Player::BedSleepingProblem::OK;
 }
@@ -755,4 +1006,24 @@ void Player::readAdditionalSaveData(CompoundIO tag) {
 	if (tag->contains("SpawnX") && tag->contains("SpawnY") && tag->contains("SpawnZ"))
 		setRespawnPos(TilePos(tag->getInt("SpawnX"), tag->getInt("SpawnY"), tag->getInt("SpawnZ")));
 	setPlayerGameType((GameType)tag->getInt("playerGameType"));
+}
+
+std::array<std::shared_ptr<ItemInstance>, 5>* Player::getEquipmentSlots()
+{
+	return &m_equipment;
+}
+
+void Player::setItemSlot(int slot, int id, int aux)
+{
+	if (m_pLevel->m_bIsOnline)
+	{
+		std::shared_ptr<ItemInstance> item = nullptr;
+		if (id >= 0)
+			item = std::make_shared<ItemInstance>(id, 1, aux);
+
+		if (slot == 0)
+			m_pInventory->setSelectedItem(item);
+		else
+			m_pInventory->setArmor(slot - 1, item);
+	}
 }

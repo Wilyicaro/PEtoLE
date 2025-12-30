@@ -1,6 +1,5 @@
 #pragma once
 
-#include <memory>
 #include "Container.hpp"
 
 class ItemInstance;
@@ -15,44 +14,57 @@ public:
     Slot(Container* container, int slot, int x, int y);
 
     virtual void swap(Slot& other);
-    virtual void onTake(std::shared_ptr<ItemInstance>) {
+
+    virtual bool canSync();
+
+    virtual void onTake(std::shared_ptr<ItemInstance>)
+    {
         setChanged();
     }
 
-    virtual bool mayPlace(std::shared_ptr<ItemInstance> item) {
+    virtual bool mayPlace(std::shared_ptr<ItemInstance> item)
+    {
         return true;
     }
 
-    virtual std::shared_ptr<ItemInstance> getItem() {
+    virtual std::shared_ptr<ItemInstance> getItem()
+    {
         return container->getItem(slot);
     }
 
-    virtual bool hasItem() {
+    virtual bool hasItem()
+    {
         return getItem() != nullptr;
     }
 
-    virtual void set(std::shared_ptr<ItemInstance> item) {
+    virtual void set(std::shared_ptr<ItemInstance> item)
+    {
         container->setItem(slot, item);
         setChanged();
     }
 
-    virtual void setChanged() {
+    virtual void setChanged()
+    {
         container->setChanged();
     }
 
-    virtual int getMaxStackSize() {
+    virtual int getMaxStackSize()
+    {
         return container->getMaxStackSize();
     }
 
-    virtual int getNoItemIcon() {
+    virtual int getNoItemIcon()
+    {
         return -1;
     }
 
-    virtual std::shared_ptr<ItemInstance> remove(int count) {
+    virtual std::shared_ptr<ItemInstance> remove(int count)
+    {
         return container->removeItem(slot, count);
     }
 
-    virtual bool isAt(Container* cont, int s) {
+    virtual bool isAt(Container* cont, int s)
+    {
         return cont == container && s == slot;
     }
 

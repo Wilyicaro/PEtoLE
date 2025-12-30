@@ -9,7 +9,7 @@
 #pragma once
 
 #include "common/Random.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 #include <array>
 #include <vector>
 #include <memory>

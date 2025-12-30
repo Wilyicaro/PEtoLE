@@ -24,9 +24,9 @@ void PickupParticle::render(Tesselator& t, float f, float a, float b, float c, f
 	float var8 = (m_age + f) / m_lifetime;
 	var8 *= var8;
 	Vec3 tPos(
-		Mth::Lerp(thrower->m_posPrev.x, thrower->m_pos.x, f),
-		Mth::Lerp(thrower->m_posPrev.y, thrower->m_pos.y, f) + vel,
-		Mth::Lerp(thrower->m_posPrev.z, thrower->m_pos.z, f)
+		Mth::lerp(thrower->m_posPrev.x, thrower->m_pos.x, f),
+		Mth::lerp(thrower->m_posPrev.y, thrower->m_pos.y, f) + vel + thrower->m_heightOffset,
+		Mth::lerp(thrower->m_posPrev.z, thrower->m_pos.z, f)
 	);
 	Vec3 pos = m_pos + (tPos - m_pos) * var8;
 	float var30 = m_pLevel->getBrightness(TilePos(pos.x, pos.y + (m_heightOffset / 2.0F), pos.z));

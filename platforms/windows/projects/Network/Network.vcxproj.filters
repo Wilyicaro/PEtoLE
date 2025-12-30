@@ -43,7 +43,7 @@
     <ClCompile Include="$(MC_ROOT)\source\network\packets\AddPlayerPacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\network\packets\ChunkDataPacket.cpp">
+    <ClCompile Include="..\..\..\..\source\network\packets\BlockRegionUpdatePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\network\packets\LevelDataPacket.cpp">
@@ -64,13 +64,13 @@
     <ClCompile Include="$(MC_ROOT)\source\network\packets\MovePlayerPacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\network\packets\PlaceBlockPacket.cpp">
+    <ClCompile Include="..\..\..\..\source\network\packets\PlayerActionPacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\network\packets\PlayerEquipmentPacket.cpp">
+    <ClCompile Include="..\..\..\..\source\network\packets\SetEquippedItemPacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\network\packets\RemoveBlockPacket.cpp">
+    <ClCompile Include="..\..\..\..\source\network\packets\LevelEventPacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\network\packets\RemoveEntityPacket.cpp">
@@ -85,7 +85,7 @@
     <ClCompile Include="$(MC_ROOT)\source\network\packets\SetTimePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\network\packets\UpdateBlockPacket.cpp">
+    <ClCompile Include="..\..\..\..\source\network\packets\TileUpdatePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\network\MinecraftPackets.cpp">
@@ -111,6 +111,96 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\network\ServerLevelListener.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\MoveEntityPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\Packet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\MoveEntityPacketPos.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\MoveEntityPacketRot.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\MoveEntityPacketPosRot.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\TeleportEntityPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\AddEntityPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\SetEntityMotionPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\SetEntityDataPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\InteractionPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\AddItemEntityPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\AddPaintingPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\AnimatePacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\TakeItemEntityPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\SetCarriedItemPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\PlayerCommandPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\UseItemPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\InteractPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerSetContentPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerOpenPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerClosePacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerSetSlotPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerClickPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerAckPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ContainerSetDataPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\EntityEventPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\SetHealthPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\PlayerChangeDimensionPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\GameEventPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\ExplodePacket.cpp">
+      <Filter>Source Files\Packets</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

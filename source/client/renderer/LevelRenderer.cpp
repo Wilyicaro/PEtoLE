@@ -17,7 +17,6 @@
 
 LevelRenderer::LevelRenderer(Minecraft* pMC, Textures* pTexs)
 {
-	m_destroyProgress = 0.0f;
 	m_noEntityRenderFrames = 2;
 	m_totalEntities = 0;
 	m_renderedEntities = 0;
@@ -354,7 +353,7 @@ void LevelRenderer::resortChunks(const TilePos& pos)
 	}
 }
 
-void LevelRenderer::entityAdded(Entity* pEnt)
+void LevelRenderer::entityAdded(const std::shared_ptr<Entity>& pEnt)
 {
 	if (pEnt->isPlayer())
 		// @HUH: Why would you do that?
@@ -827,7 +826,9 @@ void LevelRenderer::renderHit(Player* pPlayer, const HitResult& hr, int i, void*
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 
-	if (m_destroyProgress > 0.0f)
+	float progress = Mth::lerp(pPlayer->m_pGameMode->m_lastDestroyProgress, pPlayer->m_pGameMode->m_destroyProgress, f);
+
+	if (progress > 0.0f)
 	{
 		glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
 
@@ -854,7 +855,7 @@ void LevelRenderer::renderHit(Player* pPlayer, const HitResult& hr, int i, void*
 		if (!pTile)
 			pTile = Tile::stone;
 
-		m_pTileRenderer->tesselateInWorld(pTile, hr.m_tilePos, 240 + int(m_destroyProgress * 10.0f));
+		m_pTileRenderer->tesselateInWorld(pTile, hr.m_tilePos, 240 + int(progress * 10.0f));
 
 		t.draw();
 		t.offset(0, 0, 0);
@@ -991,7 +992,7 @@ void LevelRenderer::levelEvent(Player*, int event, const TilePos& pos, int info)
 		real var12 = pos.y + 0.5;
 		real var14 = pos.z + var9 * 0.6 + 0.5;
 
-		for (int var16 = 0; var16 < 10; ++var16) {
+		for (int i = 0; i < 10; ++i) {
 			real var31 = random.nextDouble() * 0.2 + 0.01;
 			real var19 = var10 + var8 * 0.01 + (random.nextDouble() - 0.5) * var9 * 0.5;
 			real var21 = var12 + (random.nextDouble() - 0.5) * 0.5;
@@ -1004,12 +1005,13 @@ void LevelRenderer::levelEvent(Player*, int event, const TilePos& pos, int info)
 	}
 		break;
 	case 2001:
-		int var16 = info & 255;
-		if (var16 > 0) {
-			auto var17 = Tile::tiles[var16]->m_pSound;
+		TileID tileID = info & 255;
+		if (tileID > 0)
+		{
+			auto var17 = Tile::tiles[tileID]->m_pSound;
 			m_pMinecraft->m_pSoundEngine->play(var17->m_name, pos.center(), (var17->volume + 1.0F) / 2.0F, var17->pitch * 0.8F);
 		}
-		m_pMinecraft->m_pParticleEngine->crack(pos, (TileID)info & 255, (Facing::Name)(info >> 8 & 255));
+		m_pMinecraft->m_pParticleEngine->destroyEffect(pos, tileID, (info >> 8 & 255));
 		break;
 	}
 }
@@ -1232,7 +1234,7 @@ void LevelRenderer::renderSky(float alpha)
 		sc.z = ((sc.x * 30.0f) + (sc.z * 70.0f)) / 100.0f;
 	}
 
-	glColor4f(sc.x, sc.y, Mth::Min(1.0f, sc.z), 1.0f);
+	glColor4f(sc.x, sc.y, Mth::min(1.0f, sc.z), 1.0f);
 
 	Tesselator& t = Tesselator::instance;
 
@@ -1346,7 +1348,7 @@ void LevelRenderer::renderClouds(float partialTick)
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_CULL_FACE);
 
-	float yPos = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_posPrev.y, m_pMinecraft->m_pMobPersp->m_pos.y, partialTick); // not certain if this old pos Y is used
+	float yPos = Mth::lerp(m_pMinecraft->m_pMobPersp->m_posPrev.y, m_pMinecraft->m_pMobPersp->m_pos.y, partialTick); // not certain if this old pos Y is used
 	m_pTextures->loadAndBindTexture("environment/clouds.png");
 
 	glEnable(GL_BLEND);
@@ -1354,8 +1356,8 @@ void LevelRenderer::renderClouds(float partialTick)
 
 	Vec3 cloudColor = m_pLevel->getCloudColor(partialTick);
 
-	float offX = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_oPos.x, m_pMinecraft->m_pMobPersp->m_pos.x, partialTick) + (float(m_ticksSinceStart) + partialTick) * 0.03f;
-	float offZ = Mth::Lerp(m_pMinecraft->m_pMobPersp->m_oPos.z, m_pMinecraft->m_pMobPersp->m_pos.z, partialTick);
+	float offX = Mth::lerp(m_pMinecraft->m_pMobPersp->m_oPos.x, m_pMinecraft->m_pMobPersp->m_pos.x, partialTick) + (float(m_ticksSinceStart) + partialTick) * 0.03f;
+	float offZ = Mth::lerp(m_pMinecraft->m_pMobPersp->m_oPos.z, m_pMinecraft->m_pMobPersp->m_pos.z, partialTick);
 	
 	int dx2048 = Mth::floor(offX / 2048.0f);
 	int dz2048 = Mth::floor(offZ / 2048.0f);

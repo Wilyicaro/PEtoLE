@@ -3,9 +3,9 @@
 
 void FancyTreeFeature::generateBranchesAndTrunk()
 {
-    m_trunkHeight = Mth::Min((int)(m_height * m_trunkHeightScale), m_height - 1);
+    m_trunkHeight = Mth::min((int)(m_height * m_trunkHeightScale), m_height - 1);
 
-    int branchCount = Mth::Max((int)(1.382 + Mth::sqr(m_foliageDensity * m_height / 13.0)), 1);
+    int branchCount = Mth::max((int)(1.382 + Mth::sqr(m_foliageDensity * m_height / 13.0)), 1);
     int maxBranches = branchCount * m_height;
 
     std::vector<std::array<int, 4>> foliageCoords;

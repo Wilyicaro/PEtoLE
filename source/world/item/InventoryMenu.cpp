@@ -56,3 +56,34 @@ bool InventoryMenu::stillValid(Player* player) const
 {
     return true;
 }
+
+std::shared_ptr<ItemInstance> InventoryMenu::quickMoveStack(int index)
+{
+    std::shared_ptr<ItemInstance> item = nullptr;
+    Slot* slot = getSlot(index);
+    if (slot && slot->hasItem())
+    {
+        std::shared_ptr<ItemInstance> slotItem = slot->getItem();
+        item = slotItem->copy();
+        if (index == 0)
+            moveItemStackTo(slotItem, 9, 45, true);
+        else if (index >= 9 && index < 36)
+            moveItemStackTo(slotItem, 36, 45, false);
+        else if (index >= 36 && index < 45)
+            moveItemStackTo(slotItem, 9, 36, false);
+        else
+            moveItemStackTo(slotItem, 9, 45, false);
+
+        if (slotItem->m_count == 0)
+            slot->set(nullptr);
+        else
+            slot->setChanged();
+
+        if (slotItem->m_count == item->m_count)
+            return nullptr;
+
+        //slot->checkTakeAchievements(slotItem);
+    }
+
+    return item;
+}

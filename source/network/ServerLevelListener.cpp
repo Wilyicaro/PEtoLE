@@ -8,6 +8,7 @@
 
 #include "ServerLevelListener.hpp"
 #include "network/ServerSideNetworkHandler.hpp"
+#include "world/level/EntityTracker.hpp"
 
 ServerLevelListener::ServerLevelListener(ServerSideNetworkHandler* connection, Level* level) : m_pConnection(connection), m_pLevel(level)
 {
@@ -21,17 +22,20 @@ ServerLevelListener::~ServerLevelListener()
 
 void ServerLevelListener::tileChanged(const TilePos& pos)
 {
-	UpdateBlockPacket ubp;
+	m_pLevel->broadcastAll(new TileUpdatePacket(pos, m_pLevel));
+}
 
-	int tile = m_pLevel->getTile(pos);
-	int data = m_pLevel->getData(pos);
+void ServerLevelListener::entityAdded(const std::shared_ptr<Entity>& ent)
+{
+	m_pLevel->getServer()->getEntityTracker(m_pLevel->m_pDimension->m_ID).addTrackedEntity(ent);
+}
 
-	ubp.m_pos = pos;
-	ubp.m_tile = uint8_t(tile);
-	ubp.m_data = uint8_t(data);
+void ServerLevelListener::entityRemoved(const std::shared_ptr<Entity>& ent)
+{
+	m_pLevel->getServer()->getEntityTracker(m_pLevel->m_pDimension->m_ID).untrackEntity(ent);
+}
 
-	RakNet::BitStream bs;
-	ubp.write(&bs);
-
-	m_pConnection->m_pRakNetPeer->Send(&bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::AddressOrGUID(), true);
+void ServerLevelListener::levelEvent(Player* player, int event, const TilePos& pos, int data)
+{
+	m_pLevel->broadcastToAllInRange(player, pos, 64, new LevelEventPacket(event, pos, data));
 }

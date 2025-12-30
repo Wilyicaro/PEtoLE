@@ -6,7 +6,7 @@
 #include <iostream>
 #include <cmath>
 #include <common/CompoundTag.hpp>
-#include <world/level/TilePos.hpp>
+#include <world/level/Vec3i.hpp>
 #include <functional>
 
 #include "TileEntityType.hpp"

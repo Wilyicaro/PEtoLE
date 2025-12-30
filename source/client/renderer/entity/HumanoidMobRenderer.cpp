@@ -27,7 +27,8 @@ bool HumanoidMobRenderer::prepareArmor(Mob* mob, int a, float b)
 	Player* player = (Player*)mob;
 
 	auto itemInstance = player->m_pInventory->getArmor(3 - a);
-	if (itemInstance) {
+	if (itemInstance)
+	{
 		auto& texture = itemInstance->getItem()->getArmorTexture();
 		if (!texture.empty()) {
 			bindTexture(texture);

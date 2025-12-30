@@ -53,7 +53,6 @@ public:
 	static float InvGuiScale;
 
 public:
-	float m_progress;
 	std::string field_C;
 	std::vector<GuiMessage> m_guiMessages;
 	int field_24;

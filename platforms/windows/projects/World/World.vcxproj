@@ -61,9 +61,7 @@
     <ClCompile Include="$(MC_ROOT)\source\world\entity\Player.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\entity\PrimedTnt.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\entity\TripodCamera.cpp" />
-    <ClCompile Include="$(MC_ROOT)\source\world\gamemode\CreativeMode.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\gamemode\GameMode.cpp" />
-    <ClCompile Include="$(MC_ROOT)\source\world\gamemode\SurvivalMode.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\item\CameraItem.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\item\DoorItem.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\item\Inventory.cpp" />
@@ -102,11 +100,15 @@
     <ClCompile Include="$(MC_ROOT)\source\world\level\Region.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\level\storage\ChunkStorage.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\BowlFoodItem.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\item\ContainerListener.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\MapItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\PistonItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\ShearsItem.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\level\EntityTracker.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\level\levelgen\chunk\DataLayer.cpp" />
     <ClCompile Include="..\..\..\..\source\world\level\saveddata\MapItemSavedData.cpp" />
     <ClCompile Include="..\..\..\..\source\world\level\saveddata\SavedData.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\level\ServerEntity.cpp" />
     <ClCompile Include="..\..\..\..\source\world\level\storage\DimensionDataStorage.cpp" />
     <ClCompile Include="..\..\..\..\source\world\level\storage\McRegionLevelStorage.cpp" />
     <ClCompile Include="..\..\..\..\source\world\level\storage\McRegionLevelStorageSource.cpp" />
@@ -268,7 +270,7 @@
     <ClCompile Include="$(MC_ROOT)\source\world\entity\Pig.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\level\levelgen\chunk\ChunkPos.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\world\phys\Vec2.cpp" />
-    <ClCompile Include="$(MC_ROOT)\source\world\level\TilePos.cpp" />
+    <ClCompile Include="..\..\..\..\source\world\level\Vec3i.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\ArmorSlot.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\AuxTileItem.cpp" />
     <ClCompile Include="..\..\..\..\source\world\item\BucketItem.cpp" />
@@ -330,9 +332,7 @@
     <ClInclude Include="$(MC_ROOT)\source\world\entity\Player.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\entity\PrimedTnt.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\entity\TripodCamera.hpp" />
-    <ClInclude Include="$(MC_ROOT)\source\world\gamemode\CreativeMode.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\gamemode\GameMode.hpp" />
-    <ClInclude Include="$(MC_ROOT)\source\world\gamemode\SurvivalMode.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\gamemode\GameType.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\item\CameraItem.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\item\DoorItem.hpp" />
@@ -367,8 +367,11 @@
     <ClInclude Include="..\..\..\..\source\world\item\MapItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\PistonItem.hpp" />
     <ClInclude Include="..\..\..\..\source\world\item\ShearsItem.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\level\EntityTracker.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\level\levelgen\chunk\DataLayer.hpp" />
     <ClInclude Include="..\..\..\..\source\world\level\saveddata\MapItemSavedData.hpp" />
     <ClInclude Include="..\..\..\..\source\world\level\saveddata\SavedData.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\level\ServerEntity.hpp" />
     <ClInclude Include="..\..\..\..\source\world\level\storage\DimensionDataStorage.hpp" />
     <ClInclude Include="..\..\..\..\source\world\level\storage\McRegionLevelStorage.hpp" />
     <ClInclude Include="..\..\..\..\source\world\level\storage\McRegionLevelStorageSource.hpp" />
@@ -534,7 +537,7 @@
     <ClInclude Include="..\..\..\..\source\world\level\levelgen\chunk\FakeLevelChunk.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\phys\Vec2.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\Facing.hpp" />
-    <ClInclude Include="$(MC_ROOT)\source\world\level\TilePos.hpp" />
+    <ClInclude Include="..\..\..\..\source\world\level\Vec3i.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\entity\Sheep.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\entity\SynchedEntityData.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\world\entity\MobCategory.hpp" />

@@ -37,7 +37,7 @@ bool PistonMovingTileEntity::isSourcePiston() const
 
 float PistonMovingTileEntity::getProgress(float partialTick) const
 {
-	return Mth::Lerp(m_progressO, m_progress, Mth::Min(1.0f, partialTick));
+	return Mth::lerp(m_progressO, m_progress, Mth::min(1.0f, partialTick));
 }
 
 Vec3f PistonMovingTileEntity::getOff(float partialTick) const

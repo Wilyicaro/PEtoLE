@@ -28,23 +28,78 @@ Packet* MinecraftPackets::createPacket(int type)
 			return new AddPlayerPacket;
 		case PACKET_ADD_MOB:
 			return new AddMobPacket;
+		case PACKET_ADD_ENTITY:
+			return new AddEntityPacket;
+		case PACKET_ADD_ITEM_ENTITY:
+			return new AddItemEntityPacket;
+		case PACKET_ADD_PAINTING:
+			return new AddPaintingPacket;
+		case PACKET_TAKE_ITEM_ENTITY:
+			return new TakeItemEntityPacket;
 		case PACKET_REMOVE_ENTITY:
 			return new RemoveEntityPacket;
 		case PACKET_MOVE_PLAYER:
 			return new MovePlayerPacket;
-		case PACKET_PLACE_BLOCK:
-			return new PlaceBlockPacket;
-		case PACKET_REMOVE_BLOCK:
-			return new RemoveBlockPacket;
-		case PACKET_UPDATE_BLOCK:
-			return new UpdateBlockPacket;
+		case PACKET_PLAYER_ACTION:
+			return new PlayerActionPacket;
+		case PACKET_PLAYER_COMMAND:
+			return new PlayerCommandPacket;
+		case PACKET_USE_ITEM:
+			return new UseItemPacket;
+		case PACKET_INTERACT:
+			return new InteractPacket;
+		case PACKET_INTERACTION:
+			return new InteractionPacket;
+		case PACKET_LEVEL_EVENT:
+			return new LevelEventPacket;
+		case PACKET_ENTITY_EVENT:
+			return new EntityEventPacket;
+		case PACKET_GAME_EVENT:
+			return new GameEventPacket;
+		case PACKET_SET_HEALTH:
+			return new SetHealthPacket;
+		case PACKET_PLAYER_CHANGE_DIMENSION:
+			return new PlayerChangeDimensionPacket;
+		case PACKET_TILE_UPDATE:
+			return new TileUpdatePacket;
 		case PACKET_REQUEST_CHUNK:
 			return new RequestChunkPacket;
-		case PACKET_CHUNK_DATA:
-			return new ChunkDataPacket;
-		case PACKET_PLAYER_EQUIPMENT:
-			return new PlayerEquipmentPacket;
-
+		case PACKET_BLOCK_REGION_UPDATE:
+			return new BlockRegionUpdatePacket;
+		case PACKET_SET_EQUIPPED_ITEM:
+			return new SetEquippedItemPacket;
+		case PACKET_SET_CARRIED_ITEM:
+			return new SetCarriedItemPacket;
+		case PACKET_SET_ENTITY_MOTION:
+			return new SetEntityMotionPacket;
+		case PACKET_SET_ENTITY_DATA:
+			return new SetEntityDataPacket;
+		case PACKET_CONTAINER_SET_CONTENT:
+			return new ContainerSetContentPacket;
+		case PACKET_CONTAINER_CLICK:
+			return new ContainerClickPacket;
+		case PACKET_CONTAINER_ACK:
+			return new ContainerAckPacket;
+		case PACKET_CONTAINER_SET_DATA:
+			return new ContainerSetDataPacket;
+		case PACKET_CONTAINER_SET_SLOT:
+			return new ContainerSetSlotPacket;
+		case PACKET_CONTAINER_OPEN:
+			return new ContainerOpenPacket;
+		case PACKET_CONTAINER_CLOSE:
+			return new ContainerClosePacket;
+		case PACKET_MOVE_ENTITY:
+			return new MoveEntityPacketPos;
+		case PACKET_MOVE_ENTITY_ROT:
+			return new MoveEntityPacketRot;
+		case PACKET_MOVE_ENTITY_POS_ROT:
+			return new MoveEntityPacketPosRot;
+		case PACKET_TELEPORT_ENTITY:
+			return new TeleportEntityPacket;
+		case PACKET_ANIMATE:
+			return new AnimatePacket;
+		case PACKET_EXPLODE:
+			return new ExplodePacket;
 		case PACKET_LEVEL_DATA:
 			return new LevelDataPacket;
 	}

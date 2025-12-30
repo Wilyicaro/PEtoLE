@@ -15,11 +15,11 @@ Explosion::Explosion(Level* level, Entity* entity, const Vec3& pos, float power)
 	m_bIsFiery = false;
 
 	m_pos = pos;
-	m_power = power;
+	m_radius = power;
 	m_pEntity = entity;
 	m_pLevel = level;
 
-	assert(m_power != 0.0f);
+	assert(m_radius != 0.0f);
 }
 
 // This doesn't do a complete explosion, instead, it only adds tiles that should be blown up.
@@ -40,7 +40,7 @@ void Explosion::explode()
 
 					Vec3 ray = (vec / 15.0f * 2.0f - 1.0f).normalize();
 
-					float mult = m_power * (0.7f + 0.6f * m_pLevel->m_random.nextFloat());
+					float mult = m_radius * (0.7f + 0.6f * m_pLevel->m_random.nextFloat());
 
 					Vec3 pos(m_pos);
 
@@ -54,7 +54,7 @@ void Explosion::explode()
 							mult -= 0.3f * (0.3f + Tile::tiles[tile]->getExplosionResistance(m_pEntity));
 
 						if (mult > 0)
-							m_tiles.insert(pos);
+							m_toBlow.insert(pos);
 
 						mult -= 0.225f;
 
@@ -68,15 +68,15 @@ void Explosion::explode()
 		}
 	}
 
-	m_power *= 2;
+	m_radius *= 2;
 
-	AABB aabb(m_pos - m_power - 1.0f, m_pos + m_power + 1.0f);
+	AABB aabb(m_pos - m_radius - 1.0f, m_pos + m_radius + 1.0f);
 
 	EntityVector ents = m_pLevel->getEntities(m_pEntity ? m_pEntity : nullptr, aabb);
 	for (int i = 0; i < ents.size(); i++)
 	{
 		auto& entity = ents.at(i);
-		float distPowerRatio = entity->distanceTo(m_pos) / m_power;
+		float distPowerRatio = entity->distanceTo(m_pos) / m_radius;
 		if (distPowerRatio > 1.0f)
 			continue;
 
@@ -86,14 +86,14 @@ void Explosion::explode()
 		float normInv = Mth::invSqrt(delta.lengthSqr());
 		float hurtPercent = m_pLevel->getSeenPercent(m_pos, entity->m_hitbox) * (1.0f - distPowerRatio);
 
-		entity->hurt(m_pEntity, int((hurtPercent * hurtPercent + hurtPercent) / 2.0f * 8.0f * this->m_power + 1.0f));
+		entity->hurt(m_pEntity, int((hurtPercent * hurtPercent + hurtPercent) / 2.0f * 8.0f * this->m_radius + 1.0f));
 
 		entity->m_vel += delta * normInv * hurtPercent;
 	}
 
 	std::vector<TilePos> vec;
 	// @NOTE: Could avoid this copy if m_bFiery is false
-	vec.insert(vec.begin(), m_tiles.begin(), m_tiles.end());
+	vec.insert(vec.begin(), m_toBlow.begin(), m_toBlow.end());
 
 	if (m_bIsFiery)
 	{
@@ -114,7 +114,7 @@ void Explosion::addParticles()
 	m_pLevel->playSound(m_pos, "random.explode", 4.0f, 0.7f * (1.0f + 0.2f * (m_pLevel->m_random.nextFloat() - m_pLevel->m_random.nextFloat())));
 
 	std::vector<TilePos> vec;
-	vec.insert(vec.begin(), m_tiles.begin(), m_tiles.end());
+	vec.insert(vec.begin(), m_toBlow.begin(), m_toBlow.end());
 
 	for (int i = int(vec.size() - 1); i >= 0; i--)
 	{
@@ -137,7 +137,7 @@ void Explosion::addParticles()
 			Vec3 v = d / dist;
 
 			// @HUH: Dividing by the inverse is the same as multiplying. Thanks, IDA! :)
-			float power1 = m_power / (1.0f / dist) + 0.1f;
+			float power1 = m_radius / (1.0f / dist) + 0.1f;
 
 			mult = ((m_pLevel->m_random.nextFloat() * m_pLevel->m_random.nextFloat()) + 0.3f) * (0.5f / power1);
 

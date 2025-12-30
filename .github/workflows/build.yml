@@ -6,15 +6,7 @@ on:
 
 jobs:
     linux:
-        strategy:
-            fail-fast: false
-            matrix:
-                include:
-                  - name: OpenGL ES
-                    flags: "-DUSE_GLES1_COMPATIBILITY_LAYER=ON"
-                  - name: OpenGL
-                    flags: "-DUSE_GLES1_COMPATIBILITY_LAYER=OFF"
-        name: Linux (${{ matrix.name }})
+        name: Linux
         runs-on: ubuntu-latest
         steps:
           - name: Checkout Repository
@@ -30,7 +22,7 @@ jobs:
                 cd platforms/sdl
                 mkdir build
                 cd build
-                cmake -GNinja ${{ matrix.flags }} ..
+                cmake -GNinja ..
                 cmake --build .
     wasm:
         name: WASM
@@ -116,3 +108,35 @@ jobs:
             run: |
                 cd ${{ matrix.directory }}
                 ./gradlew build
+    mingw:
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                  - name: Win32
+                    flags: '-DREMCPE_PLATFORM=windows'
+                  - name: SDL2
+                    flags: "-DREMCPE_PLATFORM=sdl2"
+                  # CMake can't find it
+                  #- name: SDL 1.2
+                  #  flags: "-DREMCPE_PLATFORM=sdl1"
+        name: MinGW-w64 (${{ matrix.name }})
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout Repository
+            uses: actions/checkout@v4
+            with:
+                submodules: true
+          - name: Install Dependencies
+            run: |
+                sudo apt-get update
+                sudo apt-get install --no-install-recommends -y \
+                    build-essential \
+                    cmake ninja-build \
+                    mingw-w64
+          - name: Build
+            run: |
+                mkdir build
+                cd build
+                cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw-w64-toolchain.cmake ${{ matrix.flags }} ..
+                cmake --build .

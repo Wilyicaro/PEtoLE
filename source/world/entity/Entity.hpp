@@ -22,10 +22,12 @@
 #include <string>
 
 class Level;
+class MinecraftServer;
 class Player;
 class ItemInstance;
 class ItemEntity;
 class LightningBolt;
+class RakNetInstance;
 struct EntityPos
 {
 	Vec3 m_pos;
@@ -95,7 +97,7 @@ public:
 	virtual bool wasInWater();
 	virtual bool isInLava() const;
 	virtual bool isUnderLiquid(Material*) const;
-	virtual float getHeadHeight() const { return 0.0f; }
+	virtual float getHeadHeight() const { return m_heightOffset; }
 	virtual float getShadowHeightOffs() const { return m_bbHeight / 2.0f; }
 	virtual float getBrightness(float f) const;
 	virtual float distanceTo(Entity*) const;
@@ -110,23 +112,26 @@ public:
 	virtual bool isPickable() const { return false; }
 	virtual bool isPushable() const { return false; }
 	virtual bool isShootable() const { return false; }
-	virtual bool isSneaking() const { return false; }
+	virtual bool isSneaking() const { return getSharedFlag(1); }
+	virtual void setSneaking(bool);
 	virtual bool isAlive() const { return m_bRemoved; }
-	virtual bool isOnFire() const { return m_fireTicks > 0; }
+	virtual bool isOnFire() const { return m_fireTicks > 0 || getSharedFlag(0); }
 	virtual bool isPlayer() const { return getType() == EntityType::player; }
 	virtual bool isCreativeModeAllowed() const { return false; }
 	virtual bool shouldRender(Vec3& camPos) const;
 	virtual bool shouldRenderAtSqrDistance(real distSqr) const;
 	virtual bool hurt(Entity*, int);
+	virtual bool getSharedFlag(int) const;
+	virtual void setSharedFlag(int, bool);
 	virtual void animateHurt();
 	virtual float getPickRadius() const { return 0.1f; }
 	virtual Vec3 getLookAngle() const { return Vec3::ZERO; }
-	virtual bool isRiding() { return m_pRiding != nullptr; }
+	virtual bool isRiding() { return m_pRiding != nullptr || getSharedFlag(2); }
 	virtual std::shared_ptr<ItemEntity> spawnAtLocation(std::shared_ptr<ItemInstance>, float);
 	virtual std::shared_ptr<ItemEntity> spawnAtLocation(int, int);
 	virtual std::shared_ptr<ItemEntity> spawnAtLocation(int, int, float);
 	virtual void awardKillScore(Entity* pKilled, int score);
-	virtual void setEquippedSlot(int, int, int);
+	virtual void setItemSlot(int slot, int item, int aux);
 	virtual void setRot(const Vec2& rot);
 	virtual void setSize(float rad, float height);
 	virtual void setPos(EntityPos*);
@@ -140,7 +145,7 @@ public:
 	virtual const AABB* getCollideBox() const;
 	virtual AABB* getCollideAgainstBox(Entity* ent) const;
 	virtual void handleInsidePortal();
-	virtual void handleEntityEvent(int event);
+	virtual void handleEntityEvent(int8_t event);
 	virtual void thunderHit(LightningBolt*);
 	void load(CompoundIO tag);
 	bool save(CompoundIO tag);
@@ -150,10 +155,14 @@ public:
 	virtual void defineSynchedData();
 	void startSynchedData();
 	std::string getEncodeId();
+	virtual std::array<std::shared_ptr<ItemInstance>, 5>* getEquipmentSlots();
 
 	const EntityType* getType() const { return m_pType; }
 	const EntityCategories getCategory() const { return getType()->getCategory(); }
-	const SynchedEntityData& getEntityData() const { return m_entityData; }
+	SynchedEntityData& getEntityData() const { return m_entityData; }
+	MinecraftServer* getServer();
+	//TODO: Replace this with something more accurate
+	RakNetInstance* getConnection();
 
 	int hashCode() const { return m_EntityID; }
 
@@ -180,8 +189,7 @@ public:
 	bool m_bInChunk;
 	ChunkPos m_chunkPos;
 	int m_chunkPosY;
-	int field_20; // unused Vec3?
-	int field_24;
+	Vec3i m_pPos;
 	int field_28;
 	int m_EntityID;
 	float m_viewScale;
@@ -214,6 +222,7 @@ public:
 	float m_ySlideOffset;
 	float m_footSize;
 	bool m_bNoPhysics;
+	bool m_bNoMove;
 	float m_pushThrough;
 	int m_tickCount;
 	int m_invulnerableTime;
@@ -230,7 +239,7 @@ public:
 	float m_minBrightness;
 
 protected:
-	SynchedEntityData m_entityData;
+	mutable SynchedEntityData m_entityData;
 	bool m_bMakeStepSound;
 	const EntityType* m_pType;
 };

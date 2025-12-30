@@ -20,13 +20,12 @@ public:
 	LocalPlayer(Minecraft*, Level*, User*, GameType, int);
 	virtual ~LocalPlayer();
 
-	// TODO: void addAdditonalSaveData();
+	virtual bool isSneaking() const override;
 	virtual void animateRespawn() override;
 	virtual void aiStep() override;
-	virtual void take(Entity*, int) override;
-	virtual bool isSneaking() const override;
 	virtual int move(const Vec3& pos) override;
 	virtual void tick() override;
+	virtual void swing() override;
 	virtual void updateAi() override;
 	virtual bool isLocalPlayer() const override { return true; }
 	virtual void drop(std::shared_ptr<ItemInstance>, bool b = false) override;
@@ -38,17 +37,16 @@ public:
 	virtual void openTextEdit(std::shared_ptr<SignTileEntity> tileEntity) override;
 	virtual void displayClientMessage(const std::string& msg) override;
 	virtual int getItemIcon(ItemInstance*) override;
+	virtual void hurtTo(int);
 
 	void calculateFlight(const Vec3& pos);
 	void closeContainer() override;
-	void respawn();
+	void respawn() override;
+	void toggleDimension(int dim = -1) override;
 
 private:
-	// Made these private since they're only accessed by LocalPlayer
-	// multiplayer related
-	Vec3 field_C24;
-	Vec2 field_C30;
-	// multiplayer related -- end
+	Vec3 m_lastSentPos;
+	Vec2 m_lastSentRot;
 
 public:
 	int field_BEC;
@@ -63,6 +61,7 @@ public:
 	float field_C18;
 	float field_C1C;
 	int m_nAutoJumpFrames;
+	bool m_bLastSneaked;
 	int field_C38;
 	Minecraft* m_pMinecraft;
 	IMoveInput* m_pMoveInput;

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdint.h>
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
+#include "ChunkPos.hpp"
 
 struct ChunkTilePos
 {

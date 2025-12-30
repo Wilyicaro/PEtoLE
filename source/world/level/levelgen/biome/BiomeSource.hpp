@@ -10,7 +10,7 @@
 
 #include "Biome.hpp"
 #include "world/level/levelgen/chunk/ChunkPos.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 
 class Level;
 class BiomeSource

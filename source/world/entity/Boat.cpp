@@ -21,7 +21,7 @@ Boat::Boat(Level* level) : Entity(level)
 
 Boat::Boat(Level* level, const Vec3& pos) : Boat(level)
 {
-	setPos(Vec3(pos.x, pos.y + m_heightOffset, pos.z));
+	setPos(Vec3(pos.x, pos.y, pos.z));
 	m_vel = Vec3::ZERO;
 	m_oPos = Vec3::ZERO;
 }
@@ -219,7 +219,7 @@ void Boat::tick()
 
 real Boat::getRideHeight()
 {
-	return -0.3;
+	return m_heightOffset - 0.3;
 }
 
 void Boat::positionRider() {

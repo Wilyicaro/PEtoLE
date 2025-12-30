@@ -18,7 +18,7 @@ FishingHook::FishingHook(Level* level, std::shared_ptr<Player> mob) : Entity(lev
 {
     m_pType = EntityType::fishingHook;
 	setSize(0.25f, 0.25f);
-	moveTo(mob->m_pos.add(0, 1.62 - mob->m_heightOffset, 0), mob->m_rot);
+	moveTo(mob->m_pos.add(0, 1.62, 0), mob->m_rot);
 	m_pos.x -= (Mth::cos(m_rot.y / 180.0F * M_PI) * 0.16F);
 	m_pos.y -= 0.1;
 	m_pos.z -= (Mth::sin(m_rot.y / 180.0F * M_PI) * 0.16F);

@@ -17,12 +17,12 @@ class Mth
 	static Random g_Random;
 
 public:
-	static float Max(float, float);
-	static double Max(double, double);
-	static int Max(int, int);
-	static float Min(float, float);
-	static double Min(double, double);
-	static int Min(int, int);
+	static float max(float, float);
+	static double max(double, double);
+	static int max(int, int);
+	static float min(float, float);
+	static double min(double, double);
+	static int min(int, int);
 	static inline float abs(float f) { return fabs(f); }
 	static inline double abs(double d) { return std::abs(d); }
 	static int abs(int);
@@ -31,6 +31,7 @@ public:
 	static float atan(float);
 	static float atan2(float y, float x);
 	static float cos(float);
+	static double clamp(double, double, double);
 	static float clamp(float, float, float);
 	static int clamp(int, int, int);
 	static int floor(float);
@@ -45,6 +46,7 @@ public:
 	static float sin(float);
 	static unsigned fastRandom();
 	static int HSBtoRGB(float hue, float saturation, float brightness);
+	static float normalDegrees(float rot);
 
 	static inline float sqrt(float f)
 	{
@@ -56,12 +58,12 @@ public:
 		return std::sqrt(f);
 	}
     
-	static inline constexpr float Lerp(float a, float b, float progress)
+	static inline constexpr float lerp(float a, float b, float progress)
 	{
 		return a + progress * (b - a);
 	}
 
-	static inline constexpr double Lerp(double a, double b, float progress)
+	static inline constexpr double lerp(double a, double b, float progress)
 	{
 		return a + progress * (b - a);
 	}

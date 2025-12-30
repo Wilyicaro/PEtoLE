@@ -75,6 +75,17 @@ float Mth::cos(float a2)
 	return g_SinTable[angle];
 }
 
+double Mth::clamp(double a, double min, double max)
+{
+	if (a > max)
+		return max;
+	if (a > min)
+		return a;
+	else
+		return min;
+	return max;
+}
+
 // ported from 0.6.1
 unsigned Mth::fastRandom()
 {
@@ -145,32 +156,32 @@ float Mth::atan2(float y, float x)
 	return atan2f(y, x);
 }
 
-float Mth::Min(float a, float b)
+float Mth::min(float a, float b)
 {
 	return a < b ? a : b;
 }
 
-double Mth::Min(double a, double b)
+double Mth::min(double a, double b)
 {
 	return a < b ? a : b;
 }
 
-int Mth::Min(int a, int b)
+int Mth::min(int a, int b)
 {
 	return a < b ? a : b;
 }
 
-float Mth::Max(float a, float b)
+float Mth::max(float a, float b)
 {
 	return a > b ? a : b;
 }
 
-double Mth::Max(double a, double b)
+double Mth::max(double a, double b)
 {
 	return a > b ? a : b;
 }
 
-int Mth::Max(int a, int b)
+int Mth::max(int a, int b)
 {
 	return a > b ? a : b;
 }
@@ -263,4 +274,9 @@ int Mth::HSBtoRGB(float hue, float saturation, float brightness) {
 		}
 	}
 	return 0xff000000 | (r << 16) | (g << 8) | (b << 0);
+}
+
+float Mth::normalDegrees(float rot)
+{
+	return Mth::abs(rot) > 360.0f ? fmod(rot, 360.0f) : rot;
 }

@@ -25,7 +25,7 @@ MultiPlayerChunkCache::MultiPlayerChunkCache(Level* pLevel)
 LevelChunk* MultiPlayerChunkCache::create(const ChunkPos& pos)
 {
 	LevelChunk* chunk = new LevelChunk(m_pLevel, new TileID[16 * 16 * 128], pos);
-	std::fill(chunk->m_lightSky, chunk->m_lightSky + 16384, -1);
+	std::fill(chunk->m_lightSky.m_pData, chunk->m_lightSky.m_pData + chunk->m_lightSky.m_size, -1);
 	std::fill(chunk->m_pBlockData, chunk->m_pBlockData + 32768, TILE_AIR);
 
 	auto it = m_chunkMap.find(pos.key());

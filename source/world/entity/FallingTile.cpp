@@ -9,7 +9,7 @@
 #include "FallingTile.hpp"
 #include "world/level/Level.hpp"
 
-FallingTile::FallingTile(Level* level) : Entity(level), field_E0(0)
+FallingTile::FallingTile(Level* level) : Entity(level), m_fallingTicks(0)
 {
 	m_pType = EntityType::fallingTile;
 }
@@ -24,6 +24,11 @@ FallingTile::FallingTile(Level* level, const Vec3& pos, int id) : FallingTile(le
 	m_oPos = pos;
 	m_bMakeStepSound = false;
 	m_vel = Vec3::ZERO;
+
+	TilePos tilePos(m_pos);
+
+	if (level->getTile(tilePos) == m_id)
+		m_pLevel->setTile(tilePos, TILE_AIR);
 }
 
 float FallingTile::getShadowHeightOffs() const
@@ -42,7 +47,7 @@ void FallingTile::tick()
 		remove();
 
 	m_oPos = m_pos;
-	field_E0++;
+	m_fallingTicks++;
 
 	m_vel.y -= 0.04f;
 	move(m_vel);
@@ -51,14 +56,9 @@ void FallingTile::tick()
 
 	TilePos tilePos(m_pos);
 
-	// if we're inside one of our own tiles, clear it.
-	// Assumes we started there
-	if (m_pLevel->getTile(tilePos) == m_id)
-		m_pLevel->setTile(tilePos, TILE_AIR);
-
 	if (!m_bOnGround)
 	{
-		if (field_E0 > 100 && !m_pLevel->m_bIsOnline)
+		if (m_fallingTicks > 100 && !m_pLevel->m_bIsOnline)
 			remove();
 
 		return;

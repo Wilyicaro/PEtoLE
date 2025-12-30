@@ -37,10 +37,10 @@ public:
 	bool tickPendingTicks(bool b) override;
 	void addToTickNextTick(const TilePos& tilePos, int, int) override;
 	bool addEntity(std::shared_ptr<Entity>) override;
-	bool removeEntity(std::shared_ptr<Entity>) override;
-	void entityAdded(Entity* pEnt) override;
-	void entityRemoved(Entity* pEnt) override;
-	void putEntity(std::shared_ptr<Entity>, int);
+	bool removeEntity(const std::shared_ptr<Entity>&) override;
+	void entityAdded(const std::shared_ptr<Entity>& pEnt) override;
+	void entityRemoved(const std::shared_ptr<Entity>& pEnt) override;
+	void putEntity(int, std::shared_ptr<Entity>);
 	std::shared_ptr<Entity> getEntity(int);
 	std::shared_ptr<Entity> removeEntity(int);
 	bool setDataNoUpdate(const TilePos&, int data) override;

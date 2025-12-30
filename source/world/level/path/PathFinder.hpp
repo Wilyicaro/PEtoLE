@@ -11,7 +11,7 @@
 #include <map>
 #include "Path.hpp"
 #include "BinaryHeap.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 
 class LevelSource;
 class Entity;

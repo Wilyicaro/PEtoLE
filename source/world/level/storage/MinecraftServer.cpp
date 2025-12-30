@@ -1,5 +1,6 @@
 #include "MinecraftServer.hpp"
 #include "world/level/Level.hpp"
+#include "world/level/EntityTracker.hpp"
 #include "network/ServerSideNetworkHandler.hpp"
 #include <common/NbtIo.hpp>
 
@@ -10,6 +11,7 @@ MinecraftServer::MinecraftServer(const std::string& name, const std::string& pat
 	createFolderIfNotExists((m_path + "/region").c_str());
 	createFolderIfNotExists((m_path + "/data").c_str());
 	m_bIsNew = !readLevelData(path + "/level.dat", m_levelData);
+	m_bSpawnProtection = false;
 }
 
 MinecraftServer::~MinecraftServer()
@@ -26,9 +28,16 @@ Level* MinecraftServer::getLevel(int dim)
 	auto it = m_levels.find(dim);
 	if (it != m_levels.end()) return it->second;
 	Level* level = new Level(this, Dimension::getNew(dim));
+	level->m_pConnection = m_pConnection->m_pRakNetInstance;
 	m_pConnection->m_levelListeners.try_emplace(dim, m_pConnection, level);
 	m_levels[dim] = level;
+	m_entityTrackers.try_emplace(dim, this, dim);
 	return level;
+}
+
+EntityTracker& MinecraftServer::getEntityTracker(int dim)
+{
+	return m_entityTrackers[dim];
 }
 
 void MinecraftServer::saveLevelData()
@@ -60,6 +69,7 @@ void MinecraftServer::tick()
 			it = m_levels.erase(it);
 			level->save();
 			m_pConnection->m_levelListeners.erase(level->m_pDimension->m_ID);
+			m_entityTrackers.erase(level->m_pDimension->m_ID);
 			delete level;
 		}
 		else
@@ -70,9 +80,14 @@ void MinecraftServer::tick()
 		}
 	}
 
+	for (auto& it : m_entityTrackers)
+	{
+		it.second.tick();
+	}
+
 	for (auto& it : m_pConnection->m_onlinePlayers)
 	{
-		if (it.second->m_pPlayer != m_pConnection->m_pMinecraft->m_pPlayer)
+		if (!it.second->m_pPlayer->isLocalPlayer())
 		{
 			const int viewDistance = it.second->m_pPlayer->m_pLevel->m_viewDistance;
 			ChunkPos pos;
@@ -90,7 +105,7 @@ void MinecraftServer::tick()
 					{
 						it.second->m_sentChunks.insert(pos);
 
-						m_pConnection->m_pRakNetInstance->send(new ChunkDataPacket(chunk));
+						m_pConnection->m_pRakNetInstance->send(new BlockRegionUpdatePacket(chunk));
 					}
 				}
 			}
@@ -109,6 +124,7 @@ void MinecraftServer::manageLevels(ProgressListener& listener)
 			it = m_levels.erase(it);
 			level->save(true, listener);
 			m_pConnection->m_levelListeners.erase(level->m_pDimension->m_ID);
+			m_entityTrackers.erase(level->m_pDimension->m_ID);
 			delete level;
 		}
 		else ++it;

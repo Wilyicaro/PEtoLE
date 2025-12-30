@@ -13,4 +13,5 @@ public:
     ChestMenu(Container* inventory, Container* container);
 
     bool stillValid(Player* player) const override;
+    virtual std::shared_ptr<ItemInstance> quickMoveStack(int index) override;
 };

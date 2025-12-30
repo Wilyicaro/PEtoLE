@@ -19,7 +19,8 @@ public:
 
     void init() override;
     void render(int mouseX, int mouseY, float partialTick) override;
-    void removed() override;
+    virtual void onClose() override;
+    virtual void tick() override;
     bool isPauseScreen() override;
 
     virtual void slotsChanged(Container* container);

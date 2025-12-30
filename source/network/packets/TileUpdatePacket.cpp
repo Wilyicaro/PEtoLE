@@ -7,15 +7,20 @@
  ********************************************************************/
 
 #include "../Packet.hpp"
+#include "world/level/Level.hpp"
 
-void UpdateBlockPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
+TileUpdatePacket::TileUpdatePacket(const TilePos& pos, Level* level) : m_pos(pos), m_tile(level->getTile(pos)), m_data(level->getData(pos))
+{
+}
+
+void TileUpdatePacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
 {
 	pCallback->handle(guid, this);
 }
 
-void UpdateBlockPacket::write(RakNet::BitStream* bs)
+void TileUpdatePacket::write(RakNet::BitStream* bs)
 {
-	bs->Write((unsigned char)PACKET_UPDATE_BLOCK);
+	bs->Write((unsigned char)PACKET_TILE_UPDATE);
 	bs->Write(m_pos.x);
 	bs->Write(m_pos.z);
 	bs->Write(m_pos.y);
@@ -23,7 +28,7 @@ void UpdateBlockPacket::write(RakNet::BitStream* bs)
 	bs->Write(m_data);
 }
 
-void UpdateBlockPacket::read(RakNet::BitStream* bs)
+void TileUpdatePacket::read(RakNet::BitStream* bs)
 {
 	bs->Read(m_pos.x);
 	bs->Read(m_pos.z);

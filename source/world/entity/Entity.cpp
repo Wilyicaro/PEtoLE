@@ -20,9 +20,7 @@ void Entity::_init()
 	m_random = Random();
 	m_bInChunk = false;
 	m_chunkPos = ChunkPos(0, 0);
-	field_20 = 0;
-	field_24 = 0;
-	field_28 = 0;
+	m_pPos = TilePos();
 	m_viewScale = 1.0f;
     m_bBlocksBuilding = false;
 	m_pLevel = nullptr;
@@ -45,6 +43,7 @@ void Entity::_init()
 	m_ySlideOffset = 0.0f;
 	m_footSize = 0.0f;
 	m_bNoPhysics = false;
+	m_bNoMove = false;
 	m_pushThrough = 0.0f;
     m_tickCount = 0;
 	m_invulnerableTime = 0;
@@ -97,7 +96,7 @@ void Entity::setPos(const Vec3& pos)
 	m_pos = pos;
 
 	real halfSize = m_bbWidth / 2;
-	real lowY = m_pos.y - m_heightOffset + m_ySlideOffset;
+	real lowY = m_pos.y - m_ySlideOffset;
 
 	m_hitbox = AABB(
 		m_pos.x - halfSize,
@@ -115,11 +114,12 @@ void Entity::remove()
 
 int Entity::move(const Vec3& pos)
 {
+	if (m_bNoMove) return false;
 	if (m_bNoPhysics)
 	{
 		m_hitbox.move(pos);
 		m_pos.x = (m_hitbox.min.x + m_hitbox.max.x) / 2.0;
-		m_pos.y = m_hitbox.min.y + m_heightOffset - m_ySlideOffset;
+		m_pos.y = m_hitbox.min.y - m_ySlideOffset;
 		m_pos.z = (m_hitbox.min.z + m_hitbox.max.z) / 2.0;
 	}
 	else
@@ -236,7 +236,7 @@ int Entity::move(const Vec3& pos)
 		}
 
 		m_pos.x = (m_hitbox.min.x + m_hitbox.max.x) / 2.0;
-		m_pos.y = m_hitbox.min.y + m_heightOffset - m_ySlideOffset;
+		m_pos.y = m_hitbox.min.y - m_ySlideOffset;
 		m_pos.z = (m_hitbox.min.z + m_hitbox.max.z) / 2.0;
 		m_bHorizontalCollision = cPosX != newPos.x || cPosZ != newPos.z;
 		m_bVerticalCollision = cPosY != newPos.y;
@@ -257,7 +257,7 @@ int Entity::move(const Vec3& pos)
 		if (m_bMakeStepSound && !validSneaking)
 		{
 			m_walkDist = float(m_walkDist + Mth::sqrt(diffX * diffX + diffZ * diffZ) * 0.6);
-			TilePos tp(m_pos.x, m_pos.y - real(0.2) - m_heightOffset, m_pos.z);
+			TilePos tp(m_pos.x, m_pos.y - real(0.2), m_pos.z);
 			TileID tile = m_pLevel->getTile(tp);
 
 			if (m_pLevel->getTile(tp.below()) == Tile::fence->m_ID)
@@ -325,12 +325,9 @@ int Entity::move(const Vec3& pos)
 
 void Entity::moveTo(const Vec3& pos, const Vec2& rot)
 {
-	Vec3 newPos(pos);
-	newPos.y += m_heightOffset;
-
-	setPos(newPos);
-	m_oPos = newPos;
-	m_posPrev = newPos;
+	setPos(pos);
+	m_oPos = pos;
+	m_posPrev = pos;
 
 	m_rot = rot;
 }
@@ -521,6 +518,12 @@ void Entity::baseTick()
 	if (m_pos.y < -64.0f)
 		outOfWorld();
 
+	if (!m_pLevel->m_bIsOnline)
+	{
+		setSharedFlag(0, m_fireTicks > 0);
+		setSharedFlag(2, m_pRiding != nullptr);
+	}
+
 	m_bFirstTick = false;
 }
 
@@ -582,7 +585,7 @@ void Entity::positionRider()
 
 real Entity::getRidingHeight()
 {
-	return m_heightOffset;
+	return 0;
 }
 
 real Entity::getRideHeight()
@@ -697,7 +700,7 @@ bool Entity::isUnderLiquid(Material* pMtl) const
 
 float Entity::getBrightness(float f) const
 {
-	TilePos tilePos(m_pos.x, m_pos.y - m_heightOffset + (m_hitbox.max.y - m_hitbox.min.y) * 0.66f, m_pos.z);
+	TilePos tilePos(m_pos.x, m_pos.y + (m_hitbox.max.y - m_hitbox.min.y) * 0.66f, m_pos.z);
 
 	TilePos tileMin(m_hitbox.min);
 	TilePos tileMax(m_hitbox.max);
@@ -705,7 +708,7 @@ float Entity::getBrightness(float f) const
 	if (!m_pLevel->hasChunksAt(tileMin, tileMax))
 		return 0;
 
-	return Mth::Max(m_minBrightness, m_pLevel->getBrightness(tilePos));
+	return Mth::max(m_minBrightness, m_pLevel->getBrightness(tilePos));
 }
 
 float Entity::distanceTo(Entity* pEnt) const
@@ -771,6 +774,11 @@ void Entity::push(const Vec3& pos)
 	m_vel += pos;
 }
 
+void Entity::setSneaking(bool sneaking)
+{
+	setSharedFlag(1, sneaking);
+}
+
 bool Entity::shouldRender(Vec3& camPos) const
 {
 	return shouldRenderAtSqrDistance(distanceToSqr(camPos));
@@ -787,6 +795,20 @@ bool Entity::hurt(Entity* pAttacker, int damage)
 {
 	markHurt();
 	return 0;
+}
+
+bool Entity::getSharedFlag(int flag) const
+{
+	return (m_entityData.get<int8_t>(0) & 1 << flag) != 0;
+}
+
+void Entity::setSharedFlag(int flag, bool value)
+{
+	int8_t data = getEntityData().get<int8_t>(0);
+	if (value)
+		m_entityData.set(0, int8_t(data | 1 << flag));
+	else
+		m_entityData.set(0, int8_t(data & ~(1 << flag)));
 }
 
 void Entity::animateHurt()
@@ -818,15 +840,15 @@ void Entity::awardKillScore(Entity* pKilled, int score)
 
 }
 
-void Entity::setEquippedSlot(int a, int b, int c)
+void Entity::setItemSlot(int a, int b, int c)
 {
 
 }
 
 void Entity::setRot(const Vec2& rot)
 {
-	m_rot.y = Mth::abs(rot.y) > 360.0f ? fmod(rot.y, 360.0f) : rot.y;
-	m_rot.x = Mth::abs(rot.x) > 360.0f ? fmod(rot.x, 360.0f) : rot.x;
+	m_rot.y = Mth::normalDegrees(rot.y);
+	m_rot.x = Mth::normalDegrees(rot.x);
 }
 
 void Entity::setSize(float rad, float height)
@@ -936,7 +958,7 @@ void Entity::handleInsidePortal()
 {
 }
 
-void Entity::handleEntityEvent(int event)
+void Entity::handleEntityEvent(int8_t event)
 {
 }
 
@@ -969,8 +991,11 @@ void Entity::load(CompoundIO tag)
 	if (Mth::abs(m_vel.z) > 10.0) {
 		m_vel.z = 0.0;
 	}
+
+	bool hadHeightOffset = !isPlayer() || ((Player*)this)->isLocalPlayer();
+
 	m_posPrev.x = m_oPos.x = m_pos.x = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(0))->getValue();
-	m_posPrev.y = m_oPos.y = m_pos.y = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(1))->getValue();
+	m_posPrev.y = m_oPos.y = m_pos.y = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(1))->getValue() + (hadHeightOffset ? -m_heightOffset : 0);
 	m_posPrev.z = m_oPos.z = m_pos.z = std::dynamic_pointer_cast<DoubleTag>(var2->getValue().at(2))->getValue();
 	m_rotPrev.y = m_rot.y = std::dynamic_pointer_cast<FloatTag>(var4->getValue().at(0))->getValue();
 	m_rotPrev.x = m_rot.x = std::dynamic_pointer_cast<FloatTag>(var4->getValue().at(1))->getValue();
@@ -998,7 +1023,8 @@ bool Entity::save(CompoundIO tag)
 
 void Entity::saveWithoutId(CompoundIO tag)
 {
-	tag->putDoubleList("Pos", { m_pos.x, m_pos.y + m_ySlideOffset, m_pos.z });
+	bool hadHeightOffset = !isPlayer() || ((Player*)this)->isLocalPlayer();
+	tag->putDoubleList("Pos", { m_pos.x, m_pos.y + m_ySlideOffset + (hadHeightOffset ? m_heightOffset : 0), m_pos.z });
 	tag->putDoubleList("Motion", { m_vel.x, m_vel.y, m_vel.z });
 	tag->putFloatList("Rotation", {m_rot.y, m_rot.x});
 	tag->putFloat("FallDistance", m_distanceFallen);
@@ -1030,6 +1056,21 @@ void Entity::startSynchedData()
 std::string Entity::getEncodeId()
 {
 	return getType()->getName();
+}
+
+std::array<std::shared_ptr<ItemInstance>, 5>* Entity::getEquipmentSlots()
+{
+	return nullptr;
+}
+
+MinecraftServer* Entity::getServer()
+{
+	return m_pLevel->getServer();
+}
+
+RakNetInstance* Entity::getConnection()
+{
+	return m_pLevel->m_pConnection;
 }
 
 bool Entity::operator==(const Entity& other) const

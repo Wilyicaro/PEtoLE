@@ -125,7 +125,6 @@ void EntityRenderer::renderShadow(Entity* e, const Vec3& pos, float pow, float a
 	float r = m_shadowRadius;
 
 	Vec3 ePos(e->m_posPrev + (e->m_pos - e->m_posPrev) * a);
-	ePos.y -= e->m_heightOffset; // We gotta do this so the renderer can correctly determine if there's a tile below the entity
 	ePos.y += e->getShadowHeightOffs();
 
 	TilePos tpMin(ePos - r);
@@ -145,9 +144,9 @@ void EntityRenderer::renderShadow(Entity* e, const Vec3& pos, float pow, float a
 				if (t > 0 && level->getRawBrightness(tp) > 3)
 				{
 					renderTileShadow(Tile::tiles[t],
-						Vec3(pos.x, pos.y - e->m_heightOffset + e->getShadowHeightOffs(), pos.z), tp,
+						Vec3(pos.x, pos.y - e->getShadowHeightOffs(), pos.z), tp,
 						pow, r,
-						Vec3(ePosO.x, ePosO.y - e->m_heightOffset + e->getShadowHeightOffs(), ePosO.z)
+						Vec3(ePosO.x, ePosO.y - e->getShadowHeightOffs(), ePosO.z)
 					);
 				}
 			}

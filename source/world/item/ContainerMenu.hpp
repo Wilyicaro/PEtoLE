@@ -15,29 +15,32 @@ class ContainerListener;
 class ContainerMenu {
 protected:
     std::vector<std::shared_ptr<ItemInstance>> lastSlots;
-    uint16_t changeUid = 0;
+    uint16_t m_changeUid = 0;
     std::vector<std::shared_ptr<ContainerListener>> listeners;
     std::unordered_set<Player*> unsynchedPlayers;
 
 public:
-    int containerId = 0;
+    int m_containerId = 0;
     std::vector<std::shared_ptr<Slot>> slots;
     virtual ~ContainerMenu() = default;
 
     void addSlot(std::shared_ptr<Slot> slot);
-    void addSlotListener(std::shared_ptr<ContainerListener> listener);
+    virtual void addSlotListener(std::shared_ptr<ContainerListener> listener);
     void sendData(int id, int value);
     virtual void broadcastChanges();
     virtual void removed(Player* player);
     virtual void slotsChanged(Container* container);
 
+    std::vector<std::shared_ptr<ItemInstance>> getItems();
     Slot* getSlotFor(Container* container, int index);
     Slot* getSlot(int index);
-    std::shared_ptr<ItemInstance> clicked(int slotIndex, int mouseButton, Player* player);
+    virtual std::shared_ptr<ItemInstance> clicked(int slotIndex, int mouseButton, bool quickMove, Player* player);
+    virtual std::shared_ptr<ItemInstance> quickMoveStack(int index);
+    virtual void moveItemStackTo(const std::shared_ptr<ItemInstance> item, int slotFrom, int slotTo, bool take);
 
     void setItem(int slotIndex, std::shared_ptr<ItemInstance> item);
     void setAll(const std::vector<std::shared_ptr<ItemInstance>>& items);
-    void setData(int id, int value);
+    virtual void setData(int id, int value);
 
     uint16_t backup(Inventory* inventory);
     void deleteBackup(uint16_t id);

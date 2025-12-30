@@ -9,26 +9,15 @@
 #include "world/level/Level.hpp"
 #include "world/phys/AABB.hpp"
 #include "world/entity/EntityIO.hpp"
+#include <common/ListTag.hpp>
 
 bool LevelChunk::touchedSky = false;
 
 LevelChunk::~LevelChunk()
 {
-	SAFE_DELETE(m_lightBlk);
-	SAFE_DELETE(m_lightSky);
-	SAFE_DELETE(m_tileData);
-	SAFE_DELETE(m_pBlockData);
+	SAFE_DELETE_ARRAY(m_pBlockData);
 }
 
-constexpr int MakeBlockDataIndex (const ChunkTilePos& pos)
-{
-	return (pos.x << 11) | (pos.z << 7) | pos.y;
-}
-
-constexpr int MakeHeightMapIndex(const ChunkTilePos& pos)
-{
-	return pos.x | (pos.z * 16);
-}
 
 // Temp function for checking oob accesses into levelchunks
 void CheckPosition(const ChunkTilePos& pos)
@@ -40,12 +29,6 @@ void LevelChunk::_init()
 {
 	field_4 = 0;
 	m_bLoaded = false;
-	m_tileData = nullptr;
-	m_tileDataCnt = 0;
-	m_lightSky = nullptr;
-	m_lightSkyCnt = 0;
-	m_lightBlk = nullptr;
-	m_lightBlkCnt = 0;
 	m_chunkPos = ChunkPos(0, 0);
 	m_bIsTerrainPopulated = false;
 	m_bUnsaved = false;
@@ -58,15 +41,15 @@ void LevelChunk::_init()
 
 void LevelChunk::save(CompoundIO levelTag) 
 {
-	levelTag->putByteArray("Blocks", m_pBlockData, 32768);
-	levelTag->putByteArray("Data", m_tileData, 16384);
-	levelTag->putByteArray("SkyLight", m_lightSky, 16384);
-	levelTag->putByteArray("BlockLight", m_lightBlk, 16384);
-	levelTag->putByteArray("HeightMap", m_heightMap, 256);
-
-	levelTag->putLong("LastUpdate", m_pLevel->getTime());
 	levelTag->putInt("xPos", m_chunkPos.x);
 	levelTag->putInt("zPos", m_chunkPos.z);
+	levelTag->putLong("LastUpdate", m_pLevel->getTime());
+	levelTag->putByteArray("Blocks", m_pBlockData, 32768);
+	levelTag->putByteArray("Data", m_tileData.m_pData, m_tileData.m_size);
+	levelTag->putByteArray("SkyLight", m_lightSky.m_pData, m_lightSky.m_size);
+	levelTag->putByteArray("BlockLight", m_lightBlk.m_pData, m_lightBlk.m_size);
+	levelTag->putByteArray("HeightMap", m_heightMap, 256);
+
 	levelTag->putBoolean("TerrainPopulated", m_bIsTerrainPopulated);
 
 	auto entities = std::make_shared<ListTag>(TagType::TAG_Compound);
@@ -85,7 +68,7 @@ void LevelChunk::save(CompoundIO levelTag)
 	for (auto& p : m_tileEntities)
 	{
 		auto tileEntityTag = std::make_shared<CompoundTag>();
-		p.second->save(tileEntityTag);
+		if (p.second) p.second->save(tileEntityTag);
 		tileEntities->add(tileEntityTag);
 	}
 	levelTag->put("TileEntities", tileEntities);
@@ -94,15 +77,15 @@ void LevelChunk::save(CompoundIO levelTag)
 void LevelChunk::load(CompoundIO tag) 
 {
 	memcpy(m_pBlockData, tag->getByteArray("Blocks").data(), 32768);
-	memcpy(m_tileData, tag->getByteArray("Data").data(), 16384);
+	memcpy(m_tileData.m_pData, tag->getByteArray("Data").data(), m_tileData.m_size);
 
 	bool updateLight = false;
 
 	if (tag->contains("SkyLight"))
-		memcpy(m_lightSky, tag->getByteArray("SkyLight").data(), 16384);
+		memcpy(m_lightSky.m_pData, tag->getByteArray("SkyLight").data(), m_lightSky.m_size);
 	else updateLight = true;
 
-	memcpy(m_lightBlk, tag->getByteArray("BlockLight").data(), 16384);
+	memcpy(m_lightBlk.m_pData, tag->getByteArray("BlockLight").data(), m_lightBlk.m_size);
 
 	if (tag->contains("HeightMap"))
 		memcpy(m_heightMap, tag->getByteArray("HeightMap").data(), 256);
@@ -135,7 +118,10 @@ void LevelChunk::load(CompoundIO tag)
 	m_bIsTerrainPopulated = tag->getBoolean("TerrainPopulated");
 }
 
-LevelChunk::LevelChunk(Level* pLevel, const ChunkPos& pos)
+LevelChunk::LevelChunk(Level* pLevel, const ChunkPos& pos) :
+	m_tileData(nullptr),
+	m_lightSky(nullptr),
+	m_lightBlk(nullptr)
 {
 	_init();
 
@@ -145,34 +131,18 @@ LevelChunk::LevelChunk(Level* pLevel, const ChunkPos& pos)
 	init();
 }
 
-LevelChunk::LevelChunk(Level* pLevel, TileID* pData, const ChunkPos& pos)
+LevelChunk::LevelChunk(Level* pLevel, TileID* pData, const ChunkPos& pos) :
+	m_tileData(0x4000),
+	m_lightSky(0x4000),
+	m_lightBlk(0x4000)
 {
 	_init();
 
 	m_pLevel = pLevel;
 
-	// The game will blow its brains out if this if statement is executed
-	// I have not the slightest idea as to why...
-	/*if (pData)
-	{*/
-	m_tileDataCnt = 0x4000;
-	field_4 = 0x8000;
-	m_tileData = new uint8_t[m_tileDataCnt];
-	memset(m_tileData, 0, m_tileDataCnt);
-
-	//Space saving measure: Store 2 blocks' light field instead of only one block's, per byte.
-	m_lightSkyCnt = 16 * 16 * 128 / 2;
-	m_lightSky = new uint8_t[m_lightSkyCnt];
-	memset(m_lightSky, 0, m_lightSkyCnt);
-
-	m_lightBlkCnt = 16 * 16 * 128 / 2;
-	m_lightBlk = new uint8_t[m_lightBlkCnt];
-	memset(m_lightBlk, 0, m_lightBlkCnt);
-
 	m_pBlockData = pData;
-	//}
 
-	m_chunkPos = TilePos(pos, 0);
+	m_chunkPos = pos;
 
 	init();
 }
@@ -213,102 +183,72 @@ int LevelChunk::getHeightmap(const ChunkTilePos& pos)
 
 void LevelChunk::recalcHeightmap()
 {
-	int x1 = 127;
+	int minHeight = 127;
 
-	ChunkTilePos pos(0, 0, 0);
-
-	for (pos.x = 0; pos.x < 16; pos.x++)
+	ChunkTilePos ctp;
+	for (ctp.x = 0; ctp.x < 16; ctp.x++)
 	{
-		for (pos.z = 0; pos.z < 16; pos.z++)
+		for (ctp.z = 0; ctp.z < 16; ctp.z++)
 		{
-			pos.y = 0;
-			int index1 = MakeBlockDataIndex(pos);
-			pos.y = 126;
-
-			int x2 = 0;
-			while (!Tile::lightBlock[getTile(pos)])
-			{
-				if (pos.y-- == 0)
-				{
-					x2 = 0;
-					goto label_7;
-				}
+			ctp.y = 127;
+		
+			for (; ctp.y > 0 && Tile::lightBlock[getTile(ChunkTilePos(ctp.x, ctp.y - 1, ctp.z))] == 0; ctp.y--) {
 			}
 
-			x2 = pos.y + 1;
-		label_7:
-			if (x1 >= x2)
-				x1 = x2;
-			pos.y = 0;
-			m_heightMap[MakeHeightMapIndex(pos)] = x2;
+			m_heightMap[ctp.z << 4 | ctp.x] = ctp.y;
+
+			if (ctp.y < minHeight)
+				minHeight = ctp.y;
 
 			if (!m_pLevel->m_pDimension->m_bHasCeiling)
 			{
-				int x4 = 15;
-				for (pos.y = 127; pos.y > 0; pos.y--)
+				int light = 15;
+				ctp.y = 127;
+
+				do
 				{
-					x4 -= Tile::lightBlock[getTile(pos)];
-					if (x4 <= 0)
-						break;
+					light -= Tile::lightBlock[getTile(ctp)];
+					if (light > 0)
+						m_lightSky.set(ctp, light);
 
-					int x = pos.y + index1;
-					int index = x >> 1, offs = x & 1;
-
-					if (offs)
-						m_lightSky[index] = (m_lightSky[index] & 0x0F) | (x4 << 4); // set the upper 4 bits to x4
-					else
-						m_lightSky[index] = (m_lightSky[index] & 0xF0) | x4; // set the lower 4 bits to x4
-				}
+					--ctp.y;
+				} while (ctp.y > 0 && light > 0);
 			}
 		}
 	}
 
-	m_minHeight = x1;
-	if (!m_bDontSave) {
-		for (int i = 0; i < 16; i++)
-		{
-			for (int j = 0; j < 16; j++)
-			{
-				lightGaps(ChunkTilePos(i, 0, j));
-			}
-		}
-	}
+	m_minHeight = minHeight;
+
+	for (ctp.x = 0; ctp.x < 16; ctp.x++)
+		for (ctp.z = 0; ctp.z < 16; ctp.z++)
+			lightGaps(ctp);
+
 	m_bUnsaved = true;
 }
 
 void LevelChunk::recalcHeightmapOnly()
 {
-	int x1 = 127;
+	int minHeight = 127;
 
-	ChunkTilePos pos(0, 0, 0);
-	for (pos.x = 0; pos.x < 16; pos.x++)
+	ChunkTilePos ctp;
+	for (ctp.x = 0; ctp.x < 16; ctp.x++)
 	{
-		for (pos.z = 0; pos.z < 16; pos.z++)
+		for (ctp.z = 0; ctp.z < 16; ctp.z++)
 		{
-			pos.y = 0;
-			int index1 = MakeBlockDataIndex(pos);
-			pos.y = 126;
+			ctp.y = 127;
 
-			int x2 = 0;
-			while (!Tile::lightBlock[getTile(pos)])
-			{
-				if (pos.y-- == 0)
-				{
-					x2 = 0;
-					goto label_7;
-				}
+
+			for (; ctp.y > 0 && Tile::lightBlock[getTile(ChunkTilePos(ctp.x, ctp.y - 1, ctp.z))] == 0; ctp.y--) {
 			}
 
-			x2 = pos.y + 1;
-			pos.y = 0;
-		label_7:
-			if (x1 >= x2)
-				x1 = x2;
-			m_heightMap[MakeHeightMapIndex(pos)] = x2;
+			m_heightMap[ctp.z << 4 | ctp.x] = ctp.y;
+
+			if (ctp.y < minHeight)
+				minHeight = ctp.y;
 		}
 	}
 
-	m_minHeight = x1;
+	m_minHeight = minHeight;
 
 	m_bUnsaved = true;
 }
@@ -347,25 +287,14 @@ int LevelChunk::getBrightness(const LightLayer& ll, const ChunkTilePos& pos)
 {
 	CheckPosition(pos);
 
-	// why the hell is it doing it like that.
 	if (&ll == &LightLayer::Sky)
 	{
-		int bitIdx = MakeBlockDataIndex(pos);
-		int index = bitIdx >> 1, offs = bitIdx & 1;
-		if (offs)
-			return m_lightSky[index] >> 4;
-		else
-			return m_lightSky[index] & 0xF;
+		return m_lightSky.get(pos);
 	}
 
 	if (&ll == &LightLayer::Block)
 	{
-		int bitIdx = MakeBlockDataIndex(pos);
-		int index = bitIdx >> 1, offs = bitIdx & 1;
-		if (offs)
-			return m_lightBlk[index] >> 4;
-		else
-			return m_lightBlk[index] & 0xF;
+		return m_lightBlk.get(pos);
 	}
 
 	return 0;
@@ -375,29 +304,16 @@ void LevelChunk::setBrightness(const LightLayer& ll, const ChunkTilePos& pos, in
 {
 	m_bUnsaved = true;
 	CheckPosition(pos);
-	// why the hell is it doing it like that.
 
 	if (&ll == &LightLayer::Sky)
 	{
-		int bitIdx = MakeBlockDataIndex(pos);
-		int index = bitIdx >> 1, offs = bitIdx & 1;
-		if (offs)
-			m_lightSky[index] = (m_lightSky[index] & 0x0F) | (brightness << 4);
-		else
-			m_lightSky[index] = (m_lightSky[index] & 0xF0) | (brightness & 0xF);
-
+		m_lightSky.set(pos, brightness);
 		return;
 	}
 
 	if (&ll == &LightLayer::Block)
 	{
-		int bitIdx = MakeBlockDataIndex(pos);
-		int index = bitIdx >> 1, offs = bitIdx & 1;
-		if (offs)
-			m_lightBlk[index] = (m_lightBlk[index] & 0x0F) | (brightness << 4);
-		else
-			m_lightBlk[index] = (m_lightBlk[index] & 0xF0) | (brightness & 0xF);
-
+		m_lightBlk.set(pos, brightness);
 		return;
 	}
 }
@@ -405,30 +321,21 @@ void LevelChunk::setBrightness(const LightLayer& ll, const ChunkTilePos& pos, in
 int LevelChunk::getRawBrightness(const ChunkTilePos& pos, int skySubtract)
 {
 	CheckPosition(pos);
-	int bitIdx = MakeBlockDataIndex(pos);
-	int index = bitIdx >> 1, offs = bitIdx & 1;
 
-	uint8_t bSky, bBlk;
-	if (offs)
-		bSky = m_lightSky[index] >> 4;
-	else
-		bSky = m_lightSky[index] & 0xF;
+	int bSky = m_lightSky.get(pos);
 
-	if (m_lightSky)
+	if (bSky > 0)
 		touchedSky = true;
 
-	int br = bSky - skySubtract;
+	bSky -= skySubtract;
 
-	if (offs)
-		bBlk = m_lightBlk[index] >> 4;
-	else
-		bBlk = m_lightBlk[index] & 0xF;
+	int bBlk = m_lightBlk.get(pos);
 
 	// if it's smaller than 0 it'll probably sort itself out
-	if (br < bBlk)
-		br = bBlk;
+	if (bBlk > bSky)
+		bSky = bBlk;
 	
-	return br;
+	return bSky;
 }
 
 void LevelChunk::addEntity(std::shared_ptr<Entity> pEnt)
@@ -530,124 +437,72 @@ void LevelChunk::recalcHeight(const ChunkTilePos& pos)
 {
 	CheckPosition(ChunkTilePos(pos.x, 64, pos.z));
 
-	uint8_t& hmap = m_heightMap[MakeHeightMapIndex(pos)];
+	int minY = m_heightMap[pos.z << 4 | pos.x] & 255;
+	int maxY = minY;
+	if (pos.y > minY)
+		maxY = pos.y;
 
-	int index = MakeBlockDataIndex(ChunkTilePos(pos.x, 0, pos.z));
 
-	int x1 = hmap;
-	if (x1 < pos.y)
-		x1 = pos.y;
-
-	if (x1 > 0)
-	{
-		while (!Tile::lightBlock[m_pBlockData[x1 - 1 + index]] && x1)
-		{
-			--x1;
-		}
+	for (int var6 = pos.x << 11 | pos.z << 7; maxY > 0 && Tile::lightBlock[m_pBlockData[var6 + maxY - 1] & 255] == 0; maxY--) {
 	}
 
-	if (x1 != hmap)
+	if (maxY != minY)
 	{
-		m_pLevel->lightColumnChanged(pos.x, pos.z, x1, hmap);
-		hmap = x1;
-		if (m_minHeight <= x1)
+		m_pLevel->lightColumnChanged(pos.x, pos.z, maxY, minY);
+		m_heightMap[pos.z << 4 | pos.x] = maxY;
+		int globalX;
+		int globalZ;
+		if (maxY < m_minHeight)
+			m_minHeight = maxY;
+	
+		else
 		{
-			int x6 = 127;
-			ChunkTilePos pos(0, 0, 0);
-			for (pos.x = 0; pos.x < 16; pos.x++)
-			{
-				for (pos.z = 0; pos.z < 16; pos.z++)
-				{
-					int x = m_heightMap[MakeHeightMapIndex(pos)];
-					if (x6 >= x)
-						x6 = x;
-				}
-			}
+			globalX = 127;
 
-			m_minHeight = x6;
+			for (globalZ = 0; globalZ < 16; ++globalZ)
+				for (int heightY = 0; heightY < 16; ++heightY)
+					if ((m_heightMap[heightY << 4 | globalZ] & 255) < globalX)
+						globalX = m_heightMap[heightY << 4 | globalZ] & 255;
+
+			m_minHeight = globalX;
+		}
+
+		globalX = m_chunkPos.x * 16 + pos.x;
+		globalZ = m_chunkPos.z * 16 + pos.z;
+		ChunkTilePos ctp = pos;
+		if (maxY < minY)
+		{
+			for (ctp.y = maxY; ctp.y < minY; ctp.y++)
+				m_lightSky.set(ctp, 15);
 		}
 		else
 		{
-			m_minHeight = x1;
+			m_pLevel->updateLight(LightLayer::Sky, TilePos(globalX, minY, globalZ), TilePos(globalX, maxY, globalZ));
+
+			for (ctp.y = minY; ctp.y < maxY; ctp.y++)
+				m_lightSky.set(ctp, 0);
 		}
 
-		int globalX = pos.x + 16 * m_chunkPos.x;
-		int globalZ = pos.z + 16 * m_chunkPos.z;
-		if (hmap <= x1)
+		int light = 15;
+
+		for (ctp.y = maxY; ctp.y > 0 && light > 0; m_lightSky.set(ctp, light))
 		{
-			m_pLevel->updateLight(LightLayer::Sky, TilePos(globalX, hmap, globalZ), TilePos(globalX, x1, globalZ));
+			ctp.y--;
+			int lightBlock = Tile::lightBlock[getTile(ctp)];
+			if (lightBlock == 0)
+				lightBlock = 1;
 
-			if (hmap < x1)
-			{
-				for (int i = 0; i < x1 - hmap; i++)
-				{
-					int bitIdx = index | (i + hmap);
-					int _idx = bitIdx >> 1;
-					int _off = bitIdx & 1;
-
-					if (_off)
-						m_lightSky[_idx] &= 0xF0;
-					else
-						m_lightSky[_idx] &= 0x0F;
-				}
-			}
-		}
-		else
-		{
-			for (int i = 0; i < hmap; i++)
-			{
-				int v15 = (i | index) >> 1;
-				//int v16 = (i | index) <<31;
-
-				if ((i | index) & 1)
-				{
-					m_lightSky[v15] = (m_lightSky[v15] & 0xF0) | 0x0F;
-				}
-				else
-				{
-					m_lightSky[v15] = (m_lightSky[v15] & 0x0F) | 0xF0;
-				}
-			}
+			light -= lightBlock;
+			if (light < 0)
+				light = 0;
 		}
 
-		int x2 = x1;
-		int x3 = 15;
-		while (x3 > 0 && x2 > 0)
-		{
-			TileID tile = getTile(ChunkTilePos(pos.x, --x2, pos.z));
-			int bitIdx = x2 | index;
+		while (ctp.y > 0 && Tile::lightBlock[getTile(ChunkTilePos(ctp.x, ctp.y - 1, ctp.z))] == 0)
+			ctp.y--;
 
-			int x4 = Tile::lightBlock[tile];
-			if (!x4)
-				x4 = 1; //@HUH: what is this?
+		if (ctp.y != maxY)
+			m_pLevel->updateLight(LightLayer::Sky, TilePos(globalX - 1, ctp.y, globalZ - 1), TilePos(globalX + 1, maxY, globalZ + 1));
 
-			int x5 = x3 - x4;
-			int _idx = bitIdx >> 1;
-			int _off = (bitIdx & 1);
-
-			x3 = x5;
-			if (x3 < 0)
-				x3 = 0;
-
-			if (_off)
-				m_lightSky[_idx] = (m_lightSky[_idx] & 0x0F) | ((x3) << 4);
-			else
-				m_lightSky[_idx] = (m_lightSky[_idx] & 0xF0) | x3;
-		}
-
-		if (x2 > 0)
-		{
-			for (; x2 > 0; x2--)
-			{
-				if (Tile::lightBlock[getTile(ChunkTilePos(pos.x, x2 - 1, pos.z))])
-					break;
-			}
-		}
-
-		if (x2 != x1)
-		{
-			m_pLevel->updateLight(LightLayer::Sky, TilePos(globalX - 1, x2, globalZ - 1), TilePos(globalX + 1, x1, globalZ + 1));
-		}
 		m_bUnsaved = true;
 	}
 }
@@ -694,7 +549,7 @@ void LevelChunk::markUnsaved()
 TileID LevelChunk::getTile(const ChunkTilePos& pos)
 {
 	CheckPosition(pos);
-	TileID tile = m_pBlockData[MakeBlockDataIndex(pos)];
+	TileID tile = m_pBlockData[DataLayer::MakeBlockDataIndex(pos)];
 	if (tile && !Tile::tiles[tile]) LOG_I("Unknown block: %d", tile);
 	return tile;
 }
@@ -716,7 +571,7 @@ bool LevelChunk::setTile(const ChunkTilePos& pos, TileID tile)
 {
 	CheckPosition(pos);
 
-	int index = MakeBlockDataIndex(pos);
+	int index = DataLayer::MakeBlockDataIndex(pos);
 
 	TileID oldTile = m_pBlockData[index];
 
@@ -734,11 +589,7 @@ bool LevelChunk::setTile(const ChunkTilePos& pos, TileID tile)
 		Tile::tiles[oldTile]->onRemove(m_pLevel, tilePos);
 	}
 
-	// clear the data value of the block
-	if (index & 1)
-		m_tileData[index >> 1] &= 0xF;
-	else
-		m_tileData[index >> 1] &= 0xF0;
+	m_tileData.set(pos, 0);
 
 	if (Tile::lightBlock[tile])
 	{
@@ -772,7 +623,7 @@ bool LevelChunk::setTileAndData(const ChunkTilePos& pos, TileID tile, int data)
 	assert((data & ~0xF) == 0);
 	data &= 0xF;
 
-	int index = MakeBlockDataIndex(pos);
+	int index = DataLayer::MakeBlockDataIndex(pos);
 
 	TileID oldTile = m_pBlockData[index];
 
@@ -795,10 +646,7 @@ bool LevelChunk::setTileAndData(const ChunkTilePos& pos, TileID tile, int data)
 	}
 
 	// update the data value of the block
-	if (index & 1)
-		m_tileData[index >> 1] = (m_tileData[index >> 1] & 0x0F) | (data << 4);
-	else
-		m_tileData[index >> 1] = (m_tileData[index >> 1] & 0xF0) | (data);
+	m_tileData.set(pos, data);
 
 	if (!m_pLevel->m_pDimension->m_bHasCeiling)
 	{
@@ -831,29 +679,14 @@ int LevelChunk::getData(const ChunkTilePos& pos)
 {
 	CheckPosition(pos);
 
-	int index = MakeBlockDataIndex(pos);
-
-	uint8_t data = m_tileData[index >> 1];
-	if (index & 1)
-		return data >> 4;
-	return data & 0xF;
+	return m_tileData.get(pos);
 }
 
 void LevelChunk::setData(const ChunkTilePos& pos, int data)
 {
 	CheckPosition(pos);
 
-	assert((data & ~0xF) == 0);
-	data &= 0xF;
-
-	int index = MakeBlockDataIndex(pos);
-
-	uint8_t& xdata = m_tileData[index >> 1];
-	if (index & 1)
-		xdata = (xdata & 0x0F) | (data << 4);
-	else
-		xdata = (xdata & 0xF0) | (data);
-
+	m_tileData.set(pos, data);
 	m_bUnsaved = true;
 }
 
@@ -892,9 +725,7 @@ void LevelChunk::setBlocks(uint8_t* pData, int y)
 	m_pLevel->setTilesDirty(tilePos, tilePos2);
 }
 
-// This function appears to be unused, and is completely removed as of 0.9.2
-int LevelChunk::setBlocksAndData(uint8_t* pData, int xStart, int yStart, int zStart,
-	int xEnd, int yEnd, int zEnd, int dataOffset)
+int LevelChunk::setBlocksAndData(uint8_t* pData, int xStart, int yStart, int zStart, int xEnd, int yEnd, int zEnd, int dataOffset)
 {
 	LOG_I("LevelChunk::setBlocksAndData");
 
@@ -902,11 +733,13 @@ int LevelChunk::setBlocksAndData(uint8_t* pData, int xStart, int yStart, int zSt
 	const int area = height;
 	const int metaSz = area / 2;
 
-	for (int x = xStart; x < xEnd; ++x)
+	ChunkTilePos ctp(0, yStart, 0);
+
+	for (ctp.x = xStart; ctp.x < xEnd; ++ctp.x)
 	{
-		for (int z = zStart; z < zEnd; ++z)
+		for (ctp.z = zStart; ctp.z < zEnd; ++ctp.z)
 		{
-			const int index = MakeBlockDataIndex(ChunkTilePos(x, yStart, z));
+			const int index = DataLayer::MakeBlockDataIndex(ctp);
 			memcpy(&m_pBlockData[index], &pData[dataOffset], area);
 			dataOffset += area;
 		}
@@ -915,32 +748,32 @@ int LevelChunk::setBlocksAndData(uint8_t* pData, int xStart, int yStart, int zSt
 	recalcHeightmapOnly();
 
 
-	for (int x = xStart; x < xEnd; ++x)
+	for (ctp.x = xStart; ctp.x < xEnd; ++ctp.x)
 	{
-		for (int z = zStart; z < zEnd; ++z)
+		for (ctp.z = zStart; ctp.z < zEnd; ++ctp.z)
 		{
-			const int index = MakeBlockDataIndex(ChunkTilePos(x, yStart, z)) >> 1;
-			memcpy(&m_tileData[index], &pData[dataOffset], metaSz);
+			const int index = DataLayer::MakeBlockDataIndex(ctp) >> 1;
+			memcpy(&m_tileData.m_pData[index], &pData[dataOffset], metaSz);
 			dataOffset += metaSz;
 		}
 	}
 
-	for (int x = xStart; x < xEnd; ++x)
+	for (ctp.x = xStart; ctp.x < xEnd; ++ctp.x)
 	{
-		for (int z = zStart; z < zEnd; ++z)
+		for (ctp.z = zStart; ctp.z < zEnd; ++ctp.z)
 		{
-			const int index = MakeBlockDataIndex(ChunkTilePos(x, yStart, z)) >> 1;
-			memcpy(&m_lightBlk[index], &pData[dataOffset], metaSz);
+			const int index = DataLayer::MakeBlockDataIndex(ctp) >> 1;
+			memcpy(&m_lightBlk.m_pData[index], &pData[dataOffset], metaSz);
 			dataOffset += metaSz;
 		}
 	}
 
-	for (int x = xStart; x < xEnd; ++x)
+	for (ctp.x = xStart; ctp.x < xEnd; ++ctp.x)
 	{
-		for (int z = zStart; z < zEnd; ++z)
+		for (ctp.z = zStart; ctp.z < zEnd; ++ctp.z)
 		{
-			const int index = MakeBlockDataIndex(ChunkTilePos(x, yStart, z)) >> 1;
-			memcpy(&m_lightSky[index], &pData[dataOffset], metaSz);
+			const int index = DataLayer::MakeBlockDataIndex(ctp) >> 1;
+			memcpy(&m_lightSky.m_pData[index], &pData[dataOffset], metaSz);
 			dataOffset += metaSz;
 		}
 	}
@@ -978,29 +811,30 @@ void LevelChunk::addTileEntity(std::shared_ptr<TileEntity> tileEntity)
 		m_pLevel->m_tileEntityList.push_back(tileEntity);
 }
 
-// This function appears to be unused, and is completely removed as of 0.9.2
-int LevelChunk::getBlocksAndData(uint8_t* pData, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+int LevelChunk::getBlocksAndData(uint8_t* pData, int xStart, int yStart, int zStart, int xEnd, int yEnd, int zEnd, int dataOffset)
 {
-	if (a3 >= a6)
+	if (xStart >= xEnd)
 	{
 		recalcHeightmapOnly();
-		return a9;
+		return dataOffset;
 	}
 
+	ChunkTilePos ctp(0, yStart, 0);
+
 	// load the tile IDs
-	int x2 = a7 - a4;
-	for (int x1 = a3; x1 < a6; x1++)
+	int x2 = yEnd - yStart;
+	for (ctp.x = xStart; ctp.x < xEnd; ctp.x++)
 	{
-		if (a5 >= a8) continue;
+		if (zStart >= zEnd) continue;
 
-		uint8_t* dst = &pData[a9];
+		uint8_t* dst = &pData[dataOffset];
 
-		for (int x3 = a5; x3 < a8; x3++)
+		for (ctp.z = zStart; ctp.z < zEnd; ctp.z++)
 		{
-			uint8_t* src = &m_pBlockData[MakeBlockDataIndex(ChunkTilePos(x1, a4, x3))];
+			uint8_t* src = &m_pBlockData[DataLayer::MakeBlockDataIndex(ctp)];
 			memcpy(dst, src, x2 * sizeof(TileID));
 			dst += x2 * sizeof(TileID);
-			a9 += x2 * sizeof(TileID);
+			dataOffset += x2 * sizeof(TileID);
 		}
 	}
 
@@ -1009,54 +843,54 @@ int LevelChunk::getBlocksAndData(uint8_t* pData, int a3, int a4, int a5, int a6,
 	int x5 = x2 / 2;
 
 	// load the tile data
-	for (int x1 = a3; x1 < a6; x1++)
+	for (ctp.x = xStart; ctp.x < xEnd; ctp.x++)
 	{
-		if (a5 >= a8) continue;
+		if (zStart >= zEnd) continue;
 
-		uint8_t* dst = &pData[a9];
+		uint8_t* dst = &pData[dataOffset];
 
-		for (int x3 = a5; x3 < a8; x3++)
+		for (ctp.z = zStart; ctp.z < zEnd; ctp.z++)
 		{
-			uint8_t* src = &m_tileData[MakeBlockDataIndex(ChunkTilePos(x1, a4, x3)) >> 1];
+			uint8_t* src = &m_tileData.m_pData[DataLayer::MakeBlockDataIndex(ctp) >> 1];
 			memcpy(dst, src, x5);
 			dst += x5;
-			a9 += x5;
+			dataOffset += x5;
 		}
 	}
 
 	// load the block lights
-	for (int x1 = a3; x1 < a6; x1++)
+	for (ctp.x = xStart; ctp.x < xEnd; ctp.x++)
 	{
-		if (a5 >= a8) continue;
+		if (zStart >= zEnd) continue;
 
-		uint8_t* dst = &pData[a9];
+		uint8_t* dst = &pData[dataOffset];
 
-		for (int x3 = a5; x3 < a8; x3++)
+		for (ctp.z = zStart; ctp.z < zEnd; ctp.z++)
 		{
-			uint8_t* src = &m_lightBlk[MakeBlockDataIndex(ChunkTilePos(x1, a4, x3)) >> 1];
+			uint8_t* src = &m_lightBlk.m_pData[DataLayer::MakeBlockDataIndex(ctp) >> 1];
 			memcpy(dst, src, x5);
 			dst += x5;
-			a9 += x5;
+			dataOffset += x5;
 		}
 	}
 
 	// load the sky lights
-	for (int x1 = a3; x1 < a6; x1++)
+	for (ctp.x = xStart; ctp.x < xEnd; ctp.x++)
 	{
-		if (a5 >= a8) continue;
+		if (zStart >= zEnd) continue;
 
-		uint8_t* dst = &pData[a9];
+		uint8_t* dst = &pData[dataOffset];
 
-		for (int x3 = a5; x3 < a8; x3++)
+		for (ctp.z = zStart; ctp.z < zEnd; ctp.z++)
 		{
-			uint8_t* src = &m_lightSky[MakeBlockDataIndex(ChunkTilePos(x1, a4, x3)) >> 1];
+			uint8_t* src = &m_lightSky.m_pData[DataLayer::MakeBlockDataIndex(ctp) >> 1];
 			memcpy(dst, src, x5);
 			dst += x5;
-			a9 += x5;
+			dataOffset += x5;
 		}
 	}
 
-	return a9;
+	return dataOffset;
 }
 
 void LevelChunk::setTileEntity(const ChunkTilePos& pos, std::shared_ptr<TileEntity> tileEntity)

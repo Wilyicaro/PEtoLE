@@ -203,6 +203,7 @@
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\Lighting.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\BuildActionIntention.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\components\SliderButton.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\InBedChatScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\IntroScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.hpp" />
@@ -364,6 +365,7 @@
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Lighting.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\components\SliderButton.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\InBedChatScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\IntroScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ContainerScreen.cpp" />

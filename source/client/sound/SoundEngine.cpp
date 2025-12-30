@@ -349,8 +349,7 @@ void SoundEngine::playDesc(const SoundDesc& desc, const Vec3& pos, float volume,
 	}
 	else
 	{
-		float cPitch = Mth::clamp(pitch, -1.0f, 1.0f);
-		m_pSoundSystem->playAt(desc, pos, volume, cPitch, desc.m_bIsStream);
+		m_pSoundSystem->playAt(desc, pos, volume, pitch, desc.m_bIsStream);
 	}
 }
 
@@ -418,7 +417,6 @@ void SoundEngine::update(const Mob* mob, float partialTicks)
 		if (mob)
 		{
 			Vec3 pos = mob->getPos(partialTicks);
-			pos.y -= mob->m_heightOffset;
 			m_listenerPosition = pos;
 			m_pSoundSystem->setListenerPos(pos);
 

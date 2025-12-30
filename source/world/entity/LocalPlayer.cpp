@@ -14,6 +14,7 @@
 #include "client/gui/screens/inventory/TrapScreen.hpp"
 #include "client/gui/screens/inventory/TextEditScreen.hpp"
 #include <client/renderer/MobSkinTextureProcessor.hpp>
+#include "network/ServerSideNetworkHandler.hpp"
 
 int dword_250ADC, dword_250AE0;
 
@@ -32,8 +33,8 @@ LocalPlayer::LocalPlayer(Minecraft* pMinecraft, Level* pLevel, User* pUser, Game
 	field_C1C = 0.0f;
 	m_nAutoJumpFrames = 0;
 	// multiplayer related
-	field_C24 = Vec3::ZERO;
-	field_C30 = Vec2::ZERO;
+	m_lastSentPos = Vec3::ZERO;
+	m_lastSentRot = Vec2::ZERO;
 	// multiplayer related -- end
 	field_C38 = 0;
 	m_pMoveInput = nullptr;
@@ -44,6 +45,10 @@ LocalPlayer::LocalPlayer(Minecraft* pMinecraft, Level* pLevel, User* pUser, Game
 	m_pMinecraft = pMinecraft;
 	m_name = pUser->m_guid;
 
+	m_pMinecraft->m_pGameMode = m_pGameMode;
+
+	m_bLastSneaked = false;
+
 	m_dimension = i;
 	field_C38 = m_pInventory->getSelectedItemId();
 	if (!m_skinUrl.empty())
@@ -52,62 +57,31 @@ LocalPlayer::LocalPlayer(Minecraft* pMinecraft, Level* pLevel, User* pUser, Game
 
 LocalPlayer::~LocalPlayer()
 {
+	m_pMinecraft->m_pGameMode = nullptr;
 }
 
 void LocalPlayer::aiStep()
 {
-	m_oPortalTime = m_portalTime;
 	if (m_bIsInsidePortal)
 	{
-
-		if (!m_pLevel->m_bIsOnline && m_pRiding)
-			ride(nullptr);
-
 		if (m_portalTime == 0.0F)
 			m_pMinecraft->m_pSoundEngine->playUI("portal.trigger", 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
 
 		if (m_pMinecraft->m_pScreen)
-		{
 			closeContainer();
-		}
-
-		m_portalTime += 0.0125F;
-		if (m_portalTime >= 1.0F)
-		{
-			m_portalTime = 1.0F;
-			if (!m_pLevel->m_bIsOnline)
-			{
-				m_changingDimensionDelay = 10;
-				m_pMinecraft->m_pSoundEngine->playUI("portal.travel", 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
-				m_pMinecraft->changeDimension();
-			}
-		}
-
-		m_bIsInsidePortal = false;
-	}
-	else
-	{
-		if (m_portalTime > 0.0F)
-			m_portalTime -= 0.05F;
-
-		if (m_portalTime < 0.0F)
-			m_portalTime = 0.0F;
 	}
 
-	if (m_changingDimensionDelay > 0)
-		--m_changingDimensionDelay;
-
-	if (!m_pLevel->m_bIsOnline && isSneaking() && m_pRiding)
-		ride(nullptr);
+	//if (!m_pLevel->m_bIsOnline && isSneaking() && m_pRiding)
+	//	ride(nullptr);
 	
 	bool wasJumping = m_pMoveInput->m_bJumping;
 	m_pMoveInput->tick(this);
-	if (m_pMoveInput->m_bSneaking && m_ySlideOffset < 0.47f)
-		m_ySlideOffset = 0.47f;
+	if (m_pMoveInput->m_bSneaking && m_ySlideOffset < 0.2f)
+		m_ySlideOffset = 0.2f;
 
 	m_lastRenderArmRot = m_renderArmRot;
-	m_renderArmRot.y = Mth::Lerp(m_renderArmRot.y, m_rot.y, 0.5f);
-	m_renderArmRot.x = Mth::Lerp(m_renderArmRot.x, m_rot.x, 0.5f);
+	m_renderArmRot.y = Mth::lerp(m_renderArmRot.y, m_rot.y, 0.5f);
+	m_renderArmRot.x = Mth::lerp(m_renderArmRot.x, m_rot.x, 0.5f);
 	
 	checkInTile(Vec3(m_pos.x - m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z + m_bbWidth * 0.35f));
 	checkInTile(Vec3(m_pos.x - m_bbWidth * 0.35, m_hitbox.min.y + 0.5, m_pos.z - m_bbWidth * 0.35f));
@@ -145,18 +119,13 @@ void LocalPlayer::aiStep()
 
 }
 
-void LocalPlayer::take(Entity* itemEntity, int)
-{
-	m_pMinecraft->m_pParticleEngine->add(new PickupParticle(m_pLevel, itemEntity->shared_from_this(), shared_from_this(), -0.5f));
-}
-
 void LocalPlayer::drop(std::shared_ptr<ItemInstance> pItemInstance, bool b)
 {
 	if (pItemInstance)
 	{
 		if (m_pMinecraft->isOnlineClient())
 		{
-			// @TODO: Replicate DropItemPacket to server
+			m_pMinecraft->m_pRakNetInstance->send(new PlayerActionPacket(4, Vec3i(), Facing::DOWN));
 		}
 		else
 		{
@@ -212,6 +181,25 @@ int LocalPlayer::getItemIcon(ItemInstance* instance)
 	return !m_pMinecraft->getOptions()->m_bThirdPerson && instance->m_itemID == Item::fishingRod->m_itemID && m_fishing ? instance->getIcon() + 16 : Player::getItemIcon(instance);
 }
 
+void LocalPlayer::hurtTo(int health)
+{
+	int diff = m_health - health;
+	if (diff <= 0)
+	{
+		m_health = health;
+		if (diff < 0)
+			m_invulnerableTime = m_invulnerableDuration / 2;
+	}
+	else
+	{
+		m_lastHurt = diff;
+		m_lastHealth = m_health;
+		m_invulnerableTime = m_invulnerableDuration;
+		actuallyHurt(diff);
+		m_hurtTime = m_hurtDuration = 10;
+	}
+}
+
 void LocalPlayer::animateRespawn()
 {
 
@@ -260,18 +248,31 @@ void LocalPlayer::calculateFlight(const Vec3& pos)
 
 void LocalPlayer::closeContainer()
 {
+	if (m_pLevel->m_bIsOnline)
+	{
+		getConnection()->send(new ContainerClosePacket(m_containerMenu->m_containerId));
+		m_pInventory->setCarried(nullptr);
+	}
 	m_pMinecraft->setScreen(nullptr);
 	Player::closeContainer();
 }
 
 void LocalPlayer::respawn()
 {
-	m_pMinecraft->respawnPlayer(std::dynamic_pointer_cast<LocalPlayer>(shared_from_this()));
+	if (m_pLevel->m_bIsOnline) getConnection()->send(new PlayerChangeDimensionPacket(m_dimension));
+	else m_pMinecraft->respawnPlayer(std::dynamic_pointer_cast<LocalPlayer>(shared_from_this()));
+}
+
+void LocalPlayer::toggleDimension(int dim)
+{
+	if (dim == -1)
+		m_pMinecraft->m_pSoundEngine->playUI("portal.travel", 1.0F, m_random.nextFloat() * 0.4F + 0.8F);
+	m_pMinecraft->changeDimension(dim);
 }
 
 bool LocalPlayer::isSneaking() const
 {
-	return m_pMoveInput->m_bSneaking;
+	return m_pMoveInput->m_bSneaking && !m_bSleeping;
 }
 
 int LocalPlayer::move(const Vec3& pos)
@@ -354,25 +355,43 @@ void LocalPlayer::tick()
 {
 	Player::tick();
 
-	if (m_pMinecraft->isOnline())
+	bool sneaking = isSneaking();
+	if (sneaking != m_bLastSneaked)
 	{
-		if (Mth::abs(m_pos.x - field_C24.x) > 0.1f ||
-			Mth::abs(m_pos.y - field_C24.y) > 0.01f ||
-			Mth::abs(m_pos.z - field_C24.z) > 0.1f ||
-			Mth::abs(field_C30.x - m_rot.x) > 1.0f ||
-			Mth::abs(field_C30.y - m_rot.y) > 1.0f)
+		if (m_pMinecraft->isOnlineClient())
 		{
-			m_pMinecraft->m_pRakNetInstance->send(new MovePlayerPacket(m_EntityID, Vec3(m_pos.x, m_pos.y - m_heightOffset, m_pos.z), m_rot));
-			field_C24 = m_pos;
-			field_C30 = m_rot;
+			if (sneaking)
+				m_pMinecraft->m_pRakNetInstance->send(new PlayerCommandPacket(m_EntityID, 1));
+			else
+				m_pMinecraft->m_pRakNetInstance->send(new PlayerCommandPacket(m_EntityID, 2));
 		}
+		else
+			setSneaking(sneaking);
+		m_bLastSneaked = sneaking;
+	}
 
-		if (field_C38 != m_pInventory->getSelectedItemId())
+	if (m_pMinecraft->isOnlineClient())
+	{
+		if (Mth::abs(m_pos.x - m_lastSentPos.x) > 0.1f ||
+			Mth::abs(m_pos.y - m_lastSentPos.y) > 0.01f ||
+			Mth::abs(m_pos.z - m_lastSentPos.z) > 0.1f ||
+			Mth::abs(m_lastSentRot.x - m_rot.x) > 1.0f ||
+			Mth::abs(m_lastSentRot.y - m_rot.y) > 1.0f)
 		{
-			field_C38 = m_pInventory->getSelectedItemId();
-			m_pMinecraft->m_pRakNetInstance->send(new PlayerEquipmentPacket(m_EntityID, field_C38));
+			m_pMinecraft->m_pRakNetInstance->send(new MovePlayerPacket(m_EntityID, Vec3(m_pos.x, m_hitbox.min.y, m_pos.z), m_rot, m_vel));
+			m_lastSentPos = m_pos;
+			m_lastSentRot = m_rot;
 		}
 	}
+}
+
+void LocalPlayer::swing()
+{
+	if (m_bSwinging && m_pMinecraft->isOnlineClient())
+	{
+		m_pMinecraft->m_pRakNetInstance->send(new AnimatePacket(m_EntityID, 1));
+	}
+	Player::swing();
 }
 
 void LocalPlayer::updateAi()

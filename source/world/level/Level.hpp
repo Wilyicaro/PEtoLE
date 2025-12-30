@@ -32,6 +32,7 @@
 class Dimension;
 class Level;
 class LevelListener;
+class RakNetInstance;
 
 typedef std::vector<std::shared_ptr<Entity>> EntityVector;
 typedef std::vector<AABB> AABBVector;
@@ -117,8 +118,8 @@ public:
 	void updateNeighborsAt(const TilePos& pos, TileID tile);
 	void neighborChanged(const TilePos& pos, TileID tile);
 	void setTilesDirty(const TilePos& min, const TilePos& max);
-	virtual void entityAdded(Entity* pEnt);
-	virtual void entityRemoved(Entity* pEnt);
+	virtual void entityAdded(const std::shared_ptr<Entity>& pEnt);
+	virtual void entityRemoved(const std::shared_ptr<Entity>& pEnt);
 	void lightColumnChanged(int x, int z, int y1, int y2);
 	bool containsFireTile(const AABB&);
 	bool containsAnyLiquid(const AABB&);
@@ -133,9 +134,10 @@ public:
 	int countWithCategory(EntityCategories::CategoriesMask category);
 	void loadPlayer(std::shared_ptr<Player>);
 	virtual bool addEntity(std::shared_ptr<Entity>);
-	virtual bool removeEntity(std::shared_ptr<Entity>);
+	virtual bool removeEntity(const std::shared_ptr<Entity>&);
+	virtual void removeEntityImmediately(const std::shared_ptr<Entity>&);
 	void removeEntities(const EntityVector&);
-	void removeAllPendingEntityRemovals(bool limited = true);
+	void removeAllPendingEntityRemovals(bool limited = false);
 	void prepare();
 	void saveLevelData();
 	void savePlayerData();
@@ -214,6 +216,8 @@ public:
 	EntityVector getEntitiesOfType(EntityType*, const AABB&) const;
 	EntityVector getPlayers(const AABB&) const;
 	std::shared_ptr<Player> getPlayer(const std::string&);
+	void broadcastAll(Packet* packet);
+	void broadcastToAllInRange(Player* avoid, const Vec3& pos, real range, Packet* packet);
 	BiomeSource* getBiomeSource() const override;
 	MinecraftServer* getServer() const { return m_pMinecraftServer; }
 	virtual LevelData& getLevelData() const { return getServer()->m_levelData; }
@@ -252,7 +256,8 @@ public:
 
 	void levelEvent(int event, const TilePos&, int info);
 	void levelEvent(Player*, int event, const TilePos&, int info);
-	void entityEvent(Entity*, int event);
+	void entityEvent(Entity*, int8_t event);
+	void sendLevelInfo(Player*);
 
 protected:
 	int m_randValue;
@@ -280,6 +285,7 @@ public:
 	bool m_bCalculatingInitialSpawn;
 	std::vector<LevelListener*> m_levelListeners;
 	ChunkSource* m_pChunkSource;
+	RakNetInstance* m_pConnection;
 	MinecraftServer* m_pMinecraftServer;
 	DimensionDataStorage* m_pDataStorage;
 	EntityVector m_pendingEntityRemovals;

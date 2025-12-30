@@ -42,7 +42,7 @@ void TntTile::destroy(Level* level, const TilePos& pos, int data)
 		spawnResources(level, pos, std::make_shared<ItemInstance>(Tile::tnt->m_ID, 1, 0));
 	else
 	{
-		auto tnt = std::make_shared<PrimedTnt>(level, Vec3(pos) + 0.5f);
+		auto tnt = std::make_shared<PrimedTnt>(level, Vec3(pos.x + 0.5, pos.y, pos.z + 0.5));
 		level->addEntity(tnt);
 		level->playSound(tnt.get(), "random.fuse", 1.0F, 1.0F);
 	}
@@ -60,7 +60,7 @@ void TntTile::onPlace(Level* level, const TilePos& pos)
 
 void TntTile::wasExploded(Level* level, const TilePos& pos)
 {
-	auto tnt = std::make_shared<PrimedTnt>(level, Vec3(pos) + 0.5f);
+	auto tnt = std::make_shared<PrimedTnt>(level, Vec3(pos.x + 0.5, pos.y, pos.z + 0.5));
 	tnt->m_fuseTimer = level->m_random.nextInt(tnt->m_fuseTimer / 4) + tnt->m_fuseTimer / 8;
 	level->addEntity(tnt);
 }

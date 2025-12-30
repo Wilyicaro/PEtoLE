@@ -37,7 +37,7 @@ void CreativeScreen::mouseDragged(double x, double y, int button, double deltaX,
     if (m_bIsScrolling) 
     {
         CreativeMenu* creativeMenu = (CreativeMenu*)m_menu;
-        creativeMenu->updateScroll(m_scrolled = Mth::clamp((y - (m_topPos + 25)) / 144.0f, 0.0f, 1.0f));
+        creativeMenu->updateScroll(m_scrolled = Mth::clamp((float(y) - (m_topPos + 25)) / 144.0f, 0.0f, 1.0f));
     }
 }
 
@@ -80,7 +80,7 @@ void CreativeScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 			}
 		}
 		else {
-			m_menu->clicked(slot->index, button, m_pMinecraft->m_pPlayer.get());
+			m_menu->clicked(slot->index, button, quick, m_pMinecraft->m_pPlayer.get());
 			auto var8 = m_menu->getSlot(slot->index)->getItem();
 			//@TODO Sync if online
 		}

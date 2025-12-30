@@ -10,7 +10,7 @@ MinecartRenderer::MinecartRenderer() : m_pModel(new MinecartModel())
 void MinecartRenderer::render(Entity* entity, const Vec3& pos, float rot, float a)
 {
     Minecart* cart = (Minecart*)entity;
-    Vec3 cPos = pos;
+    Vec3 cPos = pos.add(0, entity->m_heightOffset, 0);
     glPushMatrix();
     Vec3 smoothPos = cart->m_oPos + (cart->m_pos - cart->m_oPos) * a;
     real r = 0.3;

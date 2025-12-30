@@ -1,12 +1,18 @@
 /********************************************************************
 	Minecraft: Pocket Edition - Decompilation Project
 	Copyright (C) 2023 iProgramInCpp
-	
+
 	The following code is licensed under the BSD 1 clause license.
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__DREAMCAST__)
+
+#ifdef __DREAMCAST__
+
+#define USE_GL_VBO_EMULATION
+
+#endif
 
 #include "GL.hpp"
 #include <unordered_map>
@@ -235,12 +241,12 @@ struct GLBuffer
 	void SetVertexPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* offset)
 	{
 		int ioffset = int(size_t(offset));
-		if (m_vtx_size   == size   &&
-			m_vtx_type   == type   &&
+		if (m_vtx_size == size &&
+			m_vtx_type == type &&
 			m_vtx_stride == stride &&
 			m_vtx_offset == ioffset)
 			return;
-		
+
 		DeletePreExistingDLIfNeeded();
 		m_vtx_size = size;
 		m_vtx_type = type;
@@ -251,12 +257,12 @@ struct GLBuffer
 	void SetTextureCoordPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* offset)
 	{
 		int ioffset = int(size_t(offset));
-		if (m_tc_size   == size   &&
-			m_tc_type   == type   &&
+		if (m_tc_size == size &&
+			m_tc_type == type &&
 			m_tc_stride == stride &&
 			m_tc_offset == ioffset)
 			return;
-		
+
 		DeletePreExistingDLIfNeeded();
 		m_tc_size = size;
 		m_tc_type = type;
@@ -267,12 +273,12 @@ struct GLBuffer
 	void SetColorPointer(GLint size, GLenum type, GLsizei stride, const GLvoid* offset)
 	{
 		int ioffset = int(size_t(offset));
-		if (m_col_size   == size   &&
-			m_col_type   == type   &&
+		if (m_col_size == size &&
+			m_col_type == type &&
 			m_col_stride == stride &&
 			m_col_offset == ioffset)
 			return;
-		
+
 		DeletePreExistingDLIfNeeded();
 		m_col_size = size;
 		m_col_type = type;
@@ -283,7 +289,7 @@ struct GLBuffer
 	void SetNormalPointer(GLenum type, GLsizei stride, const GLvoid* offset)
 	{
 		int ioffset = int(size_t(offset));
-		if (m_nor_type   == type   &&
+		if (m_nor_type == type &&
 			m_nor_stride == stride &&
 			m_nor_offset == ioffset)
 			return;
@@ -486,7 +492,7 @@ void xglDrawArrays(GLenum mode, GLint first, GLsizei count)
 		void* pVtx = (void*)(addr + pBuf->m_vtx_offset + i * pBuf->m_vtx_stride);
 		void* pCol = (void*)(addr + pBuf->m_col_offset + i * pBuf->m_col_stride);
 		void* pNor = (void*)(addr + pBuf->m_col_offset + i * pBuf->m_col_stride);
-		void* pTC  = (void*)(addr + pBuf->m_tc_offset  + i * pBuf->m_tc_stride);
+		void* pTC = (void*)(addr + pBuf->m_tc_offset + i * pBuf->m_tc_stride);
 
 		if (g_bUseTextureCoordArrays)
 		{
@@ -506,7 +512,7 @@ void xglDrawArrays(GLenum mode, GLint first, GLsizei count)
 			{
 				uint8_t* pfCol = (uint8_t*)pCol;
 				/**/ if (pBuf->m_col_size == 4)
-					glColor4f(float(pfCol[0])/255.0f, float(pfCol[1])/255.0f, float(pfCol[2])/255.0f, float(pfCol[3])/255.0f);
+					glColor4f(float(pfCol[0]) / 255.0f, float(pfCol[1]) / 255.0f, float(pfCol[2]) / 255.0f, float(pfCol[3]) / 255.0f);
 				else xglAssert(!"Unimplemented color size!");
 			}
 			else xglAssert(!"Unimplemented color type!");

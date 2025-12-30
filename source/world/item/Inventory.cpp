@@ -1,5 +1,6 @@
 #include "Inventory.hpp"
 #include "Item.hpp"
+#include "world/gamemode/GameMode.hpp"
 
 Inventory::Inventory(Player* pPlayer) : Container()
 {
@@ -175,8 +176,13 @@ void Inventory::tick()
 
 void Inventory::setItem(int index, std::shared_ptr<ItemInstance> item)
 {
-	if (index >= m_items.size()) m_armor[index - m_items.size()] = item;
+	if (index >= m_items.size()) setArmor(index - m_items.size(), item);
 	else m_items[index] = item;
+}
+
+void Inventory::setArmor(int index, std::shared_ptr<ItemInstance> item)
+{
+	m_armor[index] = item;
 }
 
 std::shared_ptr<ItemInstance> Inventory::removeItem(int index, int count)
@@ -260,8 +266,11 @@ void Inventory::selectSlot(int slotNo)
 {
 	if (slotNo < 0 || slotNo >= C_MAX_HOTBAR_ITEMS)
 		return;
-
-	m_selected = slotNo;
+	if (m_selected != slotNo)
+	{
+		m_selected = slotNo;
+		m_pPlayer->m_pGameMode->sendCarriedItem(slotNo);
+	}
 }
 
 void Inventory::selectItem(int itemID, int data, int maxHotBarSlot)

@@ -119,33 +119,33 @@ void ItemInHandRenderer::renderItem(Mob* mob, std::shared_ptr<ItemInstance> inst
         t.normal(-1.0f, 0.0f, 0.0f);
         for (int i = 0; i < 16; i++)
         {
-            t.vertexUV(i * C_ONE_PIXEL, 0.0f, -C_ONE_PIXEL, Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
-            t.vertexUV(i * C_ONE_PIXEL, 0.0f, 0.0f,         Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
-            t.vertexUV(i * C_ONE_PIXEL, 1.0f, 0.0f,         Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
-            t.vertexUV(i * C_ONE_PIXEL, 1.0f, -C_ONE_PIXEL, Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
+            t.vertexUV(i * C_ONE_PIXEL, 0.0f, -C_ONE_PIXEL, Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
+            t.vertexUV(i * C_ONE_PIXEL, 0.0f, 0.0f,         Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
+            t.vertexUV(i * C_ONE_PIXEL, 1.0f, 0.0f,         Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
+            t.vertexUV(i * C_ONE_PIXEL, 1.0f, -C_ONE_PIXEL, Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
         }
         for (int i = 0; i < 16; i++)
         {
-            t.vertexUV((i + 1) * C_ONE_PIXEL, 1.0f, -C_ONE_PIXEL, Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
-            t.vertexUV((i + 1) * C_ONE_PIXEL, 1.0f, 0.0f,         Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
-            t.vertexUV((i + 1) * C_ONE_PIXEL, 0.0f, 0.0f,         Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
-            t.vertexUV((i + 1) * C_ONE_PIXEL, 0.0f, -C_ONE_PIXEL, Mth::Lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
+            t.vertexUV((i + 1) * C_ONE_PIXEL, 1.0f, -C_ONE_PIXEL, Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
+            t.vertexUV((i + 1) * C_ONE_PIXEL, 1.0f, 0.0f,         Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_1);
+            t.vertexUV((i + 1) * C_ONE_PIXEL, 0.0f, 0.0f,         Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
+            t.vertexUV((i + 1) * C_ONE_PIXEL, 0.0f, -C_ONE_PIXEL, Mth::lerp(texU_2, texU_1, i * C_ONE_PIXEL) - C_RATIO_2, texV_2);
         }
         
         SHADE_IF_NEEDED(0.6f);
         for (int i = 0; i < 16; i++)
         {
-            t.vertexUV(0.0f, (i + 1) * C_ONE_PIXEL, 0.0f,         texU_2, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
-            t.vertexUV(1.0f, (i + 1) * C_ONE_PIXEL, 0.0f,         texU_1, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
-            t.vertexUV(1.0f, (i + 1) * C_ONE_PIXEL, -C_ONE_PIXEL, texU_1, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
-            t.vertexUV(0.0f, (i + 1) * C_ONE_PIXEL, -C_ONE_PIXEL, texU_2, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(0.0f, (i + 1) * C_ONE_PIXEL, 0.0f,         texU_2, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(1.0f, (i + 1) * C_ONE_PIXEL, 0.0f,         texU_1, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(1.0f, (i + 1) * C_ONE_PIXEL, -C_ONE_PIXEL, texU_1, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(0.0f, (i + 1) * C_ONE_PIXEL, -C_ONE_PIXEL, texU_2, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
         }
         for (int i = 0; i < 16; i++)
         {
-            t.vertexUV(1.0f, i * C_ONE_PIXEL, 0.0f,         texU_1, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
-            t.vertexUV(0.0f, i * C_ONE_PIXEL, 0.0f,         texU_2, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
-            t.vertexUV(0.0f, i * C_ONE_PIXEL, -C_ONE_PIXEL, texU_2, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
-            t.vertexUV(1.0f, i * C_ONE_PIXEL, -C_ONE_PIXEL, texU_1, Mth::Lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(1.0f, i * C_ONE_PIXEL, 0.0f,         texU_1, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(0.0f, i * C_ONE_PIXEL, 0.0f,         texU_2, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(0.0f, i * C_ONE_PIXEL, -C_ONE_PIXEL, texU_2, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
+            t.vertexUV(1.0f, i * C_ONE_PIXEL, -C_ONE_PIXEL, texU_1, Mth::lerp(texV_2, texV_1, i * C_ONE_PIXEL));
         }
         
         t.draw();
@@ -168,15 +168,15 @@ void ItemInHandRenderer::render(float f)
 
 	if (m_pMinecraft->getOptions()->m_bDynamicHand.get() && m_pMinecraft->m_pMobPersp == pLP)
 	{
-		float rYaw   = Mth::Lerp(pLP->m_lastRenderArmRot.y, pLP->m_renderArmRot.y, f);
-		float rPitch = Mth::Lerp(pLP->m_lastRenderArmRot.x, pLP->m_renderArmRot.x, f);
+		float rYaw   = Mth::lerp(pLP->m_lastRenderArmRot.y, pLP->m_renderArmRot.y, f);
+		float rPitch = Mth::lerp(pLP->m_lastRenderArmRot.x, pLP->m_renderArmRot.x, f);
 		glRotatef((pLP->m_rot.x - rPitch) * 0.1f, 1.0f, 0.0f, 0.0f);
 		glRotatef((pLP->m_rot.y - rYaw) * 0.1f, 0.0f, 1.0f, 0.0f);
 	}
 
     std::shared_ptr<ItemInstance> pItem = m_selectedItem;
 
-    float fBright = m_pMinecraft->m_pLevel->getBrightness(pLP->m_pos);
+    float fBright = pLP->getBrightness(1.0f);
     glColor4f(fBright, fBright, fBright, 1.0f);
     
     glPushMatrix();
@@ -412,7 +412,7 @@ void ItemInHandRenderer::renderScreenEffect(float f)
 	{
 		textures->loadAndBindTexture(C_TERRAIN_NAME);
 		
-		Tile* pTile = Tile::tiles[level->getTile(player->m_pos)];
+		Tile* pTile = Tile::tiles[level->getTile(player->m_pos.add(0, player->m_heightOffset, 0))];
 		if (pTile)
 		{
 			int texture = pTile->getTexture(Facing::NORTH);

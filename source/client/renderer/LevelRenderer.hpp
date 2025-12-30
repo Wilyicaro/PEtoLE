@@ -73,7 +73,7 @@ public:
 	LevelRenderer(Minecraft*, Textures*);
 
 	void allChanged() override;
-	void entityAdded(Entity*) override;
+	void entityAdded(const std::shared_ptr<Entity>&) override;
 	void tileChanged(const TilePos& pos) override;
 	void playStreamingMusic(const std::string&, const TilePos&) override;
 	void levelEvent(Player*, int event, const TilePos&, int info) override;
@@ -109,7 +109,6 @@ public:
 
 public:
 	Vec3 m_oPos;
-	float m_destroyProgress;
 	int m_noEntityRenderFrames;
 	int m_totalEntities;
 	int m_renderedEntities;

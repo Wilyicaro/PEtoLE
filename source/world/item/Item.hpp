@@ -12,7 +12,7 @@
 #include "common/Utils.hpp"
 #include "world/level/Material.hpp"
 #include "ItemInstance.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 #include "world/Facing.hpp"
 
 #define C_MAX_ITEMS (32000)

@@ -108,9 +108,9 @@ void RolledSelectionList::render(int mouseX, int mouseY, float f)
 		}
 
 		if (g_RolledSelectionListUnk2 < 0.0f)
-			field_38 = Mth::Max(-20.0f, g_RolledSelectionListUnk2);
+			field_38 = Mth::max(-20.0f, g_RolledSelectionListUnk2);
 		else
-			field_38 = Mth::Min(20.0f, g_RolledSelectionListUnk2);
+			field_38 = Mth::min(20.0f, g_RolledSelectionListUnk2);
 
 		if (fabsf(field_38) < 2.0f)
 		{

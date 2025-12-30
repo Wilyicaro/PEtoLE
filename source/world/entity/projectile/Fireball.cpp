@@ -24,6 +24,15 @@ Fireball::Fireball(Level* level, std::shared_ptr<Mob> mob, const Vec3& vel) : Sn
     m_power = v / v.length() * 0.1; 
 }
 
+Fireball::Fireball(Level* level, const Vec3& pos, const Vec3& power) : Snowball(level)
+{
+    m_pType = EntityType::fireball;
+    setSize(1.0f, 1.0f);
+    moveTo(pos, m_rot);
+    setPos(pos);
+    m_power = power / power.length() * 0.1;
+}
+
 void Fireball::tick()
 {
     m_fireTicks = 10;

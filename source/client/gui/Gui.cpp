@@ -21,7 +21,6 @@ float Gui::InvGuiScale = 1.0f;
 
 Gui::Gui(Minecraft* pMinecraft)
 {
-	m_progress = 0;
 	field_C = "";
 	field_24 = 0;
 	field_28 = 0;
@@ -217,10 +216,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 		IInputHolder* input = mc->m_pInputHolder;
 		// if needed, draw feedback
 
-		// NOTE: real Minecraft PE takes it directly from the gamemode as "current progress" and
-		// "last progress". Well guess what? The game mode in question updates our m_fSensitivity with
-		// the pre-interpolated break progress! Isn't that awesome?!
-		float breakProgress = m_progress;
+		float breakProgress = Mth::lerp(m_pMinecraft->m_pGameMode->m_lastDestroyProgress, m_pMinecraft->m_pGameMode->m_destroyProgress, f);
 
 		// don't know about this if-structure, it feels like it'd be like
 		// if (m_bFoggy >= 0.0f && breakProgress <= 0.0f)
@@ -257,7 +253,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 			float yPos = input->m_feedbackY;
 
 			textures->loadAndBindTexture("gui/touchscreen.png");
-			glColor4f(1.0f, 1.0f, 1.0f, Mth::Min(1.0f, input->m_feedbackAlpha));
+			glColor4f(1.0f, 1.0f, 1.0f, Mth::min(1.0f, input->m_feedbackAlpha));
 			//glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			blit(InvGuiScale * xPos - 44.0f, InvGuiScale * yPos - 44.0f, 0, 88, 88, 88, 352, 352);
@@ -286,7 +282,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 	// hotbar
 	int cenX = width / 2;
-	blit(cenX - hotbarWidth / 2, height - 22, 0, 0, Mth::Min(hotbarWidth, 182), 22, 256, 256);
+	blit(cenX - hotbarWidth / 2, height - 22, 0, 0, Mth::min(hotbarWidth, 182), 22, 256, 256);
 	if (hotbarWidth > 182)
 	{
 		blit(cenX - hotbarWidth / 2 + 180, height - 22, 182 - (hotbarWidth - 182 + 2), 0, hotbarWidth - 182 + 2, 22, 256, 256);
@@ -549,25 +545,13 @@ void Gui::handleKeyPressed(int keyCode)
 	bool slotR = options->isKey(KM_SLOT_R, keyCode);
 	if (slotL || slotR)
 	{
-		int maxItems = getNumSlots() - 1;
+		int maxItems = getNumSlots();
 		if (m_pMinecraft->isTouchscreen())
 			maxItems--;
-		int* slot = &m_pMinecraft->m_pPlayer->m_pInventory->m_selected;
 
-		if (slotR)
-		{
-			if (*slot < maxItems)
-				(*slot)++;
-			else
-				*slot = 0;
-		}
-		else if (slotL)
-		{
-			if (*slot > 0)
-				(*slot)--;
-			else
-				*slot = maxItems;
-		}
+		int selected = m_pMinecraft->m_pPlayer->m_pInventory->m_selected;
+	
+		m_pMinecraft->m_pPlayer->m_pInventory->selectSlot((selected + (slotR ? 1 : -1) + maxItems) % maxItems);
 		return;
 	}
 

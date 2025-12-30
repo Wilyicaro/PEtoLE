@@ -1,7 +1,7 @@
 /********************************************************************
 	Minecraft: Pocket Edition - Decompilation Project
 	Copyright (C) 2023 iProgramInCpp
-	
+
 	The following code is licensed under the BSD 1 clause license.
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
@@ -17,11 +17,8 @@
 #include "world/phys/AABB.hpp"
 #include "world/level/levelgen/chunk/ChunkPos.hpp"
 #include "world/level/levelgen/chunk/ChunkTilePos.hpp"
+#include "world/level/levelgen/chunk/DataLayer.hpp"
 #include <common/CompoundTag.hpp>
-#include <common/LongTag.hpp>
-#include <common/IntTag.hpp>
-#include <common/ByteTag.hpp>
-#include <common/ListTag.hpp>
 #include <world/tile/entity/TileEntity.hpp>
 #include <world/entity/EntityCategories.hpp>
 
@@ -35,6 +32,11 @@ private:
 protected:
 	LevelChunk() { _init(); }
 public:
+	constexpr int MakeHeightMapIndex(const ChunkTilePos& pos)
+	{
+		return pos.x | (pos.z * 16);
+	}
+
 	void save(CompoundIO tag);
 
 	void load(CompoundIO tag);
@@ -58,7 +60,7 @@ public:
 	virtual int getRawBrightness(const ChunkTilePos& pos, int skySubtract);
 	virtual void addEntity(std::shared_ptr<Entity>);
 	virtual void removeEntity(std::shared_ptr<Entity>);
-	virtual void removeEntity(std::shared_ptr<Entity> , int vec);
+	virtual void removeEntity(std::shared_ptr<Entity>, int vec);
 	virtual bool isSkyLit(const ChunkTilePos& pos);
 	virtual void lightLava();
 	virtual void recalcBlockLights();
@@ -115,12 +117,9 @@ public:
 	int field_4;
 	bool m_bLoaded;
 	Level* m_pLevel;
-	uint8_t* m_tileData;
-	int      m_tileDataCnt;
-	uint8_t* m_lightSky;
-	int      m_lightSkyCnt;
-	uint8_t* m_lightBlk;
-	int      m_lightBlkCnt;
+	DataLayer m_tileData;
+	DataLayer m_lightSky;
+	DataLayer m_lightBlk;
 	uint8_t m_heightMap[256];
 	int m_minHeight;
 	ChunkPos m_chunkPos;

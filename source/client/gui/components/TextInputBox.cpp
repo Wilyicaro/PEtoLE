@@ -32,6 +32,7 @@ TextInputBox::TextInputBox(Screen* parent, int id, int x, int y, int width, int 
 	m_pParent = parent;
 	m_maxLength = -1;
 	m_scrollPos = 0;
+	m_bBordered = true;
 }
 
 TextInputBox::~TextInputBox()
@@ -298,8 +299,11 @@ constexpr char CURSOR_CHAR = '_';
 
 void TextInputBox::render()
 {
-	fill(m_xPos, m_yPos, m_xPos + m_width, m_yPos + m_height, 0xFFAAAAAA);
-	fill(m_xPos + 1, m_yPos + 1, m_xPos + m_width - 1, m_yPos + m_height - 1, 0xFF000000);
+	if (m_bBordered)
+	{
+		fill(m_xPos, m_yPos, m_xPos + m_width, m_yPos + m_height, 0xFFAAAAAA);
+		fill(m_xPos + 1, m_yPos + 1, m_xPos + m_width - 1, m_yPos + m_height - 1, 0xFF000000);
+	}
 
 	int text_color;
 	int scroll_pos;
@@ -331,7 +335,7 @@ void TextInputBox::render()
 
 			std::string str;
 			str += CURSOR_CHAR;
-			drawString(m_pFont, str, m_xPos + xPos, m_yPos + textYPos + 2, 0xffffff);
+			drawString(m_pFont, str, m_xPos + xPos, m_yPos + textYPos, 0xffffff);
 		}
 	}
 }
@@ -434,6 +438,11 @@ bool TextInputBox::isFocused()
 void TextInputBox::setMaxLength(int max_length)
 {
 	m_maxLength = max_length;
+}
+
+void TextInputBox::setBordered(bool bordered)
+{
+	m_bBordered = bordered;
 }
 
 #endif

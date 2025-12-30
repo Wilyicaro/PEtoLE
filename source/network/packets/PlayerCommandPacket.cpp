@@ -8,20 +8,20 @@
 
 #include "../Packet.hpp"
 
-void PlayerEquipmentPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
+void PlayerCommandPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
 {
 	pCallback->handle(guid, this);
 }
 
-void PlayerEquipmentPacket::write(RakNet::BitStream* bs)
+void PlayerCommandPacket::write(RakNet::BitStream* bs)
 {
-	bs->Write((unsigned char)PACKET_PLAYER_EQUIPMENT);
-	bs->Write(m_playerID);
-	bs->Write(m_itemID);
+	bs->Write((unsigned char)PACKET_PLAYER_COMMAND);
+	bs->Write(m_id);
+	bs->Write(m_action);
 }
 
-void PlayerEquipmentPacket::read(RakNet::BitStream* bs)
+void PlayerCommandPacket::read(RakNet::BitStream* bs)
 {
-	bs->Read(m_playerID);
-	bs->Read(m_itemID);
+	bs->Read(m_id);
+	bs->Read(m_action);
 }

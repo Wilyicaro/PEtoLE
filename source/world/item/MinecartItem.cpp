@@ -1,9 +1,8 @@
 #include "MinecartItem.hpp"
 #include "world/level/Level.hpp"
 #include <world/tile/RailTile.hpp>
-#include <world/entity/Minecart.hpp>
 
-MinecartItem::MinecartItem(int id, int type) : Item(id)
+MinecartItem::MinecartItem(int id, Minecart::Type type) : Item(id)
 {
 	m_maxStackSize = 1;
 	m_type = type;

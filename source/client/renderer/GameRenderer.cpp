@@ -137,11 +137,11 @@ void GameRenderer::moveCameraToPlayer(float f)
 {
 	auto& pMob = m_pMinecraft->m_pMobPersp;
 
-	float headHeightDiff = pMob->m_heightOffset - 1.62f;
+	float headHeightDiff = -1.62f;
 
-	float posX = Mth::Lerp(pMob->m_oPos.x, pMob->m_pos.x, f);
-	float posY = Mth::Lerp(pMob->m_oPos.y, pMob->m_pos.y, f);
-	float posZ = Mth::Lerp(pMob->m_oPos.z, pMob->m_pos.z, f);
+	float posX = Mth::lerp(pMob->m_oPos.x, pMob->m_pos.x, f);
+	float posY = Mth::lerp(pMob->m_oPos.y, pMob->m_pos.y, f) + pMob->m_heightOffset;
+	float posZ = Mth::lerp(pMob->m_oPos.z, pMob->m_pos.z, f);
 
 	glRotatef(field_5C + f * (field_58 - field_5C), 0.0f, 0.0f, 1.0f);
 	
@@ -267,8 +267,8 @@ void GameRenderer::bobView(float f)
 		return;
 
 	auto player = std::dynamic_pointer_cast<Player>(m_pMinecraft->m_pMobPersp);
-	float f1 = Mth::Lerp(player->m_oBob, player->m_bob, f);
-	float f2 = Mth::Lerp(player->m_oTilt, player->m_tilt, f);
+	float f1 = Mth::lerp(player->m_oBob, player->m_bob, f);
+	float f2 = Mth::lerp(player->m_oTilt, player->m_tilt, f);
 	// @NOTE: Multiplying by M_PI inside of the paren makes it stuttery for some reason? Anyways it works now :)
 	float f3 = -(player->m_walkDist + (player->m_walkDist - player->m_walkDistO) * f) * float(M_PI);
 	float f4 = Mth::sin(f3);
@@ -349,7 +349,9 @@ void GameRenderer::setupFog(int i)
 	fog_color[3] = 1.0f;
 
 	glFogfv(GL_FOG_COLOR, fog_color);
+#ifndef __EMSCRIPTEN__
 	glNormal3f(0.0f, -1.0f, 0.0f);
+#endif
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 	if (m_pMinecraft->m_pMobPersp->isUnderLiquid(Material::water))
@@ -533,7 +535,8 @@ void GameRenderer::renderLevel(float f, int64_t nano)
 
 		// render the alpha layer
 		m_pMinecraft->m_pTextures->loadAndBindTerrain();
-		if (bFancy) {
+		if (bFancy)
+		{
 			int c = pLR->render(pMob.get(), 1, f, false);
 			glColorMask(false, false, false, false);
 			pLR->renderSameAsLast(1, f);
@@ -955,6 +958,7 @@ void GameRenderer::renderSnowAndRain(float f)
 	int bPosY = Mth::floor(pLP->m_pos.y);
 	int bPosZ = Mth::floor(pLP->m_pos.z);
 	Vec3 pos = pLP->getPos(f);
+	pos.y -= pLP->m_heightOffset;
 	Tesselator& t = Tesselator::instance;
 	Level* pLevel = m_pMinecraft->m_pLevel;
 
@@ -1200,6 +1204,7 @@ void GameRenderer::pick(float f)
 	}
 
 	Vec3 mobPos = pMob->getPos(f);
+	mobPos.y += pMob->m_heightOffset;
 
 	if (m_pMinecraft->m_hitResult.m_hitType != HitResult::NONE)
 		dist = mchr.m_hitPos.distanceTo(mobPos);
@@ -1276,7 +1281,6 @@ void GameRenderer::pick(float f)
 	if (m_pMinecraft->m_hitResult.m_hitType != HitResult::NONE || view.y >= -0.7f)
 		return;
 
-	mobPos = pMob->getPos(f);
 	Vec3 checkVec = mobPos;
 	checkVec.translate(0, -2, 0);
 

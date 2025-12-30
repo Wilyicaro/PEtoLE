@@ -14,6 +14,7 @@ ChatScreen::ChatScreen(bool slash) : m_textChat(this, 1, 0, 0), m_btnSend(2, 0, 
 {
 	if (slash)
 		m_textChat.setText("/");
+	m_textChat.setBordered(false);
 }
 
 void ChatScreen::buttonClicked(Button* pButton)
@@ -24,12 +25,14 @@ void ChatScreen::buttonClicked(Button* pButton)
 
 void ChatScreen::init()
 {
+	bool touch = m_pMinecraft->isTouchscreen();
 	m_btnSend.m_height = 20;
 	m_btnSend.m_width = 40;
-	m_textChat.m_xPos = 0;
-	m_textChat.m_yPos = m_height - 20;
-	m_textChat.m_width = m_width - m_btnSend.m_width;
-	m_textChat.m_height = 20;
+	m_textChat.m_xPos = 9;
+	m_textChat.m_yPos = m_height - 12;
+	m_textChat.m_width = m_width - 9 + (touch ? -m_btnSend.m_width : 0);
+	m_textChat.m_height = 8;
+
 	m_btnSend.m_yPos = m_height - 20;
 	m_btnSend.m_xPos = m_textChat.m_xPos + m_textChat.m_width;
 	
@@ -37,7 +40,8 @@ void ChatScreen::init()
 	m_textChat.init(m_pFont);
 	m_textChat.setFocused(true);
 
-	m_buttons.push_back(&m_btnSend);
+	if (touch)
+		m_buttons.push_back(&m_btnSend);
 	m_textInputs.push_back(&m_textChat);
 }
 
@@ -49,11 +53,12 @@ void ChatScreen::removed()
 
 void ChatScreen::render(int mouseX, int mouseY, float f)
 {
-	renderBackground();
-
 	// override the default behavior of rendering chat messages
 	m_pMinecraft->m_gui.m_bRenderMessages = false;
 	m_pMinecraft->m_gui.renderMessages(true);
+
+	fill(2, m_height - 14, m_width - 2, m_height - 2, INT_MIN);
+	drawString(m_pFont, ">", 4, m_height - 12, 14737632);
 
 	Screen::render(mouseX, mouseY, f);
 }

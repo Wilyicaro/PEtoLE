@@ -85,7 +85,6 @@ void Mob::reset()
 void Mob::lerpTo(const Vec3& pos, const Vec2& rot, int steps)
 {
 	m_lPos = pos;
-	m_lPos.y += m_heightOffset;
 	m_lRot = rot;
 	m_lSteps = steps;
 }
@@ -323,8 +322,9 @@ bool Mob::hurt(Entity* pAttacker, int damage)
 			}
 
 			m_hurtDir = 0.0F;
-			if (var3) {
-				//m_pLevel->broadcastEntityEvent(this, 2);
+			if (var3)
+			{
+				m_pLevel->entityEvent(this, 2);
 				markHurt();
 				if (pAttacker) {
 					real var4 = pAttacker->m_pos.x - m_pos.x;
@@ -393,7 +393,7 @@ void Mob::causeFallDamage(float level)
 
 		//@HUH: useless call to getTile? or could this be a return value of some sort
 		//Entity::causeFallDamage returns nothing though, so....
-		m_pLevel->getTile(TilePos(m_pos.x, m_pos.y - 0.2f - m_heightOffset, m_pos.z));
+		m_pLevel->getTile(TilePos(m_pos.x, m_pos.y - 0.2f, m_pos.z));
 	}
 }
 
@@ -451,6 +451,7 @@ void Mob::heal(int health)
 HitResult Mob::pick(float f1, float f2)
 {
 	Vec3 pos = getPos(f2);
+	pos.y += m_heightOffset;
 	Vec3 view = getViewVector(f2);
 
 	Vec3 limit = pos + view * f1;
@@ -554,6 +555,8 @@ void Mob::die(Entity* pCulprit)
 
 	if (!m_pLevel->m_bIsOnline)
 		dropDeathLoot();
+
+	m_pLevel->entityEvent(this, 3);
 }
 
 bool Mob::canSee(Entity* pEnt) const
@@ -593,7 +596,8 @@ void Mob::aiStep()
 		while (ang < -180.0f) ang += 360.0f;
 		while (ang >= 180.0f) ang -= 360.0f;
 
-		setRot(m_rot + ((m_lRot - m_rot) / float(m_lSteps)));
+		setRot(Vec2(m_rot.y + (ang / float(m_lSteps)),
+					m_rot.x + ((m_lRot.x - m_rot.x) / float(m_lSteps))));
 
 		m_lSteps--;
 	}
@@ -686,17 +690,17 @@ Vec3 Mob::getPos(float f) const
 		return m_pos;
 
 	return Vec3(
-        Mth::Lerp(m_oPos.x, m_pos.x, f),
-		Mth::Lerp(m_oPos.y, m_pos.y, f),
-		Mth::Lerp(m_oPos.z, m_pos.z, f)
+        Mth::lerp(m_oPos.x, m_pos.x, f),
+		Mth::lerp(m_oPos.y, m_pos.y, f),
+		Mth::lerp(m_oPos.z, m_pos.z, f)
 	);
 }
 
 Vec2 Mob::getRot(float f) const
 {
 	return Vec2(
-		Mth::Lerp(m_rotPrev.y, m_rot.y, f),
-		Mth::Lerp(m_rotPrev.x, m_rot.x, f)
+		Mth::lerp(m_rotPrev.y, m_rot.y, f),
+		Mth::lerp(m_rotPrev.x, m_rot.x, f)
 	);
 }
 
@@ -828,12 +832,8 @@ void Mob::checkDespawn()
 
 void Mob::swing()
 {
-	// Found this very useful check in 0.7.0
-	if (!m_bSwinging || (m_swingTime >= 6 / 2 || m_swingTime < 0))
-	{
-		m_swingTime = -1;
-		m_bSwinging = true;
-	}
+	m_swingTime = -1;
+	m_bSwinging = true;
 }
 
 std::shared_ptr<ItemInstance> Mob::getCarriedItem()
@@ -846,7 +846,7 @@ int Mob::getItemIcon(ItemInstance* instance)
 	return instance->getIcon();
 }
 
-void Mob::handleEntityEvent(int event)
+void Mob::handleEntityEvent(int8_t event)
 {
 	switch (event)
 	{

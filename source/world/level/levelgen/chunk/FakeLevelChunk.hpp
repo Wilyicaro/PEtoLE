@@ -33,5 +33,6 @@ public:
 	int  getData(const ChunkTilePos& pos) override;
 	void setData(const ChunkTilePos& pos, int data) override;
 	void recalcHeight(const ChunkTilePos& pos) override;
+	void recalcHeightmap() override;
 	bool isEmpty() override;
 };

@@ -92,13 +92,13 @@ real AABB::clipXCollide(const AABB& bud, real f) const
 		if (f > 0.0f)
 		{
 			if (bud.max.x <= min.x)
-				f = Mth::Min(min.x - bud.max.x, f);
+				f = Mth::min(min.x - bud.max.x, f);
 		}
 
 		if (f < 0.0f)
 		{
 			if (bud.min.x >= max.x)
-				f = Mth::Max(max.x - bud.min.x, f);
+				f = Mth::max(max.x - bud.min.x, f);
 		}
 	}
 
@@ -112,13 +112,13 @@ real AABB::clipYCollide(const AABB& bud, real f) const
 		if (f > 0.0f)
 		{
 			if (bud.max.y <= min.y)
-				f = Mth::Min(min.y - bud.max.y, f);
+				f = Mth::min(min.y - bud.max.y, f);
 		}
 
 		if (f < 0.0f)
 		{
 			if (bud.min.y >= max.y)
-				f = Mth::Max(max.y - bud.min.y, f);
+				f = Mth::max(max.y - bud.min.y, f);
 		}
 	}
 
@@ -132,13 +132,13 @@ real AABB::clipZCollide(const AABB& bud, real f) const
 		if (f > 0.0f)
 		{
 			if (bud.max.z <= min.z)
-				f = Mth::Min(min.z - bud.max.z, f);
+				f = Mth::min(min.z - bud.max.z, f);
 		}
 
 		if (f < 0.0f)
 		{
 			if (bud.min.z >= max.z)
-				f = Mth::Max(max.z - bud.min.z, f);
+				f = Mth::max(max.z - bud.min.z, f);
 		}
 	}
 

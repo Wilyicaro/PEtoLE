@@ -52,12 +52,12 @@ void LevelListener::playMusic(const std::string& a, float b, float c, float d, f
 
 }
 
-void LevelListener::entityAdded(Entity* a)
+void LevelListener::entityAdded(const std::shared_ptr<Entity>&)
 {
 
 }
 
-void LevelListener::entityRemoved(Entity* a)
+void LevelListener::entityRemoved(const std::shared_ptr<Entity>&)
 {
 
 }

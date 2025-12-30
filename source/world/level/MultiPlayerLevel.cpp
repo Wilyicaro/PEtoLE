@@ -12,6 +12,7 @@ MultiPlayerLevel::MultiPlayerLevel(int64_t seed, Dimension* pDimension) : Level(
 
 void MultiPlayerLevel::tick()
 {
+    tickWeather();
     setTime(getTime() + 1);
     int newDark = getSkyDarken(1.0F);
     int i;
@@ -24,11 +25,12 @@ void MultiPlayerLevel::tick()
     }
 
     auto it = m_reEntries.begin();
-    for (i = 0; i < 10 && !m_reEntries.empty(); ++i)
+    for (i = 0; i < 10 && it != m_reEntries.end(); ++i)
     {
-        if (std::find(m_entities.begin(), m_entities.end(), *it) == m_entities.end())
-            addEntity(*it);
-        ++it;
+        if (std::find(m_entities.begin(), m_entities.end(), *it) == m_entities.end() && addEntity(*it))
+            it = m_reEntries.begin();
+        else
+            ++it;
     }
 
     for (size_t i = 0; i < m_updatesToReset.size(); )
@@ -86,27 +88,27 @@ bool MultiPlayerLevel::addEntity(std::shared_ptr<Entity> e)
     return ok;
 }
 
-bool MultiPlayerLevel::removeEntity(std::shared_ptr<Entity> e)
+bool MultiPlayerLevel::removeEntity(const std::shared_ptr<Entity>& e)
 {
     m_forced.erase(e);
     return Level::removeEntity(e);
 }
 
-void MultiPlayerLevel::entityAdded(Entity* pEnt)
+void MultiPlayerLevel::entityAdded(const std::shared_ptr<Entity>& pEnt)
 {
     Level::entityAdded(pEnt);
     if (std::find(m_reEntries.begin(), m_reEntries.end(), pEnt->shared_from_this()) != m_reEntries.end())
         m_reEntries.erase(pEnt->shared_from_this());
 }
 
-void MultiPlayerLevel::entityRemoved(Entity* pEnt)
+void MultiPlayerLevel::entityRemoved(const std::shared_ptr<Entity>& pEnt)
 {
     Level::entityRemoved(pEnt);
     if (std::find(m_forced.begin(), m_forced.end(), pEnt->shared_from_this()) != m_forced.end())
         m_reEntries.insert(pEnt->shared_from_this());
 }
 
-void MultiPlayerLevel::putEntity(std::shared_ptr<Entity> e, int id)
+void MultiPlayerLevel::putEntity(int id, std::shared_ptr<Entity> e)
 {
     auto old = getEntity(id);
     if (old)

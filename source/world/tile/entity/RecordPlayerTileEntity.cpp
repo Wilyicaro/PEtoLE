@@ -14,5 +14,5 @@ void RecordPlayerTileEntity::load(CompoundIO tag)
 void RecordPlayerTileEntity::save(CompoundIO tag)
 {
     TileEntity::save(tag);
-    m_record = Mth::Max(0, tag->getByte("Record"));
+    m_record = Mth::max(0, tag->getByte("Record"));
 }

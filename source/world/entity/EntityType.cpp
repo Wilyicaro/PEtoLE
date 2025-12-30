@@ -32,25 +32,32 @@ std::unordered_map<int, const EntityType*> EntityType::entityTypeIdMap;
 std::unordered_map<std::string, const EntityType*> EntityType::entityTypeNameMap;
 std::vector<const EntityType*> EntityType::entityTypes;
 
-EntityType::EntityType(int id, const std::string& name, const EntityCategories& category, const EntityFactory& factory) : m_id(id), m_name(name), m_category(category), m_factory(factory)
+EntityType::EntityType(int id, const std::string& name, const EntityCategories& category, const EntityFactory& factory, int range, int updateInterval, bool trackDelta) :
+	m_id(id),
+	m_name(name),
+	m_category(category),
+	m_factory(factory),
+	m_range(range),
+	m_updateInterval(updateInterval),
+	m_bTrackDelta(trackDelta)
 {
 }
 
 void EntityType::initTypes()
 {
 	unknown = add(create<Entity>(-1, "", EntityCategories(EntityCategories::ENTITY)));
-	player = add(create<Mob>(-1, "", EntityCategories(EntityCategories::MOB)));
+	player = add(create<Mob>(-1, "", EntityCategories(EntityCategories::MOB), 512, 2));
 
-	arrow = registerType(create<Arrow>(10, "Arrow", EntityCategories(EntityCategories::PROJECTILE)));
-	snowball = registerType(create<Snowball>(11, "Snowball", EntityCategories(EntityCategories::PROJECTILE)));
+	arrow = registerType(create<Arrow>(10, "Arrow", EntityCategories(EntityCategories::PROJECTILE), 64, 20));
+	snowball = registerType(create<Snowball>(11, "Snowball", EntityCategories(EntityCategories::PROJECTILE), 64, 10, true));
 	//@Note: Not registered in the original, so they wouldn't be loaded, but we will be doing this here :)
-	thrownEgg = registerType(create<ThrownEgg>(8, "ThrownEgg", EntityCategories(EntityCategories::PROJECTILE)));
+	thrownEgg = registerType(create<ThrownEgg>(8, "ThrownEgg", EntityCategories(EntityCategories::PROJECTILE), 64, 10, true));
 	fireball = registerType(create<Fireball>(7, "Fireball", EntityCategories(EntityCategories::PROJECTILE)));
 	fishingHook = registerType(create<FishingHook>(6, "FishingHook", EntityCategories(EntityCategories::PROJECTILE)));
 	lightningBolt = registerType(create<LightningBolt>(5, "LightningBolt", EntityCategories(EntityCategories::ENTITY)));
 
-	item = registerType(create<ItemEntity>(1, "Item", EntityCategories(EntityCategories::ENTITY)));
-	painting = registerType(create<Painting>(9, "Painting", EntityCategories(EntityCategories::ENTITY)));
+	item = registerType(create<ItemEntity>(1, "Item", EntityCategories(EntityCategories::ENTITY), 64, 20, true));
+	painting = registerType(create<Painting>(9, "Painting", EntityCategories(EntityCategories::ENTITY), 160, INT_MAX));
 	mob = registerType(create<Mob>(48, "Mob", EntityCategories(EntityCategories::MOB)));
 	monster = registerType(create<Monster>(49, "Monster", EntityCategories(EntityCategories::MONSTER)));
 	creeper = registerType(create<Creeper>(50, "Creeper", EntityCategories(EntityCategories::MONSTER)));
@@ -65,12 +72,12 @@ void EntityType::initTypes()
 	sheep = registerType(create<Sheep>(91, "Sheep", EntityCategories(EntityCategories::ANIMAL)));
 	cow = registerType(create<Cow>(92, "Cow", EntityCategories(EntityCategories::ANIMAL)));
 	chicken = registerType(create<Chicken>(93, "Chicken", EntityCategories(EntityCategories::ANIMAL)));
-	squid = registerType(create<Squid>(94, "Squid", EntityCategories(EntityCategories::WATER_ANIMAL)));
+	squid = registerType(create<Squid>(94, "Squid", EntityCategories(EntityCategories::WATER_ANIMAL), 160, 3, true));
 	wolf = registerType(create<Wolf>(95, "Wolf", EntityCategories(EntityCategories::ANIMAL)));
-	primedTnt = registerType(create<PrimedTnt>(20, "PrimedTnt", EntityCategories(EntityCategories::ENTITY)));
-	fallingTile = registerType(create<FallingTile>(21, "FallingSand", EntityCategories(EntityCategories::ENTITY)));
-	minecart = registerType(create<Minecart>(40, "Minecart", EntityCategories(EntityCategories::MINECART)));
-	boat = registerType(create<Boat>(41, "Boat", EntityCategories(EntityCategories::ENTITY)));
+	primedTnt = registerType(create<PrimedTnt>(20, "PrimedTnt", EntityCategories(EntityCategories::ENTITY), 160, 10, true));
+	fallingTile = registerType(create<FallingTile>(21, "FallingSand", EntityCategories(EntityCategories::ENTITY), 160, 20, true));
+	minecart = registerType(create<Minecart>(40, "Minecart", EntityCategories(EntityCategories::MINECART), 160, 5, true));
+	boat = registerType(create<Boat>(41, "Boat", EntityCategories(EntityCategories::ENTITY), 160, 5, true));
 	MobSpawner::nightmareEntities.push_back(spider);
 	MobSpawner::nightmareEntities.push_back(zombie);
 	MobSpawner::nightmareEntities.push_back(skeleton);

@@ -54,7 +54,7 @@ bool FakeLevelChunk::isSkyLit(const ChunkTilePos& pos)
 void FakeLevelChunk::load()
 {
 	if (!m_bLoaded && contentType != ContentType::NONE) {
-		recalcHeightmap();
+		LevelChunk::recalcHeightmap();
 		m_bLoaded = true;
 	}
 }
@@ -100,6 +100,10 @@ void FakeLevelChunk::setData(const ChunkTilePos& pos, int data)
 void FakeLevelChunk::recalcHeight(const ChunkTilePos& pos)
 {
 
+}
+
+void FakeLevelChunk::recalcHeightmap()
+{
 }
 
 bool FakeLevelChunk::isEmpty()

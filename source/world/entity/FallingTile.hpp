@@ -28,6 +28,6 @@ public:
 
 public:
 	int m_id;
-	int field_E0;
+	int m_fallingTicks;
 };
 

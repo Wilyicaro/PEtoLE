@@ -8,6 +8,7 @@ class Painting : public Entity
 public:
 	Painting(Level*);
 	Painting(Level*, const TilePos& pos, int);
+	Painting(Level*, const TilePos& pos, int, std::string motive);
 
 	PaintingType& getPaintingType()
 	{

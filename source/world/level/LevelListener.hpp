@@ -24,8 +24,8 @@ public:
 	virtual void takePicture(std::shared_ptr<TripodCamera>, Entity*);
 	virtual void addParticle(const std::string&, const Vec3& pos, const Vec3& dir);
 	virtual void playMusic(const std::string&, float, float, float, float);
-	virtual void entityAdded(Entity*);
-	virtual void entityRemoved(Entity*);
+	virtual void entityAdded(const std::shared_ptr<Entity>&);
+	virtual void entityRemoved(const std::shared_ptr<Entity>&);
 	virtual void skyColorChanged();
 	virtual void timeChanged(int64_t time);
 	virtual void playStreamingMusic(const std::string&, const TilePos&);

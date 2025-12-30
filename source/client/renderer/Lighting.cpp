@@ -8,10 +8,12 @@ float Lighting::lb[4] = {};
 
 void Lighting::turnOff()
 {
+#ifdef USE_GL_NORMAL_LIGHTING
 	glDisable(GL_LIGHTING);
 	glDisable(GL_LIGHT0);
 	glDisable(GL_LIGHT1);
 	glDisable(GL_COLOR_MATERIAL);
+#endif
 }
 
 void Lighting::turnOn()
@@ -21,7 +23,9 @@ void Lighting::turnOn()
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_COLOR_MATERIAL);
+#if !defined(__EMSCRIPTEN__) && !defined(USE_GLES)
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
+#endif
 
 	constexpr float a = 0.4f, d = 0.6f, s = 0.0f;
 
@@ -44,7 +48,7 @@ void Lighting::turnOn()
 #endif
 }
 
-float *Lighting::getBuffer(float a, float b, float c, float d)
+float* Lighting::getBuffer(float a, float b, float c, float d)
 {
 	lb[0] = a;
 	lb[1] = b;

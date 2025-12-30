@@ -10,7 +10,7 @@ BoatItem::BoatItem(int id) : Item(id)
 
 std::shared_ptr<ItemInstance> BoatItem::use(std::shared_ptr<ItemInstance> item, Level* level, Player* player)
 {
-    Vec3 var13 = Vec3(player->m_pos.x, player->m_pos.y + 1.62 - player->m_heightOffset, player->m_pos.z);
+    Vec3 var13 = Vec3(player->m_pos.x, player->m_pos.y + 1.62, player->m_pos.z);
     float const constexpr r = M_PI / 180;
     float var14 = Mth::cos(-player->m_rot.y * r - M_PI);
     float var15 = Mth::sin(-player->m_rot.y * r - M_PI);

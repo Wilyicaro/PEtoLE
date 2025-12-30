@@ -33,19 +33,19 @@ int Wolf::getDeathLoot() const
 
 float Wolf::getWetShade(float f) const
 {
-	return Mth::Min(12.0F / 16.0F + Mth::Lerp(m_shakeAnimO, m_shakeAnim, f) / 2.0f * 0.25f, 1.0f);
+	return Mth::min(12.0F / 16.0F + Mth::lerp(m_shakeAnimO, m_shakeAnim, f) / 2.0f * 0.25f, 1.0f);
 }
 
 float Wolf::getBodyRollAngle(float f, float g) const
 {
-	float ang = Mth::clamp((Mth::Lerp(m_shakeAnimO, m_shakeAnim, f) + g) / 1.8f, 0.0f, 1.0f);
+	float ang = Mth::clamp((Mth::lerp(m_shakeAnimO, m_shakeAnim, f) + g) / 1.8f, 0.0f, 1.0f);
 
 	return Mth::sin(ang * M_PI) * Mth::sin(ang * M_PI * 11.0f) * 0.15f * M_PI;
 }
 
 float Wolf::getHeadRollAngle(float f) const
 {
-	return Mth::Lerp(m_interestedAngleO, m_interestedAngle, f) * 0.15F * M_PI;
+	return Mth::lerp(m_interestedAngleO, m_interestedAngle, f) * 0.15F * M_PI;
 }
 
 std::string Wolf::getOwner()
@@ -417,7 +417,7 @@ bool Wolf::interact(Player* player)
 	return false;
 }
 
-void Wolf::handleEntityEvent(int event)
+void Wolf::handleEntityEvent(int8_t event)
 {
 	switch (event)
 	{

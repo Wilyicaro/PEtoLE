@@ -15,4 +15,5 @@ public:
     void slotsChanged(Container* container) override;
     void removed(Player* player) override;
     bool stillValid(Player* player) const override;
+    virtual std::shared_ptr<ItemInstance> quickMoveStack(int index) override;
 };

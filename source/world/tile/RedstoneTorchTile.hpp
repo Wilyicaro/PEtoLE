@@ -22,14 +22,14 @@ public:
 private:
 	struct Toggle {
 		TilePos pos;
-		int32_t when;
+		int64_t when;
 
-		Toggle(const TilePos& p, int32_t w) : pos(p), when(w) {}
+		Toggle(const TilePos& p, int64_t w) : pos(p), when(w) {}
 	};
 
 	bool isToggledTooFrequently(Level* level, const TilePos& pos, bool addRecent);
 	bool hasNeighborSignal(const Level* level, const TilePos& pos);
 	bool m_bOn;
-	std::vector<Toggle> m_recentToggles;
+	static std::vector<Toggle> recentToggles;
 
 };

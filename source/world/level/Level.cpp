@@ -13,9 +13,11 @@
 #include "world/level/levelgen/chunk/ChunkCache.hpp"
 #include "Explosion.hpp"
 #include "Region.hpp"
+#include "EntityTracker.hpp"
 #include "world/tile/LiquidTile.hpp"
 #include "world/entity/MobSpawner.hpp"
 #include "world/entity/LightningBolt.hpp"
+#include "network/RakNetInstance.hpp"
 
 
 void Level::init(Dimension* pDimension)
@@ -33,7 +35,7 @@ void Level::init(Dimension* pDimension)
 
 	if (limit != DimensionLimit::ZERO && netherLimit != DimensionLimit::ZERO)
 	{
-		m_netherTravelRatio = Mth::Min(8, int(std::ceil((limit.m_maxPos.x - limit.m_minPos.x) / float(netherLimit.m_maxPos.x - netherLimit.m_minPos.x))));
+		m_netherTravelRatio = Mth::min(8, int(std::ceil((limit.m_maxPos.x - limit.m_minPos.x) / float(netherLimit.m_maxPos.x - netherLimit.m_minPos.x))));
 	}
 	else
 		m_netherTravelRatio = 8;
@@ -75,6 +77,7 @@ Level::Level()
 	m_rainLevel = 0;
 	m_flashTime = 0;
 	m_pPathFinder = new PathFinder();
+	m_pConnection = nullptr;
 }
 
 Level::Level(MinecraftServer* server, Dimension* pDimension) : Level()
@@ -207,7 +210,7 @@ float Level::getBrightness(const TilePos& pos) const
 int Level::getTileRawBrightness(const TilePos& pos) const
 {
 	if (pos.y < 0) return 0;
-	TilePos fixedPos(pos.x, Mth::Min(pos.y, 127), pos.z);
+	TilePos fixedPos(pos.x, Mth::min(pos.y, 127), pos.z);
 	return getChunk(fixedPos)->getRawBrightness(fixedPos, 0);
 }
 
@@ -243,7 +246,7 @@ int Level::getRawBrightness(const TilePos& pos, bool b) const
 		return 0;
 
 
-	TilePos fixedPos(pos.x, Mth::Min(pos.y, 127), pos.z);
+	TilePos fixedPos(pos.x, Mth::min(pos.y, 127), pos.z);
 
 	LevelChunk* pChunk = getChunk(fixedPos);
 	return pChunk->getRawBrightness(fixedPos, m_skyDarken);
@@ -313,7 +316,7 @@ uint8_t* Level::getBlocksAndData(const TilePos& pos1, int xs, int ys, int zs)
 	int var9 = pos1.z >> 4;
 	int var10 = pos1.x + xs - 1 >> 4;
 	int var11 = pos1.z + zs - 1 >> 4;
-	int var12 = 0;
+	int i = 0;
 	int var13 = pos1.y;
 	int var14 = pos1.y + ys;
 	if (pos1.y < 0) {
@@ -347,7 +350,7 @@ uint8_t* Level::getBlocksAndData(const TilePos& pos1, int xs, int ys, int zs)
 				var20 = 16;
 			}
 
-			var12 = getChunk(pos)->getBlocksAndData(var7, var16, var13, var19, var17, var14, var20, var12);
+			i = getChunk(pos)->getBlocksAndData(var7, var16, var13, var19, var17, var14, var20, i);
 		}
 	}
 
@@ -360,7 +363,7 @@ void Level::setBlocksAndData(const TilePos& pos, int xs, int ys, int zs, uint8_t
 	int var9 = pos.z >> 4;
 	int var10 = pos.x + xs - 1 >> 4;
 	int var11 = pos.z + zs - 1 >> 4;
-	int var12 = 0;
+	int i = 0;
 	int var13 = pos.y;
 	int var14 = pos.y + ys;
 	if (pos.y < 0) {
@@ -395,7 +398,7 @@ void Level::setBlocksAndData(const TilePos& pos, int xs, int ys, int zs, uint8_t
 			}
 
 			m_pChunkSource->create(cp);
-			var12 = getChunk(cp)->setBlocksAndData(data, var16, var13, var19, var17, var14, var20, var12);
+			i = getChunk(cp)->setBlocksAndData(data, var16, var13, var19, var17, var14, var20, i);
 			setTilesDirty(TilePos(cp.x * 16 + var16, var13, cp.z * 16 + var19), TilePos(cp.x * 16 + var17, var14, cp.z * 16 + var20));
 		}
 	}
@@ -534,6 +537,35 @@ std::shared_ptr<Player> Level::getPlayer(const std::string& name)
 	for (auto& p : m_players)
 		if (p->m_name == name) return p;
 	return nullptr;
+}
+
+void Level::broadcastAll(Packet* packet)
+{
+	if (m_pConnection && !m_bIsOnline)
+	{
+		for (auto& player : m_players)
+		{
+			m_pConnection->send(player, packet, false);
+		}
+	}
+	delete packet;
+}
+
+void Level::broadcastToAllInRange(Player* avoid, const Vec3& pos, real range, Packet* packet)
+{
+	if (m_pConnection && !m_bIsOnline)
+	{
+		for (auto& player : m_players)
+		{
+			if (player.get() != avoid)
+			{
+				Vec3 diff = pos - player->m_pos;
+				if (diff.lengthSqr() < range * range)
+					m_pConnection->send(player, packet, false);
+			}
+		}
+	}
+	delete packet;
 }
 
 void Level::setUpdateLights(bool b)
@@ -925,7 +957,7 @@ void Level::setTilesDirty(const TilePos& min, const TilePos& max)
 	}
 }
 
-void Level::entityAdded(Entity* pEnt)
+void Level::entityAdded(const std::shared_ptr<Entity>& pEnt)
 {
 	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)
 	{
@@ -934,7 +966,7 @@ void Level::entityAdded(Entity* pEnt)
 	}
 }
 
-void Level::entityRemoved(Entity* pEnt)
+void Level::entityRemoved(const std::shared_ptr<Entity>& pEnt)
 {
 	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)
 	{
@@ -1253,7 +1285,7 @@ void Level::removeAllPendingEntityRemovals(bool limited)
 		LevelChunk* chunk = getChunk(ent->m_chunkPos);
 		if (chunk) chunk->removeEntity(ent);
 
-		entityRemoved(ent.get());
+		entityRemoved(ent);
 	}
 
 	m_pendingEntityRemovals.clear();
@@ -1277,7 +1309,7 @@ void Level::removeAllPendingEntityRemovals(bool limited)
 					getChunk(ent->m_chunkPos)->removeEntity(ent);
 				}
 
-				entityRemoved(it->get());
+				entityRemoved(*it);
 				it = m_entities.erase(it);
 			}
 			else it++;
@@ -1290,7 +1322,7 @@ void Level::removeEntities(const EntityVector& vec)
 	m_pendingEntityRemovals.insert(m_pendingEntityRemovals.end(), vec.begin(), vec.end());
 }
 
-bool Level::removeEntity(std::shared_ptr<Entity> pEnt)
+bool Level::removeEntity(const std::shared_ptr<Entity>& pEnt)
 {
 	if (pEnt->m_pRider)
 		pEnt->m_pRider->ride(nullptr);
@@ -1309,6 +1341,23 @@ bool Level::removeEntity(std::shared_ptr<Entity> pEnt)
 	return false;
 }
 
+void Level::removeEntityImmediately(const std::shared_ptr<Entity>& entity)
+{
+	entity->remove();
+	if (entity->isPlayer())
+	{
+		Util::remove(m_players, std::dynamic_pointer_cast<Player>(entity));
+		updateSleeping();
+	}
+
+	ChunkPos& pos = entity->m_chunkPos;
+	if (entity->m_bInChunk && hasChunk(pos))
+		getChunk(pos)->removeEntity(entity);
+
+	Util::remove(m_entities, entity);
+	entityRemoved(entity);
+}
+
 bool Level::addEntity(std::shared_ptr<Entity> pEnt)
 {
 	auto pOldEnt = getEntity(pEnt->hashCode());
@@ -1325,7 +1374,7 @@ bool Level::addEntity(std::shared_ptr<Entity> pEnt)
 	getChunk(pEnt->m_pos)->addEntity(pEnt);
 	m_entities.push_back(pEnt);
 	pEnt->startSynchedData();
-	entityAdded(pEnt.get());
+	entityAdded(pEnt);
 
 	return true;
 }
@@ -1466,9 +1515,21 @@ void Level::levelEvent(Player* player, int event, const TilePos& pos, int info)
 	}
 }
 
-void Level::entityEvent(Entity* ent, int event)
+void Level::entityEvent(Entity* ent, int8_t event)
 {
-	ent->handleEntityEvent(event);
+	if (!m_bIsOnline)
+	{
+		EntityTracker& tracker = getServer()->getEntityTracker(m_pDimension->m_ID);
+		if (tracker.needsBroadcasting())
+			tracker.broadcast(ent->shared_from_this(), new EntityEventPacket(ent->m_EntityID, event));
+	}
+}
+
+void Level::sendLevelInfo(Player* player)
+{
+	m_pConnection->send(player, new SetTimePacket(getTime()));
+	if (isRaining())
+		m_pConnection->send(player, new GameEventPacket(1));
 }
 
 void Level::setInitialSpawn()
@@ -1703,7 +1764,7 @@ void Level::addListener(LevelListener* listener)
 bool Level::tickPendingTicks(bool b)
 {
 	//@Note: Replaced 65536 with 1000, as this is more accurate to the original code
-	int size = Mth::Min(m_pendingTicks.size(), 1000);
+	int size = Mth::min(m_pendingTicks.size(), 1000);
 
 	for (int i = 0; i < size; i++)
 	{
@@ -1819,11 +1880,12 @@ void Level::tickTiles()
 
 void Level::tickWeather()
 {
-	if (!m_pDimension->m_bHasCeiling)
-	{
-		if (m_flashTime > 0)
-			--m_flashTime;
+	if (m_flashTime > 0)
+		--m_flashTime;
 
+	if (!m_bIsOnline && !m_pDimension->m_bHasCeiling)
+	{
+		bool wasRaining = isRaining();
 		int thunder = getLevelData().getThunderTime();
 		if (thunder <= 0)
 		{
@@ -1870,6 +1932,9 @@ void Level::tickWeather()
 			m_thunderLevel -= 0.1f;
 
 		m_thunderLevel = Mth::clamp(m_thunderLevel, 0.0f, 1.0f);
+
+		if (wasRaining != isRaining())
+			broadcastAll(new GameEventPacket(isRaining() ? 1 : 2));
 	}
 }
 
@@ -1960,6 +2025,11 @@ int LASTTICKED = 0;
 
 void Level::tick()
 {
+	if (!m_bIsOnline && getTime() % 20 == 0)
+	{
+		broadcastAll(new SetTimePacket(getTime()));
+	}
+
 	tickWeather();
 	if (isAllPlayersSleepingLongEnough())
 	{
@@ -2007,9 +2077,9 @@ void Level::tick()
 void Level::tickEntities()
 {
 	// inlined in the original
-	removeAllPendingEntityRemovals();
+	removeAllPendingEntityRemovals(true);
 
-	for (int i = 0; i<int(m_entities.size()); i++)
+	for (int i = 0; i < int(m_entities.size()); i++)
 	{
 		std::shared_ptr<Entity>& pEnt = m_entities[i];
 
@@ -2032,7 +2102,7 @@ void Level::tickEntities()
 			if (pEnt->m_bInChunk && hasChunk(pEnt->m_chunkPos))
 				getChunk(pEnt->m_chunkPos)->removeEntity(pEnt);
 
-			entityRemoved(pEnt.get());
+			entityRemoved(pEnt);
 
 			m_entities.erase(m_entities.begin() + i);
 			i--;
@@ -2244,7 +2314,7 @@ void Level::playSound(Entity* entity, const std::string& name, float volume, flo
 	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)
 	{
 		LevelListener* pListener = *it;
-		pListener->playSound(name, Vec3(entity->m_pos.x, entity->m_pos.y - entity->m_heightOffset, entity->m_pos.z), volume, pitch);
+		pListener->playSound(name, Vec3(entity->m_pos.x, entity->m_pos.y, entity->m_pos.z), volume, pitch);
 	}
 }
 
@@ -2315,6 +2385,7 @@ void Level::explode(Entity* entity, const Vec3& pos, float power, bool bIsFiery)
 	expl.setFiery(bIsFiery);
 	expl.explode();
 	expl.addParticles();
+	broadcastToAllInRange(nullptr, pos, 64.0, new ExplodePacket(pos, power, expl.m_toBlow));
 }
 
 void Level::addEntities(const std::vector<std::shared_ptr<Entity>>& entities)
@@ -2323,7 +2394,7 @@ void Level::addEntities(const std::vector<std::shared_ptr<Entity>>& entities)
 
 	for (auto& e : entities)
 	{
-		entityAdded(e.get());
+		entityAdded(e);
 	}
 }
 

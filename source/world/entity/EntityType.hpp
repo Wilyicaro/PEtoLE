@@ -14,14 +14,14 @@ using EntityFactory = std::function<std::shared_ptr<Entity>(Level*)>;
 class EntityType
 {
 public:
-	EntityType(int type, const std::string& name, const EntityCategories& category, const EntityFactory& factory);
+	EntityType(int type, const std::string& name, const EntityCategories& category, const EntityFactory& factory, int range, int updateInterval, bool trackDelta);
 
 
 public:
 	template <typename T>
-	static EntityType* create(int type, const std::string& name, const EntityCategories& category)
+	static EntityType* create(int type, const std::string& name, const EntityCategories& category, int range = 160, int updateInterval = 3, bool trackDelta = false)
 	{
-		return new EntityType(type, name, category, [](Level* level) -> std::shared_ptr<Entity> {return std::make_shared<T>(level);});
+		return new EntityType(type, name, category, [](Level* level) -> std::shared_ptr<Entity> {return std::make_shared<T>(level);}, range, updateInterval, trackDelta);
 	}
 
 	static EntityType* registerType(EntityType* type) {
@@ -38,6 +38,9 @@ public:
 	int getId() const { return m_id; }
 	const std::string& getName() const { return m_name; }
 	const EntityCategories& getCategory() const { return m_category; }
+	int getRange() const { return m_range; }
+	int getUpdateInterval() const { return m_updateInterval; }
+	bool trackDelta() const { return m_bTrackDelta; }
 
 	std::shared_ptr<Entity> newEntity(Level* level) const 
 	{
@@ -102,6 +105,10 @@ private:
 	std::string m_name;
 	EntityCategories m_category;
 	EntityFactory m_factory;
+	int m_range;
+	int m_updateInterval;
+	bool m_bTrackDelta;
+
 
 	static std::unordered_map<int, const EntityType*> entityTypeIdMap;
 	static std::unordered_map<std::string, const EntityType*> entityTypeNameMap;

@@ -100,7 +100,7 @@ void MobRenderer::render(Entity* entity, const Vec3& pos, float unused, float f)
 	float fBob   = getBob(pMob, f);
 	float fSmth  = pMob->m_yBodyRotO + (pMob->m_yBodyRot - pMob->m_yBodyRotO) * f;
 
-	setupPosition(pMob, pos.x, pos.y - pMob->m_heightOffset, pos.z);
+	setupPosition(pMob, pos.x, pos.y, pos.z);
 	setupRotations(pMob, fBob, fSmth, f);
 
 	float fScale = 0.0625f; // the scale variable according to b1.2_02
@@ -205,7 +205,7 @@ void MobRenderer::renderName(Mob* mob, const Vec3& pos)
 
 	Player* player = (Player*)mob;
 
-	renderNameTag(mob, player->m_name, pos.x, pos.y  - 1.5f, pos.z, mob->isSneaking() ? 32 : 64);
+	renderNameTag(mob, player->m_name, pos.x, pos.y + (mob->isSleeping() ? -1.5f : 0.0f), pos.z, mob->isSneaking() ? 32 : 64);
 }
 
 void MobRenderer::renderNameTag(Mob* mob, const std::string& str, float x, float y, float z, int a)

@@ -69,6 +69,23 @@ if(TARGET SDL2::SDL2main)
     target_link_libraries(reminecraftpe SDL2::SDL2main)
 endif()
 
+# OpenGL
+if(ANDROID)
+    find_library(GLES_LIB GLESv1_CM REQUIRED)
+    target_link_libraries(reminecraftpe-core PUBLIC "${GLES_LIB}")
+    target_compile_definitions(reminecraftpe-core PUBLIC USE_GLES)
+else()
+    find_package(OpenGL REQUIRED)
+    target_link_libraries(reminecraftpe-core PUBLIC OpenGL::GL)
+    if(EMSCRIPTEN)
+        # Use WebGL 2
+        target_link_options(reminecraftpe-core PUBLIC
+            -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2
+            -sLEGACY_GL_EMULATION -sGL_FFP_ONLY
+        )
+    endif()
+endif()
+
 # WASM
 if(EMSCRIPTEN)
     target_link_options(reminecraftpe PRIVATE -Wno-pthreads-mem-growth)

@@ -9,6 +9,7 @@
 #include "ServerSideNetworkHandler.hpp"
 #include "common/Utils.hpp"
 #include <world/entity/EntityIO.hpp>
+#include "world/item/Slot.hpp"
 #include <client/locale/Language.hpp>
 
 // This lets you make the server shut up and not log events in the debug console.
@@ -119,6 +120,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 	Level* level = m_pMinecraft->m_pMinecraftServer->getLevel();
 	level->validateSpawn();
 	auto pPlayer = std::make_shared<Player>(level, level->getLevelData().getGameType());
+	pPlayer->initMenu();
 	pPlayer->resetPos();
 	pPlayer->m_guid = guid;
 	pPlayer->m_name = std::string(packet->m_str.C_String());
@@ -130,38 +132,21 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LoginPacke
 	sgp.m_levelVersion = level->getLevelData().getVersion();
 	sgp.m_gameType = pPlayer->getPlayerGameType();
 	sgp.m_entityId = pPlayer->m_EntityID;
+	sgp.m_health = pPlayer->m_health;
 	sgp.m_pos = pPlayer->m_pos;
 	sgp.m_dimension = pPlayer->m_dimension;
 	sgp.m_serverVersion = NETWORK_PROTOCOL_VERSION;
 	sgp.m_time = level->getTime();
-	
+
 	RakNet::BitStream sgpbs;
 	sgp.write(&sgpbs);
 	m_pRakNetPeer->Send(&sgpbs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, guid, false);
 
-	// @TODO: Move everything below into response to ReadyPacket
-
-	// send the connecting player info about all other players in the world
-	for (int i = 0; i < int(level->m_players.size()); i++)
-	{
-		auto& player = level->m_players[i];
-		AddPlayerPacket app(player.get());
-		RakNet::BitStream appbs;
-		app.write(&appbs);
-		m_pRakNetPeer->Send(&appbs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, guid, false);
-	}
-
 	level->addEntity(pPlayer);
 
-	if (pPlayer->isCreative())
-		pPlayer->m_pInventory->prepareCreativeInventory();
+	pPlayer->m_pGameMode->initPlayer(pPlayer.get());
 
-	m_pMinecraft->m_gui.addMessage(pPlayer->m_name + " joined the game");
-
-	AddPlayerPacket app(pPlayer.get());
-	RakNet::BitStream appbs;
-	app.write(&appbs);
-	m_pRakNetPeer->Send(&appbs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, guid, true);
+	displayGameMessage(pPlayer->m_name + " joined the game");
 }
 
 void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, MessagePacket* packet)
@@ -216,84 +201,212 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, MessagePac
 
 void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, MovePlayerPacket* packet)
 {
-	//not in the original
 	puts_ignorable("MovePlayerPacket");
 
 
 	auto& pEntity = getPlayerByGUID(guid)->m_pPlayer;
 	if (pEntity)
+	{
 		pEntity->lerpTo(packet->m_pos, packet->m_rot, 3);
-
-	redistributePacket(packet, guid);
-}
-
-void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlaceBlockPacket* packet)
-{
-	auto& pMob = getPlayerByGUID(guid)->m_pPlayer;
-	if (!pMob)
-		return;
-
-	TileID tile = packet->m_tile;
-	Facing::Name face = (Facing::Name)packet->m_face;
-	TilePos pos = packet->m_pos;
-
-	printf_ignorable("PlaceBlockPacket: %d", tile);
-
-	if (!pMob->m_pLevel->mayPlace(tile, pos, true, face))
-		return;
-
-	if (pMob->m_pLevel->setTile(pos, tile))
-	{
-		Tile::tiles[tile]->setPlacedOnFace(pMob->m_pLevel, pos, face);
-		Tile::tiles[tile]->setPlacedBy(pMob->m_pLevel, pos, pMob.get(), face);
-
-		const Tile::SoundType* pSound = Tile::tiles[tile]->m_pSound;
-		pMob->m_pLevel->playSound(pos + 0.5f, pSound->m_name, 0.5f * (pSound->volume + 1.0f), pSound->pitch * 0.8f);
+		pEntity->m_vel = packet->m_vel;
 	}
-
-	redistributePacket(packet, guid);
 }
 
-void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, RemoveBlockPacket* packet)
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerActionPacket* packet)
 {
-	puts_ignorable("RemoveBlockPacket");
+	auto& player = getPlayerByGUID(guid)->m_pPlayer;
+	Level* level = player->m_pLevel;
+	if (packet->m_action == 4)
+		player->drop();
+	else
+	{
+		bool allowSpawnBuild = level->m_pDimension->m_ID != 0 || player->isLocalPlayer() || !m_pMinecraft->m_pMinecraftServer->m_bSpawnProtection;
+		bool checkDist = false;
+		if (packet->m_action == 0)
+			checkDist = true;
 
+		if (packet->m_action == 2)
+			checkDist = true;
+
+		Vec3i pos = packet->m_pos;
+		if (checkDist)
+		{
+			Vec3 diff = player->m_pos - (pos + 0.5f);
+			if (diff.lengthSqr() > 36.0)
+				return;
+		}
+
+		Vec3i spawn = level->getSharedSpawnPos();
+		int spawnDiffX = Mth::abs(pos.x - spawn.x);
+		int spawnDiff = Mth::abs(pos.z - spawn.z);
+		if (spawnDiffX > spawnDiff)
+			spawnDiff = spawnDiffX;
+
+		if (packet->m_action == 0)
+		{
+			if (spawnDiff <= 16 && !allowSpawnBuild)
+				player->getConnection()->send(player, new TileUpdatePacket(pos, level));
+			else
+				player->m_pGameMode->startDestroyBlock(pos, (Facing::Name) packet->m_face);
+		}
+		else if (packet->m_action == 2)
+		{
+			player->m_pGameMode->stopDestroyBlock(pos);
+			if (level->getTile(pos) != 0)
+				player->getConnection()->send(player, new TileUpdatePacket(pos, level));
+		}
+		else if (packet->m_action == 3)
+		{
+			Vec3 diff = player->m_pos - (pos + 0.5f);
+			real lengthSqr = diff.lengthSqr();
+			if (lengthSqr < 256.0)
+				player->getConnection()->send(player, new TileUpdatePacket(pos, level));
+		}
+	}
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerCommandPacket* packet)
+{
 	auto& pPlayer = getPlayerByGUID(guid)->m_pPlayer;
 	if (!pPlayer)
 		return;
 
-	TilePos pos = packet->m_pos;
-	Tile* pTile = Tile::tiles[pPlayer->m_pLevel->getTile(pos)];
-	//int data = m_pLevel->getData(pos);
-	bool setTileResult = pPlayer->m_pLevel->setTile(pos, TILE_AIR);
-	if (pTile && setTileResult)
+	if (packet->m_action == 1)
+		pPlayer->setSneaking(true);
+	else if (packet->m_action == 2)
+		pPlayer->setSneaking(false);
+	else if (packet->m_action == 3)
 	{
-		const Tile::SoundType* pSound = pTile->m_pSound;
-		pPlayer->m_pLevel->playSound(pos + 0.5f, pSound->m_destroy, 0.5f * (pSound->volume + 1.0f), pSound->pitch * 0.8f);
-
-		// redistribute the packet only if needed
-		redistributePacket(packet, guid);
+		pPlayer->wake(false, true, true);
+		//awaitingPositionFromClient = false;
 	}
+
 }
 
-void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerEquipmentPacket* packet)
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, AnimatePacket* packet)
 {
 	auto& pPlayer = getPlayerByGUID(guid)->m_pPlayer;
 	if (!pPlayer)
-	{
-		LOG_W("No player with id %d", packet->m_playerID);
 		return;
+
+	if (packet->m_action == 1) {
+		pPlayer->swing();
+	}
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, UseItemPacket* packet)
+{
+	auto& player = getPlayerByGUID(guid)->m_pPlayer;
+	Level* level = player->m_pLevel;
+	std::shared_ptr<ItemInstance> selected = player->getSelectedItem();
+	bool allowSpawnBuild = level->m_pDimension->m_ID != 0 || player->isLocalPlayer() || !m_pMinecraft->m_pMinecraftServer->m_bSpawnProtection;
+	if (packet->m_face == 255)
+	{
+		if (!selected)
+			return;
+
+		player->m_pGameMode->useItem(player.get(), level, selected);
+	}
+	else
+	{
+		Facing::Name face = (Facing::Name) packet->m_face;
+		Vec3i spawn = level->getSharedSpawnPos();
+		int dx = Mth::abs(packet->m_pos.x - spawn.x);
+		int dz = Mth::abs(packet->m_pos.z - spawn.z);
+		if (dx > dz)
+			dz = dx;
+
+		if (/*awaitingPositionFromClient && */player->distanceToSqr(packet->m_pos.center()) < 64.0 && (dz > 16 || allowSpawnBuild))
+			player->m_pGameMode->useItemOn(player.get(), level, selected, packet->m_pos, face);
+
+		m_pRakNetInstance->send(player, new TileUpdatePacket(packet->m_pos, level));
+		m_pRakNetInstance->send(player, new TileUpdatePacket(packet->m_pos.relative(face), level));
 	}
 
-	if (pPlayer->m_guid == m_pRakNetPeer->GetMyGUID())
+	selected = player->getSelectedItem();
+	if (selected && selected->m_count == 0)
+		player->m_pInventory->setSelectedItem(nullptr);
+
+	player->m_bIgnoreSlotUpdates = true;
+	player->m_pInventory->setSelectedItem(player->getSelectedItem() == nullptr ? nullptr : player->getSelectedItem()->copy());
+	Slot* slot = player->m_containerMenu->getSlotFor(player->m_pInventory, player->m_pInventory->m_selected);
+	player->m_containerMenu->broadcastChanges();
+	player->m_bIgnoreSlotUpdates = false;
+	if (!ItemInstance::matches(player->getSelectedItem(), packet->m_item))
+		m_pRakNetInstance->send(new ContainerSetSlotPacket(player->m_containerMenu->m_containerId, slot->index, player->getSelectedItem()));
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, InteractPacket* packet)
+{
+	auto& player = getPlayerByGUID(guid)->m_pPlayer;
+	Level* level = player->m_pLevel;
+	std::shared_ptr<Entity> target = level->getEntity(packet->m_target);
+	if (target && player->canSee(target.get()) && player->distanceToSqr(target.get()) < 36.0)
 	{
-		LOG_W("Attempted to modify local player's inventory");
-		return;
+		if (packet->m_action == 0)
+			player->interact(target.get());
+		else if (packet->m_action == 1)
+			player->attack(target.get());
 	}
+}
 
-	pPlayer->m_pInventory->selectItem(packet->m_itemID);
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, SetCarriedItemPacket* packet)
+{
+	auto& pPlayer = getPlayerByGUID(guid)->m_pPlayer;
+	if (!pPlayer)
+		return;
 
-	redistributePacket(packet, guid);
+	pPlayer->m_pInventory->selectSlot(packet->m_slot);
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerChangeDimensionPacket* packet)
+{
+	auto& pPlayer = getPlayerByGUID(guid)->m_pPlayer;
+	if (!pPlayer)
+		return;
+	if (pPlayer->m_health <= 0)
+		pPlayer->respawn(0);
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, ContainerClickPacket* packet)
+{
+	OnlinePlayer* onlinePlayer = getPlayerByGUID(guid);
+	auto& player = onlinePlayer->m_pPlayer;
+	if (!player)
+		return;
+	if (player->m_containerMenu->m_containerId == packet->m_containerId && player->m_containerMenu->isSynched(player.get()))
+	{
+		std::shared_ptr<ItemInstance> result = player->m_containerMenu->clicked(packet->m_slot, packet->m_button, packet->m_bQuickMove, player.get());
+		if (ItemInstance::matches(packet->m_item, result))
+		{
+			m_pRakNetInstance->send(player, new ContainerAckPacket(packet->m_containerId, packet->m_uid, true));
+			player->m_containerMenu->broadcastChanges();
+		}
+		else
+		{
+			onlinePlayer->m_expectedAcks[player->m_containerMenu->m_containerId] = packet->m_uid;
+			m_pRakNetInstance->send(player, new ContainerAckPacket(packet->m_containerId, packet->m_uid, true));
+			player->m_containerMenu->setSynched(player.get(), false);
+			player->refreshContainerItems(player->m_containerMenu);
+		}
+	}
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, ContainerAckPacket* packet)
+{
+	OnlinePlayer* onlinePlayer = getPlayerByGUID(guid);
+	auto& player = onlinePlayer->m_pPlayer;
+	auto it = onlinePlayer->m_expectedAcks.find(player->m_containerMenu->m_containerId);
+	if (it != onlinePlayer->m_expectedAcks.end() && packet->m_uid == it->second && player->m_containerMenu->m_containerId == packet->m_containerId && !player->m_containerMenu->isSynched(player.get()))
+		player->m_containerMenu->setSynched(player.get(), true);
+}
+
+void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, ContainerClosePacket* packet)
+{
+	auto& pPlayer = getPlayerByGUID(guid)->m_pPlayer;
+	if (!pPlayer)
+		return;
+	pPlayer->m_pGameMode->handleCloseInventory(packet->m_containerId, pPlayer.get());
 }
 
 void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, RequestChunkPacket* packet)
@@ -316,7 +429,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, RequestChu
 	}
 
 	// @NOTE: this allows the client to request empty chunks. Is that okay?
-	ChunkDataPacket cdp(pChunk);
+	BlockRegionUpdatePacket cdp(pChunk);
 
 	RakNet::BitStream bs;
 	cdp.write(&bs);
@@ -532,7 +645,7 @@ void ServerSideNetworkHandler::commandSummon(OnlinePlayer* player, const std::ve
 	if (EntityIO::contains(entityName))
 	{
 		Vec3 pos = player->m_pPlayer->getPos(1.0f);
-		pos.y -= player->m_pPlayer->m_heightOffset + player->m_pPlayer->m_ySlideOffset;
+		pos.y -= player->m_pPlayer->m_ySlideOffset;
 
 		if (parmsSize >= 4)
 		{
@@ -632,7 +745,6 @@ void ServerSideNetworkHandler::commandGamemode(OnlinePlayer* player, const std::
 	if (mode == 0 || mode == 1)
 	{
 		cPlayer->m_pPlayer->setPlayerGameType((GameType) mode);
-		m_pMinecraft->setGameMode(cPlayer->m_pPlayer->getPlayerGameType());
 		sendMessage(player, "Gamemode sucessfully changed");
 	}
 	else

@@ -210,7 +210,7 @@ int PistonBaseTile::getRotationData(Level* level, const TilePos& pos, Player* pl
 {
 	if (Mth::abs(player->m_pos.x - pos.x) < 2.0F && Mth::abs(player->m_pos.z - pos.z) < 2.0F)
 	{
-		real var5 = player->m_pos.y + 1.82 - player->m_heightOffset;
+		real var5 = player->m_pos.y + player->m_heightOffset + 0.2;
 		if (var5 - pos.y > 2.0)
 			return 1;
 

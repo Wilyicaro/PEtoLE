@@ -66,7 +66,7 @@ void ItemRenderer::render(Entity* pEntity, const Vec3& pos, float a, float b)
 	//	glColor4f(var30, var30, var30, 1.0F);
 	//}
 
-	glTranslatef(pos.x, pos.y + 0.1f + yOffset * 0.1f, pos.z);
+	glTranslatef(pos.x, pos.y + 0.1f + yOffset * 0.1f + pEntity->m_heightOffset, pos.z);
 	glEnable(GL_RESCALE_NORMAL);
 
 	int itemID = pItemInstance->m_itemID;

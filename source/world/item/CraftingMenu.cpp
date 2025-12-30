@@ -38,9 +38,11 @@ void CraftingMenu::slotsChanged(Container* container)
 void CraftingMenu::removed(Player* player) 
 {
     ContainerMenu::removed(player);
-    for (int i = 0; i < 9; ++i) {
+    for (int i = 0; i < 9; ++i)
+    {
         std::shared_ptr<ItemInstance> item = craftSlots->getItem(i);
-        if (item != nullptr) {
+        if (item != nullptr)
+        {
             player->drop(item);
             craftSlots->setItem(i, nullptr);
         }
@@ -55,4 +57,35 @@ bool CraftingMenu::stillValid(Player* player) const
     else {
         return !(player->distanceToSqr(m_pos.center()) > 64.0);
     }
+}
+
+std::shared_ptr<ItemInstance> CraftingMenu::quickMoveStack(int index)
+{
+    std::shared_ptr<ItemInstance> item = nullptr;
+    Slot* slot = getSlot(index);
+    if (slot && slot->hasItem())
+    {
+        std::shared_ptr<ItemInstance> slotItem = slot->getItem();
+        item = slotItem->copy();
+        if (index == 0)
+            moveItemStackTo(slotItem, 10, 46, true);
+        else if (index >= 10 && index < 37)
+            moveItemStackTo(slotItem, 37, 46, false);
+        else if (index >= 37 && index < 46)
+            moveItemStackTo(slotItem, 10, 37, false);
+        else
+            moveItemStackTo(slotItem, 10, 46, false);
+
+        if (slotItem->m_count == 0)
+            slot->set(nullptr);
+        else
+            slot->setChanged();
+
+        if (slotItem->m_count == item->m_count)
+            return nullptr;
+
+        slot->onTake(slotItem);
+    }
+
+    return item;
 }

@@ -444,15 +444,15 @@ void Item::initItems()
 		->setDescriptionId("bucketLava")
 		->setCraftingRemainingItem(emptyBucket);
 
-	Item::minecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART, 0)
+	Item::minecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART, Minecart::Type::DEFAULT)
 		->setIcon(7, 8)
 		->setDescriptionId("minecart");
 
-	Item::chestMinecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART_CHEST, 1)
+	Item::chestMinecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART_CHEST, Minecart::Type::CHEST)
 		->setIcon(7, 9)
 		->setDescriptionId("minecartChest");
 
-	Item::furnaceMinecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART_FURNACE, 2)
+	Item::furnaceMinecart = NEW_X_ITEM(MinecartItem, ITEM_MINECART_FURNACE, Minecart::Type::FURNACE)
 		->setIcon(7, 10)
 		->setDescriptionId("minecartFurnace");
 

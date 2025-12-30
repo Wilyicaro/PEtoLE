@@ -23,6 +23,7 @@ struct OnlinePlayer
 	std::shared_ptr<Player> m_pPlayer; // The player avatar this online player controls
 	RakNet::RakNetGUID m_guid;
 	std::unordered_set<ChunkPos> m_sentChunks;
+	std::unordered_map<int, int16_t> m_expectedAcks;
 
 	OnlinePlayer(std::shared_ptr<Player> p, const RakNet::RakNetGUID& guid) : m_pPlayer(p), m_guid(guid) {}
 };
@@ -51,9 +52,16 @@ public:
 	void handle(const RakNet::RakNetGUID&, LoginPacket*) override;
 	void handle(const RakNet::RakNetGUID&, MessagePacket*) override;
 	void handle(const RakNet::RakNetGUID&, MovePlayerPacket*) override;
-	void handle(const RakNet::RakNetGUID&, PlaceBlockPacket*) override;
-	void handle(const RakNet::RakNetGUID&, RemoveBlockPacket*) override;
-	void handle(const RakNet::RakNetGUID&, PlayerEquipmentPacket*) override;
+	void handle(const RakNet::RakNetGUID&, PlayerActionPacket*) override;
+	void handle(const RakNet::RakNetGUID&, PlayerCommandPacket*) override;
+	void handle(const RakNet::RakNetGUID&, AnimatePacket*) override;
+	void handle(const RakNet::RakNetGUID&, UseItemPacket*) override;
+	void handle(const RakNet::RakNetGUID&, InteractPacket*) override;
+	void handle(const RakNet::RakNetGUID&, SetCarriedItemPacket*) override;
+	void handle(const RakNet::RakNetGUID&, PlayerChangeDimensionPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerClickPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerAckPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerClosePacket*) override;
 	void handle(const RakNet::RakNetGUID&, RequestChunkPacket*) override;
 
 	void allowIncomingConnections(bool b);

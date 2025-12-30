@@ -1,5 +1,5 @@
 #include "ChunkPos.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 
 void ChunkPos::_init(int _x, int _z)
 {
@@ -126,7 +126,7 @@ bool ChunkPos::operator!=(const ChunkPos& other) const
 	return !(*this == other);
 }
 
-ChunkPos::operator TilePos() const
+ChunkPos::operator Vec3i() const
 {
-	return TilePos(*this, 0);
+	return Vec3i(*this, 0);
 }

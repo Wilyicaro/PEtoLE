@@ -3,7 +3,7 @@
 #include <functional>
 #include "world/phys/Vec3T.hpp"
 #ifndef __TILEPOS_HPP
-struct TilePos;
+struct Vec3i;
 #endif
 
 #define __CHUNKPOS_HPP
@@ -15,7 +15,7 @@ struct ChunkPos
 private:
     void _init(int _x, int _z);
     void _init(const Vec3& pos);
-	void _init(const TilePos& pos);
+	void _init(const Vec3i& pos);
     
 public:
 	ChunkPos();
@@ -23,7 +23,7 @@ public:
 	ChunkPos(int _x, int _y, int _z);
 	ChunkPos(float _x, float _y, float _z);
 	ChunkPos(const Vec3& pos) { _init(pos); }
-	ChunkPos(const TilePos& pos) { _init(pos); }
+	ChunkPos(const Vec3i& pos) { _init(pos); }
 
 	bool operator<(const ChunkPos& b) const;
 	bool operator>(const ChunkPos& b) const;
@@ -42,7 +42,7 @@ public:
 	bool operator==(const ChunkPos& other) const;
 	bool operator!=(const ChunkPos& other) const;
 
-	operator TilePos() const;
+	operator Vec3i() const;
 
 	static uint64_t createKey(int32_t x, int32_t z) noexcept {
 		return (static_cast<uint64_t>(static_cast<uint32_t>(x)) << 32) | static_cast<uint32_t>(z);

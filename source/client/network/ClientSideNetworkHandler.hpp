@@ -39,13 +39,33 @@ public:
 	void handle(const RakNet::RakNetGUID&, StartGamePacket*) override;
 	void handle(const RakNet::RakNetGUID&, AddPlayerPacket*) override;
 	void handle(const RakNet::RakNetGUID&, AddMobPacket*) override;
+	void handle(const RakNet::RakNetGUID&, AddEntityPacket*) override;
+	void handle(const RakNet::RakNetGUID&, AddItemEntityPacket*) override;
+	void handle(const RakNet::RakNetGUID&, AddPaintingPacket*) override;
+	void handle(const RakNet::RakNetGUID&, TakeItemEntityPacket*) override;
 	void handle(const RakNet::RakNetGUID&, RemoveEntityPacket*) override;
 	void handle(const RakNet::RakNetGUID&, MovePlayerPacket*) override;
-	void handle(const RakNet::RakNetGUID&, PlaceBlockPacket*) override;
-	void handle(const RakNet::RakNetGUID&, RemoveBlockPacket*) override;
-	void handle(const RakNet::RakNetGUID&, UpdateBlockPacket*) override;
-	void handle(const RakNet::RakNetGUID&, ChunkDataPacket*) override;
-	void handle(const RakNet::RakNetGUID&, PlayerEquipmentPacket*) override;
+	void handle(const RakNet::RakNetGUID&, MoveEntityPacket*) override;
+	void handle(const RakNet::RakNetGUID&, SetEntityMotionPacket*) override;
+	void handle(const RakNet::RakNetGUID&, SetEntityDataPacket*) override;
+	void handle(const RakNet::RakNetGUID&, TeleportEntityPacket*) override;
+	void handle(const RakNet::RakNetGUID&, InteractionPacket*) override;
+	void handle(const RakNet::RakNetGUID&, AnimatePacket*) override;
+	void handle(const RakNet::RakNetGUID&, LevelEventPacket*) override;
+	void handle(const RakNet::RakNetGUID&, EntityEventPacket*) override;
+	void handle(const RakNet::RakNetGUID&, GameEventPacket*) override;
+	void handle(const RakNet::RakNetGUID&, SetHealthPacket*) override;
+	void handle(const RakNet::RakNetGUID&, PlayerChangeDimensionPacket*) override;
+	void handle(const RakNet::RakNetGUID&, TileUpdatePacket*) override;
+	void handle(const RakNet::RakNetGUID&, BlockRegionUpdatePacket*) override;
+	void handle(const RakNet::RakNetGUID&, SetEquippedItemPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerSetContentPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerSetSlotPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerAckPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerSetDataPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerOpenPacket*) override;
+	void handle(const RakNet::RakNetGUID&, ContainerClosePacket*) override;
+	void handle(const RakNet::RakNetGUID&, ExplodePacket*) override;
 	void handle(const RakNet::RakNetGUID&, LevelDataPacket*) override;
 	void handle(const RakNet::RakNetGUID&, SignUpdatePacket*) override;
 
@@ -59,6 +79,7 @@ public:
 private:
 	Minecraft* m_pMinecraft;
 	MultiPlayerLevel* m_pLevel;
+	Random m_random;
 	RakNetInstance* m_pRakNetInstance;
 	RakNet::RakPeerInterface* m_pServerPeer;
 	int m_field_14;

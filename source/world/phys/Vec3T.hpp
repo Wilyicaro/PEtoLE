@@ -13,7 +13,7 @@
 #include "compat/LegacyCPPCompatibility.hpp"
 
 
-struct TilePos;
+struct Vec3i;
 
 enum class Axis {
 	X, Y, Z
@@ -31,7 +31,7 @@ public:
 public:
 	Vec3T() : x(0), y(0), z(0) {}
 	Vec3T(T _x, T _y, T _z) : x(_x), y(_y), z(_z) {}
-	Vec3T(const TilePos& tilePos);
+	Vec3T(const Vec3i& vec3i);
 
 	Vec3T interpolateTo(const Vec3T& to, T t) const 
 	{

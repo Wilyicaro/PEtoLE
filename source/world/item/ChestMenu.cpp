@@ -36,3 +36,29 @@ ChestMenu::ChestMenu(Container* inventory, Container* container)
 bool ChestMenu::stillValid(Player* player) const {
     return m_container->stillValid(player);
 }
+
+std::shared_ptr<ItemInstance> ChestMenu::quickMoveStack(int index)
+{
+    std::shared_ptr<ItemInstance> item = nullptr;
+    Slot* slot = getSlot(index);
+    if (slot && slot->hasItem())
+    {
+        std::shared_ptr<ItemInstance> slotItem = slot->getItem();
+        item = slotItem->copy();
+        int rows = m_container->getContainerSize() / 9;
+        if (index < rows * 9)
+            moveItemStackTo(slotItem, rows * 9, slots.size(), true);
+        else
+            moveItemStackTo(slotItem, 0, rows * 9, false);
+
+        if (slotItem->m_count == 0)
+            slot->set(nullptr);
+        else
+            slot->setChanged();
+
+        if (slotItem->m_count == item->m_count)
+            return nullptr;
+    }
+
+    return item;
+}

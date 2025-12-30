@@ -848,42 +848,42 @@ void TileRenderer::tesselateTorch(Tile* tile, const Vec3& pos, float a, float b)
 	float texV_1 = (texY * C_RATIO) + 1.0f / 32.0f;
 	float texV_2 = (texY + 15.99f) * C_RATIO;
 
-	float x1 = pos.x + C_HALF_TILE, z1 = pos.z + C_HALF_TILE;
-	float x2 = x1 + (float)(a * C_TOP_SKEW_RATIO);
-	float z2 = z1 + (float)(b * C_TOP_SKEW_RATIO);
+	real x1 = pos.x + C_HALF_TILE, z1 = pos.z + C_HALF_TILE;
+	real x2 = x1 + (float)(a * C_TOP_SKEW_RATIO);
+	real z2 = z1 + (float)(b * C_TOP_SKEW_RATIO);
 
 	Tesselator& t = Tesselator::instance;
 	
 	// Top side (flame)
-	float x_1 = x2 - C_ONE_PIXEL; 
-	float x_2 = x2 + C_ONE_PIXEL;
-	float z_1 = z2 - C_ONE_PIXEL;
-	float z_2 = z2 + C_ONE_PIXEL;
+	real x_1 = x2 - C_ONE_PIXEL; 
+	real x_2 = x2 + C_ONE_PIXEL;
+	real z_1 = z2 - C_ONE_PIXEL;
+	real z_2 = z2 + C_ONE_PIXEL;
 
 	// Edges (close by)
-	float x_3 = x1 - C_ONE_PIXEL;
-	float x_4 = x1 + C_ONE_PIXEL;
-	float z_5 = z1 - C_ONE_PIXEL;
-	float z_6 = z1 + C_ONE_PIXEL;
+	real x_3 = x1 - C_ONE_PIXEL;
+	real x_4 = x1 + C_ONE_PIXEL;
+	real z_5 = z1 - C_ONE_PIXEL;
+	real z_6 = z1 + C_ONE_PIXEL;
 	
 	// Far edges
-	float x_5 = x1 - C_HALF_TILE; 
-	float x_6 = x1 + C_HALF_TILE;
-	float z_3 = z1 - C_HALF_TILE;
-	float z_4 = z1 + C_HALF_TILE;
+	real x_5 = x1 - C_HALF_TILE;
+	real x_6 = x1 + C_HALF_TILE;
+	real z_3 = z1 - C_HALF_TILE;
+	real z_4 = z1 + C_HALF_TILE;
 	
-	float x_7 = x_6 + a; // Skewed bottom
-	float x_8 = x_3 + a;
-	float x_9 = x_4 + a;
-	float x_0 = x_5 + a;
-	float z_7 = z_3 + b;
-	float z_8 = z_4 + b;
-	float z_9 = z_5 + b;
-	float z_0 = z_6 + b;
+	real x_7 = x_6 + a; // Skewed bottom
+	real x_8 = x_3 + a;
+	real x_9 = x_4 + a;
+	real x_0 = x_5 + a;
+	real z_7 = z_3 + b;
+	real z_8 = z_4 + b;
+	real z_9 = z_5 + b;
+	real z_0 = z_6 + b;
 
-	float y_1 = pos.y + C_ONE_PIXEL * 10.0f; // Torch height
-	float y_2 = pos.y + 1.0f; // Top
-	float y_3 = pos.y + 0.0f; // Bottom
+	real y_1 = pos.y + C_ONE_PIXEL * 10.0f; // Torch height
+	real y_2 = pos.y + 1.0f; // Top
+	real y_3 = pos.y + 0.0f; // Bottom
 
 	float texU_3 = texU_1 + 0.027344f;
 	float texU_4 = texU_1 + 0.035156f;
@@ -931,16 +931,16 @@ bool TileRenderer::tesselateTorchInWorld(Tile* tile, const TilePos& pos)
 	switch (data)
 	{
 		case 1:
-			tesselateTorch(tile, Vec3(float(pos.x) - 0.1f, float(pos.y) + 0.2f, float(pos.z)), -0.4f, 0.0f);
+			tesselateTorch(tile, Vec3(pos.x - 0.1f, pos.y + 0.2f, pos.z), -0.4f, 0.0f);
 			break;
 		case 2:
-			tesselateTorch(tile, Vec3(float(pos.x) + 0.1f, float(pos.y) + 0.2f, float(pos.z)), 0.4f, 0.0f);
+			tesselateTorch(tile, Vec3(pos.x + 0.1f, pos.y + 0.2f, pos.z), 0.4f, 0.0f);
 			break;
 		case 3:
-			tesselateTorch(tile, Vec3(float(pos.x), float(pos.y) + 0.2f, float(pos.z) - 0.1f), 0.0f, -0.4f);
+			tesselateTorch(tile, Vec3(pos.x, pos.y + 0.2f, pos.z - 0.1f), 0.0f, -0.4f);
 			break;
 		case 4:
-			tesselateTorch(tile, Vec3(float(pos.x), float(pos.y) + 0.2f, float(pos.z) + 0.1f), 0.0f, 0.4f);
+			tesselateTorch(tile, Vec3(pos.x, pos.y + 0.2f, pos.z + 0.1f), 0.0f, 0.4f);
 			break;
 		default:
 			tesselateTorch(tile, pos, 0.0f, 0.0f);
@@ -1422,8 +1422,8 @@ bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)
 	if (data == 0)
 		red = 0.3F;
 
-	float green = Mth::Max(0.0f, power * power * 0.7F - 0.5F);
-	float blue = Mth::Max(0.0f, power * power * 0.6F - 0.7F);
+	float green = Mth::max(0.0f, power * power * 0.7F - 0.5F);
+	float blue = Mth::max(0.0f, power * power * 0.6F - 0.7F);
 	t.color(br * red, br * green, br * blue);
 
 	int xt = (tex & 15) << 4;

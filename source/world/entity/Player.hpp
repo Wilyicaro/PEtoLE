@@ -16,12 +16,14 @@
 #include "world/gamemode/GameType.hpp"
 #include "world/item/ContainerMenu.hpp"
 #include "world/item/InventoryMenu.hpp"
+#include "world/item/ContainerListener.hpp"
 
 class Inventory; // in case we're included from Inventory.hpp
 class FurnaceTileEntity;
 class DispenserTileEntity;
 class SignTileEntity;
 class FishingHook;
+class GameMode;
 
 struct Abilities
 {
@@ -30,7 +32,7 @@ struct Abilities
 	bool m_bMayFly = false;
 };
 
-class Player : public Mob
+class Player : public Mob, public ContainerListener
 {
 public:
 	enum BedSleepingProblem
@@ -53,7 +55,7 @@ public:
 	virtual ~Player();
 
 	virtual void reset() override;
-	virtual float getHeadHeight() const override { return 0.12f; /*@HUH: what ?*/ }
+	virtual float getHeadHeight() const override { return m_heightOffset + 0.12f; }
 	virtual bool isShootable() const override { return true; }
 	virtual bool isPlayer() const override { return true; }
 	virtual bool isCreativeModeAllowed() const override { return true; }
@@ -67,7 +69,8 @@ public:
 	virtual void tick() override;
 	virtual bool isImmobile() const override;
 	virtual void updateAi() override;
-	virtual void take(Entity* pEnt, int x);
+	virtual void swing() override;
+	virtual void take(const std::shared_ptr<Entity>& pEnt, int x);
 
 	virtual void animateRespawn();
 	virtual void drop(std::shared_ptr<ItemInstance> pItemInstance, bool b = false);
@@ -76,9 +79,12 @@ public:
 	virtual void openContainer(Container* container);
 	virtual void openTrap(std::shared_ptr<DispenserTileEntity> tileEntity);
 	virtual void openTextEdit(std::shared_ptr<SignTileEntity> tileEntity);
-	virtual void startDestroying();
-	virtual void stopDestroying();
+	virtual void initMenu();
+	virtual void refreshContainer(ContainerMenu* menu, std::vector<std::shared_ptr<ItemInstance>>& items) override;
+	virtual void slotChanged(ContainerMenu* menu, int index, std::shared_ptr<ItemInstance> item) override;
+	virtual void setContainerData(ContainerMenu* menu, int id, int value) override;
 	virtual bool isLocalPlayer() const { return false; }
+	virtual bool isServerPlayer() const;
 	virtual void closeContainer();
 	virtual void remove() override;
 	virtual void carriedChanged(std::shared_ptr<ItemInstance> instance);
@@ -94,12 +100,14 @@ public:
 	virtual void displayClientMessage(const std::string& msg);
 	void drop();
 	float getDestroySpeed(const Tile* tile) const;
-	int getInventorySlot(int x) const;
+	std::shared_ptr<ItemInstance> getGear(int x) const;
 	TilePos getRespawnPosition() const { return m_respawnPos; }
 	int getScore() const { return m_score; }
 	void prepareCustomTextures();
 	void reallyDrop(std::shared_ptr<ItemEntity> pEnt);
-	void respawn();
+	virtual void respawn();
+	virtual void respawn(int dim);
+	virtual void toggleDimension(int dim = -1);
 	void rideTick() override;
 	void setDefaultHeadHeight();
 	virtual int getItemIcon(ItemInstance*) override;
@@ -128,6 +136,8 @@ public:
 	std::shared_ptr<ItemInstance> getCarriedItem() override;
 	virtual void addAdditionalSaveData(CompoundIO tag) override;
 	virtual void readAdditionalSaveData(CompoundIO tag) override;
+	virtual std::array<std::shared_ptr<ItemInstance>, 5>* getEquipmentSlots() override;
+	virtual void setItemSlot(int slot, int item, int aux) override;
 
 	// QUIRK: Yes, I did mean it like that, as did Mojang.
 #pragma GCC diagnostic push
@@ -142,13 +152,15 @@ protected:
 
 private:
 	bool isInBed();
-
+	void nextContainerCounter();
 
 public:
 	ContainerMenu* m_containerMenu;
 	InventoryMenu* m_inventoryMenu;
 	Inventory* m_pInventory;
+	GameMode* m_pGameMode;
 	std::shared_ptr<FishingHook> m_fishing;
+	std::array<std::shared_ptr<ItemInstance>, 5> m_equipment;
 	uint8_t m_userType;
 	int m_score;
 	float m_oBob; // field_B9C
@@ -166,5 +178,7 @@ public:
 	int m_changingDimensionDelay;
 	float m_portalTime;
 	float m_oPortalTime;
+	bool m_bIgnoreSlotUpdates;
+	int8_t m_containerCounter;
 };
 

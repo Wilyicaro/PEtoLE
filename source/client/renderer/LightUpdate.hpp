@@ -9,7 +9,7 @@
 #pragma once
 
 #include "LightLayer.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 
 class Level;
 

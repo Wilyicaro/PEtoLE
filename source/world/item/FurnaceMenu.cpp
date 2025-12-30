@@ -23,3 +23,72 @@ FurnaceMenu::FurnaceMenu(Inventory* inventory, std::shared_ptr<FurnaceTileEntity
 bool FurnaceMenu::stillValid(Player* player) const {
     return m_furnace->stillValid(player);
 }
+
+void FurnaceMenu::addSlotListener(std::shared_ptr<ContainerListener> listener)
+{
+    ContainerMenu::addSlotListener(listener);
+    listener->setContainerData(this, 0, m_furnace->m_tickCount);
+    listener->setContainerData(this, 1, m_furnace->m_litTime);
+    listener->setContainerData(this, 2, m_furnace->m_litDuration);
+}
+
+void FurnaceMenu::broadcastChanges()
+{
+    ContainerMenu::broadcastChanges();
+
+    for (const std::shared_ptr<ContainerListener> listener : listeners) {
+        if (m_lastCookTime != m_furnace->m_tickCount)
+            listener->setContainerData(this, 0, m_furnace->m_tickCount);
+
+        if (m_lastBurnTime != m_furnace->m_litTime)
+            listener->setContainerData(this, 1, m_furnace->m_litTime);
+
+        if (m_lastLitDuration != m_furnace->m_litDuration)
+            listener->setContainerData(this, 2, m_furnace->m_litDuration);
+    }
+
+    m_lastCookTime = m_furnace->m_tickCount;
+    m_lastBurnTime = m_furnace->m_litTime;
+    m_lastLitDuration = m_furnace->m_litDuration;
+}
+
+void FurnaceMenu::setData(int index, int value)
+{
+    if (index == 0)
+        m_furnace->m_tickCount = value;
+    else if (index == 1)
+        m_furnace->m_litTime = value;
+    else if (index == 2)
+        m_furnace->m_litDuration = value;
+}
+
+std::shared_ptr<ItemInstance> FurnaceMenu::quickMoveStack(int index)
+{
+    std::shared_ptr<ItemInstance> item = nullptr;
+    Slot* slot = getSlot(index);
+    if (slot && slot->hasItem())
+    {
+        std::shared_ptr<ItemInstance> slotItem = slot->getItem();
+        item = slotItem->copy();
+        if (index == 2)
+            moveItemStackTo(slotItem, 3, 39, true);
+        else if (index >= 3 && index < 30)
+            moveItemStackTo(slotItem, 30, 39, false);
+        else if (index >= 30 && index < 39)
+            moveItemStackTo(slotItem, 3, 30, false);
+        else
+            moveItemStackTo(slotItem, 3, 39, false);
+
+        if (slotItem->m_count == 0)
+            slot->set(nullptr);
+        else
+            slot->setChanged();
+
+        if (slotItem->m_count == item->m_count)
+            return nullptr;
+
+        slot->onTake(slotItem);
+    }
+
+    return item;
+}

@@ -7,7 +7,8 @@
 ContainerScreen::ContainerScreen(ContainerMenu* menu)
     : m_menu(menu) {}
 
-void ContainerScreen::init() {
+void ContainerScreen::init()
+{
     Screen::init();
     m_pMinecraft->m_pPlayer->m_containerMenu = m_menu;
     m_leftPos = (m_width - m_imageWidth) / 2;
@@ -15,13 +16,13 @@ void ContainerScreen::init() {
 
 }
 
-void ContainerScreen::render(int mouseX, int mouseY, float partialTicks) {
+void ContainerScreen::render(int mouseX, int mouseY, float partialTicks)
+{
     renderBackground();
     renderBg(mouseX, mouseY, partialTicks);
 
     //glPushMatrix();
-    //glRotatef(-30.0F, 0.0F, 1.5F, 0.0F);
-    //glRotatef(200.0F, 1.0F, 0.0F, 0.0F);
+    //glRotatef(120.0F, 1.0F, 0.0F, 0.0F);
     //Lighting::turnOn();
     //glPopMatrix();
 
@@ -32,9 +33,11 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks) {
 
     Slot* hoveredSlot = nullptr;
 
-    for (auto& slot : m_menu->slots) {
+    for (auto& slot : m_menu->slots)
+    {
         renderSlot(slot.get());
-        if (isHovering(slot.get(), mouseX, mouseY)) {
+        if (isHovering(slot.get(), mouseX, mouseY))
+        {
             hoveredSlot = slot.get();
             //glDisable(GL_LIGHTING);
             glDisable(GL_DEPTH_TEST);
@@ -54,14 +57,16 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks) {
     }
 
     glDisable(GL_RESCALE_NORMAL);
-    //Lighting::turnOff();
+    Lighting::turnOff();
     //glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     renderLabels();
 
-    if (!inv->getCarried() && hoveredSlot && hoveredSlot->hasItem()) {
+    if (!inv->getCarried() && hoveredSlot && hoveredSlot->hasItem())
+    {
         std::string name = Language::getInstance()->get(hoveredSlot->getItem()->getDescriptionId());
-        if (!name.empty()) {
+        if (!name.empty())
+        {
             int tx = mouseX - m_leftPos + 12;
             int ty = mouseY - m_topPos - 12;
             int w = m_pFont->width(name);
@@ -70,12 +75,15 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks) {
         }
     }
 
+
+    glPopMatrix();
+    Screen::render(mouseX, mouseY, partialTicks);
     //glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
-    glPopMatrix();
 }
 
-void ContainerScreen::mouseClicked(int mouseX, int mouseY, int button) {
+void ContainerScreen::mouseClicked(int mouseX, int mouseY, int button)
+{
     if (m_pMinecraft->isTouchscreen()) return;
     slotClicked(mouseX, mouseY, button);
 }
@@ -99,7 +107,8 @@ void ContainerScreen::mouseDragged(double x, double y, int button, double deltaX
     }
 }
 
-void ContainerScreen::slotClicked(int mouseX, int mouseY, int button) {
+void ContainerScreen::slotClicked(int mouseX, int mouseY, int button)
+{
     if (button == MouseButtonType::BUTTON_LEFT || button == MouseButtonType::BUTTON_RIGHT) {
         Slot* slot = findSlot(mouseX, mouseY);
         bool outside = mouseX < m_leftPos || mouseY < m_topPos || mouseX >= m_leftPos + m_imageWidth || mouseY >= m_topPos + m_imageHeight;
@@ -114,7 +123,7 @@ void ContainerScreen::slotClicked(int mouseX, int mouseY, int button) {
 
 void ContainerScreen::slotClicked(Slot* slot, int index, int button, bool quick)
 {
-    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(m_menu->containerId, index, button, m_pMinecraft->m_pPlayer.get());
+    m_pMinecraft->m_pGameMode->handleInventoryMouseClick(m_menu->m_containerId, index, button, quick, m_pMinecraft->m_pPlayer.get());
 }
 
 
@@ -122,38 +131,53 @@ void ContainerScreen::keyPressed(int keyCode) {
     Screen::keyPressed(keyCode);
 }
 
-void ContainerScreen::removed() {
-    if (m_pMinecraft->m_pPlayer) {
-        m_pMinecraft->m_pGameMode->handleCloseInventory(m_menu->containerId, m_pMinecraft->m_pPlayer.get());
-    }
+void ContainerScreen::onClose()
+{
+    if (m_pMinecraft->m_pPlayer)
+        m_pMinecraft->m_pPlayer->closeContainer();
 }
 
-void ContainerScreen::slotsChanged(Container* container) {}
+void ContainerScreen::tick()
+{
+    Screen::tick();
+    if (!m_pMinecraft->m_pPlayer->isAlive() || m_pMinecraft->m_pPlayer->m_bRemoved)
+        m_pMinecraft->m_pPlayer->closeContainer();
+}
+
+void ContainerScreen::slotsChanged(Container* container)
+{
+}
 
 bool ContainerScreen::isPauseScreen() {
     return false;
 }
 
-Slot* ContainerScreen::findSlot(int mouseX, int mouseY) {
-    for (auto& slot : m_menu->slots) {
+Slot* ContainerScreen::findSlot(int mouseX, int mouseY)
+{
+    for (auto& slot : m_menu->slots)
+    {
         if (isHovering(slot.get(), mouseX, mouseY)) return slot.get();
     }
     return nullptr;
 }
 
-bool ContainerScreen::isHovering(Slot* slot, int mouseX, int mouseY) const {
+bool ContainerScreen::isHovering(Slot* slot, int mouseX, int mouseY) const
+{
     mouseX -= m_leftPos;
     mouseY -= m_topPos;
     return mouseX >= slot->x - 1 && mouseX < slot->x + 17 && mouseY >= slot->y - 1 && mouseY < slot->y + 17;
 }
 
-void ContainerScreen::renderSlot(Slot* slot) {
+void ContainerScreen::renderSlot(Slot* slot)
+{
     int x = slot->x;
     int y = slot->y;
     auto item = slot->getItem();
-    if (!item) {
+    if (!item)
+    {
         int icon = slot->getNoItemIcon();
-        if (icon >= 0) {
+        if (icon >= 0)
+        {
             //glDisable(GL_LIGHTING);
             m_pMinecraft->m_pTextures->loadAndBindTexture("gui/items.png");
             blit(x, y, (icon % 16) * 16, (icon / 16) * 16, 16, 16, 256, 256);

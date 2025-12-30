@@ -9,8 +9,14 @@ class Player;
 class Minecart : public Entity, SimpleContainer
 {
 public:
+	enum Type
+	{
+		DEFAULT, CHEST, FURNACE
+	};
+
+
 	Minecart(Level*);
-	Minecart(Level*, const Vec3& pos, int);
+	Minecart(Level*, const Vec3& pos, Type);
 
 	const AABB* getCollideBox() const override;
 	AABB* getCollideAgainstBox(Entity* ent) const override;
@@ -38,7 +44,7 @@ public:
 	int m_damage;
 	int m_hurtTime;
 	int m_hurtDir;
-	int m_type;
+	Type m_type;
 	int m_fuel;
 	real m_xPush;
 	real m_zPush;

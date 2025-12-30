@@ -1236,6 +1236,9 @@ void Tile::handleEntityInside(Level* pLevel, const TilePos& pos, const Entity* p
 
 float Tile::getDestroyProgress(Player* player) const
 {
+	if (player->isCreative())
+		return 1.0f;
+
 	if (m_hardness < 0.0f)
 		return 0.0f;
 

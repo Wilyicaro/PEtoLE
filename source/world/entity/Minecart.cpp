@@ -13,7 +13,7 @@ Minecart::Minecart(Level* level) : Entity(level), SimpleContainer(27, "gui.chest
     m_xPush = 0;
     m_zPush = 0;
     m_fuel = 0;
-    m_type = 0;
+    m_type = Type::DEFAULT;
     m_damage = 0;
     m_hurtTime = 0;
     m_hurtDir = 1;
@@ -24,9 +24,9 @@ Minecart::Minecart(Level* level) : Entity(level), SimpleContainer(27, "gui.chest
     m_bMakeStepSound = false;
 }
 
-Minecart::Minecart(Level* level, const Vec3& pos, int type) : Minecart(level)
+Minecart::Minecart(Level* level, const Vec3& pos, Type type) : Minecart(level)
 {
-	setPos(Vec3(pos.x, pos.y + m_heightOffset, pos.z));
+	setPos(Vec3(pos.x, pos.y, pos.z));
 	m_vel = Vec3::ZERO;
 	m_oPos = Vec3::ZERO;
 	m_type = type;
@@ -210,7 +210,7 @@ void Minecart::tick()
 
             m_pos.x = var24 + var12 * var22;
             m_pos.z = var26 + var14 * var22;
-            setPos(Vec3(m_pos.x, m_pos.y + m_heightOffset, m_pos.z));
+            setPos(Vec3(m_pos.x, m_pos.y, m_pos.z));
             var32 = m_vel.x;
             var34 = m_vel.z;
             if (m_pRider) 
@@ -433,7 +433,7 @@ void Minecart::tick()
 
 real Minecart::getRideHeight()
 {
-	return -0.3;
+	return m_heightOffset - 0.3;
 }
 
 bool Minecart::hurt(Entity*, int mul)
@@ -544,25 +544,25 @@ Vec3* Minecart::getPosOffs(const Vec3& pos, real var7)
 void Minecart::addAdditionalSaveData(CompoundIO tag)
 {
     tag->putInt("Type", m_type);
-    if (m_type == 2) 
+    if (m_type == Type::FURNACE) 
     {
         tag->putDouble("PushX", m_xPush);
         tag->putDouble("PushZ", m_zPush);
         tag->putShort("Fuel", m_fuel);
-    } else if (m_type == 1) 
+    } else if (m_type == Type::CHEST) 
         SimpleContainer::save(tag);
 }
 
 void Minecart::readAdditionalSaveData(CompoundIO tag)
 {
-    m_type = tag->getInt("Type");
-    if (m_type == 2) 
+    m_type = (Type) tag->getInt("Type");
+    if (m_type == Type::FURNACE) 
     {
         m_xPush = tag->getDouble("PushX");
         m_zPush = tag->getDouble("PushZ");
         m_fuel = tag->getShort("Fuel");
     }
-    else if (m_type == 1)
+    else if (m_type == Type::CHEST)
         SimpleContainer::load(tag);
 }
 

@@ -228,7 +228,7 @@ void Arrow::playerTouch(Player* player)
     if (!m_pLevel->m_bIsOnline) {
         if (m_bInGround && m_bFromPlayer && m_shakeTime <= 0 && player->m_pInventory->add(std::make_shared<ItemInstance>(Item::arrow, 1))) {
             m_pLevel->playSound(this, "random.pop", 0.2F, ((m_random.nextFloat() - m_random.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-            player->take(this, 1);
+            player->take(shared_from_this(), 1);
             remove();
         }
 

@@ -38,7 +38,7 @@ PrimedTnt::PrimedTnt(Level* level, const Vec3& pos) : Entity(level)
 void PrimedTnt::explode()
 {
 	// @NOTE: Not passing `this` as pointer to entity
-	m_pLevel->explode(nullptr, m_pos, 2.5f);
+	m_pLevel->explode(nullptr, m_pos, 4.0f);
 }
 
 float PrimedTnt::getShadowHeightOffs() const
@@ -69,8 +69,13 @@ void PrimedTnt::tick()
 	m_fuseTimer--;
 	if (m_fuseTimer <= 0)
 	{
-		remove();
-		explode();
+		if (m_pLevel->m_bIsOnline)
+			remove();
+		else
+		{
+			remove();
+			explode();
+		}
 	}
 	else
 	{

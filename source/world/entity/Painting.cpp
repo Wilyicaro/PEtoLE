@@ -26,6 +26,20 @@ Painting::Painting(Level* level, const TilePos& pos, int face) : Painting(level)
     setDir(face);
 }
 
+Painting::Painting(Level* level, const TilePos& pos, int face, std::string motive) : Painting(level)
+{
+    m_tilePos = pos;
+
+    for (int i = 0; i < PaintingType::types.size(); ++i)
+        if (PaintingType::types[i].m_name == motive)
+        {
+            m_paintingType = i;
+            break;
+        }
+
+    setDir(face);
+}
+
 void Painting::setDir(int face)
 {
     m_dir = face;
@@ -154,7 +168,10 @@ void Painting::readAdditionalSaveData(CompoundIO tag) {
 
     for (int i = 0; i < PaintingType::types.size(); ++i)
         if (PaintingType::types[i].m_name == type)
+        {
             m_paintingType = i;
+            break;
+        }
 
     setDir(m_dir);
 }

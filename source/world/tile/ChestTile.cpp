@@ -113,28 +113,32 @@ bool ChestTile::hasNeighbors(const Level* level, const TilePos& pos, int count) 
 }
 
 void ChestTile::onRemove(Level* level, const TilePos& pos){
-    auto var5 = std::dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(pos));
+    auto ent = std::dynamic_pointer_cast<ChestTileEntity>(level->getTileEntity(pos));
 
-    for (int var6 = 0; var6 < var5->getContainerSize(); ++var6) {
-        auto var7 = var5->getItem(var6);
-        if (var7) {
-            float var8 = m_chestRandom.nextFloat() * 0.8F + 0.1F;
-            float var9 = m_chestRandom.nextFloat() * 0.8F + 0.1F;
-            float var10 = m_chestRandom.nextFloat() * 0.8F + 0.1F;
+    if (ent)
+    {
+        for (int slot = 0; slot < ent->getContainerSize(); ++slot) {
+            auto item = ent->getItem(slot);
+            if (item)
+            {
+                float x = m_chestRandom.nextFloat() * 0.8F + 0.1F;
+                float y = m_chestRandom.nextFloat() * 0.8F + 0.1F;
+                float z = m_chestRandom.nextFloat() * 0.8F + 0.1F;
 
-            while (var7->m_count) {
-                int var11 = m_chestRandom.nextInt(21) + 10;
-                if (var11 > var7->m_count) {
-                    var11 = var7->m_count;
+                while (item->m_count) {
+                    int var11 = m_chestRandom.nextInt(21) + 10;
+                    if (var11 > item->m_count) {
+                        var11 = item->m_count;
+                    }
+
+                    item->m_count -= var11;
+                    auto itemEnt = std::make_shared<ItemEntity>(level, pos.offset(x, y, z), std::make_shared<ItemInstance>(item->m_itemID, var11, item->getAuxValue()));
+                    float var13 = 0.05F;
+                    itemEnt->m_vel.x = (double)((float)m_chestRandom.nextGaussian() * var13);
+                    itemEnt->m_vel.y = (double)((float)m_chestRandom.nextGaussian() * var13 + 0.2F);
+                    itemEnt->m_vel.z = (double)((float)m_chestRandom.nextGaussian() * var13);
+                    level->addEntity(itemEnt);
                 }
-
-                var7->m_count -= var11;
-                auto var12 = std::make_shared<ItemEntity>(level, pos.offset(var8, var9, var10), std::make_shared<ItemInstance>(var7->m_itemID, var11, var7->getAuxValue()));
-                float var13 = 0.05F;
-                var12->m_vel.x = (double)((float)m_chestRandom.nextGaussian() * var13);
-                var12->m_vel.y = (double)((float)m_chestRandom.nextGaussian() * var13 + 0.2F);
-                var12->m_vel.z = (double)((float)m_chestRandom.nextGaussian() * var13);
-                level->addEntity(var12);
             }
         }
     }

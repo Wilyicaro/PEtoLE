@@ -60,6 +60,22 @@ void NetEventCallback::handle(const RakNet::RakNetGUID& guid, AddMobPacket* pack
 {
 }
 
+void NetEventCallback::handle(const RakNet::RakNetGUID&, AddEntityPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, AddItemEntityPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, AddPaintingPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, TakeItemEntityPacket*)
+{
+}
+
 void NetEventCallback::handle(const RakNet::RakNetGUID& guid, RemoveEntityPacket* packet)
 {
 }
@@ -68,15 +84,67 @@ void NetEventCallback::handle(const RakNet::RakNetGUID& guid, MovePlayerPacket* 
 {
 }
 
-void NetEventCallback::handle(const RakNet::RakNetGUID& guid, PlaceBlockPacket* packet)
+void NetEventCallback::handle(const RakNet::RakNetGUID&, MoveEntityPacket*)
 {
 }
 
-void NetEventCallback::handle(const RakNet::RakNetGUID& guid, RemoveBlockPacket* packet)
+void NetEventCallback::handle(const RakNet::RakNetGUID&, SetEntityMotionPacket*)
 {
 }
 
-void NetEventCallback::handle(const RakNet::RakNetGUID& guid, UpdateBlockPacket* packet)
+void NetEventCallback::handle(const RakNet::RakNetGUID&, SetEntityDataPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, TeleportEntityPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, InteractPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, InteractionPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, AnimatePacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID& guid, PlayerActionPacket* packet)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, PlayerCommandPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, UseItemPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID& guid, LevelEventPacket* packet)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, EntityEventPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, GameEventPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, SetHealthPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, PlayerChangeDimensionPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID& guid, TileUpdatePacket* packet)
 {
 }
 
@@ -84,12 +152,48 @@ void NetEventCallback::handle(const RakNet::RakNetGUID& guid, RequestChunkPacket
 {
 }
 
-void NetEventCallback::handle(const RakNet::RakNetGUID& guid, ChunkDataPacket* packet)
+void NetEventCallback::handle(const RakNet::RakNetGUID& guid, BlockRegionUpdatePacket* packet)
 {
 	
 }
 
-void NetEventCallback::handle(const RakNet::RakNetGUID& guid, PlayerEquipmentPacket* packet)
+void NetEventCallback::handle(const RakNet::RakNetGUID& guid, SetEquippedItemPacket* packet)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, SetCarriedItemPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerSetContentPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerSetSlotPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerClickPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerAckPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerSetDataPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerOpenPacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ContainerClosePacket*)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, ExplodePacket*)
 {
 }
 

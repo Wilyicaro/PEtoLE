@@ -290,15 +290,29 @@ void RakNetInstance::send(Packet* packet)
 }
 
 // this sends a specific peer a message
-void RakNetInstance::send(const RakNet::RakNetGUID& guid, Packet* packet)
+void RakNetInstance::send(const RakNet::RakNetGUID& guid, Packet* packet, bool free)
 {
 	RakNet::BitStream bs;
 	packet->write(&bs);
 
 	m_pRakPeerInterface->Send(&bs, HIGH_PRIORITY, RELIABLE, 0, guid, false);
 
-	delete packet;
-	// return 1300; --- ida tells me this returns 1300. Huh
+	if (free)
+		delete packet;
+}
+
+void RakNetInstance::send(Player* player, Packet* packet, bool free)
+{
+	if (!player->isLocalPlayer())
+		send(player->m_guid, packet, false);
+
+	if (free)
+		delete packet;
+}
+
+void RakNetInstance::send(const std::shared_ptr<Player>& player, Packet* packet, bool free)
+{
+	send(player.get(), packet, free);
 }
 
 void RakNetInstance::stopPingForHosts()

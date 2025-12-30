@@ -56,23 +56,23 @@ bool LeverTile::use(Level* level, const TilePos& pos, Player* player)
 		return true;
 	}
 	else {
-		int var6 = level->getData(pos);
-		int var7 = var6 & 7;
-		int var8 = 8 - (var6 & 8);
-		level->setData(pos, var7 + var8);
+		int data = level->getData(pos);
+		int dir = data & 7;
+		int press = 8 - (data & 8);
+		level->setData(pos, dir + press);
 		level->setTilesDirty(pos, pos);
-		level->playSound(Vec3(pos.x + 0.5, pos.y + 0.5, pos.z + 0.5), "random.click", 0.3F, var8 > 0 ? 0.6F : 0.5F);
+		level->playSound(pos + 5, "random.click", 0.3F, press > 0 ? 0.6F : 0.5F);
 		level->updateNeighborsAt(pos, m_ID);
-		if (var7 == 1) {
+		if (dir == 1) {
 			level->updateNeighborsAt(pos.west(), m_ID);
 		}
-		else if (var7 == 2) {
+		else if (dir == 2) {
 			level->updateNeighborsAt(pos.east(), m_ID);
 		}
-		else if (var7 == 3) {
+		else if (dir == 3) {
 			level->updateNeighborsAt(pos.north(), m_ID);
 		}
-		else if (var7 == 4) {
+		else if (dir == 4) {
 			level->updateNeighborsAt(pos.south(), m_ID);
 		}
 		else {

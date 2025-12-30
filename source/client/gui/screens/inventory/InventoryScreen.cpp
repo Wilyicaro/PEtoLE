@@ -43,7 +43,6 @@ void InventoryScreen::renderBg(int mouseX, int mouseY, float partialTick)
     m_pMinecraft->m_pPlayer->m_rot.x = -Mth::atan(dy / 40.0F) * 20.0F;
     m_pMinecraft->m_pPlayer->m_rot.y = Mth::atan(dx / 40.0F) * 40.0F;
 
-    glTranslatef(0.0F, m_pMinecraft->m_pPlayer->m_heightOffset, 0.0F);
     m_pMinecraft->m_pPlayer->m_minBrightness = 1.0f;
     EntityRenderDispatcher::instance->m_rot.y = 180;
     EntityRenderDispatcher::instance->render(m_pMinecraft->m_pPlayer.get(), Vec3::ZERO, 0.0F, 1.0F, false);

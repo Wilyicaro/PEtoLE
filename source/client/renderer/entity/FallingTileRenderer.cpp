@@ -21,7 +21,7 @@ void FallingTileRenderer::render(Entity* entity, const Vec3& pos, float a6, floa
 	FallingTile* fallingTile = (FallingTile*)entity;
 
 	glPushMatrix();
-	glTranslatef(pos.x, pos.y, pos.z);
+	glTranslatef(pos.x, pos.y + fallingTile->m_heightOffset, pos.z);
 
 	bindTexture(C_TERRAIN_NAME);
 	// Render the base

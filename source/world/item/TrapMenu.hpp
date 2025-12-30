@@ -13,4 +13,5 @@ public:
     TrapMenu(Container* inventory, std::shared_ptr<DispenserTileEntity> trap);
 
     bool stillValid(Player* player) const override;
+    virtual std::shared_ptr<ItemInstance> quickMoveStack(int index) override;
 };

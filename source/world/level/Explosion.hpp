@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <set>
+#include <unordered_set>
 #include "Level.hpp"
 #include "world/entity/Entity.hpp"
 
@@ -27,10 +27,8 @@ public:
 
 public:
 	Vec3 m_pos;
-	float m_power;
-
-	//field_10, m_noEntityRenderFrames, m_totalEntities, m_renderedEntities - Likely a set<TilePos>
-	std::set<TilePos> m_tiles;
+	float m_radius;
+	std::unordered_set<TilePos> m_toBlow;
 	int field_20;
 
 	bool m_bIsFiery;

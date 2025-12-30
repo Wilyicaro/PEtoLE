@@ -91,6 +91,7 @@ public:
 	void selectLevel(const std::string&, std::function<void(LevelData&)> = {});
 	void setLevel(Level*, const std::string&, std::shared_ptr<LocalPlayer>);
 	void toggleDimension(int dim = -1);
+	void changeLevel(Level*);
 	bool pauseGame();
 	bool resumeGame();
 	void leaveGame();
@@ -108,8 +109,6 @@ public:
 	bool isTouchscreen() const;
 	bool useSplitControls() const;
 	bool useController() const;
-
-	void setGameMode(GameType gameType);
 
 	virtual void update() override;
 	virtual void init() override;
@@ -132,7 +131,6 @@ public:
 private:
 	void _reloadInput();
 	void _levelGenerated();
-	GameMode* createGameMode(GameType gameType, Level& level);
 
 private:
     // Value provided by the OS
@@ -153,7 +151,7 @@ private:
 	Options *m_options;
 
 public:
-	bool field_18;
+	bool m_bLocateMultiplayer;
 	bool m_bIsGamePaused;
 	LevelRenderer* m_pLevelRenderer;
 	GameRenderer* m_pGameRenderer;
@@ -199,6 +197,6 @@ public:
 
 	// in 0.8. Offset 3368
 	double m_fDeltaTime, m_fLastUpdated;
-	int m_lastInteractTime;
+	int m_lastActionTime;
 };
 

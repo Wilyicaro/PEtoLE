@@ -11,7 +11,7 @@ void BoatRenderer::render(Entity* entity, const Vec3& pos, float rot, float a)
 {
     Boat* boat = (Boat*)entity;
     glPushMatrix();
-    glTranslatef(pos.x, pos.y, pos.z);
+    glTranslatef(pos.x, pos.y + entity->m_heightOffset, pos.z);
     glRotatef(180.0F - rot, 0.0F, 1.0F, 0.0F);
     float hurt = boat->m_hurtTime - a;
     float dmg = boat->m_damage - a;

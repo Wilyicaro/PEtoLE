@@ -9,7 +9,7 @@
 #include "../Packet.hpp"
 #include "world/level/levelgen/chunk/LevelChunk.hpp"
 
-ChunkDataPacket::ChunkDataPacket(Level* level, const TilePos& minPos, int xs, int ys, int zs) : m_pos(minPos), m_xs(xs), m_ys(ys), m_zs(zs)
+BlockRegionUpdatePacket::BlockRegionUpdatePacket(Level* level, const TilePos& minPos, int xs, int ys, int zs) : m_pos(minPos), m_xs(xs), m_ys(ys), m_zs(zs)
 {
 	uint8_t* rawData = level->getBlocksAndData(minPos, xs, ys, zs);
 	size_t compressedSize = 0;
@@ -19,14 +19,14 @@ ChunkDataPacket::ChunkDataPacket(Level* level, const TilePos& minPos, int xs, in
 	delete[] compressed;
 }
 
-void ChunkDataPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
+void BlockRegionUpdatePacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
 {
 	pCallback->handle(guid, this);
 }
 
-void ChunkDataPacket::write(RakNet::BitStream* bs)
+void BlockRegionUpdatePacket::write(RakNet::BitStream* bs)
 {
-	bs->Write((unsigned char)PACKET_CHUNK_DATA);
+	bs->Write((unsigned char)PACKET_BLOCK_REGION_UPDATE);
 	bs->Write(m_pos.x);
 	bs->Write(m_pos.y);
 	bs->Write(m_pos.z);
@@ -37,7 +37,7 @@ void ChunkDataPacket::write(RakNet::BitStream* bs)
 	bs->WriteAlignedBytes(m_data.GetData(), m_size);
 }
 
-void ChunkDataPacket::read(RakNet::BitStream* bs)
+void BlockRegionUpdatePacket::read(RakNet::BitStream* bs)
 {
 	bs->Read(m_pos.x);
 	bs->Read(m_pos.y);

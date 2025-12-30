@@ -89,7 +89,7 @@ void WorldSelectionList::tick()
 			field_60 = m_noNeighborUpdate + x3;
 			field_54 = 0.0f;
 			field_D8 = 1;
-			field_58 = float(Mth::Min(7, int(float(0.25f * Mth::abs(x3))) + 1));
+			field_58 = float(Mth::min(7, int(float(0.25f * Mth::abs(x3))) + 1));
 
 			tweenInited();
 			return;
@@ -123,7 +123,7 @@ float WorldSelectionList::getPos(float f)
 	if (field_D8 != 1)
 		return RolledSelectionList::getPos(f);
 
-	return Mth::Lerp(WorldSelectionList_Static1(field_54,        field_58, field_5C, field_60),
+	return Mth::lerp(WorldSelectionList_Static1(field_54,        field_58, field_5C, field_60),
 	            WorldSelectionList_Static1(field_54 + 1.0f, field_58, field_5C, field_60),
 	            f);
 }
@@ -136,7 +136,7 @@ void WorldSelectionList::touched()
 void WorldSelectionList::renderItem(int index, int xPos, int yPos, int width, Tesselator& t)
 {
 	int xCenter = xPos + m_itemWidth / 2;
-	float mult = Mth::Max(1.1f - 0.0055f * float(abs(field_18 / 2 - xCenter)), 0.2f);
+	float mult = Mth::max(1.1f - 0.0055f * float(abs(field_18 / 2 - xCenter)), 0.2f);
 	if (mult > 1.0f)
 		mult = 1.0f;
 

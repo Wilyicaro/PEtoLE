@@ -26,6 +26,7 @@ class TextInputBox : public GuiComponent
 private:
 	int m_ID;
 	std::string m_text;
+	bool m_bBordered;
 
 public:
 	TextInputBox(Screen*, int id, int x, int y, int width = 200, int height = 12, const std::string& placeholder = "", const std::string& text = "");
@@ -44,7 +45,7 @@ public:
 	void setText(const std::string& text);
 	bool isFocused();
 	void setMaxLength(int max_length);
-
+	void setBordered(bool);
 	// From TextBox in 0.7.0
 	int getKey() const { return m_ID; }
 	std::string getText() const { return m_text; }

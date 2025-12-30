@@ -2,6 +2,10 @@
 
 #include <vector>
 #include <string>
+#include "BitStream.h"
+#include <memory>
+#include <cstdint>
+#include <cassert>
 
 #include "common/Util.hpp"
 #include "world/item/ItemInstance.hpp"
@@ -26,7 +30,7 @@ class SynchedEntityData
 		TYPE_STRING,
 		TYPE_ITEMINSTANCE,
 		TYPE_COMPOUNDTAG = TYPE_ITEMINSTANCE,
-		TYPE_TILEPOS,
+		TYPE_VEC3I,
 		TYPE_INT64,
 		TYPE_VEC3
 	};
@@ -41,6 +45,7 @@ class SynchedEntityData
 		static T defaultValueFor();
 	};
 
+public:
 	class DataItem
 	{
 	private:
@@ -63,13 +68,13 @@ class SynchedEntityData
 	};
 
 	template<typename T>
-	class DataItem2 : public DataItem
+	class DataHolder : public DataItem
 	{
 	private:
 		T m_data;
 
 	public:
-		DataItem2(DataType type, DataID id, T data)
+		DataHolder(DataType type, DataID id, T data)
 			: DataItem(type, id)
 		{
 			m_data = data;
@@ -85,6 +90,9 @@ public:
 	DataID m_minIdxDirty;
 	DataID m_maxIdxDirty;
 
+private:
+	bool m_bDirty;
+
 public:
 	SynchedEntityData();
 
@@ -95,6 +103,18 @@ private:
 
 public:
 	bool hasData(DataID id) const;
+
+	static void pack(const std::vector<DataItem*>& items, RakNet::BitStream& bs);
+
+	std::vector<SynchedEntityData::DataItem*> packDirty();
+
+	void packAll(RakNet::BitStream& bs);
+
+	static std::vector<std::unique_ptr<SynchedEntityData::DataItem>> unpack(RakNet::BitStream& bs);
+
+	void assignValues(const std::vector<std::unique_ptr<DataItem>>& values);
+
+	bool isDirty() const;
 
 	// These all need to be defined in the header file per https://stackoverflow.com/questions/456713/why-do-i-get-unresolved-external-symbol-errors-when-using-templates
 	template<typename T> void define(DataID id, const T& value)
@@ -107,7 +127,7 @@ public:
 
 		_resizeToContain(id);
 
-		DataItem* dataItem = new DataItem2<T>(DataTypeMap::typeFor<T>(), id, value);
+		DataItem* dataItem = new DataHolder<T>(DataTypeMap::typeFor<T>(), id, value);
 		m_itemsArray[id] = dataItem;
 
 		_updateMinMaxIdxDirty(id);
@@ -117,7 +137,7 @@ public:
 	{
 		if (hasData(id) && m_itemsArray[id]->getType() == DataTypeMap::typeFor<T>())
 		{
-			const DataItem2<T>* dataItem = (const DataItem2<T>*)m_itemsArray[id];
+			const DataHolder<T>* dataItem = (const DataHolder<T>*)m_itemsArray[id];
 			return dataItem->getData();
 		}
 		else
@@ -126,7 +146,7 @@ public:
 		}
 	}
 
-	template<typename T> bool set(DataItem2<T>* dataItem, const T& value)
+	template<typename T> bool set(DataHolder<T>* dataItem, const T& value)
 	{
 		if (dataItem == nullptr)
 		{
@@ -145,6 +165,8 @@ public:
 
 			_updateMinMaxIdxDirty(dataItem->getId());
 
+			m_bDirty = true;
+
 			return true;
 		}
 		else
@@ -156,7 +178,7 @@ public:
 
 	template<typename T> bool set(DataID id, const T& value)
 	{
-		DataItem2<T>* dataItem = (DataItem2<T>*)_get(id);
+		DataHolder<T>* dataItem = (DataHolder<T>*)_get(id);
 		return set(dataItem, value);
 	}
 };

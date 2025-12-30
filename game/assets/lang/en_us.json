@@ -25,6 +25,7 @@
   "guiGameOver.respawn": "Respawn",
   "guiGameOver.titleMenu": "Title Menu",
   "guiGameOver.score": "Score: %s",
+  "multiplayer.stopSleeping": "Leave Bed",
   "options.value": "%s: %s",
   "options.off": "OFF",
   "options.on": "ON",

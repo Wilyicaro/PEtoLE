@@ -24,6 +24,7 @@ void MovePlayerPacket::write(RakNet::BitStream* bs)
 #else
 	bs->Write(m_rot);
 #endif
+	bs->Write(m_vel);
 
 }
 
@@ -37,4 +38,5 @@ void MovePlayerPacket::read(RakNet::BitStream* bs)
 #else
 	bs->Read(m_rot);
 #endif
+	bs->Read(m_vel);
 }

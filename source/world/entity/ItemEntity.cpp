@@ -63,8 +63,8 @@ void ItemEntity::playerTouch(Player* player)
 	if (m_pLevel->m_bIsOnline || m_throwTime || !pInventory->add(m_itemInstance))
 		return;
 
-	m_pLevel->playSound(this, "random.pop", 0.3f, (((m_random.nextFloat() - m_random.nextFloat()) * 0.7f) + 1.0f) + (((m_random.nextFloat() - m_random.nextFloat()) * 0.7f) + 1.0f));
-	player->take(this, oldCount);
+	m_pLevel->playSound(this, "random.pop", 0.2f, ((m_random.nextFloat() - m_random.nextFloat()) * 0.7f + 1.0f) * 2.0f);
+	player->take(shared_from_this(), oldCount);
 	remove();
 }
 

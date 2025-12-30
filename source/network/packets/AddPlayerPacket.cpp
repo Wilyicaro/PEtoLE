@@ -8,13 +8,16 @@
 
 #include "../Packet.hpp"
 
-AddPlayerPacket::AddPlayerPacket(const Player *player)
+AddPlayerPacket::AddPlayerPacket(const std::shared_ptr<Player>& player)
 {
 	m_guid = player->m_guid;
 	m_name = RakNet::RakString(player->m_name.c_str());
 	m_id = player->m_EntityID;
-	m_pos = player->m_pos;
-	m_pos -= player->m_heightOffset;
+	m_pos = PacketUtil::packPos(player->m_pos);
+	m_rotY = PacketUtil::packRot(player->m_rot.y);
+	m_rotX = PacketUtil::packRot(player->m_rot.x);
+	auto selected = player->getSelectedItem();
+	m_itemID = !selected ? 0 : selected->m_itemID;;
 }
 
 void AddPlayerPacket::handle(const RakNet::RakNetGUID& guid, NetEventCallback* pCallback)
@@ -31,6 +34,9 @@ void AddPlayerPacket::write(RakNet::BitStream* bs)
 	bs->Write(m_pos.x);
 	bs->Write(m_pos.y);
 	bs->Write(m_pos.z);
+	bs->Write(m_rotY);
+	bs->Write(m_rotX);
+	bs->Write(m_itemID);
 }
 
 void AddPlayerPacket::read(RakNet::BitStream* bs)
@@ -41,4 +47,7 @@ void AddPlayerPacket::read(RakNet::BitStream* bs)
 	bs->Read(m_pos.x);
 	bs->Read(m_pos.y);
 	bs->Read(m_pos.z);
+	bs->Read(m_rotY);
+	bs->Read(m_rotX);
+	bs->Read(m_itemID);
 }

@@ -24,3 +24,27 @@ TrapMenu::TrapMenu(Container* inventory, std::shared_ptr<DispenserTileEntity> tr
 bool TrapMenu::stillValid(Player* player) const {
     return m_trap->stillValid(player);
 }
+
+std::shared_ptr<ItemInstance> TrapMenu::quickMoveStack(int index)
+{
+    std::shared_ptr<ItemInstance> item = nullptr;
+    Slot* slot = getSlot(index);
+    if (slot && slot->hasItem())
+    {
+        std::shared_ptr<ItemInstance> slotItem = slot->getItem();
+        if (index < 9)
+            moveItemStackTo(slotItem, 9, slots.size(), true);
+        else
+            moveItemStackTo(slotItem, 0, 9, false);
+
+        if (slotItem->m_count == 0)
+            slot->set(nullptr);
+        else
+            slot->setChanged();
+
+        if (slotItem->m_count == item->m_count)
+            return nullptr;
+    }
+
+    return item;
+}

@@ -9,6 +9,11 @@ bool ResultSlot::mayPlace(std::shared_ptr<ItemInstance>  item) {
     return false;
 }
 
+bool ResultSlot::canSync()
+{
+    return false;
+}
+
 void ResultSlot::onTake(std::shared_ptr<ItemInstance> item) {
     item->onCraftedBy(m_player, m_player->m_pLevel);
     for (int i = 0; i < craftSlots->getContainerSize(); ++i) {

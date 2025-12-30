@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Vec3T.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 #include "world/Facing.hpp"
 #include <memory>
 

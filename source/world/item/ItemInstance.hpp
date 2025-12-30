@@ -11,7 +11,7 @@
 #include "common/Utils.hpp"
 #include "common/CompoundTag.hpp"
 #include "Item.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 #include "world/Facing.hpp"
 
 class Item; // in case we're included from Item.hpp

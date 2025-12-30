@@ -31,7 +31,7 @@ bool SlimeRenderer::prepareArmor(Mob* mob, int layer, float)
     if (layer == 0)
     {
         setArmor(m_pArmorModel);
-#ifdef USE_GL_NORMAL_LIGHTING 
+#if !defined(__EMSCRIPTEN__) && !defined(USE_GLES)
         glEnable(GL_NORMALIZE);
 #endif
         glEnable(GL_BLEND);

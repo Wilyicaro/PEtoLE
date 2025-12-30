@@ -231,7 +231,7 @@ public:
 
 		std::string getDisplayValue() const override
 		{
-			return m_values[Mth::Min(get(), m_values.size())];
+			return m_values[Mth::min(get(), m_values.size())];
 		}
 	};
 

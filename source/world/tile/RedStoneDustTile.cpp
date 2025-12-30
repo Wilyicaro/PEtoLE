@@ -215,7 +215,8 @@ void RedStoneDustTile::updatePowerStrength(Level* level, const TilePos& from, co
         level->setTilesDirty(from, from);
         level->m_noNeighborUpdate = false;
 
-        for (var11 = 0; var11 < 4; ++var11) {
+        for (var11 = 0; var11 < 4; ++var11)
+        {
             TilePos tp(from);
             int var14 = from.y - 1;
             if (var11 == 0) {

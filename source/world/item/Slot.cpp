@@ -23,3 +23,8 @@ void Slot::swap(Slot& other) {
     this->container->setItem(this->slot, var3);
     this->setChanged();
 }
+
+bool Slot::canSync()
+{
+    return true;
+}

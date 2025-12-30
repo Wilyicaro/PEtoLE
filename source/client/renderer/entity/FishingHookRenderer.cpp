@@ -51,7 +51,7 @@ void FishingHookRenderer::render(Entity* pEntity, const Vec3& pos, float rot, fl
         var27.yRot(var26 * 0.5F);
         var27.xRot(-var26 * 0.7F);
         real xp = hook->m_owner->m_oPos.x + (hook->m_owner->m_pos.x - hook->m_owner->m_oPos.x) * a + var27.x;
-        real yp = hook->m_owner->m_oPos.y + (hook->m_owner->m_pos.y - hook->m_owner->m_oPos.y) * a + var27.y;
+        real yp = hook->m_owner->m_oPos.y + hook->m_owner->m_heightOffset + (hook->m_owner->m_pos.y - hook->m_owner->m_oPos.y) * a + var27.y;
         real zp = hook->m_owner->m_oPos.z + (hook->m_owner->m_pos.z - hook->m_owner->m_oPos.z) * a + var27.z;
         if (entityRenderDispatcher->m_pOptions->m_bThirdPerson)
         {
@@ -59,7 +59,7 @@ void FishingHookRenderer::render(Entity* pEntity, const Vec3& pos, float rot, fl
             ss = Mth::sin(rr);
             cc = Mth::cos(rr);
             xp = hook->m_owner->m_oPos.x + (hook->m_owner->m_pos.x - hook->m_owner->m_oPos.x) * a - cc * 0.35 - ss * 0.85;
-            yp = hook->m_owner->m_oPos.y + (hook->m_owner->m_pos.y - hook->m_owner->m_oPos.y) * a - 0.45;
+            yp = hook->m_owner->m_oPos.y + hook->m_owner->m_heightOffset + (hook->m_owner->m_pos.y - hook->m_owner->m_oPos.y) * a - 0.45;
             zp = hook->m_owner->m_oPos.z + (hook->m_owner->m_pos.z - hook->m_owner->m_oPos.z) * a - ss * 0.35 + cc * 0.85;
         }
 

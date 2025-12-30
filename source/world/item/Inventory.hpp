@@ -26,6 +26,7 @@ public:
 	int getNumItems();
 
 	void setItem(int index, std::shared_ptr<ItemInstance> item) override;
+    void setArmor(int index, std::shared_ptr<ItemInstance> item);
     void setSelectedItem(std::shared_ptr<ItemInstance> item)
     {
         setItem(m_selected, item);

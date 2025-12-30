@@ -18,7 +18,7 @@
 #include "world/entity/Entity.hpp"
 #include "world/level/levelgen/chunk/LevelChunk.hpp"
 #include "world/Facing.hpp"
-#include "world/level/TilePos.hpp"
+#include "world/level/Vec3i.hpp"
 #include "world/phys/Vec3T.hpp"
 #include "world/phys/HitResult.hpp"
 

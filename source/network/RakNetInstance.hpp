@@ -33,7 +33,9 @@ public:
 	void pingForHosts(int port);
 	void runEvents(NetEventCallback*);
 	void send(Packet* packet);
-	void send(const RakNet::RakNetGUID& guid, Packet* packet);
+	void send(const RakNet::RakNetGUID& guid, Packet* packet, bool free = true);
+	void send(Player*, Packet* packet, bool free = true);
+	void send(const std::shared_ptr<Player>& player, Packet* packet, bool free = true);
 	void stopPingForHosts();
 
 public:

@@ -1,6 +1,8 @@
 #include "RedstoneTorchTile.hpp"
 #include "world/level/Level.hpp"
 
+std::vector<RedstoneTorchTile::Toggle> RedstoneTorchTile::recentToggles;
+
 RedstoneTorchTile::RedstoneTorchTile(int ID, int texture, Material* pMtl, bool on) : TorchTile(ID, texture, pMtl), m_bOn(on)
 {
 }
@@ -21,18 +23,18 @@ int RedstoneTorchTile::getTexture(Facing::Name face, int data) const
 }
 
 bool RedstoneTorchTile::isToggledTooFrequently(Level* level, const TilePos& pos, bool addRecent) {
-    if (addRecent) {
-        m_recentToggles.push_back(Toggle(pos, level->getTime()));
-    }
+    if (addRecent)
+        recentToggles.push_back(Toggle(pos, level->getTime()));
 
     int count = 0;
 
-    for (auto& toggle : m_recentToggles) {
-        if (toggle.pos == pos) {
+    for (auto& toggle : recentToggles)
+    {
+        if (toggle.pos == pos)
+        {
             ++count;
-            if (count >= 8) {
+            if (count >= 8)
                 return true;
-            }
         }
     }
 
@@ -42,26 +44,26 @@ bool RedstoneTorchTile::isToggledTooFrequently(Level* level, const TilePos& pos,
 void RedstoneTorchTile::animateTick(Level* level, const TilePos& pos, Random* random)
 {
     if (m_bOn) {
-        int var6 = level->getData(pos);
-        real var7 = pos.x + 0.5F + (random->nextFloat() - 0.5F) * 0.2;
-        real var9 = pos.y + 0.7F + (random->nextFloat() - 0.5F) * 0.2;
-        real var11 = pos.z + 0.5F + (random->nextFloat() - 0.5F) * 0.2;
-        constexpr real var13 = 0.22;
-        constexpr real var15 = 0.27;
-        if (var6 == 1) {
-            level->addParticle("reddust", Vec3(var7 - var15, var9 + var13, var11));
+        int data = level->getData(pos);
+        real x = pos.x + 0.5F + (random->nextFloat() - 0.5F) * 0.2;
+        real y = pos.y + 0.7F + (random->nextFloat() - 0.5F) * 0.2;
+        real z = pos.z + 0.5F + (random->nextFloat() - 0.5F) * 0.2;
+        constexpr real yd = 0.22;
+        constexpr real hd = 0.27;
+        if (data == 1) {
+            level->addParticle("reddust", Vec3(x - hd, y + yd, z));
         }
-        else if (var6 == 2) {
-            level->addParticle("reddust", Vec3(var7 + var15, var9 + var13, var11));
+        else if (data == 2) {
+            level->addParticle("reddust", Vec3(x + hd, y + yd, z));
         }
-        else if (var6 == 3) {
-            level->addParticle("reddust", Vec3(var7, var9 + var13, var11 - var15));
+        else if (data == 3) {
+            level->addParticle("reddust", Vec3(x, y + yd, z - hd));
         }
-        else if (var6 == 4) {
-            level->addParticle("reddust", Vec3(var7, var9 + var13, var11 + var15));
+        else if (data == 4) {
+            level->addParticle("reddust", Vec3(x, y + yd, z + hd));
         }
         else {
-            level->addParticle("reddust", Vec3(var7, var9, var11));
+            level->addParticle("reddust", Vec3(x, y, z));
         }
 
     }
@@ -77,7 +79,8 @@ void RedstoneTorchTile::onPlace(Level* level, const TilePos& pos)
 {
 	if (level->getData(pos) == 0) TorchTile::onPlace(level, pos);
 
-    if (m_bOn) {
+    if (m_bOn)
+    {
         for (Facing::Name face : Facing::ALL)
             level->updateNeighborsAt(pos.relative(face), m_ID);
     }
@@ -85,7 +88,8 @@ void RedstoneTorchTile::onPlace(Level* level, const TilePos& pos)
 
 void RedstoneTorchTile::onRemove(Level* level, const TilePos& pos)
 {
-    if (m_bOn) {
+    if (m_bOn)
+    {
         for (Facing::Name face : Facing::ALL)
             level->updateNeighborsAt(pos.relative(face), m_ID);
     }
@@ -98,26 +102,21 @@ int RedstoneTorchTile::getDirectSignal(const Level* level, const TilePos& pos, F
 
 int RedstoneTorchTile::getSignal(const LevelSource* level, const TilePos& pos, Facing::Name face) const
 {
-    if (!m_bOn) {
+    if (!m_bOn)
         return false;
-    }
-    else {
-        int var6 = level->getData(pos);
-        if (var6 == 5 && face == Facing::UP) {
+    else
+    {
+        int data = level->getData(pos);
+        if (data == 5 && face == Facing::UP)
             return false;
-        }
-        else if (var6 == 3 && face == Facing::SOUTH) {
+        else if (data == 3 && face == Facing::SOUTH)
             return false;
-        }
-        else if (var6 == 4 && face == Facing::NORTH) {
+        else if (data == 4 && face == Facing::NORTH)
             return false;
-        }
-        else if (var6 == 1 && face == Facing::EAST) {
+        else if (data == 1 && face == Facing::EAST)
             return false;
-        }
-        else {
-            return var6 != 2 || face != Facing::EAST;
-        }
+        else
+            return data != 2 || face != Facing::EAST;
     }
 }
 
@@ -127,30 +126,25 @@ bool RedstoneTorchTile::isSignalSource() const
 }
 
 bool RedstoneTorchTile::hasNeighborSignal(const Level* level, const TilePos& pos) {
-    int var5 = level->getData(pos);
-    if (var5 == 5 && level->getSignal(pos.below(), Facing::DOWN)) {
+    int data = level->getData(pos);
+    if (data == 5 && level->getSignal(pos.below(), Facing::DOWN))
         return true;
-    }
-    else if (var5 == 3 && level->getSignal(pos.north(), Facing::DOWN)) {
+    else if (data == 3 && level->getSignal(pos.north(), Facing::NORTH))
         return true;
-    }
-    else if (var5 == 4 && level->getSignal(pos.south(), Facing::SOUTH)) {
+    else if (data == 4 && level->getSignal(pos.south(), Facing::SOUTH))
         return true;
-    }
-    else if (var5 == 1 && level->getSignal(pos.below(), Facing::WEST)) {
+    else if (data == 1 && level->getSignal(pos.west(), Facing::WEST))
         return true;
-    }
-    else {
-        return var5 == 2 && level->getSignal(pos.below(), Facing::EAST);
-    }
+    else
+        return data == 2 && level->getSignal(pos.east(), Facing::EAST);
 }
 
 void RedstoneTorchTile::tick(Level* level, const TilePos& pos, Random* random)
 {
     bool signal = hasNeighborSignal(level, pos);
 
-    while (m_recentToggles.size() > 0 && (level->getTime() - m_recentToggles[0].when) > 100L) {
-        m_recentToggles.erase(m_recentToggles.begin());
+    while (recentToggles.size() > 0 && (level->getTime() - recentToggles[0].when) > 100L) {
+        recentToggles.erase(recentToggles.begin());
     }
 
     if (m_bOn) {
@@ -159,11 +153,11 @@ void RedstoneTorchTile::tick(Level* level, const TilePos& pos, Random* random)
             if (isToggledTooFrequently(level, pos, true)) {
                 level->playSound(pos.center(), "random.fizz", 0.5F, 2.6F + (level->m_random.nextFloat() - level->m_random.nextFloat()) * 0.8F);
 
-                for (int var7 = 0; var7 < 5; ++var7) {
-                    real var8 = pos.x + random->nextDouble() * 0.6 + 0.2;
-                    real var10 = pos.y + random->nextDouble() * 0.6 + 0.2;
-                    real var12 = pos.z + random->nextDouble() * 0.6 + 0.2;
-                    level->addParticle("smoke", Vec3(var8, var10, var12));
+                for (int i = 0; i < 5; ++i) {
+                    real x = pos.x + random->nextDouble() * 0.6 + 0.2;
+                    real y = pos.y + random->nextDouble() * 0.6 + 0.2;
+                    real z = pos.z + random->nextDouble() * 0.6 + 0.2;
+                    level->addParticle("smoke", Vec3(x, y, z));
                 }
             }
         }

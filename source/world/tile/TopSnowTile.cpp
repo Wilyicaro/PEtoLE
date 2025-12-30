@@ -42,6 +42,7 @@ int TopSnowTile::getResourceCount(Random* random) const
 
 void TopSnowTile::playerDestroy(Level* level, Player*, const TilePos& pos, int)
 {
+	if (level->m_bIsOnline) return;
 	float var7 = 0.7F;
 	Vec3 itemPos;
 	itemPos.x = pos.x + (level->m_random.nextFloat() * var7) + (1.0F - var7) * 0.5;
@@ -85,7 +86,7 @@ bool TopSnowTile::shouldRenderFace(const LevelSource* level, const TilePos& pos,
 
 	Material* material = level->getMaterial(pos);
 
-	return material == m_pMaterial ? true : Tile::shouldRenderFace(level, pos, face);
+	return material != m_pMaterial && Tile::shouldRenderFace(level, pos, face);
 }
 
 void TopSnowTile::tick(Level* level, const TilePos& pos, Random* random)
