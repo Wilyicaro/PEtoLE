@@ -22,4 +22,4 @@ target_link_libraries(reminecraftpe-core PUBLIC EGL GLESv1_CM)
 target_link_libraries(reminecraftpe stb_image)
 
 # Extra Dependencies
-target_link_libraries(reminecraftpe android)
+target_link_libraries(reminecraftpe android OpenSLES)
