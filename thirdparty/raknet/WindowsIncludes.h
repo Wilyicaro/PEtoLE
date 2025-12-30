@@ -16,11 +16,11 @@
 #include <winsockx.h>
 #elif defined (_WIN32) && !defined(WINDOWS_PHONE_8) && !defined(WINDOWS_STORE_RT)
 #define _WINPC
-#include <WinSock2.h>
+#include <winsock2.h>
 #include <windows.h>
 #include <Ws2tcpip.h>
 
-// Must always include Winsock2.h before windows.h
+// Must always include winsock2.h before windows.h
 // or else:
 // winsock2.h(99) : error C2011: 'fd_set' : 'struct' type redefinition
 // winsock2.h(134) : warning C4005: 'FD_SET' : macro redefinition

@@ -19,7 +19,6 @@ jobs:
                 sudo apt-get install --no-install-recommends -y build-essential cmake ninja-build libopenal-dev libsdl2-dev zlib1g-dev
           - name: Build
             run: |
-                cd platforms/sdl
                 mkdir build
                 cd build
                 cmake -GNinja ..
