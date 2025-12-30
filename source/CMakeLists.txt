@@ -7,6 +7,7 @@ file(GLOB_RECURSE SRC_FILES "*.cpp")
 add_library(reminecraftpe-core STATIC
 	${SRC_FILES}
 )
+message(STATUS "Selected Directories: ${SRC_FILES}")
 target_include_directories(reminecraftpe-core PUBLIC . ..)
 
 # RakNet
