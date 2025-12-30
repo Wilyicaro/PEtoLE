@@ -80,7 +80,7 @@ public:
 	virtual void openTrap(std::shared_ptr<DispenserTileEntity> tileEntity);
 	virtual void openTextEdit(std::shared_ptr<SignTileEntity> tileEntity);
 	virtual void initMenu();
-	virtual void refreshContainer(ContainerMenu* menu, std::vector<std::shared_ptr<ItemInstance>>& items) override;
+	virtual void refreshContainer(ContainerMenu* menu, const std::vector<std::shared_ptr<ItemInstance>>& items) override;
 	virtual void slotChanged(ContainerMenu* menu, int index, std::shared_ptr<ItemInstance> item) override;
 	virtual void setContainerData(ContainerMenu* menu, int id, int value) override;
 	virtual bool isLocalPlayer() const { return false; }

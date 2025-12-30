@@ -27,6 +27,7 @@
 #include "Spider.hpp"
 #include "Giant.hpp"
 #include "PigZombie.hpp"
+#include <climits>
 
 std::unordered_map<int, const EntityType*> EntityType::entityTypeIdMap;
 std::unordered_map<std::string, const EntityType*> EntityType::entityTypeNameMap;

@@ -790,7 +790,7 @@ void Player::initMenu()
 	m_inventoryMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
 }
 
-void Player::refreshContainer(ContainerMenu* menu, std::vector<std::shared_ptr<ItemInstance>>& items)
+void Player::refreshContainer(ContainerMenu* menu, const std::vector<std::shared_ptr<ItemInstance>>& items)
 {
 	getConnection()->send(this, new ContainerSetContentPacket(menu->m_containerId, items));
 	getConnection()->send(this, new ContainerSetSlotPacket(-1, -1, m_pInventory->getCarried()));
