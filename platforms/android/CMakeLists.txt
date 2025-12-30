@@ -9,6 +9,7 @@ add_library(reminecraftpe SHARED
     android_native_app_glue.c
     AppPlatform_android.cpp
     main.cpp
+    SoundSystemSL.cpp
 )
 
 # Core

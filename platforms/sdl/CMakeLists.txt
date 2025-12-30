@@ -30,7 +30,7 @@ target_link_libraries(reminecraftpe reminecraftpe-core)
 target_link_libraries(reminecraftpe stb_image)
 
 # OpenAL
-add_subdirectory(../openal openal)
+add_subdirectory(../openal)
 target_link_libraries(reminecraftpe reminecraftpe-openal)
 
 # SDL

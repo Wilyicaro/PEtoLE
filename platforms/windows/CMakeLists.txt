@@ -19,6 +19,8 @@ add_executable(reminecraftpe WIN32
     LoggerWin32.cpp
     AppPlatform_win32.cpp
     main.cpp
+    SoundSystemDS.cpp
+    SoundStreamDS.cpp
 )
 
 # Core
@@ -28,11 +30,8 @@ target_link_libraries(reminecraftpe reminecraftpe-core)
 target_link_libraries(reminecraftpe stb_image)
 
 # DirectSound
-target_link_libraries(reminecraftpe-windows
+target_link_libraries(reminecraftpe
     reminecraftpe-core
     dsound
     dxguid
 )
-
-# Headers
-target_include_directories(reminecraftpe-windows PUBLIC .)
