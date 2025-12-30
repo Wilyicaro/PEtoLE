@@ -24,8 +24,9 @@ elseif(EMSCRIPTEN)
     target_link_libraries(reminecraftpe-openal PUBLIC openal)
 else()
     # Use System ZLib
-    find_library(OPENAL_LIBRARY NAMES openal REQUIRED)
+    find_package(OpenAL REQUIRED)
     target_link_libraries(reminecraftpe-openal PUBLIC "${OPENAL_LIBRARY}")
+    target_include_directories(reminecraftpe-openal PUBLIC "${OPENAL_INCLUDE_DIR}")
 endif()
 
 # Headers
