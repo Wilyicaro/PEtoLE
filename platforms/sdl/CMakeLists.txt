@@ -23,12 +23,14 @@ if(ANDROID)
 else()
     add_executable(reminecraftpe ${SOURCES})
 endif()
+
 # Core
 target_link_libraries(reminecraftpe reminecraftpe-core)
 
-# stb_image
-target_link_libraries(reminecraftpe stb_image)
-
+# stb_image (If Needed)
+if(NOT EMSCRIPTEN)
+    target_link_libraries(reminecraftpe stb_image)
+endif()
 
 # SDL
 add_library(SDL INTERFACE)
