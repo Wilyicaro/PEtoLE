@@ -371,11 +371,6 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	// Setup Compatibility Layer If Needed
-#ifdef USE_GLES1_COMPATIBILITY_LAYER
-	init_gles_compatibility_layer();
-#endif
-
 	// Setup Teardown
 #ifndef __EMSCRIPTEN__
 	atexit(teardown);
