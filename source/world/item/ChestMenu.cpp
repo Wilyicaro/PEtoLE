@@ -47,7 +47,7 @@ std::shared_ptr<ItemInstance> ChestMenu::quickMoveStack(int index)
         item = slotItem->copy();
         int rows = m_container->getContainerSize() / 9;
         if (index < rows * 9)
-            moveItemStackTo(slotItem, rows * 9, slots.size(), true);
+            moveItemStackTo(slotItem, rows * 9, m_slots.size(), true);
         else
             moveItemStackTo(slotItem, 0, rows * 9, false);
 

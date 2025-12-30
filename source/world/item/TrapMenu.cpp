@@ -34,7 +34,7 @@ std::shared_ptr<ItemInstance> TrapMenu::quickMoveStack(int index)
         std::shared_ptr<ItemInstance> slotItem = slot->getItem();
         item = slotItem->copy();
         if (index < 9)
-            moveItemStackTo(slotItem, 9, slots.size(), true);
+            moveItemStackTo(slotItem, 9, m_slots.size(), true);
         else
             moveItemStackTo(slotItem, 0, 9, false);
 

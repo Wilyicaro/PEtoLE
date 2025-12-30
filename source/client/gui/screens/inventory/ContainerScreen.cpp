@@ -33,7 +33,7 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks)
 
     Slot* hoveredSlot = nullptr;
 
-    for (auto& slot : m_menu->slots)
+    for (auto& slot : m_menu->m_slots)
     {
         renderSlot(slot.get());
         if (isHovering(slot.get(), mouseX, mouseY))
@@ -154,7 +154,7 @@ bool ContainerScreen::isPauseScreen() {
 
 Slot* ContainerScreen::findSlot(int mouseX, int mouseY)
 {
-    for (auto& slot : m_menu->slots)
+    for (auto& slot : m_menu->m_slots)
     {
         if (isHovering(slot.get(), mouseX, mouseY)) return slot.get();
     }

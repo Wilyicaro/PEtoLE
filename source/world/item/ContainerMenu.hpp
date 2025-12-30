@@ -21,7 +21,7 @@ protected:
 
 public:
     int m_containerId = 0;
-    std::vector<std::shared_ptr<Slot>> slots;
+    std::vector<std::shared_ptr<Slot>> m_slots;
     virtual ~ContainerMenu() = default;
 
     void addSlot(std::shared_ptr<Slot> slot);

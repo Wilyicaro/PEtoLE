@@ -29,6 +29,10 @@ target_link_libraries(reminecraftpe reminecraftpe-core)
 # stb_image
 target_link_libraries(reminecraftpe stb_image)
 
+# OpenAL
+add_subdirectory(../openal openal)
+target_link_libraries(reminecraftpe reminecraftpe-openal)
+
 # SDL
 add_library(SDL INTERFACE)
 if(ANDROID OR MCPE_WIN32)

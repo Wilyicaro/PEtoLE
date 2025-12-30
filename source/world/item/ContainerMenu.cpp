@@ -7,8 +7,8 @@
 
 void ContainerMenu::addSlot(std::shared_ptr<Slot> slot)
 {
-    slot->index = slots.size();
-    slots.push_back(slot);
+    slot->index = m_slots.size();
+    m_slots.push_back(slot);
     lastSlots.emplace_back();
 }
 
@@ -17,7 +17,7 @@ void ContainerMenu::addSlotListener(std::shared_ptr<ContainerListener> listener)
     listeners.push_back(listener);
 
     std::vector<std::shared_ptr<ItemInstance>> snapshot;
-    for (auto& slot : slots) {
+    for (auto& slot : m_slots) {
         snapshot.push_back(slot->getItem());
     }
 
@@ -34,9 +34,9 @@ void ContainerMenu::sendData(int id, int value)
 
 void ContainerMenu::broadcastChanges()
 {
-    for (size_t i = 0; i < slots.size(); ++i)
+    for (size_t i = 0; i < m_slots.size(); ++i)
     {
-        std::shared_ptr<ItemInstance> current = slots[i]->getItem();
+        std::shared_ptr<ItemInstance> current = m_slots[i]->getItem();
         if (!ItemInstance::matches(lastSlots[i], current))
         {
             lastSlots[i] = current ? current->copy() : nullptr;
@@ -65,7 +65,7 @@ std::vector<std::shared_ptr<ItemInstance>> ContainerMenu::getItems()
 {
     std::vector<std::shared_ptr<ItemInstance>> content;
 
-    for (std::shared_ptr<Slot>& slot : slots)
+    for (std::shared_ptr<Slot>& slot : m_slots)
         content.push_back(slot->getItem());
 
     return content;
@@ -73,7 +73,7 @@ std::vector<std::shared_ptr<ItemInstance>> ContainerMenu::getItems()
 
 Slot* ContainerMenu::getSlotFor(Container* container, int index)
 {
-    for (auto& slot : slots) {
+    for (auto& slot : m_slots) {
         if (slot->isAt(container, index)) {
             return slot.get();
         }
@@ -83,7 +83,7 @@ Slot* ContainerMenu::getSlotFor(Container* container, int index)
 
 Slot* ContainerMenu::getSlot(int index)
 {
-    return slots[index].get();
+    return m_slots[index].get();
 }
 
 std::shared_ptr<ItemInstance> ContainerMenu::quickMoveStack(int index)
@@ -306,14 +306,14 @@ std::shared_ptr<ItemInstance> ContainerMenu::clicked(int slotIndex, int mouseBut
 
 void ContainerMenu::setItem(int index, std::shared_ptr<ItemInstance> item)
 {
-    slots[index]->set(item);
+    m_slots[index]->set(item);
 }
 
 void ContainerMenu::setAll(const std::vector<std::shared_ptr<ItemInstance>>& items)
 {
     for (size_t i = 0; i < items.size(); ++i)
     {
-        slots[i]->set(items[i]);
+        m_slots[i]->set(items[i]);
     }
 }
 
