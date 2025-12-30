@@ -26,3 +26,13 @@ target_link_libraries(reminecraftpe reminecraftpe-core)
 
 # stb_image (If Needed)
 target_link_libraries(reminecraftpe stb_image)
+
+# DirectSound
+target_link_libraries(reminecraftpe-windows
+    reminecraftpe-core
+    dsound
+    dxguid
+)
+
+# Headers
+target_include_directories(reminecraftpe-windows PUBLIC .)

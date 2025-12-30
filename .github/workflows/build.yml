@@ -105,6 +105,7 @@ jobs:
                 cache: gradle
           - name: Build
             run: |
+                cd ${{ matrix.directory }}
                 ./gradlew build
     mingw:
         strategy:
