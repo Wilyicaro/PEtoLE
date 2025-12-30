@@ -18,7 +18,7 @@
 #define _WINPC
 #include <winsock2.h>
 #include <windows.h>
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 
 // Must always include winsock2.h before windows.h
 // or else:
