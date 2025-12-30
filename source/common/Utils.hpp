@@ -39,7 +39,7 @@
 #ifndef _XBOX // assume we're on a normal Windows device
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
-#include <Windows.h>
+#include <windows.h>
 #include <WS2tcpip.h>
 #include <direct.h>
 #include <io.h>
