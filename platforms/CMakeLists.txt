@@ -7,6 +7,3 @@ if(WIN32)
 endif()
 set(REMCPE_PLATFORM "${DEFAULT_PLATFORM}" CACHE STRING "ReMCPE Platform (Check <root>/platforms)")
 add_subdirectory("${REMCPE_PLATFORM}")
-
-# Load Sound
-add_subdirectory(sound)

@@ -116,7 +116,7 @@ jobs:
                   - name: Win32
                     flags: '-DREMCPE_PLATFORM=windows'
                   - name: SDL2
-                    flags: "-DREMCPE_PLATFORM=sdl2"
+                    flags: "-DREMCPE_PLATFORM=sdl"
                   # CMake can't find it
                   #- name: SDL 1.2
                   #  flags: "-DREMCPE_PLATFORM=sdl1"
