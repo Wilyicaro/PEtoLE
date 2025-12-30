@@ -7,7 +7,13 @@ file(GLOB_RECURSE SRC_FILES "*.cpp")
 add_library(reminecraftpe-core STATIC
 	${SRC_FILES}
 )
-message(STATUS "Selected Directories: ${SRC_FILES}")
+set(COUNT 0)
+foreach(file IN LISTS SRC_FILES)
+    math(EXPR COUNT "${COUNT} + 1")
+    file(RELATIVE_PATH rel_file ${CMAKE_CURRENT_SOURCE_DIR} ${file})
+    message(STATUS "[${COUNT}] ${rel_file}")
+endforeach()
+
 target_include_directories(reminecraftpe-core PUBLIC . ..)
 
 # RakNet
