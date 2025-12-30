@@ -73,7 +73,3 @@ if(EMSCRIPTEN)
     # Export Resize Function
     target_link_options(reminecraftpe PRIVATE -sEXPORTED_FUNCTIONS=_main,_resize_from_js -sEXPORTED_RUNTIME_METHODS=ccall)
 endif()
-
-# OpenAL
-add_subdirectory(../openal openal)
-target_link_libraries(reminecraftpe reminecraftpe-openal)

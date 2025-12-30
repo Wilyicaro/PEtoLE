@@ -9,7 +9,6 @@ add_library(reminecraftpe SHARED
     android_native_app_glue.c
     AppPlatform_android.cpp
     main.cpp
-    SoundSystemSL.cpp
 )
 
 # Core
@@ -22,4 +21,4 @@ target_link_libraries(reminecraftpe-core PUBLIC EGL GLESv1_CM)
 target_link_libraries(reminecraftpe stb_image)
 
 # Extra Dependencies
-target_link_libraries(reminecraftpe android OpenSLES)
+target_link_libraries(reminecraftpe android)
