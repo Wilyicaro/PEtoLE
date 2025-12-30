@@ -57,7 +57,7 @@ void ChatScreen::render(int mouseX, int mouseY, float f)
 	m_pMinecraft->m_gui.m_bRenderMessages = false;
 	m_pMinecraft->m_gui.renderMessages(true);
 
-	fill(2, m_height - 14, m_width - 2, m_height - 2, INT_MIN);
+	fill(2, m_height - 14, m_width - 2, m_height - 2, 0x80000001);
 	drawString(m_pFont, ">", 4, m_height - 12, 14737632);
 
 	Screen::render(mouseX, mouseY, f);

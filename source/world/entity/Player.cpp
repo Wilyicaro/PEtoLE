@@ -578,7 +578,7 @@ void Player::respawn(int dim)
 	player->reset();
 	player->setLevel(getServer()->getLevel(player->m_dimension));
 
-	TilePos& pos = m_pLevel->getSharedSpawnPos();
+	TilePos pos = m_pLevel->getSharedSpawnPos();
 	if (player->m_bHasRespawnPos)
 	{
 		TilePos respawnPos = player->getRespawnPosition();
