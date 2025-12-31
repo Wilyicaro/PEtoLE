@@ -313,7 +313,15 @@ bool GameMode::useItemOn(Player* player, Level* level, std::shared_ptr<ItemInsta
 		return true;
 
 	if (instance)
-		return instance->useOn(player, level, pos, face);
+	{
+		int oldCount = instance->m_count;
+		bool used = instance->useOn(player, level, pos, face);
+		if (player->isCreative() && instance->m_count != oldCount)
+		{
+			instance->m_count = oldCount;
+		}
+		return used;
+	}
 
 	return false;
 }

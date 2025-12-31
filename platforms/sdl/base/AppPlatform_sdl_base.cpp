@@ -13,7 +13,10 @@
 
 #include "common/Utils.hpp"
 
-#include "SoundSystemAL.hpp"
+#define _STR(x) #x
+#define STR(x) _STR(x)
+
+#include "CustomSoundSystem.hpp"
 
 #include "client/player/input/Controller.hpp"
 
@@ -61,8 +64,8 @@ void AppPlatform_sdl_base::initSoundSystem()
 {
 	if (!m_pSoundSystem)
 	{
-		LOG_I("Initializing OpenAL SoundSystem...");
-		m_pSoundSystem = new SoundSystemAL();
+		LOG_I("Initializing " STR(SOUND_SYSTEM) "...");
+		m_pSoundSystem = new SOUND_SYSTEM();
 	}
 	else
 	{

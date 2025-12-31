@@ -345,10 +345,6 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 
 				if (!pItem) return;
 
-				if (player->isCreative() && pItem->m_count != oldCount)
-				{
-					pItem->m_count = oldCount;
-				}
 				else if (!pItem->m_count)
 				{
 					m_pPlayer->m_pInventory->setItem(m_pPlayer->m_pInventory->m_selected, nullptr);

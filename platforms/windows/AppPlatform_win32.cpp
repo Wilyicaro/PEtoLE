@@ -21,6 +21,9 @@
 #include "thirdparty/stb_image/include/stb_image.h"
 #include "thirdparty/stb_image/include/stb_image_write.h"
 
+#define _STR(x) #x
+#define STR(x) _STR(x)
+
 AppPlatform_win32::AppPlatform_win32()
 {
 	m_WindowTitle = "ReMinecraftPE";
@@ -54,7 +57,10 @@ AppPlatform_win32::~AppPlatform_win32()
 void AppPlatform_win32::initSoundSystem()
 {
 	if (!m_pSoundSystem)
-		m_pSoundSystem = new SoundSystemDS();
+	{
+		LOG_I("Initializing " STR(SOUND_SYSTEM) "...");
+		m_pSoundSystem = new SOUND_SYSTEM();
+	}
 	else
 		LOG_E("Trying to initialize SoundSystem more than once!");
 }

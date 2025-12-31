@@ -25,6 +25,8 @@
 #include "client/sound/SoundData.hpp"
 #include "SoundStreamDS.hpp"
 
+#define SOUND_SYSTEM SoundSystemDS
+
 class SoundSystemDS : public SoundSystem
 {
 public:

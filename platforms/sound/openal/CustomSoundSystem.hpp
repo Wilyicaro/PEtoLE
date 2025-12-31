@@ -13,6 +13,8 @@
 #define MAX_IDLE_SOURCES 50
 #define MAX_DISTANCE 16.0f
 
+#define SOUND_SYSTEM SoundSystemAL
+
 class SoundSystemAL : public SoundSystem
 {
 public:

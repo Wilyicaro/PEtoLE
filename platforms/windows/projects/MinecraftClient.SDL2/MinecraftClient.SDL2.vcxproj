@@ -71,7 +71,7 @@
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\compat\KeyCodes.hpp" />
     <ClInclude Include="$(MC_ROOT)\compat\SDLKeyCodes.h" />
-    <ClInclude Include="$(MC_ROOT)\platforms\sound\openal\SoundSystemAL.hpp" />
+    <ClInclude Include="..\..\..\sound\openal\CustomSoundSystem.hpp" />
     <ClInclude Include="$(MC_ROOT)\platforms\sdl\base\AppPlatform_sdl_base.hpp" />
     <ClInclude Include="$(MC_ROOT)\platforms\sdl\desktop\AppPlatform_sdl.hpp" />
     <ClInclude Include="$(MC_ROOT)\platforms\sound\openal\SoundStreamAL.hpp" />

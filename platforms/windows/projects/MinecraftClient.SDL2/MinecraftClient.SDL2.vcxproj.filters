@@ -44,7 +44,7 @@
     <ClInclude Include="$(MC_ROOT)\compat\KeyCodes.hpp">
       <Filter>Header Files\Compatibility</Filter>
     </ClInclude>
-    <ClInclude Include="$(MC_ROOT)\platforms\sound\openal\SoundSystemAL.hpp">
+    <ClInclude Include="..\..\..\sound\openal\CustomSoundSystem.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="$(MC_ROOT)\compat\SDLKeyCodes.h">
