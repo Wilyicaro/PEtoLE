@@ -79,6 +79,7 @@
     <ClCompile Include="..\..\..\..\source\network\packets\ExplodePacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\GameEventPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\InteractPacket.cpp" />
+    <ClCompile Include="..\..\..\..\source\network\packets\MapItemDataPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\PlayerActionPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\InteractionPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\PlayerChangeDimensionPacket.cpp" />
@@ -92,6 +93,7 @@
     <ClCompile Include="$(MC_ROOT)\source\network\packets\SetTimePacket.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\packets\StartGamePacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\SetHealthPacket.cpp" />
+    <ClCompile Include="..\..\..\..\source\network\packets\SetRidingPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\TileUpdatePacket.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\RakNetInstance.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\network\ServerSideNetworkHandler.cpp" />

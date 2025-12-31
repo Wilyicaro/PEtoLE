@@ -39,6 +39,7 @@ public:
 	virtual void attack(Player*, Entity*);
 	virtual std::shared_ptr<ItemInstance> handleInventoryMouseClick(int, int, int, bool, Player*);
 	virtual void handleCloseInventory(int, Player*);
+	virtual void handleInventoryTick(const std::shared_ptr<ItemInstance>&, Level*, Player*, int, bool);
 	virtual bool isCreativeType() const { return m_pPlayer->getPlayerGameType() == GameType::GAME_TYPE_CREATIVE; }
 	virtual bool isSurvivalType() const { return m_pPlayer->getPlayerGameType() == GameType::GAME_TYPE_SURVIVAL; }
 	virtual float getDestroyModifier() const { return 1.0; }

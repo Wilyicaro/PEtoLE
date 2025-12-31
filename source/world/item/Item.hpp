@@ -123,7 +123,7 @@ public: // Methods
 	virtual bool isWolfFood() const;
 	virtual bool isComplex() const;
 
-	Packet* getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>&);
+	virtual Packet* getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>&);
 
 	static void initItems();
 	

@@ -58,6 +58,8 @@ Packet* MinecraftPackets::createPacket(int type)
 			return new GameEventPacket;
 		case PACKET_SET_HEALTH:
 			return new SetHealthPacket;
+		case PACKET_SET_RIDING:
+			return new SetRidingPacket;
 		case PACKET_PLAYER_CHANGE_DIMENSION:
 			return new PlayerChangeDimensionPacket;
 		case PACKET_TILE_UPDATE:
@@ -100,6 +102,8 @@ Packet* MinecraftPackets::createPacket(int type)
 			return new AnimatePacket;
 		case PACKET_EXPLODE:
 			return new ExplodePacket;
+		case PACKET_MAP_ITEM_DATA:
+			return new MapItemDataPacket;
 		case PACKET_LEVEL_DATA:
 			return new LevelDataPacket;
 	}

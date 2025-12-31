@@ -145,7 +145,7 @@ bool Item::isComplex() const
 	return false;
 }
 
-Packet* Item::getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>&)
+Packet* Item::getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>& player)
 {
 	return nullptr;
 }

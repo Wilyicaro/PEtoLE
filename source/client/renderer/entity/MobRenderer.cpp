@@ -93,6 +93,7 @@ void MobRenderer::render(Entity* entity, const Vec3& pos, float unused, float f)
 	{
 		m_pArmorModel->m_bRiding = m_pModel->m_bRiding;
 		m_pArmorModel->m_bIsBaby = m_pModel->m_bIsBaby;
+		m_pArmorModel->m_attackTime = m_pModel->m_attackTime;
 	}
 
 	float aYaw   = pMob->m_rotPrev.y + (pMob->m_rot.y   - pMob->m_rotPrev.y) * f;

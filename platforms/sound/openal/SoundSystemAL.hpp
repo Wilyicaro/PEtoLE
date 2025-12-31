@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef USE_OPENAL
-
 #include "thirdparty/OpenAL.h"
 
 #include <string>
@@ -69,5 +67,3 @@ private:
     float _listenerVolume;
 	float _listenerYaw;
 };
-
-#endif

@@ -73,6 +73,7 @@ enum ePacketType
 	PACKET_SET_EQUIPPED_ITEM,
 	PACKET_SET_CARRIED_ITEM,
 	PACKET_SET_HEALTH,
+	PACKET_SET_RIDING,
 	PACKET_ANIMATE,
 	PACKET_PLAYER_CHANGE_DIMENSION,
 	PACKET_SIGN_UPDATE,
@@ -82,7 +83,8 @@ enum ePacketType
 	PACKET_CONTAINER_CLICK,
 	PACKET_CONTAINER_ACK,
 	PACKET_CONTAINER_CLOSE,
-	PACKET_CONTAINER_OPEN
+	PACKET_CONTAINER_OPEN,
+	PACKET_MAP_ITEM_DATA
 };
 
 enum eAddEntityType
@@ -613,6 +615,22 @@ public:
 	int16_t m_health;
 };
 
+class SetRidingPacket : public Packet
+{
+public:
+	SetRidingPacket() {}
+	SetRidingPacket(int rider, int ridden) : m_rider(rider), m_ridden(ridden)
+	{
+	}
+
+	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
+	void write(RakNet::BitStream*) override;
+	void read(RakNet::BitStream*) override;
+public:
+	int m_rider;
+	int m_ridden;
+};
+
 class PlayerChangeDimensionPacket : public Packet
 {
 public:
@@ -855,6 +873,21 @@ public:
 	void read(RakNet::BitStream*) override;
 public:
 	int8_t m_containerId;
+};
+
+class MapItemDataPacket : public Packet
+{
+public:
+	MapItemDataPacket() {}
+	MapItemDataPacket(int16_t item, int16_t mapId, const std::vector<uint8_t>& data) : m_item(item), m_mapId(mapId), m_data(data) {};
+
+	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
+	void write(RakNet::BitStream*) override;
+	void read(RakNet::BitStream*) override;
+public:
+	int16_t m_item;
+	int16_t m_mapId;
+	std::vector<uint8_t> m_data;
 };
 
 class SignUpdatePacket : public Packet

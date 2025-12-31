@@ -13,4 +13,5 @@ public:
     virtual void inventoryTick(const std::shared_ptr<ItemInstance>&, Level*, Entity*, int, bool) override;
     virtual void update(Level*, Entity*, const std::shared_ptr<MapItemSavedData>&);
     virtual void onCraftedBy(const std::shared_ptr<ItemInstance>&, Player*, Level*) override;
+    virtual Packet* getUpdatePacket(const std::shared_ptr<ItemInstance>&, Level*, const std::shared_ptr<Player>&) override;
 };

@@ -55,6 +55,7 @@ public:
 	void handle(const RakNet::RakNetGUID&, EntityEventPacket*) override;
 	void handle(const RakNet::RakNetGUID&, GameEventPacket*) override;
 	void handle(const RakNet::RakNetGUID&, SetHealthPacket*) override;
+	void handle(const RakNet::RakNetGUID&, SetRidingPacket*) override;
 	void handle(const RakNet::RakNetGUID&, PlayerChangeDimensionPacket*) override;
 	void handle(const RakNet::RakNetGUID&, TileUpdatePacket*) override;
 	void handle(const RakNet::RakNetGUID&, BlockRegionUpdatePacket*) override;
@@ -67,6 +68,7 @@ public:
 	void handle(const RakNet::RakNetGUID&, ContainerClosePacket*) override;
 	void handle(const RakNet::RakNetGUID&, ExplodePacket*) override;
 	void handle(const RakNet::RakNetGUID&, LevelDataPacket*) override;
+	void handle(const RakNet::RakNetGUID&, MapItemDataPacket*) override;
 	void handle(const RakNet::RakNetGUID&, SignUpdatePacket*) override;
 
 	std::shared_ptr<Entity> getEntity(int);
@@ -82,6 +84,7 @@ private:
 	Random m_random;
 	RakNetInstance* m_pRakNetInstance;
 	RakNet::RakPeerInterface* m_pServerPeer;
+	DimensionDataStorage* m_pDataStorage;
 	int m_field_14;
 	RakNet::RakNetGUID m_serverGUID;
 	int m_field_24;

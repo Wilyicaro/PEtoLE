@@ -1,5 +1,6 @@
 #include "MapItem.hpp"
 #include "world/level/Level.hpp"
+#include "network/Packet.hpp"
 
 MapItem::MapItem(int id) : ComplexItem(id)
 {
@@ -240,4 +241,10 @@ void MapItem::onCraftedBy(const std::shared_ptr<ItemInstance>& item, Player* pla
 	savedData->m_scale = 3;
 	savedData->m_dimension = level->m_pDimension->m_ID;
 	savedData->setDirty();
+}
+
+Packet* MapItem::getUpdatePacket(const std::shared_ptr<ItemInstance>& map, Level* level, const std::shared_ptr<Player>& player)
+{
+    std::vector<uint8_t> data = getMapSavedData(map, level)->getColors(map, level, player);
+    return data.empty() ? nullptr : new MapItemDataPacket(Item::map->m_itemID, map->getAuxValue(), data);
 }

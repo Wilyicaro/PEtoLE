@@ -87,16 +87,15 @@ Minecraft::Minecraft() :
 	m_bIsTouchscreen = false;
 	m_pLevelStorageSource = nullptr; // TODO
 	m_bIsLevelLoaded = false;
-	m_lastBlockBreakTime = 0;
-	field_DA8 = 0;
-	field_DAC = 0;
+	m_ticks = 0;
+	m_missTime = 0;
 	m_bUsingScreen = false;
 	m_bHasQueuedScreen = false;
 	m_pQueuedScreen = nullptr;
 	m_licenseID = -2;
 	m_fLastUpdated = 0;
 	m_fDeltaTime = 0;
-	m_lastActionTime = 0;
+	m_lastClickTick = 0;
 
 	m_Logger = new Logger();
 }
@@ -257,12 +256,16 @@ bool Minecraft::useController() const
 
 void Minecraft::handleBuildAction(const BuildActionIntention& action)
 {
+	if ((action.isDestroy() || action.isAttack()) && m_missTime > 0)
+	{
+		return;
+	}
+
 	auto& player = m_pPlayer;
 
-	int time = getTimeMs();
-	bool inTime = time - m_lastActionTime >= 200;
+	bool canClick = m_ticks - m_lastClickTick >= m_timer.m_ticksPerSecond / 4.0f + (m_hitResult.m_hitType == HitResult::NONE ? 10 : 0);
 
-	if ((action.isDestroyStart() || action.isDestroy() && inTime) || action.isAttack())
+	if (action.isDestroyStart() || ((action.isDestroy() || action.isAttack()) && canClick))
 	{
 		player->swing();
 	}
@@ -279,9 +282,8 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 		if (action.isAttack())
 		{
 			m_pGameMode->attack(player.get(), m_hitResult.m_pEnt.get());
-			m_lastBlockBreakTime = getTimeMs();
 		}
-		else if (action.isInteract() && inTime)
+		else if (action.isInteract() && canClick)
 		{
 			if (m_hitResult.m_pEnt->interactPreventDefault())
 				bInteract = false;
@@ -309,11 +311,6 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 				destroyed = destroyed || contDestroy;
 				m_pParticleEngine->crack(m_hitResult.m_tilePos, m_hitResult.m_hitSide);
 
-				if (inTime)
-					m_lastActionTime = getTimeMs();
-
-				m_lastBlockBreakTime = getTimeMs();
-
 				if (destroyed)
 				{
 					/*if (isVibrateOnBlockBreakOptionEnabledOrWhatever)
@@ -330,7 +327,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 			if (item) data = item->getLevelDataForAuxValue(m_pLevel->getData(m_hitResult.m_tilePos));
 			player->m_pInventory->selectItem(pTile->m_ID, data);
 		}
-		else if (action.isPlace() && inTime)
+		else if (action.isPlace() && canClick)
 		{
 			std::shared_ptr<ItemInstance> pItem = getSelectedItem();
 			int oldCount = pItem ? pItem->m_count : 0;
@@ -345,8 +342,6 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 				bInteract = false;
 
 				player->swing();
-
-				m_lastActionTime = getTimeMs();
 
 				if (!pItem) return;
 
@@ -367,22 +362,26 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 		break;
 	}
 
-	if (bInteract && action.isInteract() && inTime)
+	if (bInteract && action.isInteract() && canClick)
 	{
 		std::shared_ptr<ItemInstance> pItem = getSelectedItem();
 		if (pItem)
 		{
-			m_lastActionTime = getTimeMs();
 			if (m_pGameMode->useItem(player.get(), m_pLevel, pItem))
 				m_pGameRenderer->m_pItemInHandRenderer->itemUsed();
 		}
 	}
+
+	if (canClick)
+		m_lastClickTick = m_ticks;
 }
 
 void Minecraft::tickInput()
 {
 	if (m_pScreen)
 	{
+		m_missTime = 10;
+
 		if (!m_pScreen->field_10)
 		{
 			m_bUsingScreen = true;
@@ -397,6 +396,10 @@ void Minecraft::tickInput()
 			}
 			return;
 		}
+	}
+	else if (m_missTime > 0)
+	{
+		m_missTime--;
 	}
 
 	if (!m_pPlayer)
@@ -765,7 +768,7 @@ void Minecraft::update()
 	for (int i = 0; i < m_timer.m_ticks; i++)
 	{
 		tick(); // tick(i, m_timer.m_ticks - 1); // 0.9.2
-		field_DA8++;
+		m_ticks++;
 	}
 
 	if (m_pLevel && m_async.empty())

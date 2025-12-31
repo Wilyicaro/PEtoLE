@@ -529,10 +529,10 @@ void Entity::baseTick()
 
 void Entity::rideTick()
 {
-	if (m_pRiding->m_bRemoved) {
+	if (m_pRiding->m_bRemoved)
 		m_pRiding = nullptr;
-	}
-	else {
+	else
+	{
 		m_vel = Vec3::ZERO;
 		tick();
 		if (!m_pRiding) return;

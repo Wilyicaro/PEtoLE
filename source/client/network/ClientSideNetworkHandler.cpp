@@ -28,6 +28,7 @@
 #include "world/tile/entity/FurnaceTileEntity.hpp"
 #include "world/tile/entity/DispenserTileEntity.hpp"
 #include "world/level/Explosion.hpp"
+#include "world/item/MapItem.hpp"
 
 // This lets you make the client shut up and not log events in the debug console.
 #define VERBOSE_CLIENT
@@ -44,6 +45,7 @@ ClientSideNetworkHandler::ClientSideNetworkHandler(Minecraft* pMinecraft, RakNet
 {
 	m_pMinecraft = pMinecraft;
 	m_pRakNetInstance = pRakNetInstance;
+	m_pDataStorage = new DimensionDataStorage(nullptr);
 	m_pServerPeer = m_pRakNetInstance->getPeer();
 	m_chunksRequested = 0;
 	m_serverProtocolVersion = 0;
@@ -88,10 +90,8 @@ void ClientSideNetworkHandler::onDisconnect(const RakNet::RakNetGUID& rakGuid)
 {
 	puts_ignorable("onDisconnect");
 
-	if (m_pLevel)
-		m_pLevel->m_bIsOnline = false;
-
 	m_pMinecraft->m_gui.addMessage("Disconnected from server");
+	m_pMinecraft->leaveGame();
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, LoginStatusPacket* pPacket)
@@ -131,6 +131,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, StartGa
 	m_pLevel = new MultiPlayerLevel(
 		pStartGamePkt->m_seed,
 		Dimension::getNew(pStartGamePkt->m_dimension));
+	m_pLevel->m_pDataStorage = m_pDataStorage;
 	m_pLevel->m_pConnection = m_pRakNetInstance;
 	m_pLevel->m_bIsOnline = true;
 
@@ -412,6 +413,15 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, SetHealthP
 		m_pMinecraft->m_pPlayer->hurtTo(packet->m_health);
 }
 
+void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, SetRidingPacket* packet)
+{
+	std::shared_ptr<Entity> rider = getEntity(packet->m_rider);
+	std::shared_ptr<Entity> ridden = getEntity(packet->m_ridden);
+
+	if (rider)
+		rider->ride(ridden);
+}
+
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerChangeDimensionPacket* packet)
 {
 	int oldDim = m_pMinecraft->m_pPlayer->m_dimension;
@@ -419,6 +429,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerChan
 	{
 		int64_t seed = m_pLevel->getLevelData().getSeed();
 		m_pLevel = new MultiPlayerLevel(seed, Dimension::getNew(packet->m_dim));
+		m_pLevel->m_pDataStorage = m_pDataStorage;
 		m_pLevel->m_pConnection = m_pRakNetInstance;
 		m_pLevel->m_bIsOnline = true;
 		m_pMinecraft->setScreen(new ProgressScreen);
@@ -472,6 +483,8 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, ContainerS
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, ContainerSetSlotPacket* packet)
 {
+	if (!m_pMinecraft->m_pPlayer) return;
+
 	if (packet->m_containerId == -1)
 		m_pMinecraft->m_pPlayer->m_pInventory->setCarried(packet->m_item);
 	else if (packet->m_containerId == 0 && packet->m_slot >= 36 && packet->m_slot < 45)
@@ -658,6 +671,14 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, LevelDataP
 
 	// All chunks are loaded. Also flush all the updates we've buffered.
 	flushAllBufferedUpdates();
+}
+
+void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, MapItemDataPacket* packet)
+{
+	if (packet->m_item == Item::map->m_itemID)
+		MapItem::createSavedData(packet->m_mapId, m_pLevel)->applyToMap(packet->m_data);
+	else
+		LOG_I("Unknown itemid: %i", packet->m_mapId);
 }
 
 std::shared_ptr<Entity> ClientSideNetworkHandler::getEntity(int id)

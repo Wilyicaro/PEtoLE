@@ -489,6 +489,16 @@ void Player::handleInsidePortal()
 		m_bIsInsidePortal = true;
 }
 
+void Player::ride(std::shared_ptr<Entity> ent)
+{
+	Mob::ride(ent);
+	if (isServerPlayer())
+	{
+		getConnection()->send(this, new SetRidingPacket(m_EntityID, ent ? ent->m_EntityID : -1));
+		getConnection()->send(this, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
+	}
+}
+
 void Player::displayClientMessage(const std::string& msg)
 {
 

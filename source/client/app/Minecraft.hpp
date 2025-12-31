@@ -186,9 +186,8 @@ public:
 	Timer m_timer;
 	LevelStorageSource* m_pLevelStorageSource; // TODO
 	bool m_bIsLevelLoaded;
-	int m_lastBlockBreakTime;
-	int field_DA8;
-	int field_DAC;
+	int m_ticks;
+	int m_missTime;
 	bool m_bUsingScreen;
 	bool m_bHasQueuedScreen;
 	Screen* m_pQueuedScreen;
@@ -197,6 +196,6 @@ public:
 
 	// in 0.8. Offset 3368
 	double m_fDeltaTime, m_fLastUpdated;
-	int m_lastActionTime;
+	int m_lastClickTick;
 };
 

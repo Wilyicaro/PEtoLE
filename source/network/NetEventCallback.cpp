@@ -140,6 +140,10 @@ void NetEventCallback::handle(const RakNet::RakNetGUID&, SetHealthPacket*)
 {
 }
 
+void NetEventCallback::handle(const RakNet::RakNetGUID&, SetRidingPacket*)
+{
+}
+
 void NetEventCallback::handle(const RakNet::RakNetGUID&, PlayerChangeDimensionPacket*)
 {
 }
@@ -198,6 +202,10 @@ void NetEventCallback::handle(const RakNet::RakNetGUID&, ExplodePacket*)
 }
 
 void NetEventCallback::handle(const RakNet::RakNetGUID& guid, LevelDataPacket* packet)
+{
+}
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, MapItemDataPacket*)
 {
 }
 

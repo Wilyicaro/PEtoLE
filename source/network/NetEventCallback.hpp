@@ -39,6 +39,7 @@ class LevelEventPacket;
 class EntityEventPacket;
 class GameEventPacket;
 class SetHealthPacket;
+class SetRidingPacket;
 class PlayerChangeDimensionPacket;
 class TileUpdatePacket;
 class RequestChunkPacket;
@@ -54,6 +55,7 @@ class ContainerOpenPacket;
 class ContainerClosePacket;
 class ExplodePacket;
 class LevelDataPacket;
+class MapItemDataPacket;
 class SignUpdatePacket;
 #include "world/level/Level.hpp"
 class Level;
@@ -97,6 +99,7 @@ public:
 	virtual void handle(const RakNet::RakNetGUID&, EntityEventPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, GameEventPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, SetHealthPacket*);
+	virtual void handle(const RakNet::RakNetGUID&, SetRidingPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, PlayerChangeDimensionPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, TileUpdatePacket*);
 	virtual void handle(const RakNet::RakNetGUID&, RequestChunkPacket*);
@@ -112,6 +115,7 @@ public:
 	virtual void handle(const RakNet::RakNetGUID&, ContainerClosePacket*);
 	virtual void handle(const RakNet::RakNetGUID&, ExplodePacket*);
 	virtual void handle(const RakNet::RakNetGUID&, LevelDataPacket*);
+	virtual void handle(const RakNet::RakNetGUID&, MapItemDataPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, SignUpdatePacket*);
 };
 

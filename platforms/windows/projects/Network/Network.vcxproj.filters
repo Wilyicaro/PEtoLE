@@ -202,5 +202,11 @@
     <ClCompile Include="..\..\..\..\source\network\packets\ExplodePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\MapItemDataPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\SetRidingPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

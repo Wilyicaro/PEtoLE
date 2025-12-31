@@ -79,7 +79,7 @@ void MapItemSavedData::tickCarriedBy(const std::shared_ptr<Player>& player, cons
 				uint8_t image = 0;
 				int8_t x = (var5 * 2.0F) + 0.5;
 				int8_t y = (var6 * 2.0F) + 0.5;
-				uint8_t rot = (player->m_rot.y * 16.0F / 360.0F) + 0.5;
+				uint8_t rot = (holding->m_pPlayer->m_rot.y * 16.0F / 360.0F) + 0.5;
 				if (m_dimension < 0)
 				{
 					int var13 = m_ticks / 10;

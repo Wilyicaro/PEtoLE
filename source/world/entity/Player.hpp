@@ -92,6 +92,7 @@ public:
 	virtual void travel(const Vec2& pos) override;
 	virtual real getRidingHeight() override;
 	virtual void handleInsidePortal() override;
+	virtual void ride(std::shared_ptr<Entity>) override;
 
 	int addResource(int);
 	void animateRespawn(Player*, Level*);

@@ -170,6 +170,7 @@ void Inventory::tick()
 		{
 			if (v->m_popTime > 0) v->m_popTime--;
 			v->getItem()->inventoryTick(v, m_pPlayer->m_pLevel, m_pPlayer, i, i == m_selected);
+			m_pPlayer->m_pGameMode->handleInventoryTick(v, m_pPlayer->m_pLevel, m_pPlayer, i, i == m_selected);
 		}
 	}
 }

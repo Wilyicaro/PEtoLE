@@ -276,6 +276,16 @@ void GameMode::handleCloseInventory(int a, Player* player)
 	}
 }
 
+void GameMode::handleInventoryTick(const std::shared_ptr<ItemInstance>& item, Level* level, Player* player, int, bool)
+{
+	if (player->isServerPlayer() && item->getItem()->isComplex())
+	{
+		Packet* packet = item->getItem()->getUpdatePacket(item, level, std::dynamic_pointer_cast<Player>(player->shared_from_this()));
+		if (packet)
+			player->getConnection()->send(player, packet);
+	}
+}
+
 bool GameMode::useItem(Player* player, Level* level, std::shared_ptr<ItemInstance> instance)
 {
 	if (player->isLocalPlayer() && player->m_pLevel->m_bIsOnline)
