@@ -111,12 +111,12 @@ void Screen::renderPanorama(float f)
 	glViewport(0, 0, Minecraft::width, Minecraft::height);
 	Tesselator& var4 = Tesselator::instance;
 	var4.begin();
-	float var5 = m_width > m_height ? 120.0F / m_width : 120.0F / m_height;
-	float var6 = m_height * var5 / 256.0F;
-	float var7 = m_width * var5 / 256.0F;
+	float var5 = m_width > m_height ? 120.0f / m_width : 120.0f / m_height;
+	float var6 = m_height * var5 / 256.0f;
+	float var7 = m_width * var5 / 256.0f;
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	var4.color(1.0F, 1.0F, 1.0F, 1.0F);
+	var4.color(1.0f, 1.0f, 1.0f, 1.0f);
 	var4.vertexUV(0.0, m_height, zLevel, (0.5F - var6), (0.5F + var7));
 	var4.vertexUV(m_width, m_height,zLevel, (0.5F - var6), (0.5F - var7));
 	var4.vertexUV(m_width, 0.0, zLevel, (0.5F + var6), (0.5F - var7));
@@ -238,33 +238,24 @@ void Screen::renderPanoramaBackground(float f)
 void Screen::renderPanoramaBlur(float f)
 {
 	glBindTexture(GL_TEXTURE_2D, m_pMinecraft->m_pTextures->loadBlankTexture("panorama_blur", 256, 256));
-#if USE_GLES
-	static uint32_t buffer[256 * 256 * 4];
-	glReadPixels(0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 256,
-		GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-#else
 	glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, 256, 256);
-#endif
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glColorMask(true, true, true, false);
-	Tesselator& var2 = Tesselator::instance;
-	var2.begin();
+	Tesselator& t = Tesselator::instance;
+	t.begin();
 
-	for (int var4 = 0; var4 < 3; ++var4)
+	for (int i = 0; i < 3; ++i)
 	{
-		var2.color(1.0F, 1.0F, 1.0F, 1.0F / (float)(var4 + 1));
-		int var5 = m_width;
-		int var6 = m_height;
-		float var7 = (float)(var4 - 3 / 2) / 256.0F;
-		var2.vertexUV(var5, var6, zLevel, (0.0F + var7), 0.0);
-		var2.vertexUV(var5, 0.0, zLevel, (1.0F + var7), 0.0);
-		var2.vertexUV(0.0, 0.0, zLevel, (1.0F + var7), 1.0);
-		var2.vertexUV(0.0, var6, zLevel, (0.0F + var7), 1.0);
+		t.color(1.0F, 1.0F, 1.0F, 1.0F / (float)(i + 1));
+		float r = float(i - 3 / 2) / 256.0F;
+		t.vertexUV(m_width, m_height, zLevel, (0.0f + r), 0.0);
+		t.vertexUV(m_width, 0.0, zLevel, (1.0f + r), 0.0);
+		t.vertexUV(0.0, 0.0, zLevel, (1.0f + r), 1.0);
+		t.vertexUV(0.0, m_height, zLevel, (0.0f + r), 1.0);
 	}
 
-	var2.draw();
+	t.draw();
 	glColorMask(true, true, true, true);
 }
 
