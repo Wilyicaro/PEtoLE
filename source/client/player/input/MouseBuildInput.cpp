@@ -13,27 +13,20 @@ bool MouseBuildInput::tickBuild(Player* player, BuildActionIntention* buildActio
 {
     bool wroteIntention = false;
     BuildActionIntention::BuildActionIntent intent = BuildActionIntention::NONE;
+    bool canContinue = false;
 
     int time = getTimeMs();
     if (Mouse::isButtonDown(BUTTON_RIGHT))
     {
         wroteIntention = true;
         intent = BuildActionIntention::KEY_USE;
+        canContinue = m_lastButtonStates[BUTTON_RIGHT];
     }
     else if (Mouse::isButtonDown(BUTTON_LEFT))
     {
-        // Mouse controls should never be able to invoke DESTROY_START behavior
-        if (!m_lastButtonStates[BUTTON_LEFT])
-        {
-            // Button was just clicked
-            wroteIntention = true;
-            intent = BuildActionIntention::KEY_DESTROY;
-        }
-        else
-        {
-            wroteIntention = true;
-            intent = BuildActionIntention::DESTROY_CONTINUE; //  we don't wanna slap any mobs around
-        }
+        wroteIntention = true;
+        intent = BuildActionIntention::KEY_DESTROY;
+        canContinue = m_lastButtonStates[BUTTON_LEFT];
     }
     else if (Mouse::isButtonDown(BUTTON_MIDDLE))
     {
@@ -58,7 +51,7 @@ bool MouseBuildInput::tickBuild(Player* player, BuildActionIntention* buildActio
     if (wroteIntention)
     {
         m_time = time;
-        *buildActionIntention = BuildActionIntention(intent);
+        *buildActionIntention = BuildActionIntention(intent, canContinue);
     }
 
     // Log last button states

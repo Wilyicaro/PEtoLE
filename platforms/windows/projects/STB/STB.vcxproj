@@ -37,7 +37,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
-    <ClCompile Include="$(MC_ROOT)\thirdparty\stb_image\include\stb_vorbis.c" />
+    <ClCompile Include="$(MC_ROOT)\thirdparty\stb_vorbis.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\thirdparty\stb_image\include\stb_image.h" />

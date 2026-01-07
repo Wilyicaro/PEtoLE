@@ -20,7 +20,7 @@ bool HellFireFeature::place(Level* level, Random* random, const TilePos& pos)
 		tp.z = pos.z + random->nextInt(8) - random->nextInt(8);
 
 		if (level->isEmptyTile(tp) && level->getTile(tp.below()) == Tile::netherrack->m_ID)
-			level->setTileNoUpdate(tp, Tile::fire->m_ID);
+			level->setTile(tp, Tile::fire->m_ID);
 	}
 
 	return true;

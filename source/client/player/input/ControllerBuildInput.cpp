@@ -22,6 +22,7 @@ bool ControllerBuildInput::isPerformingRemove() const
 bool ControllerBuildInput::tickBuild(Player* player, BuildActionIntention* buildActionIntention)
 {
     bool wroteIntention = false;
+    bool canContinue = false;
     BuildActionIntention::BuildActionIntent intent = BuildActionIntention::NONE;
 
     int time = getTimeMs();
@@ -29,13 +30,16 @@ bool ControllerBuildInput::tickBuild(Player* player, BuildActionIntention* build
     {
         wroteIntention = true;
         intent = BuildActionIntention::KEY_USE;
+        canContinue = m_lastButtonStates[0];
     }
     else if (isPerformingRemove())
     {
         if (!m_lastButtonStates[1])
+        {
             intent = BuildActionIntention::KEY_DESTROY;
-        else
-            intent = BuildActionIntention::DESTROY_CONTINUE;
+            canContinue = m_lastButtonStates[1];
+        }
+  
         wroteIntention = true;
     }
 
@@ -53,7 +57,7 @@ bool ControllerBuildInput::tickBuild(Player* player, BuildActionIntention* build
     if (wroteIntention)
     {
         m_time = time;
-        *buildActionIntention = BuildActionIntention(intent);
+        *buildActionIntention = BuildActionIntention(intent, canContinue);
     }
 
     // Log last button states

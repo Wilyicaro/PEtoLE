@@ -90,7 +90,6 @@ void ClientSideNetworkHandler::onDisconnect(const RakNet::RakNetGUID& rakGuid)
 {
 	puts_ignorable("onDisconnect");
 
-	m_pMinecraft->m_gui.addMessage("Disconnected from server");
 	m_pMinecraft->leaveGame();
 }
 
@@ -232,7 +231,8 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, AddEntityP
 		ent->m_rot = Vec2::ZERO;
 		ent->m_EntityID = packet->m_id;
 		m_pLevel->putEntity(packet->m_id, ent);
-		if (packet->m_data > 0) {
+		if (packet->m_data > 0)
+		{
 			if (packet->m_addId == ADD_ARROW)
 			{
 				std::shared_ptr<Entity> owner = getEntity(packet->m_data);

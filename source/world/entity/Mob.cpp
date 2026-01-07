@@ -220,6 +220,9 @@ void Mob::baseTick()
 	if (isAlive() && isInWall())
 		hurt(nullptr, 1);
 
+	if (m_bFireImmune || m_pLevel->m_bIsOnline)
+		m_fireTicks = 0;
+
 	if (isAlive() && isUnderLiquid(Material::water) && !isWaterMob())
 	{
 		m_airCapacity--;

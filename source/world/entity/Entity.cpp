@@ -497,7 +497,8 @@ void Entity::baseTick()
 		m_fireTicks = 0;
 	else if (m_fireTicks > 0)
 	{
-		if (m_bFireImmune) {
+		if (m_bFireImmune)
+		{
 			m_fireTicks -= 4;
 			if (m_fireTicks < 0)
 				m_fireTicks = 0;

@@ -39,7 +39,7 @@ public:
 	int field_C;
 	int field_10;
 	SmoothFloat m_smoothFloat;
-	bool field_24;
+	bool m_bStarted;
 	RectangleArea m_screenArea;
 	RectangleArea field_40;
 	RectangleArea field_58;

@@ -124,12 +124,13 @@ void EntityRenderer::renderShadow(Entity* e, const Vec3& pos, float pow, float a
 	glDepthMask(false);
 	float r = m_shadowRadius;
 
+	Vec3 cPos = pos.add(0, e->getShadowHeightOffs(), 0);
 	Vec3 ePos(e->m_posPrev + (e->m_pos - e->m_posPrev) * a);
 	ePos.y += e->getShadowHeightOffs();
 
 	TilePos tpMin(ePos - r);
 	TilePos tpMax(ePos.x + r, ePos.y, ePos.z + r);
-	Vec3 ePosO(pos - ePos);
+	Vec3 ePosO(cPos - ePos);
 
 	Tesselator& tt = Tesselator::instance;
 	tt.begin();
@@ -144,9 +145,9 @@ void EntityRenderer::renderShadow(Entity* e, const Vec3& pos, float pow, float a
 				if (t > 0 && level->getRawBrightness(tp) > 3)
 				{
 					renderTileShadow(Tile::tiles[t],
-						Vec3(pos.x, pos.y - e->getShadowHeightOffs(), pos.z), tp,
+						cPos, tp,
 						pow, r,
-						Vec3(ePosO.x, ePosO.y - e->getShadowHeightOffs(), ePosO.z)
+						ePosO
 					);
 				}
 			}
@@ -273,7 +274,8 @@ void EntityRenderer::renderFlat(const AABB& aabb)
 
 void EntityRenderer::postRender(Entity* entity, const Vec3& pos, float rot, float a)
 {
-	if (m_pDispatcher->m_pOptions->m_bFancyGraphics.get() && m_shadowRadius > 0.0f)
+	//LocalPlayer's shadow not rendering was a bug in the original, caused by the heightOffset being applied to the y position, but as we want to replicate it, this extra condition was added
+	if (m_pDispatcher->m_pOptions->m_bFancyGraphics.get() && m_shadowRadius > 0.0f && (!entity->isPlayer() || !((Player*)entity)->isLocalPlayer()))
 	{
 		float dist = m_pDispatcher->distanceToSqr(entity->m_pos);
 		float pow = (1.0f - dist / 256.0f) * m_shadowStrength;

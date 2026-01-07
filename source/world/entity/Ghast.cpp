@@ -9,6 +9,35 @@ Ghast::Ghast(Level* pLevel) : FlyingMob(pLevel), m_floatDuration(0), m_retargetT
 	m_bFireImmune = true;
 }
 
+void Ghast::tick()
+{
+    m_oCharge = m_charge;
+    if (m_pLevel->m_bIsOnline)
+    {
+        if (m_charge == START_CHARGE)
+            m_pLevel->playSound(this, "mob.ghast.charge", getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+
+        int chargeDir = getChargeDir();
+
+        if (chargeDir)
+        {
+            m_charge = Mth::clamp(m_charge + chargeDir, 0, MAX_CHARGE);
+            if (m_charge == MAX_CHARGE)
+            {
+                m_pLevel->playSound(this, "mob.ghast.fireball", getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
+                m_oCharge = m_charge = 0;
+            }
+        }
+        else
+        {
+            m_oCharge = m_charge = 0;
+        }
+    }
+
+    Mob::tick();
+    m_texture = m_charge > START_CHARGE ? "mob/ghast_fire.png" : "mob/ghast.png";
+}
+
 void Ghast::updateAi()
 {
     if (!m_pLevel->m_difficulty)
@@ -53,11 +82,13 @@ void Ghast::updateAi()
         m_yBodyRot = m_rot.y = -(Mth::atan2(firePos.x, firePos.z)) * 180.0F / M_PI;
         if (canSee(m_target.get()))
         {
-            if (m_charge == 10)
+            if (m_charge >= 0)
+               setChargeDir(1);
+            if (m_charge == START_CHARGE)
                 m_pLevel->playSound(this, "mob.ghast.charge", getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
-            
+
             ++m_charge;
-            if (m_charge == 20)
+            if (m_charge == MAX_CHARGE)
             {
                 m_pLevel->playSound(this, "mob.ghast.fireball", getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
                 auto fireball = std::make_shared<Fireball>(m_pLevel, std::dynamic_pointer_cast<Mob>(shared_from_this()), firePos);
@@ -68,10 +99,16 @@ void Ghast::updateAi()
                 fireball->m_pos.z = m_pos.z + var20.z * var18;
                 m_pLevel->addEntity(fireball);
                 m_charge = -40;
+                setChargeDir(0);
             }
         }
         else if (m_charge > 0)
+        {
             --m_charge;
+            setChargeDir(-1);
+        }
+        else if (m_charge <= 0)
+            setChargeDir(0);
     }
     else
     {
@@ -79,13 +116,16 @@ void Ghast::updateAi()
         if (m_charge > 0)
             --m_charge;
     }
-
-    m_texture = m_charge > 10 ? "mob/ghast_fire.png" : "mob/ghast.png";
 }
 
 bool Ghast::canSpawn()
 {
     return m_random.nextInt(20) == 0 && FlyingMob::canSpawn() && m_pLevel->m_difficulty > 0;
+}
+
+void Ghast::defineSynchedData()
+{
+    m_entityData.define<int8_t>(DATA_CHARGE_DIR, 0);
 }
 
 bool Ghast::canReach(const Vec3& pos, real div)

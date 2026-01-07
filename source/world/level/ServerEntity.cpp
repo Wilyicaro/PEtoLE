@@ -248,7 +248,7 @@ Packet* ServerEntity::getAddEntityPacket()
 		else if (m_entity->getType() == EntityType::fireball)
 		{
 			std::shared_ptr<Fireball> fireball = std::dynamic_pointer_cast<Fireball>(m_entity);
-			AddEntityPacket* packet = new AddEntityPacket(m_entity, ADD_FIREBALL, fireball->m_owner->m_EntityID);
+			AddEntityPacket* packet = new AddEntityPacket(m_entity, ADD_FIREBALL, fireball->m_owner ? fireball->m_owner->m_EntityID : -1);
 			packet->m_vel.x = int(fireball->m_power.x * 8000);
 			packet->m_vel.y = int(fireball->m_power.y * 8000);
 			packet->m_vel.z = int(fireball->m_power.z * 8000);

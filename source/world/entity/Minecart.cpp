@@ -26,7 +26,7 @@ Minecart::Minecart(Level* level) : Entity(level), SimpleContainer(27, "gui.chest
 
 Minecart::Minecart(Level* level, const Vec3& pos, Type type) : Minecart(level)
 {
-	setPos(Vec3(pos.x, pos.y, pos.z));
+	setPos(pos);
 	m_vel = Vec3::ZERO;
 	m_oPos = Vec3::ZERO;
 	m_type = type;
@@ -86,8 +86,9 @@ void Minecart::tick()
     real var7;
     if (m_pLevel->m_bIsOnline && m_lSteps > 0) 
     {
-        //@NOTE: this statement doesn't really make sense
-        if (m_lSteps > 0) {
+        //@NOTE: this statement doesn't really make sense, it'll always be true...
+        if (m_lSteps > 0)
+        {
             Vec3 newPos = m_pos + (m_lPos - m_pos) / m_lSteps;
 
             for (var7 = m_lRot.y - m_rot.y; var7 < -180.0; var7 += 360.0) {
@@ -210,7 +211,7 @@ void Minecart::tick()
 
             m_pos.x = var24 + var12 * var22;
             m_pos.z = var26 + var14 * var22;
-            setPos(Vec3(m_pos.x, m_pos.y, m_pos.z));
+            setPos(m_pos);
             var32 = m_vel.x;
             var34 = m_vel.z;
             if (m_pRider) 
@@ -247,7 +248,7 @@ void Minecart::tick()
             }
             else 
             {
-                if (m_type == 2) 
+                if (m_type == Type::FURNACE) 
                 {
                     var36 = Mth::sqrt(m_xPush * m_xPush + m_zPush * m_zPush);
                     if (var36 > 0.01) 
@@ -334,7 +335,7 @@ void Minecart::tick()
                 m_vel.z = var20 * (var48 - tp.z);
             }
 
-            if (m_type == 2)
+            if (m_type == Type::FURNACE)
             {
                 real var39 = Mth::sqrt(m_xPush * m_xPush + m_zPush * m_zPush);
                 if (var39 > 0.01 && m_vel.x * m_vel.x + m_vel.z * m_vel.z > 0.001) {
@@ -351,7 +352,8 @@ void Minecart::tick()
                 }
             }
         }
-        else {
+        else
+        {
             if (m_vel.x < -var4)
                 m_vel.x = -var4;
 
@@ -602,10 +604,10 @@ Vec3* Minecart::getPos(const Vec3& vec)
         auto var11 = EXITS[var10];
         real var12 = 0.0;
         real var14 = tp.x + 0.5 + var11[0][0] * 0.5;
-        real var16 = tp.y + 0.5 + var11[0][1] * 0.5;
+        real var16 = tp.y + 0.15 + var11[0][1] * 0.5;
         real var18 = tp.z + 0.5 + var11[0][2] * 0.5;
         real var20 = tp.x + 0.5 + var11[1][0] * 0.5;
-        real var22 = tp.y + 0.5 + var11[1][1] * 0.5;
+        real var22 = tp.y + 0.15 + var11[1][1] * 0.5;
         real var24 = tp.z + 0.5 + var11[1][2] * 0.5;
         real var26 = var20 - var14;
         real var28 = (var22 - var16) * 2.0;

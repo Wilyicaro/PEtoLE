@@ -2,11 +2,16 @@
 
 #include "world/entity/FlyingMob.hpp"
 
+#define DATA_CHARGE_DIR (16)
+#define START_CHARGE (10)
+#define MAX_CHARGE (20)
+
 class Ghast : public FlyingMob
 {
 public:
 	Ghast(Level* pLevel);
 
+	void tick() override;
 	void updateAi() override;
 
 	std::string getAmbientSound() override { return "mob.ghast.moan"; }
@@ -17,6 +22,10 @@ public:
 	int getMaxSpawnClusterSize() const override { return 1; }
 	int getDeathLoot() const override { return Item::sulphur->m_itemID; }
 	bool canSpawn() override;
+
+	int getChargeDir() const { return m_entityData.get<int8_t>(DATA_CHARGE_DIR); }
+	void setChargeDir(int value) { m_entityData.set<int8_t>(DATA_CHARGE_DIR, value); }
+	void defineSynchedData() override;
 
 private:
 	bool canReach(const Vec3&, real);

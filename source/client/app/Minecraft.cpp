@@ -263,9 +263,9 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 
 	auto& player = m_pPlayer;
 
-	bool canClick = m_ticks - m_lastClickTick >= m_timer.m_ticksPerSecond / 4.0f + (m_hitResult.m_hitType == HitResult::NONE ? 10 : 0);
+	bool canClick = !action.canContinue() || m_ticks - m_lastClickTick >= m_timer.m_ticksPerSecond / 4.0f + ((action.isDestroy() || action.isAttack()) && m_hitResult.m_hitType == HitResult::NONE ? 10 : 0);
 
-	if (action.isDestroyStart() || ((action.isDestroy() || action.isAttack()) && canClick))
+	if (((action.isDestroy() || action.isAttack()) && canClick))
 	{
 		player->swing();
 	}
@@ -279,7 +279,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 	switch (m_hitResult.m_hitType)
 	{
 	case HitResult::ENTITY:
-		if (action.isAttack())
+		if (action.isAttack() && canClick)
 		{
 			m_pGameMode->attack(player.get(), m_hitResult.m_pEnt.get());
 		}
@@ -301,7 +301,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 			if (pTile->canStartDestroy(m_pLevel, m_hitResult.m_tilePos, m_hitResult.m_hitSide) || (player->m_userType >= 100 && !m_hitResult.m_bUnk24))
 			{
 				bool destroyed = false;
-				if (action.isDestroyStart())
+				if (!action.canContinue())
 				{
 					destroyed = m_pGameMode->startDestroyBlock(m_hitResult.m_tilePos, m_hitResult.m_hitSide);
 				}
@@ -318,7 +318,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 				}
 			}
 		}
-		else if (action.isPick())
+		else if (action.isPick() && !action.canContinue())
 		{
 			// Try to pick the tile.
 
@@ -489,13 +489,13 @@ void Minecraft::tickInput()
 		{
 			if (getOptions()->getKey(KM_DESTROY) == keyCode && bPressed)
 			{
-				BuildActionIntention intention(BuildActionIntention::KEY_DESTROY);
+				BuildActionIntention intention(BuildActionIntention::KEY_DESTROY, false);
 				handleBuildAction(intention);
 			}
 
 			if (getOptions()->getKey(KM_PLACE) == keyCode && bPressed)
 			{
-				BuildActionIntention intention(BuildActionIntention::KEY_USE);
+				BuildActionIntention intention(BuildActionIntention::KEY_USE, false);
 				handleBuildAction(intention);
 			}
 		}
@@ -1066,8 +1066,7 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr
 void Minecraft::toggleDimension(int dim)
 {
 	m_pPlayer->m_dimension = m_pPlayer->m_dimension == dim ? 0 : dim;
-	m_pLevel->removeEntity(m_pPlayer);
-	m_pLevel->getChunk(m_pPlayer->m_chunkPos)->removeEntity(m_pPlayer);
+	m_pLevel->removeEntityImmediately(m_pPlayer);
 	m_pPlayer->m_bRemoved = false;
 	Vec3 fPos(m_pPlayer->m_pos);
 	const real teleportConst = m_pLevel->getNetherTravelRatio();

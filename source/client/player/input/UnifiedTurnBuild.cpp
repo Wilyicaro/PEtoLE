@@ -34,7 +34,7 @@ UnifiedTurnBuild::UnifiedTurnBuild(int a, int width, int height, float d, float 
 	field_B8 = getTimeS();
 	field_CC = field_B8;
 	field_D0 = 0;
-	field_24 = false;
+	m_bStarted = false;
 	field_D4 = false;
 }
 
@@ -86,11 +86,11 @@ TurnDelta UnifiedTurnBuild::getTurnDelta()
 		bool b2 = m_pPlayer && getSpeedSquared(m_pPlayer) > 0.01f;
 		field_D8 = true;
 		field_D4 = !b2;
-		field_24 = false;
+		m_bStarted = false;
 	}
 	else if (m_bWasTouched && !touched) // if that was the last frame we were touched
 	{
-		field_24 = false;
+		m_bStarted = false;
 		field_D8 = false;
 	}
 
@@ -176,29 +176,31 @@ bool UnifiedTurnBuild::tickBuild(Player* pPlayer, BuildActionIntention* pIntenti
 
 	if (field_D8 == 3)
 	{
-		// 0.9.2
-		/*if (field_106)
-		{
-			intent = BuildActionIntention::INTERACT;
-			wroteIntention = true;
-		}
-		else */if (field_24 /* && pPlayer->isUsingItem()*/) // Holds off on acknowledging interact intent until the user is absolutely sure a tick later
-		{
-			intent = BuildActionIntention::TOUCH_HOLD_CONTINUE;
-			wroteIntention = true;
-		}
-		else
-		{
-			intent = BuildActionIntention::TOUCH_HOLD_START;
-			wroteIntention = true;
-			// Next time, we acknowledge the action with intent to interact
-			field_24 = true;
-		}
+		//// 0.9.2
+		///*if (field_106)
+		//{
+		//	intent = BuildActionIntention::INTERACT;
+		//	wroteIntention = true;
+		//}
+		//else */if (m_bStarted /* && pPlayer->isUsingItem()*/) // Holds off on acknowledging interact intent until the user is absolutely sure a tick later
+		//{
+		//	intent = BuildActionIntention::TOUCH_HOLD_CONTINUE;
+		//	wroteIntention = true;
+		//}
+		//else
+		//{
+		//	intent = BuildActionIntention::TOUCH_HOLD_START;
+		//	wroteIntention = true;
+		//	// Next time, we acknowledge the action with intent to interact
+		//	m_bStarted = true;
+		//}
 
-		if (wroteIntention)
-			*pIntention = BuildActionIntention(intent);
+		//if (wroteIntention)
+		//	*pIntention = BuildActionIntention(intent);
 
-		return wroteIntention;
+		//return wroteIntention;
+		*pIntention = BuildActionIntention(BuildActionIntention::TOUCH_HOLD, m_bStarted);
+		return m_bStarted = true;
 	}
 
 	Multitouch::rewind();

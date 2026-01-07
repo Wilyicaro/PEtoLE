@@ -16,42 +16,32 @@ public:
 		NONE              = 0<<0,    		 //  0 0 0 0 0 0 0  //  
 
 		PLACE             = 1<<0,			 //  0 0 0 0 0 0 1  //  indicates the desire to place a block
-		DESTROY_START     = 1<<1,			 //  0 0 0 0 0 1 0  //  causes the player to start destroying the block in front of them, used to cause Minecraft to not automatically handle the BuildActionIntention
-		DESTROY_CONTINUE  = 1<<2,			 //  0 0 0 0 1 0 0  //  causes the player to continue destroying the block in front of them
+		DESTROY			  =	1<<1,			 //  0 0 0 0 0 1 0  //  causes the player to start/continue destroying the block in front of them, used to cause Minecraft to not automatically handle the BuildActionIntention
 		ATTACK            = 1<<3,			 //  0 0 0 1 0 0 0  //  causes the player to take a swing in the air
 		INTERACT          = 1<<4,			 //  0 0 1 0 0 0 0  //  causes the player to use the item in their hand
 		// Custom bits
 		PICK              = 1<<5,            //  1 0 0 0 0 0 0  //  causes the player to equip the block they're currently looking at
 
 		TOUCH_TAP               = ATTACK   | PLACE,             // touch screen was tapped and released quickly
-		KEY_DESTROY             = ATTACK   | DESTROY_START,     // the destroy key was pressed
+		KEY_DESTROY             = ATTACK   | DESTROY,			// the destroy key was pressed
 		KEY_USE                 = INTERACT | PLACE,             // the use key was pressed
-		TOUCH_HOLD_START        = INTERACT | DESTROY_START,     // touch screen started being held down
-		TOUCH_HOLD_CONTINUE     = INTERACT | DESTROY_CONTINUE   // touch screen is being held down
+		TOUCH_HOLD              = INTERACT | DESTROY,			// touch screen being held down
 	};
 
 public:
-	BuildActionIntention() : m_type(NONE) {}
-	BuildActionIntention(BuildActionIntent type) : m_type(type) {}
+	BuildActionIntention() : m_type(NONE), m_bContinue(false) {}
+	BuildActionIntention(BuildActionIntent type, bool canContinue = false) : m_type(type), m_bContinue(canContinue) {}
 
 	bool isAttack() const {
 		return (m_type & ATTACK) != NONE;
 	}
-
+	
 	bool isInteract() const {
 		return (m_type & INTERACT) != NONE;
 	}
 
 	bool isDestroy() const {
-		return (m_type & (DESTROY_START + DESTROY_CONTINUE)) != NONE;
-	}
-
-	bool isDestroyStart() const {
-		return (m_type & DESTROY_START) != NONE;
-	}
-
-	bool isDestroyContinue() const {
-		return (m_type & DESTROY_CONTINUE) != NONE;
+		return (m_type & DESTROY) != NONE;
 	}
 
 	bool isPlace() const {
@@ -62,7 +52,12 @@ public:
 		return (m_type & PICK) != NONE;
 	}
 
+	bool canContinue() const {
+		return m_bContinue;
+	}
+
 private:
 	BuildActionIntent m_type;
+	bool m_bContinue;
 };
 

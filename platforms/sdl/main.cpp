@@ -308,10 +308,10 @@ int main(int argc, char *argv[])
 
 	// Configure OpenGL ES Context
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-#ifdef USE_GLES1_COMPATIBILITY_LAYER
+#ifdef USE_GLES
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 #else
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -333,7 +333,7 @@ int main(int argc, char *argv[])
 	window = SDL_CreateWindow("ReMinecraftPE", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Minecraft::width, Minecraft::height, flags);
 	if (!window)
 	{
-		//LOG_E("Unable to create SDL window");
+		LOG_E("Unable to create SDL window: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
