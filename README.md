@@ -146,7 +146,6 @@ This project uses CMake on Linux. Just like WebAssembly, the game assets must be
 #### How To Build
 
 ```sh
-cd platforms/sdl
 mkdir build && cd build
 cmake -GNinja ..
 cmake --build .
