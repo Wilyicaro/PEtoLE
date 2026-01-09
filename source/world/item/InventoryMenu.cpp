@@ -82,7 +82,7 @@ std::shared_ptr<ItemInstance> InventoryMenu::quickMoveStack(int index)
         if (slotItem->m_count == item->m_count)
             return nullptr;
 
-        //slot->checkTakeAchievements(slotItem);
+        slot->onTake(slotItem);
     }
 
     return item;
