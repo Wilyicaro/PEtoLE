@@ -250,6 +250,7 @@ public:
 	uint8_t field_16;
 	BoolOption m_bFancyGraphics;
 	BoolOption m_bAmbientOcclusion;
+	BoolOption m_splitControls;
 	uint8_t field_19; // use Mouse as input for breaking
 	std::string field_1C;
 	ValuesOption m_difficulty;
@@ -270,7 +271,6 @@ public:
 	BoolOption m_bBlockOutlines;
 	bool m_bFancyGrass;
 	bool m_bBiomeColors;
-	bool m_bSplitControls;
 	bool m_bUseController;
 	BoolOption m_bDynamicHand;
 	bool m_bOldTitleLogo;

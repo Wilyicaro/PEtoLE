@@ -13,7 +13,7 @@ BlockRegionUpdatePacket::BlockRegionUpdatePacket(Level* level, const TilePos& mi
 {
 	uint8_t* rawData = level->getBlocksAndData(minPos, xs, ys, zs);
 	size_t compressedSize = 0;
-	uint8_t* compressed = ZlibDeflateToMemoryLvl(rawData, xs * ys * zs * 5 / 2, &compressedSize, 1);
+	uint8_t* compressed = ZlibDeflateToMemory(rawData, xs * ys * zs * 5 / 2, &compressedSize);
 	m_size = compressedSize;
 	m_data.WriteAlignedBytes(compressed, m_size);
 	delete[] compressed;

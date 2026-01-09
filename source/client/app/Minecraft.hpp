@@ -169,7 +169,7 @@ public:
 	Level* m_pLevel;
 	MinecraftServer* m_pMinecraftServer;
 	std::shared_ptr<LocalPlayer> m_pPlayer;
-	std::shared_ptr<Mob> m_pMobPersp;
+	std::shared_ptr<Mob> m_pCameraEntity;
 	Gui m_gui;
 	int field_D0C;
 	std::vector<std::function<void()>> m_delayed;

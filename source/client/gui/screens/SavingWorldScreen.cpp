@@ -55,7 +55,7 @@ void SavingWorldScreen::tick()
 			m_pMinecraft->m_pMinecraftServer = nullptr;
 		}
 
-		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer = nullptr;
+		m_pMinecraft->m_pCameraEntity = m_pMinecraft->m_pPlayer = nullptr;
 
 
 		m_pMinecraft->m_bUsingScreen = true;

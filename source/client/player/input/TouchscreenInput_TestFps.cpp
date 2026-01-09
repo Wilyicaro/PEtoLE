@@ -82,10 +82,12 @@ static void TransformArray(int count, float* x1, float* y1, float* x2, float* y2
 
 void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 {
+	int scaledWidth = ceilf(width * Gui::InvGuiScale);
+	int scaledHeight = ceilf(height * Gui::InvGuiScale);
 	m_touchAreaModel.clear();
 
-	float heightM = height / 5.0f;
-	float widthM = heightM;
+	float widthM = Mth::min(64, scaledWidth / 10);
+	float heightM = widthM;
 
 	float x1[4], y1[4], x2[4], y2[4];
 
@@ -94,17 +96,16 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	x2[0] = 0.0f; x2[1] = 0.0f;   x2[2] = 0.0f;    x2[3] = 0.0f;
 	y2[0] = 0.0f; y2[1] = 0.0f;   y2[2] = 0.0f;    y2[3] = 0.0f;
 
-	float rx1, rx2, ry1, ry2;
-	float offX = 8.0f;
-	rx1 = 0.0f;
-	ry1 = height - 8.0f - heightM * 3.0f;
-	rx2 = widthM * 3.0f + 8.0f;
-	ry2 = ry1 + heightM * 3.0f;
+	float middleX = 8 + widthM;
+	float middleY = scaledHeight - heightM * 2 - 26;
 
-	m_rectArea = RectangleArea(rx1, ry1, rx2, ry2);
+	float left, right, top, bottom;
+	left = middleX - widthM;
+	top = middleY - heightM;
+	right = middleX + widthM * 2;
+	bottom = middleY + heightM * 2;
 
-	float middleX = offX + widthM;
-	float middleY = ry1 + heightM;
+	m_rectArea = RectangleArea(left / Gui::InvGuiScale, top / Gui::InvGuiScale, right / Gui::InvGuiScale, bottom / Gui::InvGuiScale);
 
 	TransformArray(4, x1, y1, x2, y2, middleX, middleY - heightM, 1.0f, 1.0f);
 	m_pAreaForward = new PolygonArea(4, x2, y2);
@@ -118,11 +119,11 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	m_pAreaBackward = new PolygonArea(4, x2, y2);
 	m_touchAreaModel.addArea(100 + INPUT_BACKWARD, m_pAreaBackward);
 
-	TransformArray(4, x1, y1, x2, y2, middleX - widthM, ry1 + heightM, 1.0f, 1.0f);
+	TransformArray(4, x1, y1, x2, y2, middleX - widthM, middleY, 1.0f, 1.0f);
 	m_pAreaLeft = new PolygonArea(4, x2, y2);
 	m_touchAreaModel.addArea(100 + INPUT_LEFT, m_pAreaLeft);
 
-	TransformArray(4, x1, y1, x2, y2, middleX + widthM, ry1 + heightM, 1.0f, 1.0f);
+	TransformArray(4, x1, y1, x2, y2, middleX + widthM, middleY, 1.0f, 1.0f);
 	m_pAreaRight = new PolygonArea(4, x2, y2);
 	m_touchAreaModel.addArea(100 + INPUT_RIGHT, m_pAreaRight);
 
@@ -152,7 +153,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 		int finger = activePointers[i];
 		int x = Multitouch::getX(finger);
 		int y = Multitouch::getY(finger);
-		int pointerId = m_touchAreaModel.getPointerId(x, y, finger);
+		int pointerId = m_touchAreaModel.getPointerId(x * Gui::InvGuiScale, y * Gui::InvGuiScale, finger);
 
 		if (pointerId > 99)
 			field_6C[pointerId - 100] = true;
@@ -229,18 +230,18 @@ static void RenderTouchButton(Tesselator* t, PolygonArea* pArea, int srcX, int s
 
 	tc[0] = float(srcX) / 256.0f;
 	tc[1] = float(srcY) / 256.0f;
-	tc[2] = tc[0] + 64.0f / 256.0f;
+	tc[2] = tc[0] + 48.0f / 256.0f;
 	tc[3] = tc[1];
 	tc[4] = tc[2];
-	tc[5] = tc[1] + 64.0f / 256.0f;
+	tc[5] = tc[1] + 48.0f / 256.0f;
 	tc[6] = tc[0];
 	tc[7] = tc[5];
 
 	for (int i = 0; i < pArea->m_count; i++)
 	{
 		t->vertexUV(
-			Gui::InvGuiScale * pArea->m_xPos[i],
-			Gui::InvGuiScale * pArea->m_yPos[i],
+			pArea->m_xPos[i],
+			pArea->m_yPos[i],
 			0.0f,
 			tc[(2 * i) % 8],
 			tc[(2 * i + 1) % 8]
@@ -260,19 +261,19 @@ void TouchscreenInput_TestFps::render(float f)
 	t.begin();
 
 	t.color(isButtonDown(100 + INPUT_LEFT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaLeft, 64, 128);
+	RenderTouchButton(&t, m_pAreaLeft, 48, 128);
 
 	t.color(isButtonDown(100 + INPUT_RIGHT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaRight, 192, 128);
+	RenderTouchButton(&t, m_pAreaRight, 144, 128);
 
 	t.color(isButtonDown(100 + INPUT_FORWARD) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
 	RenderTouchButton(&t, m_pAreaForward, 0, 128);
 
 	t.color(isButtonDown(100 + INPUT_BACKWARD) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaBackward, 128, 128);
+	RenderTouchButton(&t, m_pAreaBackward, 96, 128);
 
 	t.color(isButtonDown(100 + INPUT_JUMP) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaJump, 0, 192);
+	RenderTouchButton(&t, m_pAreaJump, 0, 176);
 
 	t.draw();
 

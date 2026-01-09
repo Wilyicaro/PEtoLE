@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.1.11312.151 d18.0
+VisualStudioVersion = 18.1.11312.151
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ZLib", "projects\ZLib\ZLib.vcxproj", "{5DA292FD-FA40-45D8-900A-6652C9662913}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "World", "projects\World\World.vcxproj", "{5F7CD8C1-413C-4855-A450-2C765F16C5A4}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "projects\Client\Client.vcxproj", "{A6E03DCA-99F6-45B8-800D-73060AE407FC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stats", "projects\Stats\Stats.vcxproj", "{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MinecraftClient.Win32", "projects\MinecraftClient.Win32\MinecraftClient.Win32.vcxproj", "{FF5A623D-03C2-4967-8E78-CB021114A501}"
 EndProject
@@ -137,6 +139,22 @@ Global
 		{A6E03DCA-99F6-45B8-800D-73060AE407FC}.Release|x64.Build.0 = Release|x64
 		{A6E03DCA-99F6-45B8-800D-73060AE407FC}.Release|x86.ActiveCfg = Release|Win32
 		{A6E03DCA-99F6-45B8-800D-73060AE407FC}.Release|x86.Build.0 = Release|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug_SDL2|x64.ActiveCfg = Debug|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug_SDL2|x64.Build.0 = Debug|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug_SDL2|x86.ActiveCfg = Debug|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug_SDL2|x86.Build.0 = Debug|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug|x64.ActiveCfg = Debug|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug|x64.Build.0 = Debug|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug|x86.ActiveCfg = Debug|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Debug|x86.Build.0 = Debug|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release_SDL2|x64.ActiveCfg = Release|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release_SDL2|x64.Build.0 = Release|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release_SDL2|x86.ActiveCfg = Release|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release_SDL2|x86.Build.0 = Release|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release|x64.ActiveCfg = Release|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release|x64.Build.0 = Release|x64
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release|x86.ActiveCfg = Release|Win32
+		{73E3C8DC-6660-4F24-9CE6-35C4ABA3FA5E}.Release|x86.Build.0 = Release|Win32
 		{FF5A623D-03C2-4967-8E78-CB021114A501}.Debug_SDL2|x64.ActiveCfg = Debug|x64
 		{FF5A623D-03C2-4967-8E78-CB021114A501}.Debug_SDL2|x86.ActiveCfg = Debug|Win32
 		{FF5A623D-03C2-4967-8E78-CB021114A501}.Debug|x64.ActiveCfg = Debug|x64

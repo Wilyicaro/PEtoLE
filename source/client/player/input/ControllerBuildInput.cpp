@@ -34,13 +34,9 @@ bool ControllerBuildInput::tickBuild(Player* player, BuildActionIntention* build
     }
     else if (isPerformingRemove())
     {
-        if (!m_lastButtonStates[1])
-        {
-            intent = BuildActionIntention::KEY_DESTROY;
-            canContinue = m_lastButtonStates[1];
-        }
-  
         wroteIntention = true;
+        intent = BuildActionIntention::KEY_DESTROY;
+        canContinue = m_lastButtonStates[1];
     }
 
     if (!wroteIntention)

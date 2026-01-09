@@ -135,7 +135,7 @@ void GameRenderer::setupCamera(float f, int i)
 
 void GameRenderer::moveCameraToPlayer(float f)
 {
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 
 	float headHeightDiff = -1.62f;
 
@@ -246,7 +246,7 @@ void GameRenderer::setupGuiScreen()
 
 void GameRenderer::bobHurt(float f)
 {
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 
 	if (pMob->m_health <= 0)
 		glRotatef(-8000.0f / (float(pMob->m_deathTime) + f + 200.0f) + 40.0f, 0.0f, 0.0f, 1.0f);
@@ -263,10 +263,10 @@ void GameRenderer::bobHurt(float f)
 
 void GameRenderer::bobView(float f)
 {
-	if (!m_pMinecraft->m_pMobPersp->isPlayer())
+	if (!m_pMinecraft->m_pCameraEntity->isPlayer())
 		return;
 
-	auto player = std::dynamic_pointer_cast<Player>(m_pMinecraft->m_pMobPersp);
+	auto player = std::dynamic_pointer_cast<Player>(m_pMinecraft->m_pCameraEntity);
 	float f1 = Mth::lerp(player->m_oBob, player->m_bob, f);
 	float f2 = Mth::lerp(player->m_oTilt, player->m_tilt, f);
 	// @NOTE: Multiplying by M_PI inside of the paren makes it stuttery for some reason? Anyways it works now :)
@@ -285,7 +285,7 @@ void GameRenderer::setupClearColor(float f)
 {
 	Minecraft* pMC = m_pMinecraft;
 	Level* pLevel = pMC->m_pLevel;
-	auto& pMob = pMC->m_pMobPersp;
+	auto& pMob = pMC->m_pCameraEntity;
 
 	float x1 = 1.0f - powf(1.0f / float(4 - pMC->getOptions()->m_iViewDistance.get()), 0.25f);
 
@@ -354,7 +354,7 @@ void GameRenderer::setupFog(int i)
 #endif
 	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-	if (m_pMinecraft->m_pMobPersp->isUnderLiquid(Material::water))
+	if (m_pMinecraft->m_pCameraEntity->isUnderLiquid(Material::water))
 	{
 	#if defined(ORIGINAL_CODE) || defined(ANDROID)
 		glFogx(GL_FOG_MODE, GL_EXP);
@@ -364,7 +364,7 @@ void GameRenderer::setupFog(int i)
 
 		glFogf(GL_FOG_DENSITY, 0.1f);
 	}
-	else if (m_pMinecraft->m_pMobPersp->isUnderLiquid(Material::lava))
+	else if (m_pMinecraft->m_pCameraEntity->isUnderLiquid(Material::lava))
 	{
 	#if defined(ORIGINAL_CODE) || defined(ANDROID)
 		glFogx(GL_FOG_MODE, GL_EXP);
@@ -402,7 +402,7 @@ void GameRenderer::setupFog(int i)
 
 float GameRenderer::getFov(float f)
 {
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 
 	float x1 = 70.0f;
 
@@ -420,11 +420,11 @@ float GameRenderer::getFov(float f)
 
 void GameRenderer::renderLevel(float f, int64_t nano)
 {
-	if (!m_pMinecraft->m_pMobPersp)
+	if (!m_pMinecraft->m_pCameraEntity)
 	{
-		m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer;
+		m_pMinecraft->m_pCameraEntity = m_pMinecraft->m_pPlayer;
 
-		if (!m_pMinecraft->m_pMobPersp)
+		if (!m_pMinecraft->m_pCameraEntity)
 		{
 		#ifndef ORIGINAL_CODE
 			renderNoCamera();
@@ -435,7 +435,7 @@ void GameRenderer::renderLevel(float f, int64_t nano)
 
 	pick(f);
 
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 	Vec3 fCamPos;
 
 	fCamPos.x = pMob->m_posPrev.x + (pMob->m_pos.x - pMob->m_posPrev.x) * f;
@@ -894,10 +894,10 @@ void GameRenderer::tick()
 	field_54 = field_50;
 	field_5C = field_58;
 
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 	if (!pMob)
 	{
-		pMob = m_pMinecraft->m_pMobPersp = m_pMinecraft->m_pPlayer;
+		pMob = m_pMinecraft->m_pCameraEntity = m_pMinecraft->m_pPlayer;
 	}
 
 	float bright = m_pMinecraft->m_pLevel->getBrightness(pMob->m_pos);
@@ -927,12 +927,12 @@ void GameRenderer::renderItemInHand(float f, int i)
 	if (m_pMinecraft->getOptions()->m_bViewBobbing.get())
 		bobView(f);
 
-	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pMobPersp->isSleeping() && !m_pMinecraft->getOptions()->m_bDontRenderGui)
+	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pCameraEntity->isSleeping() && !m_pMinecraft->getOptions()->m_bDontRenderGui)
 		m_pItemInHandRenderer->render(f);
 
 	glPopMatrix();
 
-	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pMobPersp->isSleeping())
+	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pCameraEntity->isSleeping())
 	{
 		m_pItemInHandRenderer->renderScreenEffect(f);
 		bobHurt(f);
@@ -1059,7 +1059,7 @@ void GameRenderer::tickRain()
 
 	if (rainLevel != 0.0F) {
 		m_random.setSeed(m_ticks * 312987231L);
-		auto& var2 = m_pMinecraft->m_pMobPersp;
+		auto& var2 = m_pMinecraft->m_pCameraEntity;
 		Level* var3 = m_pMinecraft->m_pLevel;
 		int var4 = Mth::floor(var2->m_pos.x);
 		int var5 = Mth::floor(var2->m_pos.y);
@@ -1115,10 +1115,10 @@ void GameRenderer::onGraphicsReset()
 
 void GameRenderer::pick(float f)
 {
-	if (!m_pMinecraft->m_pMobPersp || !m_pMinecraft->m_pLevel)
+	if (!m_pMinecraft->m_pCameraEntity || !m_pMinecraft->m_pLevel)
 		return;
 
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 	HitResult& mchr = m_pMinecraft->m_hitResult;
 	float dist = m_pMinecraft->m_pGameMode->getPickRange();
 	bool isFirstPerson = !m_pMinecraft->getOptions()->m_bThirdPerson;
@@ -1185,9 +1185,9 @@ void GameRenderer::pick(float f)
 			{
 				HitResult hr = m_pMinecraft->m_pLevel->clip(foundPosNear, foundPosFar, false);
 
-				float diffX = float(hr.m_tilePos.x) - m_pMinecraft->m_pMobPersp->m_pos.x;
-				float diffY = float(hr.m_tilePos.y) - m_pMinecraft->m_pMobPersp->m_pos.y;
-				float diffZ = float(hr.m_tilePos.z) - m_pMinecraft->m_pMobPersp->m_pos.z;
+				float diffX = float(hr.m_tilePos.x) - m_pMinecraft->m_pCameraEntity->m_pos.x;
+				float diffY = float(hr.m_tilePos.y) - m_pMinecraft->m_pCameraEntity->m_pos.y;
+				float diffZ = float(hr.m_tilePos.z) - m_pMinecraft->m_pCameraEntity->m_pos.z;
 
 				if (hr.m_hitType == HitResult::NONE || diffX * diffX + diffY * diffY + diffZ * diffZ > offset * offset)
 					mchr.m_hitType = HitResult::NONE;
@@ -1207,12 +1207,7 @@ void GameRenderer::pick(float f)
 	mobPos.y += pMob->m_heightOffset;
 
 	if (m_pMinecraft->m_hitResult.m_hitType != HitResult::NONE)
-		dist = mchr.m_hitPos.distanceTo(mobPos);
-
-	if (m_pMinecraft->m_pGameMode->isCreativeType())
-		dist = 7.0f;
-	else if (dist > 3.0f)
-		dist = 3.0f;
+		dist = Mth::min(real(dist), mchr.m_hitPos.distanceTo(mobPos));
 
 	Vec3 view = pMob->getViewVector(f);
 	Vec3 exp  = view * dist;

@@ -281,7 +281,7 @@ void LevelRenderer::allChanged()
 
 	if (m_pLevel)
 	{
-		auto& pMob = m_pMinecraft->m_pMobPersp;
+		auto& pMob = m_pMinecraft->m_pCameraEntity;
 		if (pMob)
 		{
 			resortChunks(pMob->m_pos);
@@ -473,7 +473,7 @@ int LevelRenderer::renderChunks(int start, int end, int a, float b, bool render)
 		}
 	}
 
-	auto& pMob = m_pMinecraft->m_pMobPersp;
+	auto& pMob = m_pMinecraft->m_pCameraEntity;
 
 	Vec3 pos = pMob->m_posPrev + (pMob->m_pos - pMob->m_posPrev) * b;
 
@@ -1024,7 +1024,7 @@ void LevelRenderer::renderEntities(Vec3 pos, Culler* culler, float f)
 		return;
 	}
 
-	auto& mob = m_pMinecraft->m_pMobPersp;
+	auto& mob = m_pMinecraft->m_pCameraEntity;
 	
 	TileEntityRenderDispatcher::getInstance()->prepare(m_pLevel, m_pMinecraft->m_pTextures, m_pMinecraft->m_pFont, mob, f);
 	EntityRenderDispatcher::getInstance()->prepare(m_pLevel, m_pMinecraft->m_pTextures, m_pMinecraft->m_pFont, mob, m_pMinecraft->getOptions(), f);
@@ -1048,7 +1048,7 @@ void LevelRenderer::renderEntities(Vec3 pos, Culler* culler, float f)
 		if (!pEnt->m_bIgnoreFrustum && !culler->isVisible(pEnt->m_hitbox))
 			continue;
 
-		if (m_pMinecraft->m_pMobPersp == pEnt && (!m_pMinecraft->getOptions()->m_bThirdPerson || m_pMinecraft->m_pMobPersp->isSleeping()))
+		if (m_pMinecraft->m_pCameraEntity == pEnt && (!m_pMinecraft->getOptions()->m_bThirdPerson || m_pMinecraft->m_pCameraEntity->isSleeping()))
 			continue;
 
 		if (m_pLevel->hasChunkAt(pEnt->m_pos))
@@ -1068,7 +1068,7 @@ extern int t_keepPic;
 
 void LevelRenderer::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* pOwner)
 {
-	auto pOldMob = m_pMinecraft->m_pMobPersp;
+	auto pOldMob = m_pMinecraft->m_pCameraEntity;
 	bool bOldDontRenderGui = m_pMinecraft->getOptions()->m_bDontRenderGui;
 	bool bOldThirdPerson = m_pMinecraft->getOptions()->m_bThirdPerson;
 
@@ -1077,11 +1077,11 @@ void LevelRenderer::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* p
 	g_bDisableParticles = true;
 #endif
 
-	m_pMinecraft->m_pMobPersp = pCamera;
+	m_pMinecraft->m_pCameraEntity = pCamera;
 	m_pMinecraft->getOptions()->m_bDontRenderGui = true;
 	m_pMinecraft->getOptions()->m_bThirdPerson = false; // really from the perspective of the camera
 	m_pMinecraft->m_pGameRenderer->render(0.0f);
-	m_pMinecraft->m_pMobPersp = pOldMob;
+	m_pMinecraft->m_pCameraEntity = pOldMob;
 	m_pMinecraft->getOptions()->m_bDontRenderGui = bOldDontRenderGui;
 	m_pMinecraft->getOptions()->m_bThirdPerson = bOldThirdPerson;
 
@@ -1109,7 +1109,7 @@ void LevelRenderer::addParticle(const std::string& name, const Vec3& pos, const 
 	if (name == "explodeColor")
 		maxDist = 16384.0f;
 
-	if (m_pMinecraft->m_pMobPersp->distanceToSqr_inline(pos) > maxDist)
+	if (m_pMinecraft->m_pCameraEntity->distanceToSqr_inline(pos) > maxDist)
 		return;
 
 	ParticleEngine* pe = m_pMinecraft->m_pParticleEngine;
@@ -1199,7 +1199,7 @@ void LevelRenderer::playSound(const std::string& name, const Vec3& pos, float vo
 {
 	// TODO: Who's the genius who decided it'd be better to check a name string rather than an enum? (also Mojang)
 	float mult = 1.0f, maxDist = 16.0f;
-	float playerDist = m_pMinecraft->m_pMobPersp->distanceToSqr(pos);
+	float playerDist = m_pMinecraft->m_pCameraEntity->distanceToSqr(pos);
 
 	if (volume > 1.0f)
 	{
@@ -1226,7 +1226,7 @@ void LevelRenderer::renderSky(float alpha)
 
 	glDisable(GL_TEXTURE_2D);
 
-	Vec3f sc = m_pLevel->getSkyColor(m_pMinecraft->m_pMobPersp.get(), alpha);
+	Vec3f sc = m_pLevel->getSkyColor(m_pMinecraft->m_pCameraEntity.get(), alpha);
 	if (m_pMinecraft->getOptions()->m_bAnaglyphs.get())
 	{
 		sc.x = (((sc.x * 30.0f) + (sc.y * 59.0f)) + (sc.z * 11.0f)) / 100.0f;
@@ -1348,7 +1348,7 @@ void LevelRenderer::renderClouds(float partialTick)
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_CULL_FACE);
 
-	float yPos = Mth::lerp(m_pMinecraft->m_pMobPersp->m_posPrev.y, m_pMinecraft->m_pMobPersp->m_pos.y, partialTick); // not certain if this old pos Y is used
+	float yPos = Mth::lerp(m_pMinecraft->m_pCameraEntity->m_posPrev.y, m_pMinecraft->m_pCameraEntity->m_pos.y, partialTick); // not certain if this old pos Y is used
 	m_pTextures->loadAndBindTexture("environment/clouds.png");
 
 	glEnable(GL_BLEND);
@@ -1356,8 +1356,8 @@ void LevelRenderer::renderClouds(float partialTick)
 
 	Vec3 cloudColor = m_pLevel->getCloudColor(partialTick);
 
-	float offX = Mth::lerp(m_pMinecraft->m_pMobPersp->m_oPos.x, m_pMinecraft->m_pMobPersp->m_pos.x, partialTick) + (float(m_ticksSinceStart) + partialTick) * 0.03f;
-	float offZ = Mth::lerp(m_pMinecraft->m_pMobPersp->m_oPos.z, m_pMinecraft->m_pMobPersp->m_pos.z, partialTick);
+	float offX = Mth::lerp(m_pMinecraft->m_pCameraEntity->m_oPos.x, m_pMinecraft->m_pCameraEntity->m_pos.x, partialTick) + (float(m_ticksSinceStart) + partialTick) * 0.03f;
+	float offZ = Mth::lerp(m_pMinecraft->m_pCameraEntity->m_oPos.z, m_pMinecraft->m_pCameraEntity->m_pos.z, partialTick);
 	
 	int dx2048 = Mth::floor(offX / 2048.0f);
 	int dz2048 = Mth::floor(offZ / 2048.0f);
@@ -1399,15 +1399,15 @@ void LevelRenderer::renderAdvancedClouds(float partialTick)
 {
 	glDisable(GL_CULL_FACE);
 
-	float yOffs = m_pMinecraft->m_pMobPersp->m_posPrev.y + (m_pMinecraft->m_pMobPersp->m_pos.y - m_pMinecraft->m_pMobPersp->m_posPrev.y) * partialTick;
+	float yOffs = m_pMinecraft->m_pCameraEntity->m_posPrev.y + (m_pMinecraft->m_pCameraEntity->m_pos.y - m_pMinecraft->m_pCameraEntity->m_posPrev.y) * partialTick;
 
 	Tesselator& t = Tesselator::instance;
 	constexpr float ss = 12.0f;
 	constexpr float h = 4.0f;
 
 	// @NOTE: Using Mth::Lerp will use incorrect logic
-	real xo = (m_pMinecraft->m_pMobPersp->m_oPos.x + (m_pMinecraft->m_pMobPersp->m_pos.x - m_pMinecraft->m_pMobPersp->m_oPos.x) * partialTick + ((float(m_ticksSinceStart) + partialTick) * 0.03f)) / ss;
-	real zo = (m_pMinecraft->m_pMobPersp->m_oPos.z + (m_pMinecraft->m_pMobPersp->m_pos.z - m_pMinecraft->m_pMobPersp->m_oPos.z) * partialTick) / ss + 0.33f;
+	real xo = (m_pMinecraft->m_pCameraEntity->m_oPos.x + (m_pMinecraft->m_pCameraEntity->m_pos.x - m_pMinecraft->m_pCameraEntity->m_oPos.x) * partialTick + ((float(m_ticksSinceStart) + partialTick) * 0.03f)) / ss;
+	real zo = (m_pMinecraft->m_pCameraEntity->m_oPos.z + (m_pMinecraft->m_pCameraEntity->m_pos.z - m_pMinecraft->m_pCameraEntity->m_oPos.z) * partialTick) / ss + 0.33f;
 
 	float yy = ((float)m_pLevel->m_pDimension->getCloudHeight() - yOffs) + 0.33f;
 

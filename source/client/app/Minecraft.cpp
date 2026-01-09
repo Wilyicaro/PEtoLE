@@ -78,7 +78,7 @@ Minecraft::Minecraft() :
 	m_pUser = nullptr;
 	m_pLevel = nullptr;
 	m_pPlayer = nullptr;
-	m_pMobPersp = nullptr; // why is there a duplicate? (this is used for the camera)
+	m_pCameraEntity = nullptr; // why is there a duplicate? (this is used for the camera)
 	field_D0C = 0;
 	m_pScreen = nullptr;
 	field_D18 = 10;
@@ -246,7 +246,7 @@ bool Minecraft::isTouchscreen() const
 
 bool Minecraft::useSplitControls() const
 {
-	return !m_bIsTouchscreen || m_options->m_bSplitControls;
+	return !m_bIsTouchscreen || m_options->m_splitControls.get();
 }
 
 bool Minecraft::useController() const
@@ -723,8 +723,8 @@ void Minecraft::tick()
 			m_pParticleEngine->tick();
 
 #ifndef ORIGINAL_CODE
-			if (m_pMobPersp)
-				m_pSoundEngine->update(m_pMobPersp.get(), m_timer.m_renderTicks);
+			if (m_pCameraEntity)
+				m_pSoundEngine->update(m_pCameraEntity.get(), m_timer.m_renderTicks);
 #endif
 		}
 
@@ -989,7 +989,7 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr
 {
 	m_progress.progressStart(text);
 	m_progress.progressStage(Util::EMPTY_STRING);
-	m_pMobPersp = nullptr;
+	m_pCameraEntity = nullptr;
 	m_pSoundEngine->playStreaming(Util::EMPTY_STRING);
 
 	if (pLevel)
@@ -1036,7 +1036,7 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr
 		if (pLevel->m_bIsNew) 
 			m_pLevel->save(true, m_progress);
 
-		m_pMobPersp = m_pPlayer;
+		m_pCameraEntity = m_pPlayer;
 
 		if (m_pMinecraftServer)
 			m_pMinecraftServer->manageLevels(m_progress);

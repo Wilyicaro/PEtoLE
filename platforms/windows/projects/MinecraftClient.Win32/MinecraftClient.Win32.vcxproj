@@ -85,6 +85,9 @@
     <ProjectReference Include="..\Client\Client.vcxproj">
       <Project>{a6e03dca-99f6-45b8-800d-73060ae407fc}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\Stats\Stats.vcxproj">
+      <Project>{73e3c8dc-6660-4f24-9ce6-35c4aba3fa5e}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{71774270-fd1b-4269-bd8f-f75a52d43eb6}</Project>
     </ProjectReference>

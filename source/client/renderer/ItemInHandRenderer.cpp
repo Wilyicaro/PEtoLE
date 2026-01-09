@@ -166,7 +166,7 @@ void ItemInHandRenderer::render(float f)
     Lighting::turnOn(); // must be called before glPopMatrix()
 	glPopMatrix();
 
-	if (m_pMinecraft->getOptions()->m_bDynamicHand.get() && m_pMinecraft->m_pMobPersp == pLP)
+	if (m_pMinecraft->getOptions()->m_bDynamicHand.get() && m_pMinecraft->m_pCameraEntity == pLP)
 	{
 		float rYaw   = Mth::lerp(pLP->m_lastRenderArmRot.y, pLP->m_renderArmRot.y, f);
 		float rPitch = Mth::lerp(pLP->m_lastRenderArmRot.x, pLP->m_renderArmRot.x, f);
@@ -189,16 +189,15 @@ void ItemInHandRenderer::render(float f)
 	{
 		glPushMatrix();
 		float var14 = 0.8F;
-		float var8 = pLP->getAttackAnim(f);
-		float var9 = Mth::sin(var8 * M_PI);
-		float var10 = Mth::sin(Mth::sqrt(var8) * M_PI);
-		glTranslatef(-var10 * 0.4F, Mth::sin(Mth::sqrt(var8) * M_PI * 2.0F) * 0.2F, -var9 * 0.2F);
-		var8 = Mth::clamp(1.0F - rotX / 45.0F + 0.1F, 0.0f, 1.0f);
+		float var9 = Mth::sin(fAnim * M_PI);
+		float var10 = Mth::sin(Mth::sqrt(fAnim) * M_PI);
+		glTranslatef(-var10 * 0.4F, Mth::sin(Mth::sqrt(fAnim) * M_PI * 2.0F) * 0.2F, -var9 * 0.2F);
+		fAnim = Mth::clamp(1.0F - rotX / 45.0F + 0.1F, 0.0f, 1.0f);
 
-		var8 = -Mth::cos(var8 * M_PI) * 0.5F + 0.5F;
-		glTranslatef(0.0F, 0.0F * var14 - (1.0F - h) * 1.2F - var8 * 0.5F + 0.04F, -0.9F * var14);
+		fAnim = -Mth::cos(fAnim * M_PI) * 0.5F + 0.5F;
+		glTranslatef(0.0F, 0.0F * var14 - (1.0F - h) * 1.2F - fAnim * 0.5F + 0.04F, -0.9F * var14);
 		glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
-		glRotatef(var8 * -85.0F, 0.0F, 0.0F, 1.0F);
+		glRotatef(fAnim * -85.0F, 0.0F, 0.0F, 1.0F);
 		glEnable(GL_RESCALE_NORMAL);
 		m_pMinecraft->m_pTextures->loadAndBindTexture("mob/char.png");
 

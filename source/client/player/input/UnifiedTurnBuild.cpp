@@ -42,9 +42,6 @@ void UnifiedTurnBuild::setScreenSize(int width, int height)
 {
 	m_screenArea = RectangleArea(0.0f, 0.0f, float(width), float(height));
 
-	field_40.right += 10.0f + 0.05f * (field_40.right - field_40.left);
-	field_40.top   -= 10.0f + 0.05f * (field_40.bottom - field_40.top);
-
 	m_includeExcludeArea.clear();
 	m_includeExcludeArea.include(&m_screenArea);
 	m_includeExcludeArea.exclude(&field_40);

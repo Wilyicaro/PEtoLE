@@ -5,7 +5,7 @@
 class RectangleArea : public IArea
 {
 public:
-	RectangleArea(float _left, float _right, float _top, float _bottom);
+	RectangleArea(float _left, float _top, float _right, float _bottom);
 	bool isInside(float x, float y) override;
 
 protected:

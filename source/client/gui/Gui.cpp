@@ -239,9 +239,9 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 				glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ONE_MINUS_SRC_COLOR);
 
 				// note: scale starts from 4.0f
-				float halfWidth = (40.0f * breakProgress + 48.0f) / 2.0f;
+				int halfWidth = (40.0f * breakProgress + 48.0f) / 2.0f;
 
-				blit(InvGuiScale * xPos - halfWidth, InvGuiScale * yPos - halfWidth, 88, 88, halfWidth * 2, halfWidth * 2, 352, 352);
+				blit(InvGuiScale * xPos - halfWidth, InvGuiScale * yPos - halfWidth, 88 + 44 - halfWidth, 88 + 44 - halfWidth, halfWidth * 2, halfWidth * 2, 352, 352);
 
 				glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 				//glDisable(GL_BLEND);

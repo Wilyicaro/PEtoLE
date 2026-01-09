@@ -11,7 +11,9 @@
 Material::Material(MapColor* mapColor) :
 	m_pMapColor(mapColor),
 	m_bFlammable(false),
+	m_bReplaceable(false),
 	m_bMineable(true),
+	m_bTranslucent(false),
 	m_pushReaction(0)
 {
 }

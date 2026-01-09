@@ -44,7 +44,8 @@ Options::Options(Minecraft* mc) :
 	m_bMenuPanorama("menuPanorama", "options.menuPanorama", false),
 	m_playerName("username", "options.username", "Steve"),
 	m_lang("lang", "options.lang", "en_us"),
-	m_vSync("enableVsync", "options.enableVsync", true, [mc](bool a) { mc->m_pPlatform->setVSync(a); })
+	m_vSync("enableVsync", "options.enableVsync", true, [mc](bool a) { mc->m_pPlatform->setVSync(a); }),
+	m_splitControls("splitControls", "options.splitControls", false)
 {
 	add(m_fMusicVolume);
 	add(m_fMasterVolume);
@@ -80,7 +81,6 @@ Options::Options(Minecraft* mc) :
 	m_bDebugText = false;
 	m_bFancyGrass = true;
 	m_bBiomeColors = true;
-	m_bSplitControls = false;
 	m_bUseController = false;
 	m_bOldTitleLogo = false;
 	field_19 = 1;
@@ -105,8 +105,6 @@ void Options::_load()
 		if (opt != m_options.end())
 			opt->second->load(value);
 
-		if (key == "ctrl_split")
-			m_bSplitControls = readBool(value);
 		else if (key == "mp_server_visible_default")
 			m_bServerVisibleDefault = readBool(value);
 		else if (key == "gfx_fancygrass")
@@ -246,7 +244,6 @@ std::vector<std::string> Options::getOptionStrings()
 
 #define SO(optname, value) do { vec.push_back(optname); vec.push_back(value); } while (0)
 
-	SO("ctrl_split",                saveBool(m_bSplitControls));
 	SO("mp_server_visible_default", saveBool(m_bServerVisibleDefault));
 	SO("gfx_hidegui",               saveBool(m_bDontRenderGui));
 	SO("gfx_thirdperson",           saveBool(m_bThirdPerson));

@@ -13,6 +13,7 @@
 #include "client/gui/screens/StartMenuScreen.hpp"
 #include "world/entity/EntityType.hpp"
 #include "world/tile/entity/TileEntityType.hpp"
+#include "stats/Achievements.hpp"
 
 #ifdef DEMO
 #include "world/level/storage/MemoryLevelStorageSource.hpp"
@@ -79,6 +80,7 @@ void NinecraftApp::init()
 		Item::initItems();
 		Biome::initBiomes();
 		TileEntityType::initTypes();
+		Achievements::initAchievements();
 	}
 
 	initGLStates();
