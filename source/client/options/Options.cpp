@@ -51,6 +51,7 @@ Options::Options(Minecraft* mc) :
 	add(m_fMasterVolume);
 	add(m_bInvertMouse);
 	add(m_difficulty);
+	add(m_splitControls);
 	add(m_fSensitivity);
 	add(m_iViewDistance);
 	add(m_bViewBobbing);
