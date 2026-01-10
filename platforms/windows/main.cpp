@@ -123,7 +123,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	FILE* istream;
 	freopen_s(&ostream, "CONOUT$", "w", stdout);
 	freopen_s(&istream, "CONIN$", "r", stdin);
-	SetConsoleTitle("ReMinecraftPE Debug Console");
+	SetConsoleTitle("PEtoLE Debug Console");
 #endif
 
 	SetInstance(hInstance);

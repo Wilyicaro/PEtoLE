@@ -26,31 +26,32 @@ Options::Options(Minecraft* mc) :
 	m_bInvertMouse("invertYMouse", "options.invertMouse", false),
 	m_difficulty("difficulty", "options.difficulty", 2, { "options.difficulty.peaceful", "options.difficulty.easy", "options.difficulty.normal", "options.difficulty.hard" }),
 	m_fSensitivity("sensitivity", "options.sensitivity", 0.5f),
-	m_iViewDistance("viewDistance", "options.renderDistance", 2, { "options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny" }),
+	m_iViewDistance("viewDistance", "options.renderDistance", 1, { "options.renderDistance.far", "options.renderDistance.normal", "options.renderDistance.short", "options.renderDistance.tiny" }),
 	m_bViewBobbing("bobView", "options.viewBobbing"),
 	m_bAnaglyphs("anaglyph3d", "options.anaglyph", false),
-	m_bFancyGraphics("fancyGraphics", "options.graphics", true, [mc](bool a) { if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged(); }),
+	m_bFancyGraphics("fancyGraphics", "options.graphics", true, [this, mc](bool a) { m_bFancyGrass = a; if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged(); }),
 	m_bAmbientOcclusion("ao", "options.ao", Minecraft::useAmbientOcclusion, [mc](bool a) {
 	Minecraft::useAmbientOcclusion = a;
 	if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged();
 		}),
 	m_guiScale("guiScale", "options.guiScale", 0, { "options.guiScale.auto", "options.guiScale.small", "options.guiScale.normal", "options.guiScale.large" }, [mc](float a) { mc->resizeDisplay(a); }),
-	m_limitFramerate("fpsLimit", "options.framerateLimit", 1, { "performance.max", "performance.balanced", "performance.powersaver" }),
+	m_limitFramerate("fpsLimit", "options.framerateLimit", 0, { "performance.max", "performance.balanced", "performance.powersaver" }),
 	m_bAutoJump("autoJump", "options.autoJump", false),
-	m_bMipmaps("mipmaps", "options.mipmaps", true, [mc](bool a) { if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged(); }),
-	m_moreWorldOptions("moreWorldOptions", "options.moreWorldOptions", false),
+	m_bMipmaps("mipmaps", "options.mipmaps", false, [mc](bool a) { if (mc->m_pLevelRenderer) mc->m_pLevelRenderer->allChanged(); }),
+	m_moreWorldOptions("moreWorldOptions", "options.moreWorldOptions", true),
 	m_bBlockOutlines("blockOutlines", "options.blockOutlines"),
-	m_bDynamicHand("dynamicHand", "options.dynamicHand"),
+	m_bDynamicHand("dynamicHand", "options.dynamicHand", false),
 	m_bMenuPanorama("menuPanorama", "options.menuPanorama", false),
 	m_playerName("username", "options.username", "Steve"),
 	m_lang("lang", "options.lang", "en_us"),
-	m_vSync("enableVsync", "options.enableVsync", true, [mc](bool a) { mc->m_pPlatform->setVSync(a); }),
+	m_vSync("enableVsync", "options.enableVsync", false, [mc](bool a) { mc->m_pPlatform->setVSync(a); }),
 	m_splitControls("splitControls", "options.splitControls", false)
 {
 	add(m_fMusicVolume);
 	add(m_fMasterVolume);
 	add(m_bInvertMouse);
 	add(m_difficulty);
+	add(m_splitControls);
 	add(m_fSensitivity);
 	add(m_iViewDistance);
 	add(m_bViewBobbing);

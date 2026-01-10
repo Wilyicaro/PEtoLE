@@ -611,9 +611,9 @@ void Minecraft::respawnPlayer(std::shared_ptr<Player> player)
 std::string Minecraft::getVersionString() const
 {
 #ifdef ENH_b1_7
-	return "Beta 1.7.3 - PEtoLE";
+	return "Beta 1.7.3";
 #else
-	return "Beta 1.6.6 - PEtoLE";
+	return "Beta 1.6.6";
 #endif
 }
 

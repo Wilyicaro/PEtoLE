@@ -35,35 +35,35 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	this->m_pPlatform = plat;
 
 
-	addSound("step.grass", "newsound/step/grass1.ogg");
-	addSound("step.grass", "newsound/step/grass2.ogg");
-	addSound("step.grass", "newsound/step/grass3.ogg");
-	addSound("step.grass", "newsound/step/grass4.ogg");
+	addSound("step.grass", "sound/step/grass1.ogg");
+	addSound("step.grass", "sound/step/grass2.ogg");
+	addSound("step.grass", "sound/step/grass3.ogg");
+	addSound("step.grass", "sound/step/grass4.ogg");
 
-	addSound("step.stone", "newsound/step/stone1.ogg");
-	addSound("step.stone", "newsound/step/stone2.ogg");
-	addSound("step.stone", "newsound/step/stone3.ogg");
-	addSound("step.stone", "newsound/step/stone4.ogg");
+	addSound("step.stone", "sound/step/stone1.ogg");
+	addSound("step.stone", "sound/step/stone2.ogg");
+	addSound("step.stone", "sound/step/stone3.ogg");
+	addSound("step.stone", "sound/step/stone4.ogg");
 
-	addSound("step.gravel", "newsound/step/gravel1.ogg");
-	addSound("step.gravel", "newsound/step/gravel2.ogg");
-	addSound("step.gravel", "newsound/step/gravel3.ogg");
-	addSound("step.gravel", "newsound/step/gravel4.ogg");
+	addSound("step.gravel", "sound/step/gravel1.ogg");
+	addSound("step.gravel", "sound/step/gravel2.ogg");
+	addSound("step.gravel", "sound/step/gravel3.ogg");
+	addSound("step.gravel", "sound/step/gravel4.ogg");
 
-	addSound("step.sand", "newsound/step/sand1.ogg");
-	addSound("step.sand", "newsound/step/sand2.ogg");
-	addSound("step.sand", "newsound/step/sand3.ogg");
-	addSound("step.sand", "newsound/step/sand4.ogg");
+	addSound("step.sand", "sound/step/sand1.ogg");
+	addSound("step.sand", "sound/step/sand2.ogg");
+	addSound("step.sand", "sound/step/sand3.ogg");
+	addSound("step.sand", "sound/step/sand4.ogg");
 
-	addSound("step.cloth", "newsound/step/cloth1.ogg");
-	addSound("step.cloth", "newsound/step/cloth2.ogg");
-	addSound("step.cloth", "newsound/step/cloth3.ogg");
-	addSound("step.cloth", "newsound/step/cloth4.ogg");
+	addSound("step.cloth", "sound/step/cloth1.ogg");
+	addSound("step.cloth", "sound/step/cloth2.ogg");
+	addSound("step.cloth", "sound/step/cloth3.ogg");
+	addSound("step.cloth", "sound/step/cloth4.ogg");
 
-	addSound("step.wood", "newsound/step/wood1.ogg");
-	addSound("step.wood", "newsound/step/wood2.ogg");
-	addSound("step.wood", "newsound/step/wood3.ogg");
-	addSound("step.wood", "newsound/step/wood4.ogg");
+	addSound("step.wood", "sound/step/wood1.ogg");
+	addSound("step.wood", "sound/step/wood2.ogg");
+	addSound("step.wood", "sound/step/wood3.ogg");
+	addSound("step.wood", "sound/step/wood4.ogg");
 
 	addSound("random.glass", "newsound/random/glass1.ogg");
 	addSound("random.glass", "newsound/random/glass2.ogg");
@@ -84,6 +84,10 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addSound("random.bowhit", "newsound/random/bowhit4.ogg");
 	addSound("random.hurt", "newsound/random/hurt.ogg");
 	addSound("random.fizz", "newsound/random/fizz.ogg");
+
+	addSound("damage.fallbig", "newsound/damage/fallbig1.ogg");
+	addSound("damage.fallbig", "newsound/damage/fallbig2.ogg");
+	addSound("damage.fallsmall", "newsound/damage/fallsmall.ogg");
 
 	addSound("liquid.water", "newsound/liquid/water.ogg");
 
@@ -231,6 +235,9 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addStreamSound("13", "streaming/13.ogg");
 	addStreamSound("cat", "streaming/cat.ogg");
 
+	addMusic("calm1");
+	addMusic("calm2");
+	addMusic("calm3");
 	addMusic("hal1");
 	addMusic("hal2");
 	addMusic("hal3");
@@ -299,6 +306,7 @@ void SoundEngine::addStreamSound(std::string name, std::string path)
 void SoundEngine::addMusic(std::string name)
 {
 	addLocalSound(m_songs, name, "newmusic/" + name + ".ogg", true);
+	addLocalSound(m_songs, name, "music/" + name + ".ogg", true);
 
 	SoundDesc sd;
 	if (m_songs.get(name, sd))

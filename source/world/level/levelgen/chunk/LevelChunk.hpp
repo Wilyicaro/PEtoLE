@@ -59,6 +59,7 @@ public:
 	virtual void setBrightness(const LightLayer& ll, const ChunkTilePos& pos, int brightness);
 	virtual int getRawBrightness(const ChunkTilePos& pos, int skySubtract);
 	virtual void addEntity(std::shared_ptr<Entity>);
+	virtual void updateEntity(std::shared_ptr<Entity> pEnt);
 	virtual void removeEntity(std::shared_ptr<Entity>);
 	virtual void removeEntity(std::shared_ptr<Entity>, int vec);
 	virtual bool isSkyLit(const ChunkTilePos& pos);

@@ -45,7 +45,7 @@ public:
 
 #ifdef ANDROID
 // TODO: Add a LoggerAndroid
-#define LOG(level, ...) __android_log_print(level, "ReMinecraftPE", __VA_ARGS__)
+#define LOG(level, ...) __android_log_print(level, "PEtoLE", __VA_ARGS__)
 #else
 #define LOG(level, ...) Logger::singleton()->printf(level, __VA_ARGS__)
 #endif

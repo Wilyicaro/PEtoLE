@@ -50,6 +50,8 @@ bool HumanoidMobRenderer::prepareArmor(Mob* mob, int a, float b)
 
 void HumanoidMobRenderer::additionalRendering(Mob* mob, float f)
 {
+	float fScale = 0.059375f; // calculate player scale
+
 	if (mob->isPlayer())
 	{
 		Player* player = (Player*)mob;
@@ -60,9 +62,18 @@ void HumanoidMobRenderer::additionalRendering(Mob* mob, float f)
 			m_pHumanoidModel->m_head.translateTo(0.0625F);
 			if (TileRenderer::canRender(Tile::tiles[headGear->m_itemID]->getRenderShape())) {
 				float s = 0.625F;
-				glTranslatef(0.0F, -0.25F, 0.0F);
-				glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
-				glScalef(s, -s, s);
+				if (mob->isPlayer())
+				{
+					glTranslatef(0.0F, fScale, 0.0F);
+					glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
+					glScalef(fScale * s, fScale * -s, fScale * s);
+				}
+				else
+				{
+					glTranslatef(0.0F, -0.0F, 0.0F);
+					glRotatef(180.0F, 0.0F, 1.0F, 0.0F);
+					glScalef(s, -s, s);
+				}
 			}
 
 			m_pDispatcher->m_pItemInHandRenderer->renderItem(mob, headGear);
@@ -74,29 +85,68 @@ void HumanoidMobRenderer::additionalRendering(Mob* mob, float f)
 	if (inst)
 	{
 		glPushMatrix();
-		m_pHumanoidModel->m_arm1.translateTo(0.0625f);
-		glTranslatef(-0.0625f, 0.4375f, 0.0625f);
-		if (inst->m_itemID < C_MAX_TILES && TileRenderer::canRender(Tile::tiles[inst->m_itemID]->getRenderShape()))
+		if (mob->isPlayer())
 		{
-			glTranslatef(0.0f, 0.1875f, -0.3125f);
-			glRotatef(20.0f, 1.0f, 0.0f, 0.0f);
-			glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
-			glScalef(0.375f, -0.375f, 0.375f);
-		}
-		else if (Item::items[inst->m_itemID]->isHandEquipped())
-		{
-			glTranslatef(0.0f, 0.1875f, 0.0f);
-			glScalef(0.625f, -0.625f, 0.625f);
-			glRotatef(-100.0f, 1.0f, 0.0f, 0.0f);
-			glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+			m_pHumanoidModel->m_arm1.translateTo(fScale);
+			glTranslatef(-fScale, fScale * 7.0f, fScale);
 		}
 		else
 		{
-			glTranslatef(0.25f, 0.1875f, -0.1875f);
-			glScalef(0.375f, 0.375f, 0.375f);
-			glRotatef(60.0f, 0.0f, 0.0f, 1.0f);
-			glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-			glRotatef(20.0f, 0.0f, 0.0f, 1.0f);
+			m_pHumanoidModel->m_arm1.translateTo(0.0625f);
+			glTranslatef(-0.0625f, 0.4375f, 0.0625f);
+		}
+		if (inst->m_itemID < C_MAX_TILES && TileRenderer::canRender(Tile::tiles[inst->m_itemID]->getRenderShape()))
+		{
+			if (mob->isPlayer())
+			{
+				glTranslatef(0.0f, fScale * 3.0f, fScale * -5.0f);
+				glRotatef(20.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+				glScalef(fScale * 6.0f, fScale * -6.0f, fScale * 6.0f);
+			}
+			else
+			{
+				glTranslatef(0.0f, 0.1875f, -0.3125f);
+				glRotatef(20.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+				glScalef(0.375f, -0.375f, 0.375f);
+			}
+		}
+		else if (Item::items[inst->m_itemID]->isHandEquipped())
+		{
+			if (mob->isPlayer())
+			{
+				glTranslatef(0.0f, fScale * 3.0f, 0.0f);
+				glScalef(fScale * 10.0f, fScale * -10.0f, fScale * 10.0f);
+				glRotatef(-100.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+			}
+			else
+			{
+				glTranslatef(0.0f, 0.1875f, 0.0f);
+				glScalef(0.625f, -0.625f, 0.625f);
+				glRotatef(-100.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+			}
+		}
+		else
+		{
+			if (mob->isPlayer())
+			{
+				glTranslatef(fScale * 4.0f, fScale * 3.0f, fScale * -3.0f);
+				glScalef(fScale * 6.0f, fScale * 6.0f, fScale * 6.0f);
+				glRotatef(60.0f, 0.0f, 0.0f, 1.0f);
+				glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(20.0f, 0.0f, 0.0f, 1.0f);
+			}
+			else
+			{
+				glTranslatef(0.25f, 0.1875f, -0.1875f);
+				glScalef(0.375f, 0.375f, 0.375f);
+				glRotatef(60.0f, 0.0f, 0.0f, 1.0f);
+				glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+				glRotatef(20.0f, 0.0f, 0.0f, 1.0f);
+			}
 		}
 		float fBright = mob->getBrightness(f);
 		glColor4f(fBright, fBright, fBright, 1.0f);

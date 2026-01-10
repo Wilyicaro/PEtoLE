@@ -17,12 +17,16 @@ TouchscreenInput_TestFps::TouchscreenInput_TestFps(Minecraft* pMinecraft, Option
 	m_pOptions(pOptions),
 	field_40(false),
 	m_bJumpBeingHeld(false),
+	m_bSneakBeingHeld(false),
 	m_pMinecraft(pMinecraft),
 	m_pAreaLeft(nullptr),
 	m_pAreaRight(nullptr),
 	m_pAreaForward(nullptr),
 	m_pAreaBackward(nullptr),
-	m_pAreaJump(nullptr)
+	m_pAreaJump(nullptr),
+	m_pAreaSneak(nullptr),
+	m_pAreaForwardLeft(nullptr),
+	m_pAreaForwardRight(nullptr)
 {
 	for (int i = 0; i < 10; i++)
 		m_noNeighborUpdate[i] = 0;
@@ -96,8 +100,8 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	x2[0] = 0.0f; x2[1] = 0.0f;   x2[2] = 0.0f;    x2[3] = 0.0f;
 	y2[0] = 0.0f; y2[1] = 0.0f;   y2[2] = 0.0f;    y2[3] = 0.0f;
 
-	float middleX = 8 + widthM;
-	float middleY = scaledHeight - heightM * 2 - 26;
+	float middleX = 0 + widthM;
+	float middleY = scaledHeight - heightM * 2 - 0;
 
 	float left, right, top, bottom;
 	left = middleX - widthM;
@@ -127,6 +131,19 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	m_pAreaRight = new PolygonArea(4, x2, y2);
 	m_touchAreaModel.addArea(100 + INPUT_RIGHT, m_pAreaRight);
 
+	/*float rightSideX = scaledWidth - widthM - 8;
+	TransformArray(4, x1, y1, x2, y2, rightSideX, middleY, 1.0f, 1.0f);
+	m_pAreaSneak = new PolygonArea(4, x2, y2);
+	m_touchAreaModel.addArea(100 + INPUT_SNEAK, m_pAreaSneak);*/
+
+	TransformArray(4, x1, y1, x2, y2, middleX - widthM, middleY - heightM, 1.0f, 1.0f);
+	m_pAreaForwardLeft = new PolygonArea(4, x2, y2);
+	m_touchAreaModel.addArea(100 + INPUT_FORWARDLEFT, m_pAreaForwardLeft);
+
+	TransformArray(4, x1, y1, x2, y2, middleX + widthM, middleY - heightM, 1.0f, 1.0f);
+	m_pAreaForwardRight = new PolygonArea(4, x2, y2);
+	m_touchAreaModel.addArea(100 + INPUT_FORWARDRIGHT, m_pAreaForwardRight);
+
 	// NOTE: We are not leaking memory! Since by default IArea's constructor sets
 	// m_vertices to true, TouchAreaModel owns the pointers, so when it's destroyed,
 	// so are these areas we allocated.
@@ -146,7 +163,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 	const int* activePointers;
 	int activePointerCount = Multitouch::getActivePointerIds(&activePointers);
 
-	bool bJumpPressed = false, bForwardPressed = false;
+	bool bJumpPressed = false, bForwardPressed = false, bSneakPressed = false;
 
 	for (int i = 0; i < activePointerCount; i++)
 	{
@@ -158,14 +175,9 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 		if (pointerId > 99)
 			field_6C[pointerId - 100] = true;
 
-		if (pointerId == 100 + INPUT_SNEAK) // Unused
+		if (pointerId == 100 + INPUT_SNEAK) // sneak
 		{
-			if (pPlayer->wasInWater())
-				m_bJumping = true;
-			else
-				bJumpPressed = true;
-
-			pointerId = 100; // forward
+			bSneakPressed = true;
 		}
 
 		if (pointerId == 100 + INPUT_JUMP) // jump
@@ -193,6 +205,24 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 				m_vertInput += 1.0f;
 				break;
 
+			case 100 + INPUT_FORWARDLEFT:
+				if (field_40)
+				{
+					bForwardPressed = true;
+					m_vertInput += 1.0f;
+					m_horzInput += 1.0f;
+				}
+				break;
+			
+			case 100 + INPUT_FORWARDRIGHT:
+				if (field_40)
+				{
+					bForwardPressed = true;
+					m_vertInput += 1.0f;
+					m_horzInput -= 1.0f;
+				}
+				break;
+
 			case 100 + INPUT_BACKWARD:
 				m_vertInput -= 1.0f;
 				break;
@@ -211,16 +241,26 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 
 	if (bJumpPressed)
 	{
-		// Don't allow the player to hold jump to repeatedly jump.
-		// Only let them jump once - have them jump again
-		if (!m_bJumpBeingHeld)
-			m_bJumping = true;
-
+		// Allow endless jumping while the button is held
+		m_bJumping = true;
 		m_bJumpBeingHeld = true;
 	}
 	else
 	{
 		m_bJumpBeingHeld = false;
+	}
+
+	if (bSneakPressed)
+	{
+		// Toggle sneak on button press
+		if (!m_bSneakBeingHeld)
+			m_bSneaking = !m_bSneaking;
+
+		m_bSneakBeingHeld = true;
+	}
+	else
+	{
+		m_bSneakBeingHeld = false;
 	}
 }
 
@@ -260,6 +300,15 @@ void TouchscreenInput_TestFps::render(float f)
 	Tesselator& t = Tesselator::instance;
 	t.begin();
 
+	if (field_40 && !isButtonDown(100 + INPUT_JUMP)) 
+	{
+		t.color(isButtonDown(100 + INPUT_FORWARDLEFT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
+		RenderTouchButton(&t, m_pAreaForwardLeft, 96, 176);
+		
+		t.color(isButtonDown(100 + INPUT_FORWARDRIGHT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
+		RenderTouchButton(&t, m_pAreaForwardRight, 144, 176);
+	}
+
 	t.color(isButtonDown(100 + INPUT_LEFT) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
 	RenderTouchButton(&t, m_pAreaLeft, 48, 128);
 
@@ -274,6 +323,9 @@ void TouchscreenInput_TestFps::render(float f)
 
 	t.color(isButtonDown(100 + INPUT_JUMP) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
 	RenderTouchButton(&t, m_pAreaJump, 0, 176);
+
+	/*t.color(isButtonDown(100 + INPUT_SNEAK) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
+	RenderTouchButton(&t, m_pAreaSneak, 48, 176);*/
 
 	t.draw();
 

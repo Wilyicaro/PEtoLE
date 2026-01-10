@@ -2006,6 +2006,13 @@ void Level::tick(std::shared_ptr<Entity> pEnt, bool b) const
 			pEnt->m_bInChunk = false;
 		}
 	}
+	else if (pEnt->m_bInChunk)
+	{
+		if (pEnt->m_chunkPosY != ChunkPos::ToChunkCoordinate(pEnt->m_pos.y))
+		{
+			getChunk(cp)->updateEntity(pEnt);
+		}
+	}
 
 	if (b && pEnt->m_bInChunk && pEnt->m_pRider)
 	{
