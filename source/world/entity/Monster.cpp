@@ -36,6 +36,11 @@ std::shared_ptr<Entity> Monster::findAttackTarget()
 
 	if (player && canSee(player.get()))
 	{
+		// Ignore players in creative mode
+		if (player->isCreative())
+		{
+			return nullptr;
+		}
 		return player;
 	}
 

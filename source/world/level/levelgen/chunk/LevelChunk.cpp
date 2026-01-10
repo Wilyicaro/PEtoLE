@@ -343,7 +343,7 @@ void LevelChunk::addEntity(std::shared_ptr<Entity> pEnt)
 	assert(pEnt != nullptr); // Cannot add a null entity
 	m_lastSaveHadEntities = true;
 
-	int yCoord = Mth::floor(pEnt->m_pos.y / 16);
+	int yCoord = ChunkPos::ToChunkCoordinate((int)pEnt->m_pos.y);
 	if (yCoord < 0) yCoord = 0;
 	if (yCoord > 7) yCoord = 7;
 	pEnt->m_bInChunk = true;
@@ -351,6 +351,46 @@ void LevelChunk::addEntity(std::shared_ptr<Entity> pEnt)
 	pEnt->m_chunkPosY = yCoord;
 
 	m_entities[yCoord].push_back(pEnt);
+}
+
+void LevelChunk::updateEntity(std::shared_ptr<Entity> pEnt)
+{
+	assert(pEnt != nullptr);
+	assert(pEnt->m_bInChunk);
+	assert(pEnt->m_chunkPos == m_chunkPos);
+
+	int newYCoord = ChunkPos::ToChunkCoordinate((int)pEnt->m_pos.y);
+	if (newYCoord < 0) newYCoord = 0;
+	if (newYCoord > 7) newYCoord = 7;
+
+	int oldYCoord = pEnt->m_chunkPosY;
+	if (oldYCoord == newYCoord)
+	{
+		return;
+	}
+
+	if (oldYCoord < 0 || oldYCoord > 7)
+	{
+		assert(false);
+		return;
+	}
+
+	std::vector<std::shared_ptr<Entity>>& oldTerrainLayer = m_entities[oldYCoord];
+	std::vector<std::shared_ptr<Entity>>& newTerrainLayer = m_entities[newYCoord];
+
+	std::vector<std::shared_ptr<Entity>>::iterator it = std::find(oldTerrainLayer.begin(), oldTerrainLayer.end(), pEnt);
+	if (it != oldTerrainLayer.end())
+	{
+		oldTerrainLayer.erase(it);
+	}
+	else
+	{
+		assert(false);
+	}
+
+	assert(std::find(newTerrainLayer.begin(), newTerrainLayer.end(), pEnt) == newTerrainLayer.end());
+	newTerrainLayer.push_back(pEnt);
+	pEnt->m_chunkPosY = newYCoord;
 }
 
 void LevelChunk::deleteBlockData()

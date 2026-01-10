@@ -3,12 +3,12 @@ apply plugin: 'com.android.application'
 android {
     compileSdk 34
     defaultConfig {
-        applicationId 'io.github.reminecraftpe'
+        applicationId 'io.github.petole'
         minSdkVersion 21
         //noinspection EditedTargetSdkVersion
         targetSdkVersion 34
         versionCode 1
-        versionName '1.0'
+        versionName 'b1.7.3'
         externalNativeBuild {
             cmake {
                 arguments '-DANDROID_PLATFORM=android-21', '-DANDROID_STL=c++_static'

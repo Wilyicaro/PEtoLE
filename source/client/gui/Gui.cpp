@@ -297,8 +297,12 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 	if (mc->isTouchscreen())
 	{
 		textures->loadAndBindTexture("gui/touchscreen.png");
-		blit(cenX + hotbarWidth / 2 - 19, height - 19, 0, 0, 16, 16, 256, 256);
-		blit(cenX - 8, 0, 16, 0, 16, 16, 256, 256);
+		blit(cenX + hotbarWidth / 2 - 19, height - 19, 0, 0, 16, 16, 256, 256);	// Inventory button
+		glColor4f(1.0f, 1.0f, 1.0f, 0.6f);
+		blit(cenX - 26, 0, 32, 0, 16, 16, 256, 256);    // Third person button
+		blit(cenX - 8, 0, 16, 0, 16, 16, 256, 256);     // Chat button
+		blit(cenX + 10, 0, 48, 0, 16, 16, 256, 256);    // Pause button
+		glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	}
 #ifndef ENH_TRANSPARENT_HOTBAR
 	//glEnable(GL_BLEND);
@@ -509,8 +513,38 @@ void Gui::handleClick(int clickID, int mouseX, int mouseY)
 
 	int cenX = width / 2;
 
-	if (m_pMinecraft->isTouchscreen() && int(InvGuiScale * mouseX) >= cenX - 8 && int(InvGuiScale * mouseX) < cenX + 8 && int(InvGuiScale * mouseY) < 16)
-		m_pMinecraft->setScreen(new ChatScreen());
+	if (m_pMinecraft->isTouchscreen())
+	{
+		int scaledMouseX = int(InvGuiScale * mouseX);
+		int scaledMouseY = int(InvGuiScale * mouseY);
+
+		// Third person button - top left
+		if (scaledMouseX >= cenX - 26 && scaledMouseX < cenX - 10 && scaledMouseY >= 0 && scaledMouseY < 16)
+		{
+			// Toggle third person view
+			Options* options = m_pMinecraft->getOptions();
+			options->m_bThirdPerson = !options->m_bThirdPerson;
+			return;
+		}
+
+		// Chat button - top center
+		if (scaledMouseX >= cenX - 8 && scaledMouseX < cenX + 8 && scaledMouseY >= 0 && scaledMouseY < 16)
+		{
+			m_pMinecraft->setScreen(new ChatScreen());
+			return;
+		}
+
+		// Pause button - top right
+		if (scaledMouseX >= cenX + 10 && scaledMouseX < cenX + 26 && scaledMouseY >= 0 && scaledMouseY < 16)
+		{
+			// Toggle pause
+			if (m_pMinecraft->isGamePaused())
+				m_pMinecraft->resumeGame();
+			else
+				m_pMinecraft->pauseGame();
+			return;
+		}
+	}
 
 	int slot = getSlotIdAt(mouseX, mouseY);
 	if (slot == -1)
