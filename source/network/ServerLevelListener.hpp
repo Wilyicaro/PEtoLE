@@ -23,7 +23,7 @@ public:
 	void tileChanged(const TilePos& pos) override;
 	void entityAdded(const std::shared_ptr<Entity>&) override;
 	void entityRemoved(const std::shared_ptr<Entity>&) override;
-	void levelEvent(Player*, int event, const TilePos& pos, int data) override;
+	void levelEvent(Player*, LevelEvent event, const TilePos& pos, int data) override;
 
 public:
 	ServerSideNetworkHandler* m_pConnection;

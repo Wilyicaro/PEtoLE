@@ -129,8 +129,8 @@ public:
 		getAbilities().m_bInvulnerable = m_abilities.m_bMayFly = playerGameType == GameType::GAME_TYPE_CREATIVE;
 		if (playerGameType == GAME_TYPE_SURVIVAL) m_abilities.m_bFlying = false;
 	}
-	virtual void wake(bool, bool, bool);
-	virtual BedSleepingProblem sleep(const TilePos&);
+	virtual void stopSleepInBed(bool resetCounter, bool update, bool setRespawn);
+	virtual BedSleepingProblem startSleepInBed(const TilePos&);
 	bool isSurvival() const { return getPlayerGameType() == GAME_TYPE_SURVIVAL; }
 	bool isCreative() const { return getPlayerGameType() == GAME_TYPE_CREATIVE; }
 	std::shared_ptr<ItemInstance> getSelectedItem() const;
@@ -152,7 +152,7 @@ protected:
 	bool m_bIsInsidePortal;
 
 private:
-	bool isInBed();
+	bool checkBedExists();
 	void nextContainerCounter();
 
 public:

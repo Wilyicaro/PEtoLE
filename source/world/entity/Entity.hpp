@@ -145,7 +145,7 @@ public:
 	virtual const AABB* getCollideBox() const;
 	virtual AABB* getCollideAgainstBox(Entity* ent) const;
 	virtual void handleInsidePortal();
-	virtual void handleEntityEvent(int8_t event);
+	virtual void handleEntityEvent(EntityEvent event);
 	virtual void thunderHit(LightningBolt*);
 	void load(CompoundIO tag);
 	bool save(CompoundIO tag);

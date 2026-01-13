@@ -8,14 +8,6 @@ TallGrass::TallGrass(int id, int texture) : Bush(id, texture)
 	setShape(0.1F, 0.0F, 0.1F, 0.9F, 0.8F, 0.9F);
 }
 
-bool TallGrass::mayPlace(const Level* level, const TilePos& pos) const
-{
-	TilePos below = pos.below();
-	TileID tile = level->getTile(below);
-
-	return tile && Tile::tiles[tile]->isSolidRender() ? level->getMaterial(below)->isSolid() : false;
-}
-
 int TallGrass::getResource(int x, Random* random) const
 {
 	return random->nextInt(8) == 0 ? Item::seeds->m_itemID : 0;
@@ -32,9 +24,8 @@ int TallGrass::getColor(int data, Facing::Name facing, int texture) const
 	return data == 0 ? 0xFFFFFF : FoliageColor::getDefaultColor();
 }
 
-int TallGrass::getTexture(const LevelSource* level, const TilePos& pos, Facing::Name face) const
+int TallGrass::getTexture(Facing::Name face, int data) const
 {
-	auto data = level->getData(pos);
 	return data == 1 ? m_TextureFrame : (data == 2 ? m_TextureFrame + 16 + 1 : (data == 0 ? m_TextureFrame + 16 : m_TextureFrame));
 }
 

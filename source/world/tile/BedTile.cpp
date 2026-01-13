@@ -94,7 +94,7 @@ bool BedTile::use(Level* level, const TilePos& pos, Player* player)
 			return true;
 		}
 		else {
-			if (isBedOccupied(var6)) {
+			if (isOccupied(var6)) {
 				std::shared_ptr<Player> var14 = nullptr;
 
 				for (auto& p : level->m_players)
@@ -110,13 +110,13 @@ bool BedTile::use(Level* level, const TilePos& pos, Player* player)
 					return true;
 				}
 
-				setBedOccupied(level, tp, false);
+				setOccupied(level, tp, false);
 			}
 
-			Player::BedSleepingProblem var15 = player->sleep(tp);
+			Player::BedSleepingProblem var15 = player->startSleepInBed(tp);
 			if (var15 == Player::BedSleepingProblem::OK)
 			{
-				setBedOccupied(level, tp, true);
+				setOccupied(level, tp, true);
 				return true;
 			}
 			else
@@ -143,7 +143,12 @@ void BedTile::spawnResources(Level* level, const TilePos& pos, int data, float c
 	}
 }
 
-void BedTile::setBedOccupied(Level* level, const TilePos& pos, bool b)
+PushReaction BedTile::getPistonPushReaction()
+{
+	return PushReaction::DESTROY;
+}
+
+void BedTile::setOccupied(Level* level, const TilePos& pos, bool b)
 {
 	int data = level->getData(pos);
 	if (b) {
@@ -156,7 +161,7 @@ void BedTile::setBedOccupied(Level* level, const TilePos& pos, bool b)
 	level->setData(pos, data);
 }
 
-TilePos BedTile::getRespawnTilePos(const Level* level, const TilePos& pos, int steps)
+TilePos BedTile::findStandUpPosition(const Level* level, const TilePos& pos, int steps)
 {
 	int var5 = level->getData(pos);
 	int var6 = getDirectionFromData(var5);

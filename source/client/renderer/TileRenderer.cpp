@@ -1297,113 +1297,129 @@ bool TileRenderer::tesselateFireInWorld(Tile* tile, const TilePos& pos)
 bool TileRenderer::tesselateBedInWorld(Tile* tile, const TilePos& pos)
 {
 	Tesselator& t = Tesselator::instance;
-	int var6 = m_pLevelSource->getData(pos);
-	int var7 = BedTile::getDirectionFromData(var6);
-	bool var8 = BedTile::isHead(var6);
-	float var9 = 0.5F;
-	float var10 = 1.0F;
-	float var11 = 0.8F;
-	float var12 = 0.6F;
-	float fLightHere = tile->getBrightness(m_pLevelSource, pos);
-	t.color(var9 * fLightHere, var9 * fLightHere, var9 * fLightHere);
-	int hiddenFace = Tile::wood->m_TextureFrame;
-	int var27 = (hiddenFace & 15) << 4;
-	int var28 = hiddenFace & 240;
-	float var29 = ((float)var27 / 256.0F);
-	float var31 = ((var27 + 16) - 0.01) / 256.0;
-	float var33 = ((float)var28 / 256.0F);
-	float var35 = ((var28 + 16) - 0.01) / 256.0;
-	real var37 = pos.x + tile->m_aabb.min.x;
-	real var39 = pos.x + tile->m_aabb.max.x;
-	real var41 = pos.y + tile->m_aabb.min.y + 0.1875;
-	real var43 = pos.z + tile->m_aabb.min.z;
-	real var45 = pos.z + tile->m_aabb.max.z;
-	bool z9 = m_textureOverride >= 0;
-	if (!z9) {
-		t.vertexUV(var37, var41, var45, var29, var35);
-		t.vertexUV(var37, var41, var43, var29, var33);
-		t.vertexUV(var39, var41, var43, var31, var33);
-		t.vertexUV(var39, var41, var45, var31, var35);
+
+	int data = m_pLevelSource->getData(pos);
+	Facing::Name direction = BedTile::getDirectionFromData(data);
+	bool isHeadPart = BedTile::isHead(data);
+
+	const float topColor = 0.5F;
+	const float sideColor = 0.8F;
+	const float bottomColor = 0.6F;
+
+	float brightnessHere = tile->getBrightness(m_pLevelSource, pos);
+
+	t.color(topColor * brightnessHere, topColor * brightnessHere, topColor * brightnessHere);
+
+	int woodTexture = Tile::wood->m_TextureFrame;
+	int textureU = (woodTexture & 15) << 4;
+	int textureV = woodTexture & 240;
+
+	const float uMin = static_cast<float>(textureU) / 256.0F;
+	const float uMax = (textureU + 16 - 0.01F) / 256.0F;
+	const float vMin = static_cast<float>(textureV) / 256.0F;
+	const float vMax = (textureV + 16 - 0.01F) / 256.0F;
+
+	float xMin = pos.x + tile->m_aabb.min.x;
+	float xMax = pos.x + tile->m_aabb.max.x;
+	float yTop = pos.y + tile->m_aabb.min.y + 0.1875F;
+	float zMin = pos.z + tile->m_aabb.min.z;
+	float zMax = pos.z + tile->m_aabb.max.z;
+
+	bool hasTextureOverride = m_textureOverride >= 0;
+
+	if (!hasTextureOverride)
+	{
+		t.vertexUV(xMin, yTop, zMax, uMin, vMax);
+		t.vertexUV(xMin, yTop, zMin, uMin, vMin);
+		t.vertexUV(xMax, yTop, zMin, uMax, vMin);
+		t.vertexUV(xMax, yTop, zMax, uMax, vMax);
 	}
 
-	float var64 = tile->getBrightness(m_pLevelSource, pos.above());
-	t.color(var10 * var64, var10 * var64, var10 * var64);
-	var27 = tile->getTexture(m_pLevelSource, pos, Facing::UP);
-	var28 = (var27 & 15) << 4;
-	int var67 = var27 & 240;
-	hiddenFace = BedTile::hiddenFace[var7];
-	if (var8) {
-		hiddenFace = BedTile::hiddenFace[BedTile::hiddenFaceIndex[var7]];
-	}
+	float brightnessAbove = tile->getBrightness(m_pLevelSource, pos.above());
+	t.color(brightnessAbove, brightnessAbove, brightnessAbove);
+
+	int topTexture = tile->getTexture(m_pLevelSource, pos, Facing::UP);
+	int topU = (topTexture & 15) << 4;
+	int topV = topTexture & 240;
+
+	int hiddenFace = BedTile::hiddenFace[direction];
+	if (isHeadPart)
+		hiddenFace = BedTile::hiddenFace[BedTile::hiddenFaceIndex[direction]];
 
 	Facing::Name flippedFace = Facing::WEST;
-	uint8_t upRot = 2;
-	switch (var7) {
-	case 0:
+	int upRotation = 2;
+
+	switch (direction)
+	{
+	case Facing::DOWN:
 		flippedFace = Facing::EAST;
-		upRot = 1;
+		upRotation = 1;
 		break;
-	case 1:
+	case Facing::UP:
 		flippedFace = Facing::SOUTH;
-		upRot = 3;
-	case 2:
-	default:
+		upRotation = 3;
 		break;
-	case 3:
+	case Facing::NORTH:
+		break;
+	case Facing::SOUTH:
 		flippedFace = Facing::NORTH;
-		upRot = 0;
+		upRotation = 0;
+		break;
 	}
 
-	bool bDrewAnything = false;
+	bool drewAnything = false;
 
 	for (Facing::Name face : Facing::ALL)
 	{
-		if (hiddenFace == face || face == Facing::DOWN) continue;
+		if (hiddenFace == face || face == Facing::DOWN)
+			continue;
 
 		TilePos neighborPos = pos.relative(face);
 
 		if (!m_bDisableCulling && !tile->shouldRenderFace(m_pLevelSource, neighborPos, face))
 			continue;
 
-		bDrewAnything = true;
+		drewAnything = true;
 
-		float light = tile->getBrightness(m_pLevelSource, neighborPos);
+		float faceBrightness = tile->getBrightness(m_pLevelSource, neighborPos);
 
-		switch (face) {
+		switch (face)
+		{
 		case Facing::UP:
 			if (tile->m_aabb.max.y != 1.0f && !tile->m_pMaterial->isLiquid())
-				light = fLightHere;
+				faceBrightness = brightnessHere;
 			break;
 		case Facing::NORTH:
 			if (tile->m_aabb.min.z > 0.0f)
-				light = fLightHere;
+				faceBrightness = brightnessHere;
 			break;
 		case Facing::SOUTH:
 			if (tile->m_aabb.max.z < 1.0f)
-				light = fLightHere;
+				faceBrightness = brightnessHere;
 			break;
 		case Facing::WEST:
 			if (tile->m_aabb.min.x > 0.0f)
-				light = fLightHere;
+				faceBrightness = brightnessHere;
 			break;
 		case Facing::EAST:
 			if (tile->m_aabb.max.x < 1.0f)
-				light = fLightHere;
+				faceBrightness = brightnessHere;
 			break;
 		default:
 			break;
 		}
 
-		int texture = tile->getTexture(m_pLevelSource, pos, face);
+		int faceTexture = tile->getTexture(m_pLevelSource, pos, face);
+		if (flippedFace == face)
+			faceTexture = -faceTexture;
 
-		if (flippedFace == face) texture = -texture;
-		float red, grn, blue;
-		computeColor(tile->getColor(m_pLevelSource, pos, face, texture), red, grn, blue, Facing::LIGHT[face] * light);
+		float red, green, blue;
+		computeColor(tile->getColor(m_pLevelSource, pos, face, faceTexture), red, green, blue, Facing::LIGHT[face] * faceBrightness);
 
-		renderFace(tile, pos, texture, face, red, grn, blue, face == Facing::UP ? upRot : 0);
+		renderFace(tile, pos, faceTexture, face, red, green, blue, face == Facing::UP ? upRotation : 0);
 	}
 
-	return bDrewAnything;
+	return drewAnything;
 }
 
 bool TileRenderer::tesselateDustInWorld(Tile* tile, const TilePos& pos)

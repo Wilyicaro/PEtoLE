@@ -216,16 +216,16 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerActi
 {
 	auto& player = getPlayerByGUID(guid)->m_pPlayer;
 	Level* level = player->m_pLevel;
-	if (packet->m_action == 4)
+	if (packet->m_action == PlayerActionPacket::DROP)
 		player->drop();
 	else
 	{
 		bool allowSpawnBuild = level->m_pDimension->m_ID != 0 || player->isLocalPlayer() || !m_pMinecraft->m_pMinecraftServer->m_bSpawnProtection;
 		bool checkDist = false;
-		if (packet->m_action == 0)
+		if (packet->m_action == PlayerActionPacket::START_DESTROY)
 			checkDist = true;
 
-		if (packet->m_action == 2)
+		if (packet->m_action == PlayerActionPacket::CONTINUE_DESTROY)
 			checkDist = true;
 
 		Vec3i pos = packet->m_pos;
@@ -242,20 +242,20 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerActi
 		if (spawnDiffX > spawnDiff)
 			spawnDiff = spawnDiffX;
 
-		if (packet->m_action == 0)
+		if (packet->m_action == PlayerActionPacket::START_DESTROY)
 		{
 			if (spawnDiff <= 16 && !allowSpawnBuild)
 				player->getConnection()->send(player, new TileUpdatePacket(pos, level));
 			else
 				player->m_pGameMode->startDestroyBlock(pos, (Facing::Name) packet->m_face);
 		}
-		else if (packet->m_action == 2)
+		else if (packet->m_action == PlayerActionPacket::CONTINUE_DESTROY)
 		{
 			player->m_pGameMode->stopDestroyBlock(pos);
 			if (level->getTile(pos) != 0)
 				player->getConnection()->send(player, new TileUpdatePacket(pos, level));
 		}
-		else if (packet->m_action == 3)
+		else if (packet->m_action == PlayerActionPacket::JUST_UPDATE_TILE)
 		{
 			Vec3 diff = player->m_pos - (pos + 0.5f);
 			real lengthSqr = diff.lengthSqr();
@@ -277,7 +277,7 @@ void ServerSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, PlayerComm
 		pPlayer->setSneaking(false);
 	else if (packet->m_action == 3)
 	{
-		pPlayer->wake(false, true, true);
+		pPlayer->stopSleepInBed(false, true, true);
 		//awaitingPositionFromClient = false;
 	}
 

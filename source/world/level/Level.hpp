@@ -28,6 +28,7 @@
 #include "LevelListener.hpp"
 #include "TickNextTickData.hpp"
 #include "client/renderer/LightUpdate.hpp"
+#include "network/Packet.hpp"
 
 class Dimension;
 class Level;
@@ -254,9 +255,9 @@ public:
 
 	int getFreeMapId(const std::string& key);
 
-	void levelEvent(int event, const TilePos&, int info);
-	void levelEvent(Player*, int event, const TilePos&, int info);
-	void entityEvent(Entity*, int8_t event);
+	void levelEvent(LevelEvent event, const TilePos&, int info);
+	void levelEvent(Player*, LevelEvent event, const TilePos&, int info);
+	void entityEvent(Entity*, EntityEvent event);
 	void sendLevelInfo(Player*);
 
 protected:

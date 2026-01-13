@@ -997,19 +997,19 @@ AABBVector* Level::getCubes(const Entity* pEnt, const AABB& aabb)
 		}
 	}
 
-	AABB grew = aabb;
-	grew.grow(0.25);
-	auto entities = getEntities(pEnt, grew);
-	for (std::vector<std::shared_ptr<Entity>>::iterator it = entities.begin(); it != entities.end(); it++)
-	{
-		auto& ent = *it;
-		auto var13 = ent->getCollideBox();
-		if (var13 && var13->intersect(aabb))
-			m_aabbs.push_back(*var13);
+	auto entities = getEntities(pEnt, AABB(aabb).grow(0.25));
 
-		var13 = pEnt->getCollideAgainstBox(ent.get());
-		if (var13 && var13->intersect(aabb))
-			m_aabbs.push_back(*var13);
+	for (const auto& ent : entities)
+	{
+		if (!ent) continue;
+
+		auto collideBox = ent->getCollideBox();
+		if (collideBox && collideBox->intersect(aabb))
+			m_aabbs.push_back(*collideBox);
+
+		auto againstBox = pEnt->getCollideAgainstBox(ent.get());
+		if (againstBox && againstBox->intersect(aabb))
+			m_aabbs.push_back(*againstBox);
 	}
 
 	auto& limit = getLevelData().getLimit(m_pDimension->m_ID);
@@ -1451,7 +1451,7 @@ void Level::wakeUpAllPlayers()
 
 	for (auto& p : m_players)
 		if (p->isSleeping())
-			p->wake(false, false, true);
+			p->stopSleepInBed(false, false, true);
 }
 
 bool Level::isAnyPlayersSleeping() const
@@ -1501,12 +1501,12 @@ int Level::getFreeMapId(const std::string& key)
 	return m_pDataStorage->getFreeMapId(key);
 }
 
-void Level::levelEvent(int event, const TilePos& pos, int info)
+void Level::levelEvent(LevelEvent event, const TilePos& pos, int info)
 {
 	levelEvent(nullptr, event, pos, info);
 }
 
-void Level::levelEvent(Player* player, int event, const TilePos& pos, int info)
+void Level::levelEvent(Player* player, LevelEvent event, const TilePos& pos, int info)
 {
 	for (std::vector<LevelListener*>::iterator it = m_levelListeners.begin(); it != m_levelListeners.end(); it++)
 	{
@@ -1515,7 +1515,7 @@ void Level::levelEvent(Player* player, int event, const TilePos& pos, int info)
 	}
 }
 
-void Level::entityEvent(Entity* ent, int8_t event)
+void Level::entityEvent(Entity* ent, EntityEvent event)
 {
 	if (!m_bIsOnline)
 	{
@@ -1529,7 +1529,7 @@ void Level::sendLevelInfo(Player* player)
 {
 	m_pConnection->send(player, new SetTimePacket(getTime()));
 	if (isRaining())
-		m_pConnection->send(player, new GameEventPacket(1));
+		m_pConnection->send(player, new GameEventPacket(GameEventPacket::START_RAINING));
 }
 
 void Level::setInitialSpawn()
@@ -1934,7 +1934,7 @@ void Level::tickWeather()
 		m_thunderLevel = Mth::clamp(m_thunderLevel, 0.0f, 1.0f);
 
 		if (wasRaining != isRaining())
-			broadcastAll(new GameEventPacket(isRaining() ? 1 : 2));
+			broadcastAll(new GameEventPacket(isRaining() ? GameEventPacket::START_RAINING : GameEventPacket::STOP_RAINING));
 	}
 }
 

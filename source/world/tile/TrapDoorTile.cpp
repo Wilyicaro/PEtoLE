@@ -22,7 +22,7 @@ bool TrapDoorTile::use(Level* level, const TilePos& pos, Player* player)
 
 	level->setData(pos, data ^ 4);
 
-	level->levelEvent(player, 1003, pos, 0);
+	level->levelEvent(player, LevelEvent::SOUND_OPEN_OR_CLOSE, pos, 0);
 
 	return true;
 }
@@ -123,7 +123,7 @@ void TrapDoorTile::setOpen(Level* level, const TilePos& pos, bool bOpen)
 	{
 		level->setData(pos, data ^ 4);
 
-		level->levelEvent(nullptr, 1003, pos, 0);
+		level->levelEvent(nullptr, LevelEvent::SOUND_OPEN_OR_CLOSE, pos, 0);
 	}
 }
 

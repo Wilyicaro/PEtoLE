@@ -343,7 +343,7 @@ void Minecraft::handleBuildAction(const BuildActionIntention& action)
 
 				player->swing();
 
-				if (!pItem) return;
+				if (!pItem) break;
 
 				else if (!pItem->m_count)
 				{

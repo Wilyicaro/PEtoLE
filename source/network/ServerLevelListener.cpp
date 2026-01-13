@@ -35,7 +35,7 @@ void ServerLevelListener::entityRemoved(const std::shared_ptr<Entity>& ent)
 	m_pLevel->getServer()->getEntityTracker(m_pLevel->m_pDimension->m_ID).untrackEntity(ent);
 }
 
-void ServerLevelListener::levelEvent(Player* player, int event, const TilePos& pos, int data)
+void ServerLevelListener::levelEvent(Player* player, LevelEvent event, const TilePos& pos, int data)
 {
 	m_pLevel->broadcastToAllInRange(player, pos, 64, new LevelEventPacket(event, pos, data));
 }

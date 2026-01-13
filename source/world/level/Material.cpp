@@ -14,7 +14,7 @@ Material::Material(MapColor* mapColor) :
 	m_bReplaceable(false),
 	m_bMineable(true),
 	m_bTranslucent(false),
-	m_pushReaction(0)
+	m_pushReaction(PushReaction::NORMAL)
 {
 }
 
@@ -145,7 +145,7 @@ bool Material::isFlammable() const
 	return m_bFlammable;
 }
 
-int Material::getPushReaction() const
+PushReaction Material::getPushReaction() const
 {
 	return m_pushReaction;
 }
@@ -176,13 +176,13 @@ Material* Material::setTranslucent()
 
 Material* Material::destroyOnPush()
 {
-	m_pushReaction = 1;
+	m_pushReaction = PushReaction::DESTROY;
 	return this;
 }
 
 Material* Material::notPushable()
 {
-	m_pushReaction = 2;
+	m_pushReaction = PushReaction::BLOCK;
 	return this;
 }
 

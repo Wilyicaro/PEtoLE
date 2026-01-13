@@ -50,7 +50,7 @@ void RecordPlayerTile::ejectRecord(Level* level, const TilePos& pos)
         auto player = std::dynamic_pointer_cast<RecordPlayerTileEntity>(level->getTileEntity(pos));
         int record = player->m_record;
         if (record != 0) {
-            level->levelEvent(1005, pos, 0);
+            level->levelEvent(LevelEvent::SOUND_PLAY_RECORD, pos, 0);
             level->playStreamingMusic(Util::EMPTY_STRING, pos);
             player->m_record = 0;
             player->setChanged();

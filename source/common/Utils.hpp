@@ -572,6 +572,27 @@ typedef uint8_t TileID;
 	Pos(int _x, int _y, int _z) : x(_x), y(_y), z(_z) {}
 };*/
 
+enum class LevelEvent
+{
+	SOUND_DISPENSER_DISPENSE = 1000,
+	SOUND_DISPENSER_FAIL,
+	SOUND_DISPENSER_PROJECTILE_LAUNCH,
+	SOUND_OPEN_OR_CLOSE,
+	SOUND_LAVA_FIZZ,
+	SOUND_PLAY_RECORD,
+	PARTICLES_SHOOT_SMOKE = 2000,
+	PARTICLES_DESTROY_BLOCK
+};
+
+enum class EntityEvent : uint8_t
+{
+	DAMAGE = 2,
+	DEATH,
+	TAMING_FAILED = 6,
+	TAMING_SUCCEEDED,
+	SHAKE_WETNESS
+};
+
 #define SAFE_DELETE(ptr) do { if (ptr) delete ptr; } while (0)
 #define SAFE_DELETE_ARRAY(ptr) do { if (ptr) delete[] ptr; } while (0)
 

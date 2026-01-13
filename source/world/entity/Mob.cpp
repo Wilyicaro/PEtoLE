@@ -327,7 +327,7 @@ bool Mob::hurt(Entity* pAttacker, int damage)
 			m_hurtDir = 0.0F;
 			if (var3)
 			{
-				m_pLevel->entityEvent(this, 2);
+				m_pLevel->entityEvent(this, EntityEvent::DAMAGE);
 				markHurt();
 				if (pAttacker) {
 					real var4 = pAttacker->m_pos.x - m_pos.x;
@@ -559,7 +559,7 @@ void Mob::die(Entity* pCulprit)
 	if (!m_pLevel->m_bIsOnline)
 		dropDeathLoot();
 
-	m_pLevel->entityEvent(this, 3);
+	m_pLevel->entityEvent(this, EntityEvent::DEATH);
 }
 
 bool Mob::canSee(Entity* pEnt) const
@@ -849,11 +849,11 @@ int Mob::getItemIcon(ItemInstance* instance)
 	return instance->getIcon();
 }
 
-void Mob::handleEntityEvent(int8_t event)
+void Mob::handleEntityEvent(EntityEvent event)
 {
 	switch (event)
 	{
-	case 2: 
+	case EntityEvent::DAMAGE: 
 		m_walkAnimSpeed = 1.5F;
 		m_invulnerableTime = m_invulnerableDuration;
 		m_hurtTime = m_hurtDuration = 10;
@@ -861,7 +861,7 @@ void Mob::handleEntityEvent(int8_t event)
 		m_pLevel->playSound(this, getHurtSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
 		hurt(nullptr, 0);
 		break;
-	case 3: 
+	case EntityEvent::DEATH: 
 		m_pLevel->playSound(this, getDeathSound(), getSoundVolume(), (m_random.nextFloat() - m_random.nextFloat()) * 0.2F + 1.0F);
 		m_health = 0;
 		die(nullptr);

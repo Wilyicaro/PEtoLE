@@ -50,10 +50,10 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addSound("step.gravel", "sound/step/gravel3.ogg");
 	addSound("step.gravel", "sound/step/gravel4.ogg");
 
-	addSound("step.sand", "sound/step/sand1.ogg");
-	addSound("step.sand", "sound/step/sand2.ogg");
-	addSound("step.sand", "sound/step/sand3.ogg");
-	addSound("step.sand", "sound/step/sand4.ogg");
+	addSound("step.sand", "newsound/step/sand1.ogg");
+	addSound("step.sand", "newsound/step/sand2.ogg");
+	addSound("step.sand", "newsound/step/sand3.ogg");
+	addSound("step.sand", "newsound/step/sand4.ogg");
 
 	addSound("step.cloth", "sound/step/cloth1.ogg");
 	addSound("step.cloth", "sound/step/cloth2.ogg");

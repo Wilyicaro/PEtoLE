@@ -17,7 +17,7 @@ bool RecordItem::useOn(ItemInstance* item, Player*, Level* level, const TilePos&
 		else
 		{
 			Tile::recordPlayer->playRecord(level, pos, m_itemID);
-			level->levelEvent(nullptr, 1005, pos, m_itemID);
+			level->levelEvent(nullptr, LevelEvent::SOUND_PLAY_RECORD, pos, m_itemID);
 			--item->m_count;
 			return true;
 		}

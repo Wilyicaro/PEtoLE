@@ -35,7 +35,7 @@ bool GameMode::startDestroyBlock(const TilePos& pos, Facing::Name face)
 {
 	if (m_pPlayer->isLocalPlayer() && m_pPlayer->m_pLevel->m_bIsOnline)
 	{
-		m_pPlayer->m_pLevel->m_pConnection->send(new PlayerActionPacket(0, pos, face));
+		m_pPlayer->m_pLevel->m_pConnection->send(new PlayerActionPacket(PlayerActionPacket::START_DESTROY, pos, face));
 	}
 	m_pPlayer->m_pLevel->extinguishFire(m_pPlayer, pos, face);
 
@@ -74,7 +74,7 @@ bool GameMode::destroyBlock(const TilePos& pos, Facing::Name face)
 
 	int data = m_pPlayer->m_pLevel->getData(pos);
 
-	m_pPlayer->m_pLevel->levelEvent(2001, pos, tile + data * 256);
+	m_pPlayer->m_pLevel->levelEvent(LevelEvent::PARTICLES_DESTROY_BLOCK, pos, tile + data * 256);
 
 	int tileData = m_pPlayer->m_pLevel->getData(pos);
 	pTile->playerWillDestroy(m_pPlayer, pos, face);
@@ -147,7 +147,7 @@ bool GameMode::continueDestroyBlock(const TilePos& pos, Facing::Name face)
 	{
 		if (m_pPlayer->isLocalPlayer() && m_pPlayer->m_pLevel->m_bIsOnline)
 		{
-			m_pPlayer->m_pLevel->m_pConnection->send(new PlayerActionPacket(2, pos, face));
+			m_pPlayer->m_pLevel->m_pConnection->send(new PlayerActionPacket(PlayerActionPacket::CONTINUE_DESTROY, pos, face));
 		}
 		m_destroyTicks = 0;
 		m_destroyCooldown = 5;
@@ -247,14 +247,14 @@ bool GameMode::canHurtPlayer()
 void GameMode::interact(Player* player, Entity* entity)
 {
 	if (player->isLocalPlayer() && player->m_pLevel->m_bIsOnline)
-		player->m_pLevel->m_pConnection->send(new InteractPacket(player->m_EntityID, entity->m_EntityID, 0));
+		player->m_pLevel->m_pConnection->send(new InteractPacket(player->m_EntityID, entity->m_EntityID, InteractPacket::INTERACT_ON));
 	player->interact(entity);
 }
 
 void GameMode::attack(Player* player, Entity* entity)
 {
 	if (player->isLocalPlayer() && player->m_pLevel->m_bIsOnline)
-		player->m_pLevel->m_pConnection->send(new InteractPacket(player->m_EntityID, entity->m_EntityID, 1));
+		player->m_pLevel->m_pConnection->send(new InteractPacket(player->m_EntityID, entity->m_EntityID, InteractPacket::ATTACK));
 	player->attack(entity);
 }
 

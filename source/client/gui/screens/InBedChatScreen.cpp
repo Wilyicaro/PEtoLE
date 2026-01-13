@@ -39,5 +39,5 @@ void InBedChatScreen::sendWakeUp()
 	if (m_pMinecraft->isOnlineClient())
 		m_pMinecraft->m_pRakNetInstance->send(new PlayerCommandPacket(m_pMinecraft->m_pPlayer->m_EntityID, 3));
 	else
-		m_pMinecraft->m_pPlayer->wake(false, true, true);
+		m_pMinecraft->m_pPlayer->stopSleepInBed(false, true, true);
 }

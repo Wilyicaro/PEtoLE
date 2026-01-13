@@ -35,7 +35,7 @@ public:
 	void checkHurtTarget(Entity*, float) override;
 	std::shared_ptr<Entity> findAttackTarget() override;
 	bool hurt(Entity*, int) override;
-	void handleEntityEvent(int8_t event) override;
+	void handleEntityEvent(EntityEvent event) override;
 
 	float getWetShade(float) const;
 	float getBodyRollAngle(float, float) const;

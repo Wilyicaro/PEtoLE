@@ -223,50 +223,50 @@ Packet* ServerEntity::getAddEntityPacket()
 		{
 			std::shared_ptr<Minecart> minecart = std::dynamic_pointer_cast<Minecart>(m_entity);
 			if (minecart->m_type == Minecart::Type::DEFAULT)
-				return new AddEntityPacket(m_entity, ADD_MINECART);
+				return new AddEntityPacket(m_entity, AddEntityPacket::MINECART);
 			else if (minecart->m_type == Minecart::Type::CHEST)
-				return new AddEntityPacket(m_entity, ADD_CHEST_MINECART);
+				return new AddEntityPacket(m_entity, AddEntityPacket::CHEST_MINECART);
 			else if (minecart->m_type == Minecart::Type::FURNACE)
-				return new AddEntityPacket(m_entity, ADD_FURNACE_MINECART);
+				return new AddEntityPacket(m_entity, AddEntityPacket::FURNACE_MINECART);
 		}
 		else if (m_entity->getType() == EntityType::boat)
-			return new AddEntityPacket(m_entity, ADD_BOAT);
+			return new AddEntityPacket(m_entity, AddEntityPacket::BOAT);
 		else if (m_entity->getCategory().contains(EntityCategories::MOB))
 			return new AddMobPacket(std::dynamic_pointer_cast<Mob>(m_entity));
 		else if (m_entity->getType() == EntityType::fishingHook)
 		{
 			std::shared_ptr<Player>& owner = std::dynamic_pointer_cast<FishingHook>(m_entity)->m_owner;
-			return new AddEntityPacket(m_entity, ADD_FISHING_HOOK, owner ? owner->m_EntityID : m_entity->m_EntityID);
+			return new AddEntityPacket(m_entity, AddEntityPacket::FISHING_HOOK, owner ? owner->m_EntityID : m_entity->m_EntityID);
 		}
 		else if (m_entity->getType() == EntityType::arrow)
 		{
 			std::shared_ptr<Mob>& owner = std::dynamic_pointer_cast<Arrow>(m_entity)->m_owner;
-			return new AddEntityPacket(m_entity, ADD_ARROW, owner ? owner->m_EntityID : m_entity->m_EntityID);
+			return new AddEntityPacket(m_entity, AddEntityPacket::ARROW, owner ? owner->m_EntityID : m_entity->m_EntityID);
 		}
 		else if (m_entity->getType() == EntityType::snowball)
-			return new AddEntityPacket(m_entity, ADD_SNOWBALL);
+			return new AddEntityPacket(m_entity, AddEntityPacket::SNOWBALL);
 		else if (m_entity->getType() == EntityType::fireball)
 		{
 			std::shared_ptr<Fireball> fireball = std::dynamic_pointer_cast<Fireball>(m_entity);
-			AddEntityPacket* packet = new AddEntityPacket(m_entity, ADD_FIREBALL, fireball->m_owner ? fireball->m_owner->m_EntityID : -1);
+			AddEntityPacket* packet = new AddEntityPacket(m_entity, AddEntityPacket::FIREBALL, fireball->m_owner ? fireball->m_owner->m_EntityID : -1);
 			packet->m_vel.x = int(fireball->m_power.x * 8000);
 			packet->m_vel.y = int(fireball->m_power.y * 8000);
 			packet->m_vel.z = int(fireball->m_power.z * 8000);
 			return packet;
 		}
 		else if (m_entity->getType() == EntityType::thrownEgg)
-			return new AddEntityPacket(m_entity, ADD_THROWN_EGG);
+			return new AddEntityPacket(m_entity, AddEntityPacket::THROWN_EGG);
 		else if (m_entity->getType() == EntityType::primedTnt)
-			return new AddEntityPacket(m_entity, ADD_PRIMED_TNT);
+			return new AddEntityPacket(m_entity, AddEntityPacket::PRIMED_TNT);
 		else if (m_entity->getType() == EntityType::lightningBolt)
-			return new AddEntityPacket(m_entity, ADD_LIGHTNING_BOLT);
+			return new AddEntityPacket(m_entity, AddEntityPacket::LIGHTNING_BOLT);
 		else if (m_entity->getType() == EntityType::fallingTile)
 		{
 			std::shared_ptr<FallingTile> fallingTile = std::dynamic_pointer_cast<FallingTile>(m_entity);
 			if (fallingTile->m_id == Tile::sand->m_ID)
-				return new AddEntityPacket(m_entity, ADD_FALLING_SAND);
+				return new AddEntityPacket(m_entity, AddEntityPacket::FALLING_SAND);
 			if (fallingTile->m_id == Tile::gravel->m_ID)
-				return new AddEntityPacket(m_entity, ADD_FALLING_GRAVEL);
+				return new AddEntityPacket(m_entity, AddEntityPacket::FALLING_GRAVEL);
 		}
 		else if (m_entity->getType() == EntityType::painting)
 			return new AddPaintingPacket(std::dynamic_pointer_cast<Painting>(m_entity));

@@ -117,7 +117,7 @@ public: // virtual functions
 	virtual Tile* setBlockUpdate();
 	virtual int getSpawnResourcesAuxValue(int) const;
 	virtual std::shared_ptr<TileEntity> newTileEntity();
-	virtual int getPistonPushReaction();
+	virtual PushReaction getPistonPushReaction();
 
 private:
 	void _init();

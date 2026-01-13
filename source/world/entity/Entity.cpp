@@ -145,7 +145,7 @@ int Entity::move(const Vec3& pos)
 		if (validSneaking)
 		{
 			const real off = 0.05;
-			for (; pos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x)
+			for (; newPos.x != 0.0 && m_pLevel->getCubes(this, m_hitbox.copyMove(newPos.x, -1.0, 0.0))->size() == 0; cPosX = newPos.x)
 			{
 				if (newPos.x < off && newPos.x >= -off)
 					newPos.x = 0.0;
@@ -191,7 +191,7 @@ int Entity::move(const Vec3& pos)
 		if (!m_bSlide && cPosZ != newPos.z)
 			newPos = Vec3::ZERO;
 
-		if (m_footSize > 0.0F && lastsOnGround && m_ySlideOffset < 0.05F && (cPosX != newPos.x || cPosZ != newPos.z))
+		if (m_footSize > 0.0F && lastsOnGround && (validSneaking || m_ySlideOffset < 0.05F) && (cPosX != newPos.x || cPosZ != newPos.z))
 		{
 			Vec3 lastPos = newPos;
 			newPos.x = cPosX;
@@ -280,8 +280,9 @@ int Entity::move(const Vec3& pos)
 			}
 		}
 
-		TilePos minPos(m_hitbox.min + 0.001);
-		TilePos maxPos(m_hitbox.max - 0.001);
+		AABB reduced = AABB(m_hitbox).grow(-0.001);
+		TilePos minPos(reduced.min);
+		TilePos maxPos(reduced.max);
 		TilePos tilePos;
 
 		if (m_pLevel->hasChunksAt(minPos, TilePos(maxPos)))
@@ -298,7 +299,7 @@ int Entity::move(const Vec3& pos)
 
 		bool bIsInWater = isWet();
 
-		if (m_pLevel->containsFireTile(AABB(minPos, maxPos)))
+		if (m_pLevel->containsFireTile(reduced))
 		{
 			burn(1);
 
@@ -959,7 +960,7 @@ void Entity::handleInsidePortal()
 {
 }
 
-void Entity::handleEntityEvent(int8_t event)
+void Entity::handleEntityEvent(EntityEvent event)
 {
 }
 

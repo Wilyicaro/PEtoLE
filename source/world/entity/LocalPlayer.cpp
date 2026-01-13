@@ -125,7 +125,7 @@ void LocalPlayer::drop(std::shared_ptr<ItemInstance> pItemInstance, bool b)
 	{
 		if (m_pMinecraft->isOnlineClient())
 		{
-			m_pMinecraft->m_pRakNetInstance->send(new PlayerActionPacket(4, Vec3i(), Facing::DOWN));
+			m_pMinecraft->m_pRakNetInstance->send(new PlayerActionPacket(PlayerActionPacket::DROP, Vec3i(), Facing::DOWN));
 		}
 		else
 		{
@@ -389,7 +389,7 @@ void LocalPlayer::swing()
 {
 	if (m_bSwinging && m_pMinecraft->isOnlineClient())
 	{
-		m_pMinecraft->m_pRakNetInstance->send(new AnimatePacket(m_EntityID, 1));
+		m_pMinecraft->m_pRakNetInstance->send(new AnimatePacket(m_EntityID, AnimatePacket::SWING));
 	}
 	Player::swing();
 }

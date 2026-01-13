@@ -106,21 +106,21 @@ void DispenserTile::fireArrow(Level* level, const TilePos& pos, Random* random) 
             arrow->m_bFromPlayer = true;
             arrow->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
             level->addEntity(arrow);
-            level->levelEvent(1002, pos, 0);
+            level->levelEvent(LevelEvent::SOUND_DISPENSER_PROJECTILE_LAUNCH, pos, 0);
         }
         else if (randomItem->m_itemID == Item::egg->m_itemID)
         {
             auto egg = std::make_shared<ThrownEgg>(level, vel);
              egg->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
              level->addEntity(egg);
-             level->levelEvent(1002, pos, 0);
+             level->levelEvent(LevelEvent::SOUND_DISPENSER_PROJECTILE_LAUNCH, pos, 0);
         }
         else if (randomItem->m_itemID == Item::snowBall->m_itemID)
         {
             auto snowball = std::make_shared<Snowball>(level, vel);
             snowball->shoot(Vec3(xDir, 0.1, zDir), 1.1F, 6.0F);
             level->addEntity(snowball);
-            level->levelEvent(1002, pos, 0);
+            level->levelEvent(LevelEvent::SOUND_DISPENSER_PROJECTILE_LAUNCH, pos, 0);
         }
         else {
             auto itemEnt = std::make_shared<ItemEntity>(level, vel.add(0, -0.3, 0), randomItem);
@@ -132,10 +132,10 @@ void DispenserTile::fireArrow(Level* level, const TilePos& pos, Random* random) 
             itemEnt->m_vel.y += random->nextGaussian() * 0.0075 * 6.0;
             itemEnt->m_vel.z += random->nextGaussian() * 0.0075 * 6.0;
             level->addEntity(itemEnt);
-            level->levelEvent(1000, pos, 0);
+            level->levelEvent(LevelEvent::SOUND_DISPENSER_DISPENSE, pos, 0);
         }
 
-        level->levelEvent(2000, pos, xDir + 1 + (zDir + 1) * 3);
+        level->levelEvent(LevelEvent::PARTICLES_SHOOT_SMOKE, pos, xDir + 1 + (zDir + 1) * 3);
     }
 
 }

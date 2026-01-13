@@ -195,34 +195,34 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, AddEntityP
 {
 	Vec3 pos = PacketUtil::unpackPos(packet->m_pos);
 	std::shared_ptr<Entity> ent = nullptr;
-	if (packet->m_addId == ADD_MINECART)
+	if (packet->m_addId == AddEntityPacket::MINECART)
 		ent = std::make_shared<Minecart>(m_pLevel, pos, Minecart::Type::DEFAULT);
-	else if (packet->m_addId == ADD_CHEST_MINECART)
+	else if (packet->m_addId == AddEntityPacket::CHEST_MINECART)
 		ent = std::make_shared<Minecart>(m_pLevel, pos, Minecart::Type::CHEST);
-	else if (packet->m_addId == ADD_FURNACE_MINECART)
+	else if (packet->m_addId == AddEntityPacket::FURNACE_MINECART)
 		ent = std::make_shared<Minecart>(m_pLevel, pos, Minecart::Type::FURNACE);
-	else if (packet->m_addId == ADD_FISHING_HOOK)
+	else if (packet->m_addId == AddEntityPacket::FISHING_HOOK)
 		ent = std::make_shared<FishingHook>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_ARROW)
+	else if (packet->m_addId == AddEntityPacket::ARROW)
 		ent = std::make_shared<Arrow>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_SNOWBALL)
+	else if (packet->m_addId == AddEntityPacket::SNOWBALL)
 		ent = std::make_shared<Snowball>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_FIREBALL)
+	else if (packet->m_addId == AddEntityPacket::FIREBALL)
 	{
 		ent = std::make_shared<Fireball>(m_pLevel, pos, PacketUtil::unpackMotion(packet->m_vel));
 		packet->m_data = 0;
 	}
-	else if (packet->m_addId == ADD_THROWN_EGG)
+	else if (packet->m_addId == AddEntityPacket::THROWN_EGG)
 		ent = std::make_shared<ThrownEgg>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_BOAT)
+	else if (packet->m_addId == AddEntityPacket::BOAT)
 		ent = std::make_shared<Boat>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_PRIMED_TNT)
+	else if (packet->m_addId == AddEntityPacket::PRIMED_TNT)
 		ent = std::make_shared<PrimedTnt>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_LIGHTNING_BOLT)
+	else if (packet->m_addId == AddEntityPacket::LIGHTNING_BOLT)
 		ent = std::make_shared<LightningBolt>(m_pLevel, pos);
-	else if (packet->m_addId == ADD_FALLING_SAND)
+	else if (packet->m_addId == AddEntityPacket::FALLING_SAND)
 		ent = std::make_shared<FallingTile>(m_pLevel, pos, Tile::sand->m_ID);
-	else if (packet->m_addId == ADD_FALLING_GRAVEL)
+	else if (packet->m_addId == AddEntityPacket::FALLING_GRAVEL)
 		ent = std::make_shared<FallingTile>(m_pLevel, pos, Tile::gravel->m_ID);
 	
 	if (ent)
@@ -233,14 +233,14 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, AddEntityP
 		m_pLevel->putEntity(packet->m_id, ent);
 		if (packet->m_data > 0)
 		{
-			if (packet->m_addId == ADD_ARROW)
+			if (packet->m_addId == AddEntityPacket::ARROW)
 			{
 				std::shared_ptr<Entity> owner = getEntity(packet->m_data);
 				if (owner->getCategory().contains(EntityCategories::MOB))
 					std::dynamic_pointer_cast<Arrow>(ent)->m_owner = std::dynamic_pointer_cast<Mob>(owner);
 			}
 
-			if (packet->m_addId == ADD_FISHING_HOOK)
+			if (packet->m_addId == AddEntityPacket::FISHING_HOOK)
 			{
 				std::shared_ptr<Entity> owner = getEntity(packet->m_data);
 				if (owner->isPlayer())
@@ -347,7 +347,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, InteractionPack
 {
 	std::shared_ptr<Entity> ent = getEntity(packet->m_id);
 	if (ent && packet->m_type == 0)
-		std::dynamic_pointer_cast<Player>(ent)->sleep(packet->m_pos);
+		std::dynamic_pointer_cast<Player>(ent)->startSleepInBed(packet->m_pos);
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, AnimatePacket* packet)
@@ -360,7 +360,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, AnimatePac
 		else if (packet->m_action == 2)
 			ent->animateHurt();
 		else if (packet->m_action == 3)
-			std::dynamic_pointer_cast<Player>(ent)->wake(false, false, false);
+			std::dynamic_pointer_cast<Player>(ent)->stopSleepInBed(false, false, false);
 		else if (packet->m_action == 4)
 		{
 			//This method is only on client-side, and doesn't do anything for some reason, so we aren't going to implement it
@@ -388,17 +388,17 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& guid, GameEventP
 	if (!m_pLevel) return;
 	switch (packet->m_event)
 	{
-	case 0:
+	case GameEventPacket::NO_RESPAWN_TILE_AVAILABLE:
 	{
 		if (m_pMinecraft->m_pPlayer)
 			m_pMinecraft->m_pPlayer->displayClientMessage("tile.bed.notValid");
 		break;
 	}
-	case 1:
+	case GameEventPacket::START_RAINING:
 		m_pLevel->getLevelData().setRaining(true);
 		m_pLevel->setRainLevel(1.0f);
 		break;
-	case 2:
+	case GameEventPacket::STOP_RAINING:
 		m_pLevel->getLevelData().setRaining(false);
 		m_pLevel->setRainLevel(0.0f);
 		break;

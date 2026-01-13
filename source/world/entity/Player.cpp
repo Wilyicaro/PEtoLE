@@ -313,10 +313,10 @@ void Player::tick()
 
 		if (!m_pLevel->m_bIsOnline)
 		{
-			if (!isInBed())
-				wake(true, true, false);
+			if (!checkBedExists())
+				stopSleepInBed(true, true, false);
 			else if (m_pLevel->isDay())
-				wake(false, true, true);
+				stopSleepInBed(false, true, true);
 		}
 	}
 	else if (m_sleepTimer > 0)
@@ -383,7 +383,7 @@ void Player::swing()
 	if (!m_bSwinging && !m_pLevel->m_bIsOnline)
 	{
 		EntityTracker& tracker = getServer()->getEntityTracker(m_dimension);
-		tracker.broadcast(std::dynamic_pointer_cast<Player>(shared_from_this()), new AnimatePacket(m_EntityID, 1));
+		tracker.broadcast(std::dynamic_pointer_cast<Player>(shared_from_this()), new AnimatePacket(m_EntityID, AnimatePacket::SWING));
 	}
 	Mob::swing();
 }
@@ -599,7 +599,7 @@ void Player::respawn(int dim)
 			player->setRespawnPos(pos);
 		}
 		else
-			getConnection()->send(this, new GameEventPacket(0));
+			getConnection()->send(this, new GameEventPacket(GameEventPacket::NO_RESPAWN_TILE_AVAILABLE));
 	}
 
 	player->setPos(Vec3(pos.x + 0.5, pos.y + 0.1, pos.z + 0.5));
@@ -726,7 +726,7 @@ TilePos Player::checkRespawnPos(Level* level, const TilePos& pos)
 	if (level->getTile(pos) != Tile::bed->m_ID)
 		return pos;
 	else
-		return BedTile::getRespawnTilePos(level, pos, 0);
+		return BedTile::findStandUpPosition(level, pos, 0);
 }
 
 float Player::getBedSleepRot()
@@ -757,7 +757,7 @@ Abilities& Player::getAbilities()
 void Player::startCrafting(const TilePos& pos)
 {
 	nextContainerCounter();
-	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 1, "Crafting", 9));
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, ContainerOpenPacket::CRAFTING, "Crafting", 9));
 	m_containerMenu = new CraftingMenu(m_pInventory, pos, m_pLevel);
 	m_containerMenu->m_containerId = m_containerCounter;
 	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
@@ -766,7 +766,7 @@ void Player::startCrafting(const TilePos& pos)
 void Player::openFurnace(std::shared_ptr<FurnaceTileEntity> tileEntity)
 {
 	nextContainerCounter();
-	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 2, tileEntity->getName(), tileEntity->getContainerSize()));
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, ContainerOpenPacket::FURNACE, tileEntity->getName(), tileEntity->getContainerSize()));
 	m_containerMenu = new FurnaceMenu(m_pInventory, tileEntity);
 	m_containerMenu->m_containerId = m_containerCounter;
 	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
@@ -775,7 +775,7 @@ void Player::openFurnace(std::shared_ptr<FurnaceTileEntity> tileEntity)
 void Player::openContainer(Container* container)
 {
 	nextContainerCounter();
-	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 0, container->getName(), container->getContainerSize()));
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, ContainerOpenPacket::CONTAINER, container->getName(), container->getContainerSize()));
 	m_containerMenu = new ChestMenu(m_pInventory, container);
 	m_containerMenu->m_containerId = m_containerCounter;
 	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
@@ -784,7 +784,7 @@ void Player::openContainer(Container* container)
 void Player::openTrap(std::shared_ptr<DispenserTileEntity> tileEntity)
 {
 	nextContainerCounter();
-	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, 3, tileEntity->getName(), tileEntity->getContainerSize()));
+	getConnection()->send(this, new ContainerOpenPacket(m_containerCounter, ContainerOpenPacket::DISPENSER, tileEntity->getName(), tileEntity->getContainerSize()));
 	m_containerMenu = new TrapMenu(m_pInventory, tileEntity);
 	m_containerMenu->m_containerId = m_containerCounter;
 	m_containerMenu->addSlotListener(std::dynamic_pointer_cast<ContainerListener>(shared_from_this()));
@@ -855,7 +855,7 @@ void Player::interact(Entity* pEnt)
 	}
 }
 
-bool Player::isInBed()
+bool Player::checkBedExists()
 {
 	return m_pLevel->getTile(m_bedSleepPos) == Tile::bed->m_ID;
 }
@@ -865,12 +865,12 @@ void Player::nextContainerCounter()
 	m_containerCounter = m_containerCounter % 100 + 1;
 }
 
-void Player::wake(bool resetCounter, bool update, bool setRespawn)
+void Player::stopSleepInBed(bool resetCounter, bool update, bool setRespawn)
 {
 	if (!m_pLevel->m_bIsOnline && isSleeping())
 	{
 		EntityTracker& tracker = getServer()->getEntityTracker(m_dimension);
-		tracker.broadcastAndSend(shared_from_this(), new AnimatePacket(m_EntityID, 3));
+		tracker.broadcastAndSend(shared_from_this(), new AnimatePacket(m_EntityID, AnimatePacket::STOP_SLEEP));
 	}
 
 	setSize(0.6F, 1.8F);
@@ -878,8 +878,8 @@ void Player::wake(bool resetCounter, bool update, bool setRespawn)
 	TilePos checkBedPos = m_bedSleepPos;
 	if (m_bHasBedSleepPos && m_pLevel->getTile(checkBedPos) == Tile::bed->m_ID)
 	{
-		BedTile::setBedOccupied(m_pLevel, checkBedPos, false);
-		checkBedPos = BedTile::getRespawnTilePos(m_pLevel, checkBedPos, 0);
+		BedTile::setOccupied(m_pLevel, checkBedPos, false);
+		checkBedPos = BedTile::findStandUpPosition(m_pLevel, checkBedPos, 0);
 		if (checkBedPos == m_bedSleepPos)
 			checkBedPos = checkBedPos.above();
 
@@ -905,7 +905,7 @@ void Player::wake(bool resetCounter, bool update, bool setRespawn)
 	}
 }
 
-Player::BedSleepingProblem Player::sleep(const TilePos& pos)
+Player::BedSleepingProblem Player::startSleepInBed(const TilePos& pos)
 {
 	if (!m_pLevel->m_bIsOnline)
 	{
@@ -961,16 +961,15 @@ Player::BedSleepingProblem Player::sleep(const TilePos& pos)
 
 		if (tracker.needsBroadcasting())
 		{
-			InteractionPacket* packet = new InteractionPacket(m_EntityID, 0, m_pos);
-			tracker.broadcast(shared_from_this(), packet, false);
+			InteractionPacket packet(m_EntityID, 0, m_pos);
+			tracker.broadcast(shared_from_this(), &packet, false);
 			if (!isLocalPlayer())
 			{
 				std::shared_ptr<Player> pt = std::dynamic_pointer_cast<Player>(shared_from_this());
 				//TODO: Make this more accurate to the Java
 				getConnection()->send(pt, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
-				getConnection()->send(pt, packet, false);
+				getConnection()->send(pt, &packet, false);
 			}
-			delete packet;
 		}
 	}
 
@@ -1003,7 +1002,7 @@ void Player::addAdditionalSaveData(CompoundIO tag) {
 	if (m_bSleeping)
 	{
 		setBedSleepPos(m_pos);
-		wake(true, true, false);
+		stopSleepInBed(true, true, false);
 	}
 
 }

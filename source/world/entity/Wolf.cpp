@@ -212,7 +212,7 @@ void Wolf::aiStep()
 		m_bIsWet = true;
 		m_shakeAnim = 0.0F;
 		m_shakeAnimO = 0.0F;
-		m_pLevel->entityEvent(this, 8);
+		m_pLevel->entityEvent(this, EntityEvent::SHAKE_WETNESS);
 	}
 }
 
@@ -375,12 +375,12 @@ bool Wolf::interact(Player* player)
 					m_health = getMaxHealth();
 					setOwner(player->m_name);
 					addTamingParticles(true);
-					m_pLevel->entityEvent(this, 7);
+					m_pLevel->entityEvent(this, EntityEvent::TAMING_SUCCEEDED);
 				}
 				else
 				{
 					addTamingParticles(false);
-					m_pLevel->entityEvent(this, 6);
+					m_pLevel->entityEvent(this, EntityEvent::TAMING_FAILED);
 				}
 			}
 
@@ -417,15 +417,15 @@ bool Wolf::interact(Player* player)
 	return false;
 }
 
-void Wolf::handleEntityEvent(int8_t event)
+void Wolf::handleEntityEvent(EntityEvent event)
 {
 	switch (event)
 	{
-	case 6:
-	case 7:
-		addTamingParticles(event == 7);
+	case EntityEvent::TAMING_FAILED:
+	case EntityEvent::TAMING_SUCCEEDED:
+		addTamingParticles(event == EntityEvent::TAMING_SUCCEEDED);
 		break;
-	case 8:
+	case EntityEvent::SHAKE_WETNESS:
 		m_bIsWet = true;
 		m_shakeAnim = 0.0F;
 		m_shakeAnimO = 0.0F;

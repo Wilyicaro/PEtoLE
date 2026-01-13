@@ -87,24 +87,6 @@ enum ePacketType
 	PACKET_MAP_ITEM_DATA
 };
 
-enum eAddEntityType
-{
-	ADD_BOAT = 1,
-	ADD_MINECART = 10,
-	ADD_CHEST_MINECART,
-	ADD_FURNACE_MINECART,
-	ADD_PRIMED_TNT = 50,
-	ADD_ARROW = 60,
-	ADD_SNOWBALL,
-	ADD_THROWN_EGG,
-	ADD_FIREBALL,
-	ADD_FALLING_SAND = 70,
-	ADD_FALLING_GRAVEL,
-	ADD_FISHING_HOOK = 90,
-	//why not?
-	ADD_LIGHTNING_BOLT
-};
-
 class Packet
 {
 public:
@@ -264,6 +246,24 @@ public:
 class AddEntityPacket : public Packet
 {
 public:
+	enum Type
+	{
+		BOAT = 1,
+		MINECART = 10,
+		CHEST_MINECART,
+		FURNACE_MINECART,
+		PRIMED_TNT = 50,
+		ARROW = 60,
+		SNOWBALL,
+		THROWN_EGG,
+		FIREBALL,
+		FALLING_SAND = 70,
+		FALLING_GRAVEL,
+		FISHING_HOOK = 90,
+		//why not?
+		LIGHTNING_BOLT
+	};
+
 	AddEntityPacket() {}
 	AddEntityPacket(const std::shared_ptr<Entity>& ent, int id, int data = 0)
 	{
@@ -496,8 +496,14 @@ public:
 class InteractPacket : public Packet
 {
 public:
+	enum Type : uint8_t
+	{
+		INTERACT_ON,
+		ATTACK
+	};
+
 	InteractPacket() {}
-	InteractPacket(int source, int target, uint8_t action) : m_source(source), m_target(target), m_action(action)
+	InteractPacket(int source, int target, Type action) : m_source(source), m_target(target), m_action(action)
 	{
 	}
 
@@ -507,7 +513,7 @@ public:
 public:
 	int m_source;
 	int m_target;
-	uint8_t m_action;
+	Type m_action;
 };
 
 class InteractionPacket : public Packet
@@ -530,8 +536,18 @@ public:
 class AnimatePacket : public Packet
 {
 public:
+	enum Type : uint8_t
+	{
+		SWING = 1,
+		//This is unused, certainly something else replaced it
+		ANIMATE_HURT,
+		STOP_SLEEP,
+		//Also, unused and with blank methods
+		UNK
+	};
+
 	AnimatePacket() {}
-	AnimatePacket(int id, uint8_t action) : m_id(id), m_action(action)
+	AnimatePacket(int id, Type action) : m_id(id), m_action(action)
 	{
 	}
 
@@ -540,14 +556,22 @@ public:
 	void read(RakNet::BitStream*) override;
 public:
 	int m_id;
-	uint8_t m_action;
+	Type m_action;
 };
 
 class PlayerActionPacket : public Packet
 {
 public:
+	enum Type : uint8_t
+	{
+		START_DESTROY,
+		CONTINUE_DESTROY = 2,
+		JUST_UPDATE_TILE,
+		DROP
+	};
+
 	PlayerActionPacket() {}
-	PlayerActionPacket(int action, const TilePos& pos, Facing::Name face) : m_action(action), m_pos(pos), m_face(face)
+	PlayerActionPacket(Type action, const TilePos& pos, Facing::Name face) : m_action(action), m_pos(pos), m_face(face)
 	{
 	}
 
@@ -555,7 +579,7 @@ public:
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
-	int m_action;
+	Type m_action;
 	TilePos m_pos;
 	uint8_t m_face;
 };
@@ -564,13 +588,13 @@ class LevelEventPacket : public Packet
 {
 public:
 	LevelEventPacket() {}
-	LevelEventPacket(int type, const TilePos& pos, int data) : m_type(type), m_pos(pos), m_data(data) {}
+	LevelEventPacket(LevelEvent type, const TilePos& pos, int data) : m_type(type), m_pos(pos), m_data(data) {}
 
 	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
-	int m_type;
+	LevelEvent m_type;
 	TilePos m_pos;
 	int m_data;
 };
@@ -579,27 +603,34 @@ class EntityEventPacket : public Packet
 {
 public:
 	EntityEventPacket() {}
-	EntityEventPacket(int id, int8_t event) : m_id(id), m_event(event) {}
+	EntityEventPacket(int id, EntityEvent event) : m_id(id), m_event(event) {}
 
 	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
 	int m_id;
-	int8_t m_event;
+	EntityEvent m_event;
 };
 
 class GameEventPacket : public Packet
 {
 public:
+	enum Type : uint8_t
+	{
+		NO_RESPAWN_TILE_AVAILABLE,
+		START_RAINING,
+		STOP_RAINING
+	};
+
 	GameEventPacket() {}
-	GameEventPacket(int8_t event) : m_event(event) {}
+	GameEventPacket(Type event) : m_event(event) {}
 
 	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
-	int8_t m_event;
+	Type m_event;
 };
 
 class SetHealthPacket : public Packet
@@ -851,14 +882,22 @@ public:
 class ContainerOpenPacket : public Packet
 {
 public:
+	enum Type : uint8_t
+	{
+		CONTAINER,
+		CRAFTING,
+		FURNACE,
+		DISPENSER
+	};
+
 	ContainerOpenPacket() {}
-	ContainerOpenPacket(int8_t containerId, int8_t type, const std::string& title, int8_t size) : m_containerId(containerId), m_type(type), m_title(title.c_str()), m_size(size) {}
+	ContainerOpenPacket(int8_t containerId, Type type, const std::string& title, int8_t size) : m_containerId(containerId), m_type(type), m_title(title.c_str()), m_size(size) {}
 	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
 	void write(RakNet::BitStream*) override;
 	void read(RakNet::BitStream*) override;
 public:
 	int8_t m_containerId;
-	int8_t m_type;
+	Type m_type;
 	RakNet::RakString m_title;
 	int8_t m_size;
 };

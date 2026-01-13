@@ -32,7 +32,7 @@ bool Bush::isSolidRender() const
 
 bool Bush::mayPlace(const Level* level, const TilePos& pos) const
 {
-	return isValidGrowTile(level->getTile(pos.below()));
+	return Tile::mayPlace(level, pos) && isValidGrowTile(level->getTile(pos.below()));
 }
 
 bool Bush::isValidGrowTile(const TileID tile) const
@@ -59,7 +59,8 @@ void Bush::checkAlive(Level* level, const TilePos& pos)
 
 void Bush::neighborChanged(Level* level, const TilePos& pos, TileID tile)
 {
-	return checkAlive(level, pos);
+	Tile::neighborChanged(level, pos, tile);
+	checkAlive(level, pos);
 }
 
 void Bush::tick(Level* level, const TilePos& pos, Random* random)

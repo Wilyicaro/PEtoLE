@@ -65,7 +65,7 @@ void PistonBaseTile::triggerEvent(Level* level, const TilePos& pos, int b0, int 
 				}
 			}
 
-			if (flag || tile <= 0 || !isPushable(tile, level, tp, false) || Tile::tiles[tile]->getPistonPushReaction() != 0 && tile != Tile::piston->m_ID && tile != Tile::stickyPiston->m_ID) {
+			if (flag || tile <= 0 || !isPushable(tile, level, tp, false) || Tile::tiles[tile]->getPistonPushReaction() != PushReaction::NORMAL && tile != Tile::piston->m_ID && tile != Tile::stickyPiston->m_ID) {
 				if (!flag)
 				{
 					m_bUpdating = false;
@@ -233,10 +233,10 @@ bool PistonBaseTile::isPushable(TileID tile, Level* level, const TilePos& pos, b
 			if (Tile::tiles[tile]->m_hardness == -1.0F)
 				return false;
 
-			if (Tile::tiles[tile]->getPistonPushReaction() == 2)
+			if (Tile::tiles[tile]->getPistonPushReaction() == PushReaction::BLOCK)
 				return false;
 
-			if (!destroy && Tile::tiles[tile]->getPistonPushReaction() == 1)
+			if (!destroy && Tile::tiles[tile]->getPistonPushReaction() == PushReaction::DESTROY)
 				return false;
 		}
 		else if (isExtended(level->getData(pos)))
@@ -264,7 +264,7 @@ bool PistonBaseTile::canMoveBlocks(Level* level, const TilePos& pos, Facing::Nam
 				if (!isPushable(tile, level, tp, true))
 					return false;
 
-				if (Tile::tiles[tile]->getPistonPushReaction() != 1)
+				if (Tile::tiles[tile]->getPistonPushReaction() != PushReaction::DESTROY)
 				{
 					if (steps == 12)
 						return false;
@@ -298,7 +298,7 @@ bool PistonBaseTile::moveBlocks(Level* level, const TilePos& pos, Facing::Name f
 				if (!isPushable(tile, level, tp, true))
 					return false;
 
-				if (Tile::tiles[tile]->getPistonPushReaction() != 1)
+				if (Tile::tiles[tile]->getPistonPushReaction() != PushReaction::DESTROY)
 				{
 					if (steps == 12)
 						return false;

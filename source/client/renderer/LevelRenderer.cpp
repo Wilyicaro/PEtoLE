@@ -959,32 +959,33 @@ void LevelRenderer::playStreamingMusic(const std::string& record, const TilePos&
 	m_pMinecraft->m_pSoundEngine->playStreaming(record, pos, 1.0F, 1.0F);
 }
 
-void LevelRenderer::levelEvent(Player*, int event, const TilePos& pos, int info)
+void LevelRenderer::levelEvent(Player*, LevelEvent event, const TilePos& pos, int info)
 {
 	Random& random = m_pLevel->m_random;
-	switch (event) {
-	case 1000:
+	switch (event)
+	{
+	case LevelEvent::SOUND_DISPENSER_DISPENSE:
 		m_pLevel->playSound(pos, "random.click", 1.0F, 1.0F);
 		break;
-	case 1001:
+	case LevelEvent::SOUND_DISPENSER_FAIL:
 		m_pLevel->playSound(pos, "random.click", 1.0F, 1.2F);
 		break;
-	case 1002:
+	case LevelEvent::SOUND_DISPENSER_PROJECTILE_LAUNCH:
 		m_pLevel->playSound(pos, "random.bow", 1.0F, 1.2F);
 		break;
-	case 1003:
+	case LevelEvent::SOUND_OPEN_OR_CLOSE:
 		if (Mth::random() < 0.5)
 			m_pLevel->playSound(pos.center(), "random.door_open", 1.0F, random.nextFloat() * 0.1F + 0.9F);
 		else
 			m_pLevel->playSound(pos.center(), "random.door_close", 1.0F, random.nextFloat() * 0.1F + 0.9F);
 		break;
-	case 1004:
+	case LevelEvent::SOUND_LAVA_FIZZ:
 		m_pLevel->playSound(pos.center(), "random.fizz", 0.5F, 2.6F + (random.nextFloat() - random.nextFloat()) * 0.8F);
 		break;
-	case 1005:
+	case LevelEvent::SOUND_PLAY_RECORD:
 		m_pLevel->playStreamingMusic(info ? Item::items[info]->getStreamingMusic() : Util::EMPTY_STRING, pos);
 		break;
-	case 2000:
+	case LevelEvent::PARTICLES_SHOOT_SMOKE:
 	{
 		int var8 = info % 3 - 1;
 		int var9 = info / 3 % 3 - 1;
@@ -1003,13 +1004,13 @@ void LevelRenderer::levelEvent(Player*, int event, const TilePos& pos, int info)
 			addParticle("smoke", Vec3(var19, var21, var23), Vec3(var25, var27, var29));
 		}
 	}
-		break;
-	case 2001:
+	break;
+	case LevelEvent::PARTICLES_DESTROY_BLOCK:
 		TileID tileID = info & 255;
 		if (tileID > 0)
 		{
-			auto var17 = Tile::tiles[tileID]->m_pSound;
-			m_pMinecraft->m_pSoundEngine->play(var17->m_name, pos.center(), (var17->volume + 1.0F) / 2.0F, var17->pitch * 0.8F);
+			const Tile::SoundType* sound = Tile::tiles[tileID]->m_pSound;
+			m_pMinecraft->m_pSoundEngine->play(sound->m_destroy, pos.center(), (sound->volume + 1.0F) / 2.0F, sound->pitch * 0.8F);
 		}
 		m_pMinecraft->m_pParticleEngine->destroyEffect(pos, tileID, (info >> 8 & 255));
 		break;

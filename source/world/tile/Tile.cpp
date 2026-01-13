@@ -297,7 +297,7 @@ std::shared_ptr<TileEntity> Tile::newTileEntity()
 	return nullptr;
 }
 
-int Tile::getPistonPushReaction()
+PushReaction Tile::getPistonPushReaction()
 {
 	return m_pMaterial->getPushReaction();
 }
@@ -592,7 +592,8 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(3.0f)
 		->setSoundType(Tile::SOUND_WOOD)
-		->setDescriptionId("doorWood");
+		->setDescriptionId("doorWood")
+		->setBlockUpdate();
 
 	Tile::ladder = (new LadderTile(TILE_LADDER, TEXTURE_LADDER))
 		->init()
@@ -640,7 +641,8 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(0.5f)
 		->setSoundType(Tile::SOUND_WOOD)
-		->setDescriptionId("lever");
+		->setDescriptionId("lever")
+		->setBlockUpdate();
 
 	Tile::stairsStone = (new StairTile(TILE_STAIRS_STONE, Tile::cobblestone))
 		->init()
@@ -665,7 +667,8 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(5.0f)
 		->setSoundType(Tile::SOUND_METAL)
-		->setDescriptionId("doorIron");
+		->setDescriptionId("doorIron")
+		->setBlockUpdate();
 
 	Tile::redstoneOre = (new RedStoneOreTile(TILE_ORE_REDSTONE, TEXTURE_ORE_RED_STONE, false))
 		->init()

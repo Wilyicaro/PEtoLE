@@ -1,6 +1,6 @@
 #include "MobSpawner.hpp"
 #include "Skeleton.hpp"
-#include <world/tile/BedTile.hpp>
+#include "world/tile/BedTile.hpp"
 #include "Sheep.hpp"
 
 std::unordered_set<ChunkPos> MobSpawner::chunksToPoll;
@@ -123,7 +123,8 @@ bool MobSpawner::spawnNightmare(Level* level, const std::vector<std::shared_ptr<
 
     for (auto& player : players)
     {
-        for (int tries = 0; tries < 20; ++tries) {
+        for (int tries = 0; tries < 20; ++tries)
+        {
             TilePos tp(player->m_pos);
             tp.x += level->m_random.nextInt(32) - level->m_random.nextInt(32);
             tp.z += level->m_random.nextInt(32) - level->m_random.nextInt(32);
@@ -154,16 +155,16 @@ bool MobSpawner::spawnNightmare(Level* level, const std::vector<std::shared_ptr<
                         if (Mth::abs(pos.x - player->m_pos.x) < 1.5 && Mth::abs(pos.y - player->m_pos.y) < 1.5 && Mth::abs(pos.z - player->m_pos.z) < 1.5)
                         {
                             TilePos playerPos = player->m_pos;
-                            TilePos var20 = BedTile::getRespawnTilePos(level, playerPos, 1);
-                            if (var20 == playerPos)
+                            TilePos standUpPos = BedTile::findStandUpPosition(level, playerPos, 1);
+                            if (standUpPos == playerPos)
                             {
-                                var20.y += 1;
+                                standUpPos.y += 1;
                             }
 
-                            mob->moveTo(Vec3(var20.x + 0.5, var20.y, var20.z + 0.5));
+                            mob->moveTo(Vec3(standUpPos.x + 0.5, standUpPos.y, standUpPos.z + 0.5));
                             level->addEntity(mob);
                             finalizeMobSettings(mob.get(), level, mob->m_pos);
-                            player->wake(true, false, false);
+                            player->stopSleepInBed(true, false, false);
                             mob->playAmbientSound();
                             return true;
                         }

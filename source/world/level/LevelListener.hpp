@@ -29,6 +29,6 @@ public:
 	virtual void skyColorChanged();
 	virtual void timeChanged(int64_t time);
 	virtual void playStreamingMusic(const std::string&, const TilePos&);
-	virtual void levelEvent(Player*, int event, const TilePos&, int info);
+	virtual void levelEvent(Player*, LevelEvent event, const TilePos&, int info);
 };
 
