@@ -59,6 +59,14 @@ public:
 	int regionIndex() const noexcept {
 		return (x & 31) + (z & 31) * 32;
 	}
+
+	static int ToChunkCoordinate(int value) {
+		return value >> 4;
+	}
+
+	static int ToChunkCoordinate(real value) {
+		return int(floorf(value / 16));
+	}
 };
 
 namespace std {

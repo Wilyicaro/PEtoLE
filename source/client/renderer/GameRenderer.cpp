@@ -467,7 +467,7 @@ void GameRenderer::renderLevel(float f, int64_t nano)
 		saveMatrices();
 
 		Frustum::prepare();
-		if (m_pMinecraft->getOptions()->m_iViewDistance.get() <= 2)
+		if (m_pMinecraft->getOptions()->m_iViewDistance.get() <= 1)
 		{
 			setupFog(-1);
 			pLR->renderSky(f);
@@ -755,7 +755,7 @@ void GameRenderer::render(float f)
 	{
 		std::stringstream debugText;
 		std::stringstream rightDebugText;
-		debugText << "ReMinecraftPE " << m_pMinecraft->getVersionString();
+		debugText << "PEtoLE " << m_pMinecraft->getVersionString();
 		debugText << " (" << m_shownFPS << " fps, " << m_shownChunkUpdates << " chunk updates)" << "\n";
 
 		int64_t used = getProcessMemoryUsage() / 1024;
@@ -825,10 +825,10 @@ void GameRenderer::render(float f)
 		m_pMinecraft->m_pFont->drawShadow(std::to_string(max), 200, h - maxht, 0xFFFFFF);
 #endif
 
-		/*debugText << "\nController::stickValuesX[1]: " << Controller::stickValuesX[1];
+		debugText << "\nController::stickValuesX[1]: " << Controller::stickValuesX[1];
 		debugText << "\nController::stickValuesY[1]: " << Controller::stickValuesY[1];
 		debugText << "\nGameRenderer::field_7C: "      << field_7C;
-		debugText << "\nGameRenderer::field_80: "      << field_80;*/
+		debugText << "\nGameRenderer::field_80: "      << field_80;
 
 		m_pMinecraft->m_pFont->drawShadow(debugText.str(), 2, 2, 0xFFFFFF);
 

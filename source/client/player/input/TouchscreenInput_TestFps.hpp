@@ -38,6 +38,7 @@ private:
 	Options* m_pOptions;
 	bool field_40;
 	bool m_bJumpBeingHeld;
+	bool m_bSneakBeingHeld;
 	TouchAreaModel m_touchAreaModel;
 	Minecraft* m_pMinecraft;
 	PolygonArea* m_pAreaLeft;
@@ -45,6 +46,9 @@ private:
 	PolygonArea* m_pAreaForward;
 	PolygonArea* m_pAreaBackward;
 	PolygonArea* m_pAreaJump;
+	PolygonArea* m_pAreaSneak;
+	PolygonArea* m_pAreaForwardLeft;
+	PolygonArea* m_pAreaForwardRight;
 	bool field_6C[8];
 };
 

@@ -105,6 +105,8 @@ void MobRenderer::render(Entity* entity, const Vec3& pos, float unused, float f)
 	setupRotations(pMob, fBob, fSmth, f);
 
 	float fScale = 0.0625f; // the scale variable according to b1.2_02
+	if (pMob->isPlayer())
+		fScale = 0.059375f;
 	glEnable(GL_RESCALE_NORMAL);
 	glScalef(-1.0f, -1.0f, 1.0f);
 	scale(pMob, f);

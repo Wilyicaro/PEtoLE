@@ -7,13 +7,94 @@ CreativeMenu::CreativeMenu(Container* inventory, Container* container)
     : m_container(container)
 {
 
-	Tile* var2[] = {Tile::cobblestone, Tile::stone, Tile::diamondOre, Tile::goldOre, Tile::ironOre, Tile::coalOre, Tile::lapisOre, Tile::redstoneOre, Tile::clay, Tile::diamondBlock, Tile::goldBlock, Tile::ironBlock, Tile::bedrock, Tile::lapisBlock, Tile::brick, Tile::mossStone, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::obsidian, Tile::netherrack, Tile::soulSand, Tile::glowstone, Tile::treeTrunk, Tile::treeTrunk, Tile::treeTrunk, Tile::leaves, Tile::dirt, Tile::grass, Tile::sand, Tile::sandStone, Tile::gravel, Tile::web, Tile::wood, Tile::sapling, Tile::sapling, Tile::sapling, Tile::deadBush, Tile::sponge, Tile::ice, Tile::snow, Tile::flower, Tile::rose, Tile::mushroom1, Tile::mushroom2, Tile::reeds, Tile::cactus, Tile::pumpkin, Tile::pumpkinLantern, Tile::chest, Tile::craftingTable, Tile::glass, Tile::tnt, Tile::bookshelf, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::dispenser, Tile::furnace, Tile::musicBlock, Tile::recordPlayer, Tile::stickyPiston, Tile::piston, Tile::fence, Tile::ladder, Tile::rail, Tile::poweredRail, Tile::detectorRail, Tile::torch, Tile::stairsWood, Tile::stairsStone, Tile::lever, Tile::stonePressurePlate, Tile::woodPressurePlate, Tile::redstoneTorchLit, Tile::button, Tile::cake, Tile::trapDoor};
+	Tile* var2[] = {Tile::cobblestone,
+	Tile::stone,
+	Tile::diamondOre,
+	Tile::goldOre,
+	Tile::ironOre,
+	Tile::coalOre,
+	Tile::lapisOre,
+	Tile::redstoneOre,
+	Tile::clay,
+	Tile::diamondBlock,
+	Tile::goldBlock,
+	Tile::ironBlock,
+	Tile::bedrock,
+	Tile::lapisBlock,
+	Tile::brick,
+	Tile::mossStone,
+	Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf, Tile::stoneSlabHalf,
+	Tile::obsidian,
+	Tile::netherrack,
+	Tile::soulSand,
+	Tile::glowstone, Tile::treeTrunk, Tile::treeTrunk, Tile::treeTrunk,
+	Tile::leaves,
+	Tile::dirt,
+	Tile::grass,
+	Tile::sand,
+	Tile::sandStone,
+	Tile::gravel,
+	Tile::web,
+	Tile::wood,
+	Tile::sapling, Tile::sapling, Tile::sapling,
+	Tile::deadBush,
+	Tile::sponge,
+	Tile::ice,
+	Tile::snow,
+	Tile::flower,
+	Tile::rose,
+	Tile::mushroom1,
+	Tile::mushroom2,
+	Tile::reeds,
+	Tile::cactus,
+	Tile::pumpkin,
+	Tile::pumpkinLantern,
+	Tile::chest,
+	Tile::craftingTable,
+	Tile::glass,
+	Tile::tnt,
+	Tile::bookshelf,
+	Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth, Tile::cloth,
+	Tile::dispenser,
+	Tile::furnace,
+	Tile::musicBlock,
+	Tile::recordPlayer,
+	Tile::stickyPiston,
+	Tile::piston,
+	Tile::fence,
+	Tile::ladder,
+	Tile::rail,
+	Tile::poweredRail,
+	Tile::detectorRail,
+	Tile::torch,
+	Tile::stairsWood,
+	Tile::stairsStone,
+	Tile::lever,
+	Tile::stonePressurePlate,
+	Tile::woodPressurePlate,
+	Tile::redstoneTorchLit,
+	Tile::button,
+	Tile::cake,
+	Tile::trapDoor};
+
+	// unobtainable tiles
+	/*Tile::water,
+	Tile::calmWater,
+	Tile::lava,
+	Tile::calmLava,
+	Tile::fire,
+	(Tile*)Tile::portal,
+	Tile::mobSpawner,
+	Tile::tallGrass,
+	Tile::crops,
+	Tile::farmland,
+	Tile::topSnow};*/
+
 	int var3 = 0;
 	int var4 = 0;
 	int var5 = 0;
 	int var6 = 0;
 	int var7 = 0;
-
 
 	int var9;
 	for (Tile* tile : var2)
