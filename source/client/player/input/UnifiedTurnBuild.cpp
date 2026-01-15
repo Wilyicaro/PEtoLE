@@ -16,8 +16,6 @@ UnifiedTurnBuild::UnifiedTurnBuild(int a, int width, int height, float d, float 
 	field_C(a),
 	field_10(0),
 	m_screenArea(-1, -1, 0, 0),
-	field_40(-1, -1, 0, 0),
-	field_58(-1, -1, 0, 0),
 	m_pInputHolder(pHolder),
 	field_78(0.0f),
 	field_7C(0.0f),
@@ -44,8 +42,10 @@ void UnifiedTurnBuild::setScreenSize(int width, int height)
 
 	m_includeExcludeArea.clear();
 	m_includeExcludeArea.include(&m_screenArea);
-	m_includeExcludeArea.exclude(&field_40);
-	m_includeExcludeArea.exclude(&field_58);
+	for (auto& area : m_touchArea)
+	{
+		m_includeExcludeArea.exclude(&area);
+	}
 
 	m_touchAreaModel.clear();
 	m_touchAreaModel.addArea(100, &m_includeExcludeArea);

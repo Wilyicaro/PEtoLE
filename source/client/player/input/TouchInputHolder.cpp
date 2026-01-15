@@ -57,7 +57,8 @@ IBuildInput* TouchInputHolder::getBuildInput()
 void TouchInputHolder::setScreenSize(int width, int height)
 {
 	m_touchScreenInput.setScreenSize(width, height);
-	m_unifiedTurnBuild.field_40 = m_touchScreenInput.getRectangleArea();
-	m_unifiedTurnBuild.field_58 = m_pMinecraft->m_gui.getRectangleArea(false);
+	m_unifiedTurnBuild.m_touchArea.clear();
+	m_touchScreenInput.addRectangleArea(m_unifiedTurnBuild.m_touchArea);
+	m_pMinecraft->m_gui.addRectangleArea(m_unifiedTurnBuild.m_touchArea);
 	m_unifiedTurnBuild.setScreenSize(width, height);
 }

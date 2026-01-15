@@ -650,13 +650,18 @@ int Gui::getNumUsableSlots()
 	return getNumSlots() - m_pMinecraft->isTouchscreen();
 }
 
-RectangleArea Gui::getRectangleArea(bool b)
+void Gui::addRectangleArea(std::vector<RectangleArea>& touchArea)
 {
 	float centerX = Minecraft::width / 2;
 	float hotbarWidthHalf = (10 * getNumSlots() + 5) / InvGuiScale;
-	return RectangleArea(
-		b ? (centerX - hotbarWidthHalf) : 0,
+	touchArea.push_back(RectangleArea(
+		centerX - hotbarWidthHalf,
 		Minecraft::height - 24.0f / InvGuiScale,
 		centerX + hotbarWidthHalf,
-		Minecraft::height);
+		Minecraft::height));
+	touchArea.push_back(RectangleArea(
+		centerX - 26 / InvGuiScale,
+		0,
+		centerX + 10 / InvGuiScale,
+		16 / InvGuiScale));
 }

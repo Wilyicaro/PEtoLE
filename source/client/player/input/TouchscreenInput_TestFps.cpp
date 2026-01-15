@@ -14,6 +14,7 @@
 
 TouchscreenInput_TestFps::TouchscreenInput_TestFps(Minecraft* pMinecraft, Options* pOptions) :
 	m_rectArea(0.0f, 0.0f, 1.0f, 1.0f),
+	m_rightRectArea(0.0f, 0.0f, 1.0f, 1.0f),
 	m_pOptions(pOptions),
 	field_40(false),
 	m_bJumpBeingHeld(false),
@@ -33,7 +34,7 @@ TouchscreenInput_TestFps::TouchscreenInput_TestFps(Minecraft* pMinecraft, Option
 
 	// Note! Only the first five button entries are used.
 	for (int i = 0; i < 8; i++)
-		field_6C[i] = 0;
+		m_pressedInputs[i] = 0;
 
 	setScreenSize(Minecraft::width, Minecraft::height);
 }
@@ -43,7 +44,7 @@ void TouchscreenInput_TestFps::releaseAllKeys()
 	m_horzInput = 0.0f;
 	m_vertInput = 0.0f;
 	for (int i = 0; i < 5; i++)
-		field_6C[i] = false;
+		m_pressedInputs[i] = false;
 }
 
 void TouchscreenInput_TestFps::setKey(int eventKey, bool eventKeyState)
@@ -109,7 +110,10 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	right = middleX + widthM * 2;
 	bottom = middleY + heightM * 2;
 
+	float rightSideX = scaledWidth - widthM - 8;
+
 	m_rectArea = RectangleArea(left / Gui::InvGuiScale, top / Gui::InvGuiScale, right / Gui::InvGuiScale, bottom / Gui::InvGuiScale);
+	m_rightRectArea = RectangleArea(rightSideX / Gui::InvGuiScale, middleY / Gui::InvGuiScale, (rightSideX + widthM) / Gui::InvGuiScale, (middleY + heightM) / Gui::InvGuiScale);
 
 	TransformArray(4, x1, y1, x2, y2, middleX, middleY - heightM, 1.0f, 1.0f);
 	m_pAreaForward = new PolygonArea(4, x2, y2);
@@ -131,10 +135,9 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	m_pAreaRight = new PolygonArea(4, x2, y2);
 	m_touchAreaModel.addArea(100 + INPUT_RIGHT, m_pAreaRight);
 
-	/*float rightSideX = scaledWidth - widthM - 8;
 	TransformArray(4, x1, y1, x2, y2, rightSideX, middleY, 1.0f, 1.0f);
 	m_pAreaSneak = new PolygonArea(4, x2, y2);
-	m_touchAreaModel.addArea(100 + INPUT_SNEAK, m_pAreaSneak);*/
+	m_touchAreaModel.addArea(100 + INPUT_SNEAK, m_pAreaSneak);
 
 	TransformArray(4, x1, y1, x2, y2, middleX - widthM, middleY - heightM, 1.0f, 1.0f);
 	m_pAreaForwardLeft = new PolygonArea(4, x2, y2);
@@ -157,8 +160,8 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 	m_vertInput = 0.0f;
 	m_bJumping = false;
 
-	for (int i = 0; i < 5; i++)
-		field_6C[i] = false;
+	for (bool& value : m_pressedInputs)
+		value = false;
 	
 	const int* activePointers;
 	int activePointerCount = Multitouch::getActivePointerIds(&activePointers);
@@ -173,7 +176,7 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 		int pointerId = m_touchAreaModel.getPointerId(x * Gui::InvGuiScale, y * Gui::InvGuiScale, finger);
 
 		if (pointerId > 99)
-			field_6C[pointerId - 100] = true;
+			m_pressedInputs[pointerId - 100] = true;
 
 		if (pointerId == 100 + INPUT_SNEAK) // sneak
 		{
@@ -261,7 +264,11 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 	else
 	{
 		m_bSneakBeingHeld = false;
+		if (pPlayer->getAbilities().m_bFlying)
+			m_bSneaking = false;
 	}
+
+	IMoveInput::tick(pPlayer);
 }
 
 static void RenderTouchButton(Tesselator* t, PolygonArea* pArea, int srcX, int srcY)
@@ -324,8 +331,8 @@ void TouchscreenInput_TestFps::render(float f)
 	t.color(isButtonDown(100 + INPUT_JUMP) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
 	RenderTouchButton(&t, m_pAreaJump, 0, 176);
 
-	/*t.color(isButtonDown(100 + INPUT_SNEAK) ? 0xC0C0C0 : 0xFFFFFF, 0x80);
-	RenderTouchButton(&t, m_pAreaSneak, 48, 176);*/
+	t.color(m_bSneaking ? 0xC0C0C0 : 0xFFFFFF, 0x80);
+	RenderTouchButton(&t, m_pAreaSneak, 48, 176);
 
 	t.draw();
 
@@ -333,12 +340,13 @@ void TouchscreenInput_TestFps::render(float f)
 	glEnable(GL_CULL_FACE);
 }
 
-RectangleArea TouchscreenInput_TestFps::getRectangleArea()
+void TouchscreenInput_TestFps::addRectangleArea(std::vector<RectangleArea>& touchArea)
 {
-	return m_rectArea;
+	touchArea.push_back(m_rectArea);
+	touchArea.push_back(m_rightRectArea);
 }
 
 bool TouchscreenInput_TestFps::isButtonDown(int key)
 {
-	return field_6C[key - 100];
+	return m_pressedInputs[key - 100];
 }

@@ -13,6 +13,7 @@
 #include "RectangleArea.hpp"
 #include "PolygonArea.hpp"
 #include "TouchAreaModel.hpp"
+#include <vector>
 
 class Minecraft;
 class Options;
@@ -29,11 +30,12 @@ public:
 	void tick(Player*) override;
 	void render(float f) override;
 
-	RectangleArea getRectangleArea();
+	void addRectangleArea(std::vector<RectangleArea>& touchArea);
 	bool isButtonDown(int key);
 
 private:
 	RectangleArea m_rectArea;
+	RectangleArea m_rightRectArea;
 	bool m_noNeighborUpdate[10];
 	Options* m_pOptions;
 	bool field_40;
@@ -49,6 +51,6 @@ private:
 	PolygonArea* m_pAreaSneak;
 	PolygonArea* m_pAreaForwardLeft;
 	PolygonArea* m_pAreaForwardRight;
-	bool field_6C[8];
+	bool m_pressedInputs[8];
 };
 

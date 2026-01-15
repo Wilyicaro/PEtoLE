@@ -47,7 +47,7 @@ public:
 	void renderMessages(bool bShowAll);
 	int getNumSlots();					  // Gets the number of slots in the inventory. Includes the '...' if in touch mode.
 	int getNumUsableSlots();			  // Gets the number of usable slots in the inventory. Does not include the '...' if in touch mode.
-	RectangleArea getRectangleArea(bool b);
+	void addRectangleArea(std::vector<RectangleArea>&);
 
 public:
 	static float InvGuiScale;

@@ -41,8 +41,7 @@ public:
 	SmoothFloat m_smoothFloat;
 	bool m_bStarted;
 	RectangleArea m_screenArea;
-	RectangleArea field_40;
-	RectangleArea field_58;
+	std::vector<RectangleArea> m_touchArea;
 	IInputHolder* m_pInputHolder;
 	float field_78;
 	float field_7C;
