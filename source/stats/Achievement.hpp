@@ -17,9 +17,14 @@ public:
 		return true;
 	}
 
-	const std::string& getDescription()
+	bool isChallenge() const
 	{
-		return m_description;
+		return true;
+	}
+
+	std::string getDescription()
+	{
+		return m_descriptionFormatter(m_description);
 	}
 
 	Achievement* root()
@@ -41,14 +46,20 @@ public:
 		return this;
 	}
 
+	Achievement* setFormatter(std::function<std::string(const std::string&)> formatter)
+	{
+		m_descriptionFormatter = formatter;
+	}
+
 public:
 	const int m_x;
 	const int m_y;
-	const Achievement* m_pParent;
+	Achievement* m_pParent;
 	const std::shared_ptr<ItemInstance> m_icon;
+
 
 private:
 	const std::string m_description;
-	const StatFormatter* m_pDescriptionFormatter;
+	std::function<std::string(const std::string&)> m_descriptionFormatter;
 	bool m_bChallenge;
 };

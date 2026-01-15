@@ -106,6 +106,8 @@ Packet* MinecraftPackets::createPacket(int type)
 			return new MapItemDataPacket;
 		case PACKET_LEVEL_DATA:
 			return new LevelDataPacket;
+		case PACKET_UPDATE_STAT:
+			return new UpdateStatPacket;
 	}
 
 	return nullptr;

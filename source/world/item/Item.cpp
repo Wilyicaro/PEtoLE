@@ -643,14 +643,14 @@ int Item::getMaxDamage()
 	return m_maxDamage;
 }
 
-void Item::hurtEnemy(ItemInstance* instance, Mob* mob)
+bool Item::hurtEnemy(ItemInstance* instance, Mob* mob, Player* player)
 {
-
+	return false;
 }
 
-void Item::mineBlock(ItemInstance* instance, int tile, const TilePos& pos, Facing::Name face, Player*)
+bool Item::mineBlock(ItemInstance* instance, int tile, const TilePos& pos, Facing::Name face, Player*)
 {
-
+	return false;
 }
 
 int Item::getAttackDamage(Entity* ent)
@@ -719,6 +719,11 @@ void Item::onCraftedBy(const std::shared_ptr<ItemInstance>&, Player*, Level*)
 
 void Item::inventoryTick(const std::shared_ptr<ItemInstance>&, Level*, Entity*, int, bool)
 {
+}
+
+bool Item::isDamageable() const
+{
+	return m_maxDamage > 0 && !m_bStackedByData;
 }
 
 Item::Tier

@@ -181,7 +181,7 @@ void LeafTile::playerDestroy(Level* level, Player* player, const TilePos& pos, i
 {
 	if (!level->m_bIsOnline && player->getSelectedItem() && player->getSelectedItem()->m_itemID == Item::shears->m_itemID)
 	{
-		//player->awardStat(Stats::STAT_MINE_BLOCK[m_ID], 1);
+		player->awardStat(Stats::statMineBlock[m_ID]);
 		spawnResources(level, pos, std::make_shared<ItemInstance>(Tile::leaves->m_ID, 1, meta & 3));
 	}
 	else

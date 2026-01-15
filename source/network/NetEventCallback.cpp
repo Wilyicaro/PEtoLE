@@ -212,3 +212,7 @@ void NetEventCallback::handle(const RakNet::RakNetGUID&, MapItemDataPacket*)
 void NetEventCallback::handle(const RakNet::RakNetGUID&, SignUpdatePacket*)
 {
 }
+
+void NetEventCallback::handle(const RakNet::RakNetGUID&, UpdateStatPacket*)
+{
+}

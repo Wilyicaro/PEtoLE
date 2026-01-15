@@ -37,6 +37,8 @@ public:
 	virtual void openTextEdit(std::shared_ptr<SignTileEntity> tileEntity) override;
 	virtual void displayClientMessage(const std::string& msg) override;
 	virtual int getItemIcon(ItemInstance*) override;
+	virtual void awardStat(Stat*, int) override;
+	virtual void awardClientStat(Stat*, int, bool = false);
 	virtual void hurtTo(int);
 
 	void calculateFlight(const Vec3& pos);

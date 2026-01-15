@@ -208,5 +208,8 @@
     <ClCompile Include="..\..\..\..\source\network\packets\SetRidingPacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\network\packets\UpdateStatPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

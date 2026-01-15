@@ -123,7 +123,7 @@ public:
 	float m_runSpeed;
 	std::string m_skinUrl;
 	std::string m_texture;
-	int field_B48;
+	int m_deathScore;
 	float m_oRun;
 	float m_run;
 	float m_animStep;
@@ -133,7 +133,7 @@ public:
 	float m_flyingFriction;
 	int field_B64;
 	char field_B68;
-	char field_B69;
+	char m_bDead;
 	int m_lSteps;
 	Vec3 m_lPos;
 	Vec2 m_lRot;

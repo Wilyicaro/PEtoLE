@@ -534,7 +534,7 @@ void ServerSideNetworkHandler::commandStats(OnlinePlayer* player, const std::vec
 {
 	std::stringstream ss;
 	ss << "Server uptime: " << getTimeS() << " seconds.\n";
-	ss << "Host's name: " << m_pMinecraft->m_pUser->m_guid << "\n";
+	ss << "Host's name: " << m_pMinecraft->m_pUser->m_username << "\n";
 
 	int nPlayers = int(m_onlinePlayers.size());
 	if (nPlayers == 1)

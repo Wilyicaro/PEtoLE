@@ -23,12 +23,22 @@
     <ClInclude Include="$(MC_ROOT)\source\stats\Achievements.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\stats\Stat.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\stats\StatFormatter.hpp" />
+    <ClInclude Include="..\..\..\..\source\stats\AchievementMap.hpp" />
+    <ClInclude Include="..\..\..\..\source\stats\CustomStat.hpp" />
+    <ClInclude Include="..\..\..\..\source\stats\Stats.hpp" />
+    <ClInclude Include="..\..\..\..\source\stats\StatsCounter.hpp" />
+    <ClInclude Include="..\..\..\..\source\stats\StatsSyncher.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\stats\Achievement.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\stats\Achievements.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\stats\Stat.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\stats\StatFormatter.cpp" />
+    <ClCompile Include="..\..\..\..\source\stats\AchievementMap.cpp" />
+    <ClCompile Include="..\..\..\..\source\stats\CustomStat.cpp" />
+    <ClCompile Include="..\..\..\..\source\stats\Stats.cpp" />
+    <ClCompile Include="..\..\..\..\source\stats\StatsCounter.cpp" />
+    <ClCompile Include="..\..\..\..\source\stats\StatsSyncher.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

@@ -2,14 +2,12 @@
 
 #include <unordered_map>
 #include <string>
-#include <fstream>
-#include <sstream>
-#include "client/app/AppPlatform.hpp"
 #include "common/Util.hpp"
 
 class Options;
 
-class Language {
+class Language
+{
 public:
     void init(Options*);
     bool loadLanguageFile(const std::string& path);
@@ -22,10 +20,10 @@ public:
 
     static Language* getInstance() 
     {
-        return m_singleton;
+        return instance;
     }
 
 private:
     std::unordered_map<std::string, std::string> m_translations;
-    static Language* m_singleton;
+    static Language* instance;
 };

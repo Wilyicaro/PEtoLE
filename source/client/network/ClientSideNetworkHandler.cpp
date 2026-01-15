@@ -71,7 +71,7 @@ void ClientSideNetworkHandler::onConnect(const RakNet::RakNetGUID& rakGuid) // s
 	m_serverGUID = rakGuid;
 
 	LoginPacket* pLoginPkt = new LoginPacket;
-	pLoginPkt->m_str = RakNet::RakString(m_pMinecraft->m_pUser->m_guid.c_str());
+	pLoginPkt->m_str = RakNet::RakString(m_pMinecraft->m_pUser->m_username.c_str());
 	pLoginPkt->m_clientNetworkVersion = NETWORK_PROTOCOL_VERSION;
 	pLoginPkt->m_clientNetworkVersion2 = NETWORK_PROTOCOL_VERSION;
 	
@@ -688,15 +688,23 @@ std::shared_ptr<Entity> ClientSideNetworkHandler::getEntity(int id)
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, SignUpdatePacket* packet)
 {
-	if (m_pMinecraft->m_pLevel->hasChunkAt(packet->m_pos)) {
+	if (m_pMinecraft->m_pLevel->hasChunkAt(packet->m_pos))
+	{
 		auto te = std::dynamic_pointer_cast<SignTileEntity>(m_pMinecraft->m_pLevel->getTileEntity((packet->m_pos)));
-		if (te) {
+		if (te)
+		{
 			for (int i = 0; i < packet->m_messages.size(); ++i)
 				te->m_messages[i] = packet->m_messages[i];
 
 			te->setChanged();
 		}
 	}
+}
+
+void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID&, UpdateStatPacket* packet)
+{
+	if (m_pMinecraft->m_pPlayer)
+		m_pMinecraft->m_pPlayer->awardClientStat(Stats::byId(packet->m_id), packet->m_amount);
 }
 
 void ClientSideNetworkHandler::arrangeRequestChunkOrder()

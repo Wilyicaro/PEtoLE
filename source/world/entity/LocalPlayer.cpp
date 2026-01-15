@@ -15,6 +15,7 @@
 #include "client/gui/screens/inventory/TextEditScreen.hpp"
 #include <client/renderer/MobSkinTextureProcessor.hpp>
 #include "network/ServerSideNetworkHandler.hpp"
+#include "stats/Achievement.hpp"
 
 int dword_250ADC, dword_250AE0;
 
@@ -43,7 +44,7 @@ LocalPlayer::LocalPlayer(Minecraft* pMinecraft, Level* pLevel, User* pUser, Game
 	m_lastRenderArmRot = Vec2::ZERO;
 
 	m_pMinecraft = pMinecraft;
-	m_name = pUser->m_guid;
+	m_name = pUser->m_username;
 
 	m_pMinecraft->m_pGameMode = m_pGameMode;
 
@@ -179,6 +180,35 @@ void LocalPlayer::displayClientMessage(const std::string& msg)
 int LocalPlayer::getItemIcon(ItemInstance* instance)
 {
 	return !m_pMinecraft->getOptions()->m_bThirdPerson && instance->m_itemID == Item::fishingRod->m_itemID && m_fishing ? instance->getIcon() + 16 : Player::getItemIcon(instance);
+}
+
+void LocalPlayer::awardStat(Stat* stat, int amount)
+{
+	awardClientStat(stat, amount, true);
+}
+
+void LocalPlayer::awardClientStat(Stat* stat, int amount, bool root)
+{
+	if (stat)
+	{
+		if (stat->isAchievement())
+		{
+			Achievement* achievement = (Achievement*)stat;
+			if ((!achievement->m_pParent || m_pMinecraft->m_pStatsCounter->hasAchievement(achievement->m_pParent)) && (!m_pLevel->m_bIsOnline || achievement->m_bRoot == root))
+			{
+				if (!m_pMinecraft->m_pStatsCounter->hasAchievement(achievement))
+				{
+					//@TODO: Toast Component, for the achievement toasts rendering
+					//m_pMinecraft->m_pToastComponent->awardAchievement(achievement);
+				}
+
+				m_pMinecraft->m_pStatsCounter->addStat(stat, amount);
+			}
+		}
+		else
+			m_pMinecraft->m_pStatsCounter->addStat(stat, amount);
+
+	}
 }
 
 void LocalPlayer::hurtTo(int health)

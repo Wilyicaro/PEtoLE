@@ -581,6 +581,9 @@
     <ClInclude Include="..\..\..\..\source\client\gui\screens\InBedChatScreen.hpp">
       <Filter>Header Files\GUI\Screens</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\ChangeProfileScreen.hpp">
+      <Filter>Header Files\GUI\Screens</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.cpp">
@@ -1067,6 +1070,9 @@
       <Filter>Source Files\Sound</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\client\gui\screens\InBedChatScreen.cpp">
+      <Filter>Source Files\GUI\Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\ChangeProfileScreen.cpp">
       <Filter>Source Files\GUI\Screens</Filter>
     </ClCompile>
   </ItemGroup>

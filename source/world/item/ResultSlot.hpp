@@ -6,7 +6,7 @@
 class ResultSlot : public Slot {
 private:
     Container* craftSlots;
-    Player* m_player;
+    Player* m_pPlayer;
 
 public:
     ResultSlot(Player* player, Container* craftSlots, Container* resultSlots, int slotIndex, int x, int y);

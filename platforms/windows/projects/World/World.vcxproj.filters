@@ -677,9 +677,6 @@
     <ClCompile Include="..\..\..\..\source\world\tile\entity\FurnaceTileEntity.cpp">
       <Filter>Source Files\Tile\Entity</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\source\world\item\FurnaceResultSlot.cpp">
-      <Filter>Source Files\Item\Crafting</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\source\world\item\FurnaceMenu.cpp">
       <Filter>Source Files\Item\Inventory</Filter>
     </ClCompile>
@@ -930,6 +927,9 @@
       <Filter>Source Files\Level</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\world\item\ContainerListener.cpp">
+      <Filter>Source Files\Item\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\world\item\FurnaceResultSlot.cpp">
       <Filter>Source Files\Item\Inventory</Filter>
     </ClCompile>
   </ItemGroup>

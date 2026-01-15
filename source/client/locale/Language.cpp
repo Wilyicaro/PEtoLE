@@ -1,7 +1,8 @@
 #include "Language.hpp"
 #include "client/options/Options.hpp"
+#include "client/app/AppPlatform.hpp"
 
-Language* Language::m_singleton = new Language();
+Language* Language::instance = new Language();
 
 void Language::init(Options* options)
 {

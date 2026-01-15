@@ -10,8 +10,8 @@ public:
 	DiggerItem(int id, int attackDamageBase, Tier& tier, std::initializer_list<Tile*> tiles);
 
 	virtual float getDestroySpeed(ItemInstance * instance, const Tile * tile) override;
-	virtual void hurtEnemy(ItemInstance* instance, Mob* mob) override;
-	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player*) override;
+	virtual bool hurtEnemy(ItemInstance* instance, Mob* mob, Player* player) override;
+	virtual bool mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player *) override;
 	virtual int getAttackDamage(Entity* entity) override;
 	virtual bool isHandEquipped() override;
 

@@ -94,8 +94,8 @@ public: // Methods
 	virtual int getLevelDataForAuxValue(int x);
 	virtual bool isStackedByData();
 	virtual int getMaxDamage();
-	virtual void hurtEnemy(ItemInstance*, Mob*);
-	virtual void mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player*);
+	virtual bool hurtEnemy(ItemInstance*, Mob*, Player* player);
+	virtual bool mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player *);
 	virtual int getAttackDamage(Entity*);
 	virtual bool canDestroySpecial(const Tile*);
 	virtual void interactEnemy(ItemInstance*, Mob*);
@@ -113,6 +113,7 @@ public: // Methods
 	virtual std::string getName();
 	virtual void onCraftedBy(const std::shared_ptr<ItemInstance>&, Player*, Level*);
 	virtual void inventoryTick(const std::shared_ptr<ItemInstance>&, Level*, Entity*, int, bool);
+	virtual bool isDamageable() const;
 	
 	// Custom methods
 	virtual EquipmentSlot getEquipmentSlot() const;

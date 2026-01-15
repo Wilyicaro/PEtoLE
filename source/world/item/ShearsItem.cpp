@@ -16,7 +16,7 @@ ShearsItem::ShearsItem(int id) : Item(id)
 	m_maxDamage = 238;
 }
 
-void ShearsItem::mineBlock(ItemInstance* item, int tile, const TilePos& pos, Facing::Name face, Player* player)
+bool ShearsItem::mineBlock(ItemInstance* item, int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
 	if (tile == Tile::leaves->m_ID || tile == Tile::web->m_ID)
 	{

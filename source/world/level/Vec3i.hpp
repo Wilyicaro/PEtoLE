@@ -40,6 +40,8 @@ public:
 
 	Vec3 center() const;
 
+	real distanceTo(const Vec3i&) const;
+
 	bool operator<(const Vec3i& b) const;
 	bool operator>(const Vec3i& b) const;
 	bool operator<=(const Vec3i& b) const;

@@ -50,7 +50,6 @@ public:
 	void tick() override;
 
 	void drawSplash();
-	void draw3dTitle(float f);
 	void drawLegacyTitle();
 
 	std::string getSplashString();

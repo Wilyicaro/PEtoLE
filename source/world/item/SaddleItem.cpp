@@ -20,8 +20,9 @@ void SaddleItem::interactEnemy(ItemInstance* instance, Mob* mob)
 
 }
 
-void SaddleItem::hurtEnemy(ItemInstance* instance, Mob* mob)
+bool SaddleItem::hurtEnemy(ItemInstance* instance, Mob* mob, Player* player)
 {
 	interactEnemy(instance, mob);
+    return true;
 }
 

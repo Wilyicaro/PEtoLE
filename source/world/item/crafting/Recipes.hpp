@@ -140,6 +140,7 @@ public:
 private:
     Recipes();
 
+public:
     std::vector<std::unique_ptr<Recipe>> m_recipes;
 };
 

@@ -115,9 +115,11 @@ public: // virtual functions
 	virtual Tile* setDestroyTime(float);
 	virtual Tile* setTicking(bool);
 	virtual Tile* setBlockUpdate();
+	virtual Tile* untrackStat();
 	virtual int getSpawnResourcesAuxValue(int) const;
 	virtual std::shared_ptr<TileEntity> newTileEntity();
 	virtual PushReaction getPistonPushReaction();
+	virtual bool shouldTrack() const;
 
 private:
 	void _init();
@@ -268,4 +270,5 @@ public:
 	float m_blastResistance;
 	AABB m_aabbReturned;
 	std::string m_descriptionID;
+	bool m_bTrackStat;
 };

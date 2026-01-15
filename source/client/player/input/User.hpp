@@ -15,11 +15,11 @@ class User
 public:
 	User(const std::string& a, const std::string& b)
 	{
-		m_guid = a;
+		m_username = a;
 		field_18 = b;
 	}
 
 public:
-	std::string m_guid;
+	std::string m_username;
 	std::string field_18;
 };

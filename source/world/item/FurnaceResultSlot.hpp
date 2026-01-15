@@ -12,5 +12,5 @@ public:
     void onTake(std::shared_ptr<ItemInstance>) override;
 
 private:
-    Player* m_player;
+    Player* m_pPlayer;
 };

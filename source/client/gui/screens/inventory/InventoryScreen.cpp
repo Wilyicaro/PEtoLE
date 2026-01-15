@@ -1,8 +1,10 @@
 #include "InventoryScreen.hpp"
-#include <client/renderer/Lighting.hpp>
+#include "client/renderer/Lighting.hpp"
+#include "stats/Achievement.hpp"
 
 InventoryScreen::InventoryScreen(Player* player) : ContainerScreen(player->m_inventoryMenu)
 {
+    player->awardStat(Achievements::openInventory);
 }
 
 void InventoryScreen::renderLabels()

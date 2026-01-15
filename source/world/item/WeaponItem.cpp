@@ -13,14 +13,16 @@ float WeaponItem::getDestroySpeed(ItemInstance * instance, const Tile * tile)
 	return tile->m_ID == Tile::web->m_ID ? 15.0f : 1.5f;
 }
 
-void WeaponItem::hurtEnemy(ItemInstance* instance, Mob* mob)
+bool WeaponItem::hurtEnemy(ItemInstance* instance, Mob* mob, Player* player)
 {
 	instance->hurtAndBreak(1, mob);
+	return true;
 }
 
-void WeaponItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player* player)
+bool WeaponItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
 	instance->hurtAndBreak(2, player);
+	return true;
 }
 
 int WeaponItem::getAttackDamage(Entity* entity)

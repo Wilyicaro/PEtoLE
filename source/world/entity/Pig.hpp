@@ -14,15 +14,17 @@ class Pig : public Animal
 public:
 	Pig(Level* pLevel);
 
-	void defineSynchedData() override;
-	std::string getAmbientSound() override { return "mob.pig"; };
-	std::string getDeathSound() const override { return "mob.pigdeath"; }
-	std::string getHurtSound() const override { return "mob.pig"; }
-	int getDeathLoot() const override;
-	int getMaxHealth() const override { return 10; }
-	bool interact(Player*) override;
-	void addAdditionalSaveData(CompoundIO tag) override;
-	void readAdditionalSaveData(CompoundIO tag) override;
+	virtual void defineSynchedData() override;
+	virtual std::string getAmbientSound() override { return "mob.pig"; };
+	virtual std::string getDeathSound() const override { return "mob.pigdeath"; }
+	virtual std::string getHurtSound() const override { return "mob.pig"; }
+	virtual int getDeathLoot() const override;
+	virtual int getMaxHealth() const override { return 10; }
+	virtual bool interact(Player*) override;
+	virtual void addAdditionalSaveData(CompoundIO tag) override;
+	virtual void readAdditionalSaveData(CompoundIO tag) override;
+	virtual void thunderHit(LightningBolt*) override;
+	virtual void causeFallDamage(float) override;
 
 	bool hasSaddle() const;
 	void setSaddle(bool b);

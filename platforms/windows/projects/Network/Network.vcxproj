@@ -107,6 +107,7 @@
     <ClCompile Include="..\..\..\..\source\network\packets\SignUpdatePacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\TakeItemEntityPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\TeleportEntityPacket.cpp" />
+    <ClCompile Include="..\..\..\..\source\network\packets\UpdateStatPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\packets\UseItemPacket.cpp" />
     <ClCompile Include="..\..\..\..\source\network\ServerLevelListener.cpp" />
   </ItemGroup>

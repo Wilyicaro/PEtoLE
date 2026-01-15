@@ -24,6 +24,7 @@
 class Level;
 class MinecraftServer;
 class Player;
+class Mob;
 class ItemInstance;
 class ItemEntity;
 class LightningBolt;
@@ -147,6 +148,7 @@ public:
 	virtual void handleInsidePortal();
 	virtual void handleEntityEvent(EntityEvent event);
 	virtual void thunderHit(LightningBolt*);
+	virtual void killed(Mob*);
 	void load(CompoundIO tag);
 	bool save(CompoundIO tag);
 	void saveWithoutId(CompoundIO tag);

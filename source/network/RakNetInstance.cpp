@@ -277,7 +277,7 @@ void RakNetInstance::send(Packet* packet)
 #ifdef LOG_PACKETS
     uint8_t packetId;
     bs.Read(packetId);
-    LOG_PACKET("Sent packet (id: %d guid: %s)", packetId, m_bIsHost ? "UNASSIGNED_SYSTEM_ADDRESS" : m_guid.ToString());
+    LOG_PACKET("Sent packet (id: %d guid: %s)", packetId, m_bIsHost ? "UNASSIGNED_SYSTEM_ADDRESS" : m_username.ToString());
 #endif
     }
     else

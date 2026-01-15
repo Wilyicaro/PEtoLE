@@ -6,8 +6,10 @@
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
 #include "Pig.hpp"
+#include "PigZombie.hpp"
 #include "world/level/Level.hpp"
 #include "common/Utils.hpp"
+#include "stats/Achievement.hpp"
 
 Pig::Pig(Level* pLevel) : Animal(pLevel)
 {
@@ -59,4 +61,22 @@ void Pig::readAdditionalSaveData(CompoundIO tag)
 {
 	Animal::readAdditionalSaveData(tag);
 	setSaddle(tag->getBoolean("Saddle"));
+}
+
+void Pig::thunderHit(LightningBolt* lighting)
+{
+	if (!m_pLevel->m_bIsOnline)
+	{
+		std::shared_ptr<PigZombie> pigZombie = std::make_shared<PigZombie>(m_pLevel);
+		pigZombie->moveTo(m_pos, m_rot);
+		m_pLevel->addEntity(pigZombie);
+		remove();
+	}
+}
+
+void Pig::causeFallDamage(float fallDistance)
+{
+	Animal::causeFallDamage(fallDistance);
+	if (fallDistance > 5.0F && m_pRider && m_pRider->isPlayer())
+		((Player*)m_pRider.get())->awardStat(Achievements::flyPig);
 }

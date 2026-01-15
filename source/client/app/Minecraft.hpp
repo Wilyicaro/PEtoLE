@@ -30,6 +30,7 @@
 #include "world/gamemode/GameType.hpp"
 #include "world/particle/ParticleEngine.hpp"
 #include <stdint.h>
+#include "stats/StatsCounter.hpp"
 
 class Screen; // in case we're included from Screen.hpp
 
@@ -159,6 +160,7 @@ public:
 	SoundEngine* m_pSoundEngine;
 	GameMode* m_pGameMode;
 	Textures* m_pTextures;
+	StatsCounter* m_pStatsCounter;
 	Font* m_pFont;
 	RakNetInstance* m_pRakNetInstance;
 	NetEventCallback* m_pNetEventCallback;

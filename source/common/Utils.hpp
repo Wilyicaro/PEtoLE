@@ -614,6 +614,9 @@ void sleepMs(int ms);
 bool createFolderIfNotExists(const char* pDir);
 bool createFoldersIfNotExists(const char* pDir);
 bool DeleteDirectory(const std::string& name, bool unused);
+bool fileExists(const char* pDir);
+bool isDirectory(const char* pDir);
+bool dirExists(const char* pDir);
 
 // compress and decompress stuff with zlib: ( you must SAFE_DELETE_ARRAY what it returns )
 uint8_t* ZlibInflateToMemory(uint8_t* pInput, size_t compressedSize, size_t decompressedSize);

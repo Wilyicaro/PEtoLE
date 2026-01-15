@@ -244,6 +244,27 @@ bool DeleteDirectory(const std::string& name2, bool unused)
 #endif
 }
 
+bool fileExists(const char* pDir)
+{
+	return XPL_ACCESS(pDir, 0) == 0;
+}
+
+bool isDirectory(const char* pDir)
+{
+	struct stat st;
+	if (stat(pDir, &st) == 0)
+	{
+		if (!S_ISDIR(st.st_mode))
+			return false;
+	}
+	return true;
+}
+
+bool dirExists(const char* pDir)
+{
+	return fileExists(pDir) && isDirectory(pDir);
+}
+
 const char* GetTerrainName()
 {
 	return "terrain.png";

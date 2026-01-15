@@ -20,7 +20,8 @@ FurnaceMenu::FurnaceMenu(Inventory* inventory, std::shared_ptr<FurnaceTileEntity
     }
 }
 
-bool FurnaceMenu::stillValid(Player* player) const {
+bool FurnaceMenu::stillValid(Player* player) const
+{
     return m_furnace->stillValid(player);
 }
 
@@ -36,7 +37,8 @@ void FurnaceMenu::broadcastChanges()
 {
     ContainerMenu::broadcastChanges();
 
-    for (const std::shared_ptr<ContainerListener> listener : listeners) {
+    for (const std::shared_ptr<ContainerListener> listener : listeners)
+    {
         if (m_lastCookTime != m_furnace->m_tickCount)
             listener->setContainerData(this, 0, m_furnace->m_tickCount);
 

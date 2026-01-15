@@ -40,7 +40,7 @@ int TopSnowTile::getResourceCount(Random* random) const
 	return 0;
 }
 
-void TopSnowTile::playerDestroy(Level* level, Player*, const TilePos& pos, int)
+void TopSnowTile::playerDestroy(Level* level, Player* player, const TilePos& pos, int)
 {
 	if (level->m_bIsOnline) return;
 	float var7 = 0.7F;
@@ -52,6 +52,7 @@ void TopSnowTile::playerDestroy(Level* level, Player*, const TilePos& pos, int)
 	item->m_throwTime = 10;
 	level->addEntity(item);
 	level->setTile(pos, TILE_AIR);
+	player->awardStat(Stats::statMineBlock[m_ID]);
 }
 
 bool TopSnowTile::mayPlace(const Level* level, const TilePos& pos) const

@@ -39,6 +39,8 @@
 // custom:
 #include "client/renderer/PatchManager.hpp"
 #include "client/locale/Language.hpp"
+#include "stats/AchievementMap.hpp"
+#include "stats/Stats.hpp"
 
 float Minecraft::_renderScaleMultiplier = 1.0f;
 
@@ -72,20 +74,21 @@ Minecraft::Minecraft() :
 	m_pGameMode = nullptr;
 	m_pTextures = nullptr;
 	m_pFont = nullptr;
+	m_pStatsCounter = nullptr;
 	m_pRakNetInstance = nullptr;
 	m_pNetEventCallback = nullptr;
 	field_2B0 = 0;
 	m_pUser = nullptr;
 	m_pLevel = nullptr;
 	m_pPlayer = nullptr;
-	m_pCameraEntity = nullptr; // why is there a duplicate? (this is used for the camera)
+	m_pCameraEntity = nullptr;
 	field_D0C = 0;
 	m_pScreen = nullptr;
 	field_D18 = 10;
 	m_pInputHolder = nullptr;
 	m_bGrabbedMouse = false; // this was true by default. why? we do not start off in-game...
 	m_bIsTouchscreen = false;
-	m_pLevelStorageSource = nullptr; // TODO
+	m_pLevelStorageSource = nullptr;
 	m_bIsLevelLoaded = false;
 	m_ticks = 0;
 	m_missTime = 0;
@@ -683,6 +686,7 @@ void Minecraft::tick()
 
 	tickInput();
 
+	m_pStatsCounter->tick();
 	m_gui.tick();
 
 	if (m_async.empty())
@@ -830,6 +834,7 @@ void Minecraft::init()
 	m_pGameRenderer = new GameRenderer(this);
 	m_pParticleEngine = new ParticleEngine(m_pLevel, m_pTextures);
 	m_pUser = new User(getOptions()->m_playerName.get(), "");
+	m_pStatsCounter = new StatsCounter(m_pUser, m_externalStorageDir);
 
 	setScreen(new IntroScreen);
 	m_async.emplace_back(std::bind(&Minecraft::initAssets, this));
@@ -842,6 +847,7 @@ void Minecraft::initAssets()
 	GrassColor::init(m_pPlatform->loadTexture("misc/grasscolor.png", true));
 	FoliageColor::init(m_pPlatform->loadTexture("misc/foliagecolor.png", true));
 	Language::getInstance()->init(getOptions());
+	AchievementMap::getInstance()->init();
 }
 
 Minecraft::~Minecraft()
@@ -1043,7 +1049,7 @@ void Minecraft::setLevel(Level* pLevel, const std::string& text, std::shared_ptr
 
 		if (m_pRakNetInstance->m_bIsHost && m_pMinecraftServer && m_pMinecraftServer->m_pConnection->m_onlinePlayers.empty())
 		{
-			m_pRakNetInstance->announceServer(m_pUser->m_guid);
+			m_pRakNetInstance->announceServer(m_pUser->m_username);
 			_levelGenerated();
 		}
 		else if (!m_pRakNetInstance->m_bIsHost)
@@ -1120,12 +1126,18 @@ void Minecraft::selectLevel(const std::string& a, std::function<void(LevelData&)
 	hostMultiplayer();
 	if (prepare)
 		prepare(m_pMinecraftServer->m_levelData);
+
+	m_pStatsCounter->addStat(Stats::startGame, 1);
 	if (m_pMinecraftServer->m_bIsNew)
 	{
+		m_pStatsCounter->addStat(Stats::createWorld, 1);
 		m_delayed.push_back(std::bind(&Minecraft::setLevel, this, m_pMinecraftServer->getLevel(), "Generating level", nullptr));
 	}
 	else
+	{
+		m_pStatsCounter->addStat(Stats::loadWorld, 1);
 		m_delayed.push_back(std::bind(&Minecraft::setLevel, this, m_pMinecraftServer->getLevel(m_pMinecraftServer->m_levelData.getDimension()), "Loading level", nullptr));
+	}
 	m_bIsLevelLoaded = true;
 }
 
@@ -1155,7 +1167,7 @@ void Minecraft::leaveGame()
 void Minecraft::hostMultiplayer()
 {
 #ifndef __EMSCRIPTEN__
-	m_pRakNetInstance->host(m_pUser->m_guid, C_DEFAULT_PORT, C_MAX_CONNECTIONS);
+	m_pRakNetInstance->host(m_pUser->m_username, C_DEFAULT_PORT, C_MAX_CONNECTIONS);
 	ServerSideNetworkHandler* handler = new ServerSideNetworkHandler(this, m_pRakNetInstance);
 	m_pNetEventCallback = handler;
 	m_pMinecraftServer->setConnection(handler);

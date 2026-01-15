@@ -20,8 +20,9 @@
 #include "network/Packet.hpp"
 #include "network/ServerSideNetworkHandler.hpp"
 #include "world/level/PortalForcer.hpp"
+#include "stats/Achievement.hpp"
 
-Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel), m_portalTime(0), m_oPortalTime(0)
+Player::Player(Level* pLevel, GameType playerGameType) : Mob(pLevel), m_portalTime(0), m_oPortalTime(0), m_pStartRidingPos(nullptr)
 {
 	m_pType = EntityType::player;
 	m_pInventory = nullptr;
@@ -124,6 +125,7 @@ bool Player::hurt(Entity* pEnt, int damage)
 	if (wolfAttack && wolfAttack->getCategory().contains(EntityCategories::MOB))
 		alertWolves((Mob*) wolfAttack, false);
 
+	awardStat(Stats::damageTaken, damage);
     return Mob::hurt(pEnt, damage);
 }
 
@@ -172,6 +174,10 @@ void Player::alertWolves(Mob* mob, bool mandatory)
 void Player::awardKillScore(Entity* pKilled, int score)
 {
 	m_score += score;
+	if (pKilled->isPlayer())
+		awardStat(Stats::playerKills);
+	else
+		awardStat(Stats::mobKills);
 }
 
 void Player::resetPos()
@@ -206,6 +212,10 @@ void Player::die(Entity* pCulprit)
 		m_vel.x = 0;
 		m_vel.z = 0;
 	}
+
+	m_heightOffset = 0.1;
+
+	awardStat(Stats::deaths);
 }
 
 void Player::aiStep()
@@ -357,6 +367,10 @@ void Player::tick()
 			}
 		}
 	}
+
+	awardStat(Stats::playOneMinute, 1);
+	if (!m_pRiding)
+		m_pStartRidingPos = nullptr;
 }
 
 void Player::updateAi()
@@ -414,7 +428,7 @@ void Player::attack(Entity* pEnt)
 		auto item = getSelectedItem();
 		if (item && pEnt->getCategory().contains(EntityCategories::MOB))
 		{
-			item->hurtEnemy((Mob*)pEnt);
+			item->hurtEnemy((Mob*)pEnt, this);
 			if (item->m_count <= 0) {
 				item->snap(this);
 				removeSelectedItem();
@@ -425,6 +439,8 @@ void Player::attack(Entity* pEnt)
 		{
 			if (pEnt->isAlive())
 				alertWolves((Mob*)pEnt, true);
+
+			awardStat(Stats::damageDealt, atkDmg);
 		}
 	}
 }
@@ -464,6 +480,7 @@ void Player::removeSelectedItem()
 
 void Player::travel(const Vec2& pos)
 {
+	Vec3 lastPos = m_pos;
 	if (getAbilities().m_bFlying)
 	{
 		real yd = m_vel.y;
@@ -474,6 +491,7 @@ void Player::travel(const Vec2& pos)
 		m_vel.y = yd * 0.6;
 	}
 	else Mob::travel(pos);
+	checkMovementStatistics(m_pos - lastPos);
 }
 
 real Player::getRidingHeight()
@@ -497,6 +515,26 @@ void Player::ride(std::shared_ptr<Entity> ent)
 		getConnection()->send(this, new SetRidingPacket(m_EntityID, ent ? ent->m_EntityID : -1));
 		getConnection()->send(this, new MovePlayerPacket(m_EntityID, m_pos, m_rot));
 	}
+}
+
+void Player::jumpFromGround()
+{
+	Mob::jumpFromGround();
+	awardStat(Stats::jump);
+}
+
+void Player::causeFallDamage(float level)
+{
+	if (m_distanceFallen >= 2)
+		awardStat(Stats::fallOneCm, Mth::round(m_distanceFallen * 100));
+	Mob::causeFallDamage(level);
+}
+
+void Player::killed(Mob* mob)
+{
+	if (mob->getCategory().contains(EntityCategories::MONSTER))
+		awardStat(Achievements::killEnemy);
+
 }
 
 void Player::displayClientMessage(const std::string& msg)
@@ -534,6 +572,7 @@ void Player::drop(std::shared_ptr<ItemInstance> itemInstance, bool b)
 	}
 
 	reallyDrop(pItemEntity);
+	awardStat(Stats::drop);
 }
 
 void Player::drop()
@@ -665,9 +704,11 @@ void Player::toggleDimension(int dim)
 
 void Player::rideTick()
 {
+	Vec3 lastPos = m_pos;
 	Mob::rideTick();
 	m_oBob = m_bob;
 	m_bob = 0.0F;
+	checkRidingStatistics(m_pos - lastPos);
 }
 
 void Player::setDefaultHeadHeight()
@@ -731,17 +772,18 @@ TilePos Player::checkRespawnPos(Level* level, const TilePos& pos)
 
 float Player::getBedSleepRot()
 {
-	if (m_bHasBedSleepPos) {
-		int var1 = m_pLevel->getData(m_bedSleepPos);
-		int var2 = BedTile::getDirectionFromData(var1);
-		switch (var2) {
-		case 0:
+	if (m_bHasBedSleepPos)
+	{
+		Facing::Name dir = BedTile::getDirectionFromData(m_pLevel->getData(m_bedSleepPos));
+		switch (dir)
+		{
+		case Facing::DOWN:
 			return 90.0F;
-		case 1:
+		case Facing::UP:
 			return 0.0F;
-		case 2:
+		case Facing::NORTH:
 			return 270.0F;
-		case 3:
+		case Facing::SOUTH:
 			return 180.0F;
 		}
 	}
@@ -752,6 +794,27 @@ float Player::getBedSleepRot()
 Abilities& Player::getAbilities()
 {
 	return m_abilities;
+}
+
+void Player::awardStat(Stat* stat, int amount)
+{
+	if (isServerPlayer())
+	{
+		if (stat)
+		{
+			if (stat->m_bRoot)
+			{
+				while (amount > 100)
+				{
+					getConnection()->send(this, new UpdateStatPacket(stat->m_id, 100));
+					amount -= 100;
+				}
+
+				getConnection()->send(this, new UpdateStatPacket(stat->m_id, amount));
+			}
+
+		}
+	}
 }
 
 void Player::startCrafting(const TilePos& pos)
@@ -863,6 +926,67 @@ bool Player::checkBedExists()
 void Player::nextContainerCounter()
 {
 	m_containerCounter = m_containerCounter % 100 + 1;
+}
+
+void Player::checkMovementStatistics(const Vec3& vel)
+{
+	if (!m_pRiding)
+	{
+		int var7;
+		if (isUnderLiquid(Material::water))
+		{
+			var7 = Mth::round(vel.length() * 100);
+			if (var7 > 0)
+				awardStat(Stats::diveOneCm, var7);
+		}
+		else if (wasInWater())
+		{
+			var7 = Mth::round(Mth::sqrt(vel.x * vel.x + vel.z * vel.z) * 100);
+			if (var7 > 0)
+				awardStat(Stats::swimOneCm, var7);
+		}
+		else if (onLadder())
+		{
+			if (vel.y > 0.0)
+				awardStat(Stats::climbOneCm, Mth::round(vel.y * 100));
+		}
+		else if (m_bOnGround)
+		{
+			var7 = Mth::round(Mth::sqrt(vel.x * vel.x + vel.z * vel.z) * 100);
+			if (var7 > 0)
+				awardStat(Stats::walkOneCm, var7);
+		}
+		else
+		{
+			var7 = Mth::round(Mth::sqrt(vel.x * vel.x + vel.z * vel.z) * 100);
+			if (var7 > 25)
+				awardStat(Stats::flyOneCm, var7);
+		}
+
+	}
+}
+
+void Player::checkRidingStatistics(const Vec3& vel)
+{
+	if (m_pRiding)
+	{
+		int distance = Mth::round(vel.length() * 100);
+		if (distance > 0)
+		{
+			if (m_pRiding->getType() == EntityType::minecart)
+			{
+				awardStat(Stats::minecartOneCm, distance);
+				if (!m_pStartRidingPos)
+					m_pStartRidingPos = new Vec3i(m_pos);
+				else if (m_pStartRidingPos->distanceTo(m_pos) >= 1000)
+					awardStat(Achievements::onARail);
+			}
+			else if (m_pRiding->getType() == EntityType::boat)
+				awardStat(Stats::boatOneCm, distance);
+			else if (m_pRiding->getType() == EntityType::pig)
+				awardStat(Stats::pigOneCm, distance);
+		}
+	}
 }
 
 void Player::stopSleepInBed(bool resetCounter, bool update, bool setRespawn)

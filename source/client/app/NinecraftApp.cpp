@@ -13,6 +13,7 @@
 #include "client/gui/screens/StartMenuScreen.hpp"
 #include "world/entity/EntityType.hpp"
 #include "world/tile/entity/TileEntityType.hpp"
+#include "stats/Stats.hpp"
 #include "stats/Achievements.hpp"
 
 #ifdef DEMO
@@ -80,6 +81,8 @@ void NinecraftApp::init()
 		Item::initItems();
 		Biome::initBiomes();
 		TileEntityType::initTypes();
+		//@TODO: Check if the initializing order will matter for the achievements
+		Stats::initStats();
 		Achievements::initAchievements();
 	}
 

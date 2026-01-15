@@ -9,6 +9,7 @@
 #include <sstream>
 #include "ItemInstance.hpp"
 #include "world/tile/Tile.hpp"
+#include "world/entity/Player.hpp"
 
 void ItemInstance::_init(int itemID, int count, int auxValue)
 {
@@ -130,7 +131,7 @@ void ItemInstance::hurtAndBreak(int amount, Entity* ent)
 		{
 			if (ent->isPlayer())
 			{
-				//((Player*)ent)->awardStat(Stats::STAT_ITEM_BREAK[m_itemID], 1);
+				((Player*)ent)->awardStat(Stats::statItemBreak[m_itemID]);
 			}
 
 
@@ -144,9 +145,10 @@ void ItemInstance::hurtAndBreak(int amount, Entity* ent)
 	}
 }
 
-void ItemInstance::hurtEnemy(Mob* mob)
+void ItemInstance::hurtEnemy(Mob* mob, Player* player)
 {
-	getItem()->hurtEnemy(this, mob);
+	if (getItem()->hurtEnemy(this, mob, player))
+		(player->awardStat(Stats::statItemUsed[m_itemID]));
 }
 
 void ItemInstance::interactEnemy(Mob* mob)
@@ -204,7 +206,8 @@ int ItemInstance::getAttackDamage(Entity *pEnt)
 
 void ItemInstance::mineBlock(int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
-	return getItem()->mineBlock(this, tile, pos, face, player);
+	if (getItem()->mineBlock(this, tile, pos, face, player))
+		player->awardStat(Stats::statItemUsed[m_itemID]);
 }
 
 std::shared_ptr<ItemInstance> ItemInstance::remove(int count)
@@ -237,7 +240,11 @@ std::shared_ptr<ItemInstance> ItemInstance::use(Level* level, Player* player)
 
 bool ItemInstance::useOn(Player* player, Level* level, const TilePos& pos, Facing::Name face)
 {
-	return getItem()->useOn(this, player, level, pos, face);
+	bool used = getItem()->useOn(this, player, level, pos, face);
+	if (used)
+		player->awardStat(Stats::statItemUsed[m_itemID]);
+
+	return used;
 }
 
 void ItemInstance::onCraftedBy(Player* player, Level* level)
@@ -247,6 +254,7 @@ void ItemInstance::onCraftedBy(Player* player, Level* level)
 
 void ItemInstance::onCraftedBy(Player* player, Level* level, int amount)
 {
+	player->awardStat(Stats::itemCrafted[m_itemID], amount);
 	getItem()->onCraftedBy(shared_from_this(), player, level);
 }
 

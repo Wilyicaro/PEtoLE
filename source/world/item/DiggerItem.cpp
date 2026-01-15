@@ -17,14 +17,16 @@ float DiggerItem::getDestroySpeed(ItemInstance * instance, const Tile * tile)
 	return 1.0f;
 }
 
-void DiggerItem::hurtEnemy(ItemInstance* instance, Mob* mob)
+bool DiggerItem::hurtEnemy(ItemInstance* instance, Mob* mob, Player* player)
 {
 	instance->hurtAndBreak(2, mob);
+	return true;
 }
 
-void DiggerItem::mineBlock(ItemInstance * instance, int tile, const TilePos& pos, Facing::Name face, Player* player)
+bool DiggerItem::mineBlock(ItemInstance* instance, int tile, const TilePos& pos, Facing::Name face, Player* player)
 {
 	instance->hurtAndBreak(1, player);
+	return true;
 }
 
 int DiggerItem::getAttackDamage(Entity* entity)

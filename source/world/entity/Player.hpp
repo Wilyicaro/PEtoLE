@@ -17,6 +17,7 @@
 #include "world/item/ContainerMenu.hpp"
 #include "world/item/InventoryMenu.hpp"
 #include "world/item/ContainerListener.hpp"
+#include "stats/Stat.hpp"
 
 class Inventory; // in case we're included from Inventory.hpp
 class FurnaceTileEntity;
@@ -49,6 +50,7 @@ private:
 	int m_dmgSpill;
 	Abilities m_abilities;
 	int m_sleepTimer;
+	Vec3i* m_pStartRidingPos;
 
 public:
 	Player(Level* pLevel, GameType gameType);
@@ -93,6 +95,9 @@ public:
 	virtual real getRidingHeight() override;
 	virtual void handleInsidePortal() override;
 	virtual void ride(std::shared_ptr<Entity>) override;
+	virtual void jumpFromGround() override;
+	virtual void causeFallDamage(float level) override;
+	virtual void killed(Mob*) override;
 
 	int addResource(int);
 	void animateRespawn(Player*, Level*);
@@ -120,6 +125,7 @@ public:
 	bool isSleepingLongEnough() const { return isSleeping() && m_sleepTimer >= 100; }
 	float getBedSleepRot();
 	Abilities& getAbilities();
+	virtual void awardStat(Stat*, int amount = 1);
 
 	void touch(Entity* pEnt);
 	GameType getPlayerGameType() const { return _playerGameType; }
@@ -154,6 +160,8 @@ protected:
 private:
 	bool checkBedExists();
 	void nextContainerCounter();
+	void checkMovementStatistics(const Vec3&);
+	void checkRidingStatistics(const Vec3&);
 
 public:
 	ContainerMenu* m_containerMenu;

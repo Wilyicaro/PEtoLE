@@ -194,6 +194,12 @@ Tile* Tile::setBlockUpdate()
 	return this;
 }
 
+Tile* Tile::untrackStat()
+{
+	m_bTrackStat = false;
+	return this;
+}
+
 Tile* Tile::setShape(float a, float b, float c, float d, float e, float f)
 {
 	m_aabb = AABB(a, b, c, d, e, f);
@@ -211,7 +217,7 @@ Tile* Tile::init()
 	lightBlock[m_ID] = isSolidRender() ? 255 : 0;
 	translucent[m_ID] = m_pMaterial->blocksLight();
 	isEntityTile[m_ID] = hasTileEntity();
-
+	m_bTrackStat = true;
 
 	return this;
 }
@@ -302,6 +308,11 @@ PushReaction Tile::getPistonPushReaction()
 	return m_pMaterial->getPushReaction();
 }
 
+bool Tile::shouldTrack() const
+{
+	return m_bTrackStat;
+}
+
 void Tile::initTiles()
 {
 	Tile::stone = (new StoneTile(TILE_STONE, TEXTURE_STONE, Material::stone))
@@ -343,21 +354,24 @@ void Tile::initTiles()
 		->setDestroyTime(-1.0f)
 		->setExplodeable(6000000.f)
 		->setSoundType(Tile::SOUND_STONE)
-		->setDescriptionId("bedrock");
+		->setDescriptionId("bedrock")
+		->untrackStat();
 
 	Tile::water = (new LiquidTileDynamic(TILE_WATER, Material::water))
 		->init()
 		->setDestroyTime(100.0f)
 		->setLightBlock(3)
 		->setDescriptionId("water")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::calmWater = (new LiquidTileStatic(TILE_WATER_CALM, Material::water))
 		->init()
 		->setDestroyTime(100.0f)
 		->setLightBlock(3)
 		->setDescriptionId("water")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::lava = (new LiquidTileDynamic(TILE_LAVA, Material::lava))
 		->init()
@@ -365,7 +379,8 @@ void Tile::initTiles()
 		->setLightEmission(1.0f)
 		->setLightBlock(255)
 		->setDescriptionId("lava")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::calmLava = (new LiquidTileStatic(TILE_LAVA_CALM, Material::lava))
 		->init()
@@ -373,7 +388,8 @@ void Tile::initTiles()
 		->setLightEmission(1.0f)
 		->setLightBlock(255)
 		->setDescriptionId("lava")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::sand = (new SandTile(TILE_SAND, TEXTURE_SAND, Material::sand))
 		->init()
@@ -421,7 +437,8 @@ void Tile::initTiles()
 		->setLightBlock(true)
 		->setSoundType(Tile::SOUND_GRASS)
 		->setDescriptionId("leaves")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::glass = (new GlassTile(TILE_GLASS, TEXTURE_GLASS, Material::glass))
 		->init()
@@ -593,7 +610,8 @@ void Tile::initTiles()
 		->setDestroyTime(3.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("doorWood")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::ladder = (new LadderTile(TILE_LADDER, TEXTURE_LADDER))
 		->init()
@@ -654,21 +672,24 @@ void Tile::initTiles()
 		->setDestroyTime(1.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("sign")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::wallSign = (new SignTile(TILE_SIGN_WALL, true))
 		->init()
 		->setDestroyTime(1.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("sign")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::doorIron = (new DoorTile(TILE_DOOR_IRON, Material::metal))
 		->init()
 		->setDestroyTime(5.0f)
 		->setSoundType(Tile::SOUND_METAL)
 		->setDescriptionId("doorIron")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::redstoneOre = (new RedStoneOreTile(TILE_ORE_REDSTONE, TEXTURE_ORE_RED_STONE, false))
 		->init()
@@ -744,7 +765,8 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_GRASS)
-		->setDescriptionId("reeds");
+		->setDescriptionId("reeds")
+		->untrackStat();
 
 	Tile::fence = (new FenceTile(TILE_FENCE, TEXTURE_PLANKS))
 		->init()
@@ -794,7 +816,8 @@ void Tile::initTiles()
 		->setLightEmission(1.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("fire")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::dispenser = (new DispenserTile(TILE_DISPENSER, TEXTURE_FURNACE_SIDE))
 		->init()
@@ -823,7 +846,8 @@ void Tile::initTiles()
 		->init()
 		->setDestroyTime(5.0f)
 		->setSoundType(Tile::SOUND_METAL)
-		->setDescriptionId("mobSpawner");
+		->setDescriptionId("mobSpawner")
+		->untrackStat();
 
 	Tile::chest = (new ChestTile(TILE_CHEST, TEXTURE_CHEST_ONE_SIDE))
 		->init()
@@ -837,7 +861,8 @@ void Tile::initTiles()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_NORMAL)
 		->setDescriptionId("redstoneDust")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::sapling = (new Sapling(TILE_SAPLING, TEXTURE_SAPLING));
 	Tile::sapling
@@ -878,7 +903,8 @@ void Tile::initTiles()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_GRASS)
 		->setDescriptionId("crops")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::furnace = (new FurnaceTile(TILE_FURNACE, false))
 		->init()
@@ -900,14 +926,16 @@ void Tile::initTiles()
 		->setDestroyTime(0.5f)
 		->setSoundType(Tile::SOUND_CLOTH)
 		->setDescriptionId("cake")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::repeater = (new RepeaterTile(TILE_REPEATER_OFF, false))
 		->init()
 		->setDestroyTime(0.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("diode")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::repeaterLit = (new RepeaterTile(TILE_REPEATER_ON, true))
 		->init()
@@ -916,14 +944,16 @@ void Tile::initTiles()
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("diode")
 		->setTicking(true)
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::trapDoor = (new TrapDoorTile(TILE_TRAPDOOR, Material::wood))
 		->init()
 		->setDestroyTime(3.0f)
 		->setSoundType(Tile::SOUND_WOOD)
 		->setDescriptionId("trapdoor")
-		->setBlockUpdate();
+		->setBlockUpdate()
+		->untrackStat();
 
 	Tile::portal = new PortalTile(TILE_PORTAL, TEXTURE_PORTAL);
 	portal->init()
@@ -1334,6 +1364,7 @@ void Tile::attack(Level* pLevel, const TilePos& pos, Player* player)
 
 void Tile::playerDestroy(Level* level, Player* player, const TilePos& pos, int data)
 {
+	player->awardStat(Stats::statMineBlock[m_ID]);
 	spawnResources(level, pos, data);
 }
 

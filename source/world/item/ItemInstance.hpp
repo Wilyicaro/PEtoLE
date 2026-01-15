@@ -49,7 +49,7 @@ public:
 	int getMaxStackSize() const;
 	void hurt(int by);
 	void hurtAndBreak(int, Entity*);
-	void hurtEnemy(Mob*);
+	void hurtEnemy(Mob*, Player* player);
 	void interactEnemy(Mob*);
 	bool isDamageableItem();
 	bool isDamaged();

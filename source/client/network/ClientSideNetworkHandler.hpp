@@ -70,6 +70,7 @@ public:
 	void handle(const RakNet::RakNetGUID&, LevelDataPacket*) override;
 	void handle(const RakNet::RakNetGUID&, MapItemDataPacket*) override;
 	void handle(const RakNet::RakNetGUID&, SignUpdatePacket*) override;
+	void handle(const RakNet::RakNetGUID&, UpdateStatPacket*) override;
 
 	std::shared_ptr<Entity> getEntity(int);
 	

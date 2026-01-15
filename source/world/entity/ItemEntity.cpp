@@ -8,6 +8,7 @@
 
 #include "ItemEntity.hpp"
 #include "world/level/Level.hpp"
+#include "stats/Achievement.hpp"
 
 ItemEntity::ItemEntity(Level* level) : Entity(level)
 {
@@ -62,6 +63,11 @@ void ItemEntity::playerTouch(Player* player)
 	int oldCount = m_itemInstance->m_count;
 	if (m_pLevel->m_bIsOnline || m_throwTime || !pInventory->add(m_itemInstance))
 		return;
+
+	if (m_itemInstance->m_itemID == Tile::treeTrunk->m_ID)
+		player->awardStat(Achievements::mineWood);
+	else if (m_itemInstance->m_itemID == Item::leather->m_itemID)
+		player->awardStat(Achievements::killCow);
 
 	m_pLevel->playSound(this, "random.pop", 0.2f, ((m_random.nextFloat() - m_random.nextFloat()) * 0.7f + 1.0f) * 2.0f);
 	player->take(shared_from_this(), oldCount);

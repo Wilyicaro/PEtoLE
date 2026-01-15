@@ -84,7 +84,8 @@ enum ePacketType
 	PACKET_CONTAINER_ACK,
 	PACKET_CONTAINER_CLOSE,
 	PACKET_CONTAINER_OPEN,
-	PACKET_MAP_ITEM_DATA
+	PACKET_MAP_ITEM_DATA,
+	PACKET_UPDATE_STAT
 };
 
 class Packet
@@ -946,4 +947,19 @@ public:
 public:
 	TilePos m_pos;
 	std::array<RakNet::RakString, 4> m_messages;
+};
+
+class UpdateStatPacket : public Packet
+{
+public:
+	UpdateStatPacket() {};
+	UpdateStatPacket(int id, int amount) : m_id(id), m_amount(amount) {};
+
+	void handle(const RakNet::RakNetGUID&, NetEventCallback* pCallback) override;
+	void write(RakNet::BitStream*) override;
+	void read(RakNet::BitStream*) override;
+
+public:
+	int m_id;
+	int m_amount;
 };

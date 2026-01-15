@@ -57,6 +57,7 @@ class ExplodePacket;
 class LevelDataPacket;
 class MapItemDataPacket;
 class SignUpdatePacket;
+class UpdateStatPacket;
 #include "world/level/Level.hpp"
 class Level;
 class LevelChunk;
@@ -117,5 +118,6 @@ public:
 	virtual void handle(const RakNet::RakNetGUID&, LevelDataPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, MapItemDataPacket*);
 	virtual void handle(const RakNet::RakNetGUID&, SignUpdatePacket*);
+	virtual void handle(const RakNet::RakNetGUID&, UpdateStatPacket*);
 };
 

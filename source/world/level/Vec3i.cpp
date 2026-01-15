@@ -58,8 +58,14 @@ Vec3i Vec3i::relative(Facing::Name facing, int steps) const
 }
 
 
-Vec3 Vec3i::center() const {
+Vec3 Vec3i::center() const
+{
 	return Vec3(x + 0.5, y + 0.5, z + 0.5);
+}
+
+real Vec3i::distanceTo(const Vec3i& other) const
+{
+	return Mth::sqrt(Mth::sqr(x - other.x) + Mth::sqr(y - other.y) + Mth::sqr(z - other.z));
 }
 
 bool Vec3i::operator<(const Vec3i& b) const

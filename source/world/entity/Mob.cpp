@@ -39,7 +39,7 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	m_bJumping = 0;
 	field_B10 = 0;
 	m_runSpeed = 0.7f;
-	field_B48 = 0;
+	m_deathScore = 0;
 	m_oRun = 0.0f;
 	m_run = 0.0f;
 	m_animStep = 0.0f;
@@ -48,7 +48,7 @@ Mob::Mob(Level* pLevel) : Entity(pLevel)
 	field_B60 = 1.0f;
 	field_B64 = 0;
 	field_B68 = 1;
-	field_B69 = 0;
+	m_bDead = 0;
 	m_lSteps = 0;
 	m_lPos = Vec3::ZERO;
 	m_lRot = Vec2::ZERO;
@@ -551,10 +551,13 @@ void Mob::travel(const Vec2& pos)
 
 void Mob::die(Entity* pCulprit)
 {
-	if (pCulprit && field_B48 > 0)
-		pCulprit->awardKillScore(pCulprit, field_B48);
+	if (pCulprit && m_deathScore > 0)
+		pCulprit->awardKillScore(pCulprit, m_deathScore);
 
-	field_B69 = true;
+	if (pCulprit)
+		pCulprit->killed(this);
+
+	m_bDead = true;
 
 	if (!m_pLevel->m_bIsOnline)
 		dropDeathLoot();

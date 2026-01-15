@@ -78,9 +78,11 @@ public:
 private:
     FurnaceRecipes();
 
-    std::unordered_multimap<int, std::unique_ptr<SingleInputRecipe>> m_furnaceRecipes;
     std::unordered_map<int, int> m_burnDuration;
     std::unordered_map<Material*, int> m_materialBurnDuration;
+
+public:
+    std::unordered_multimap<int, std::unique_ptr<SingleInputRecipe>> m_furnaceRecipes;
 };
 
 

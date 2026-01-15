@@ -973,6 +973,10 @@ void Entity::thunderHit(LightningBolt* bolt)
 	
 }
 
+void Entity::killed(Mob*)
+{
+}
+
 void Entity::load(CompoundIO tag)
 {
 	startSynchedData();

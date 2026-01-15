@@ -75,31 +75,33 @@ float FishingHook::getShadowHeightOffs() const
 
 int FishingHook::retrieve()
 {
-    uint8_t var1 = 0;
+    uint8_t retrieveState = 0;
     if (m_hookedIn)
     {
         Vec3 diff = m_owner->m_pos - m_pos;
         m_hookedIn->m_vel.x += diff.x * 0.1;
         m_hookedIn->m_vel.y += diff.y * 0.1 + Mth::sqrt(diff.length()) * 0.08;
         m_hookedIn->m_vel.z += diff.z * 0.1;
-        var1 = 3;
+        retrieveState = 3;
     }
-    else if (m_nibble > 0) {
+    else if (m_nibble > 0)
+    {
         auto var13 = std::make_shared<ItemEntity>(m_pLevel, m_pos, std::make_shared<ItemInstance>(Item::rawFish));
         Vec3 diff = m_owner->m_pos - m_pos;
         var13->m_vel.x = diff.x * 0.1;
         var13->m_vel.y = diff.y * 0.1 + Mth::sqrt(diff.length()) * 0.08;
         var13->m_vel.z = diff.z * 0.1;
         m_pLevel->addEntity(var13);
-        var1 = 1;
+        m_owner->awardStat(Stats::fishCaught, 1);
+        retrieveState = 1;
     }
 
     if (m_bInGround)
-        var1 = 2;
+        retrieveState = 2;
 
     remove();
     m_owner->m_fishing = nullptr;
-    return var1;
+    return retrieveState;
 }
 
 void FishingHook::tick()
