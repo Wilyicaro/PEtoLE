@@ -134,7 +134,7 @@ std::unordered_map<Stat*, int> StatsCounter::parseStatsJson(const std::string& j
                 continue;
            
 
-            checksumBuilder += std::to_string(statId) + "," + std::to_string(amount) + ",";
+            checksumBuilder += stat->getUUID() + "," + std::to_string(amount) + ",";
 
             result[stat] = amount;
         }
@@ -177,7 +177,7 @@ std::string StatsCounter::generateStatsJson(const std::string& username, const s
         entry[std::to_string(stat->m_id)] = std::to_string(value);
         statsChange.push_back(entry);
 
-        checksumBuilder += std::to_string(stat->m_id) + "," + std::to_string(value) + ",";
+        checksumBuilder += stat->getUUID() + "," + std::to_string(value) + ",";
     }
 
     json["stats-change"] = statsChange;

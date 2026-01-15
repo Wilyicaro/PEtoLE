@@ -686,7 +686,8 @@ void Minecraft::tick()
 
 	tickInput();
 
-	m_pStatsCounter->tick();
+	if (m_pStatsCounter)
+		m_pStatsCounter->tick();
 	m_gui.tick();
 
 	if (m_async.empty())
@@ -834,7 +835,6 @@ void Minecraft::init()
 	m_pGameRenderer = new GameRenderer(this);
 	m_pParticleEngine = new ParticleEngine(m_pLevel, m_pTextures);
 	m_pUser = new User(getOptions()->m_playerName.get(), "");
-	m_pStatsCounter = new StatsCounter(m_pUser, m_externalStorageDir);
 
 	setScreen(new IntroScreen);
 	m_async.emplace_back(std::bind(&Minecraft::initAssets, this));
@@ -848,6 +848,8 @@ void Minecraft::initAssets()
 	FoliageColor::init(m_pPlatform->loadTexture("misc/foliagecolor.png", true));
 	Language::getInstance()->init(getOptions());
 	AchievementMap::getInstance()->init();
+	SAFE_DELETE(m_pStatsCounter);
+	m_pStatsCounter = new StatsCounter(m_pUser, m_externalStorageDir);
 }
 
 Minecraft::~Minecraft()

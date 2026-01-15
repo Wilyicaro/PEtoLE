@@ -6,9 +6,12 @@ AchievementMap::AchievementMap()
 {
 }
 
+//@NOTE: This will make sure that stats/achievements without a mapping won't crash the game and will have the same behavior as the original, which used StringBuilder.append and allowed null String values
+//Certainly every stat should have a mapping in the original (tall grass mine block stat doesn't have one tho), so that isn't really an intentional behavior
 const std::string& AchievementMap::get(int id) const
 {
-	return m_map.at(id);
+    auto it = m_map.find(id);
+    return it == m_map.end() ? NULL_UUID : it->second;
 }
 
 void AchievementMap::init()
@@ -46,6 +49,8 @@ void AchievementMap::init()
 }
 
 AchievementMap* AchievementMap::instance = new AchievementMap();
+
+std::string AchievementMap::NULL_UUID = "null";
 
 AchievementMap* AchievementMap::getInstance()
 {

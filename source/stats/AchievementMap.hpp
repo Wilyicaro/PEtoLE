@@ -18,4 +18,6 @@ private:
 	std::unordered_map<int, std::string> m_map;
 
 	static AchievementMap* instance;
+
+	static std::string NULL_UUID;
 };
