@@ -96,6 +96,7 @@
     <ClCompile Include="$(MC_ROOT)\source\common\ShortTag.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\common\StringTag.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\common\Tag.cpp" />
+    <ClCompile Include="..\..\..\..\source\common\math\Color.cpp" />
     <ClCompile Include="..\..\..\..\source\common\md5.cpp" />
     <ClCompile Include="..\..\..\..\source\common\NbtIo.cpp" />
     <ClCompile Include="..\..\..\..\source\common\ProgressListener.cpp" />
@@ -125,6 +126,7 @@
     <ClInclude Include="$(MC_ROOT)\source\common\ShortTag.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\StringTag.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\common\Tag.hpp" />
+    <ClInclude Include="..\..\..\..\source\common\math\Color.hpp" />
     <ClInclude Include="..\..\..\..\source\common\md5.hpp" />
     <ClInclude Include="..\..\..\..\source\common\NbtIo.hpp" />
     <ClInclude Include="..\..\..\..\source\common\ProgressListener.hpp" />

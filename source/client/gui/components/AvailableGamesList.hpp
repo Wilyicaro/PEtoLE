@@ -15,7 +15,7 @@ class AvailableGamesList : public ScrolledSelectionList
 {
 public:
 	AvailableGamesList(Minecraft*, int, int, int, int, int);
-	int getNumberOfItems() override;
+	int getItemCount() override;
 	bool isSelectedItem(int i) override;
 	void renderBackground(float f) override;
 	void renderItem(int, int, int, int, Tesselator& t) override;

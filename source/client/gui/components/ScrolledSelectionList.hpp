@@ -20,7 +20,7 @@ public:
 	virtual ~ScrolledSelectionList() {}
 
 	virtual void setRenderSelection(bool);
-	virtual int getNumberOfItems() = 0;
+	virtual int getItemCount() = 0;
 	virtual void selectItem(int, bool) = 0;
 	virtual bool isSelectedItem(int) = 0;
 	virtual int getMaxPosition();
@@ -34,7 +34,8 @@ public:
 	virtual void render(int mouseX, int mouseY, float f);
 	virtual void renderHoleBackground(float, float, int, int);
 	virtual void checkInput(int mouseX, int mouseY);
-	virtual void onClickItem(int index, int mouseX, int mouseY);
+	virtual void onClickItem(int index, int mouseX, int mouseY, bool);
+	virtual void mouseClicked(int mouseX, int mouseY);
 	virtual void renderScrollBackground();
 
 	void setRenderHeader(bool, int);
@@ -50,7 +51,7 @@ public:
 		if (idx < 0)
 			return -1;
 
-		if (idx >= getNumberOfItems())
+		if (idx >= getItemCount())
 			return -1;
 
 		return idx;
@@ -58,27 +59,26 @@ public:
 	// @NOTE: This is also inlined.
 	inline int transformY(int y)
 	{
-		return int(y - field_C - field_48 + field_34 - 4.0f);
+		return int(y - m_y0 - m_headerHeight + m_scrollAmount - 4.0f);
 	}
 
 public:
 	Minecraft* m_pMinecraft;
-	float field_C;
-	float field_10;
+	int m_y0;
+	int m_y1;
 	int m_itemHeight;
-	int field_18;
+	int m_width;
 	int field_1C;
-	float field_20;
-	float field_24;
+	int m_x1;
+	int m_x0;
 	int field_28;
-	int field_2C;
-	float m_noNeighborUpdate;
-	float field_34;
-	float field_38;
-	int field_3C;
-	int field_40;
+	float m_scrollAmount;
+	float m_scrollBarGrabOffset;
+	float m_mouseYWhenPressed;
+	int m_lastClickedIndex;
+	int64_t m_lastClickTime;
 	bool m_bRenderSelection;
-	bool field_45;
-	int field_48;
+	bool m_bRenderHeader;
+	int m_headerHeight;
 };
 

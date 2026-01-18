@@ -25,14 +25,13 @@ TextInputBox::TextInputBox(Screen* parent, int id, int x, int y, int width, int 
 	m_text = text;
 	m_bFocused = false;
 	m_bEnabled = true;
-	m_bCursorOn = true;
 	m_insertHead = 0;
-	m_lastFlashed = 0;
 	m_pFont = nullptr;
 	m_pParent = parent;
 	m_maxLength = -1;
 	m_scrollPos = 0;
 	m_bBordered = true;
+	m_ticks = 0;
 }
 
 TextInputBox::~TextInputBox()
@@ -204,21 +203,7 @@ void TextInputBox::keyPressed(int key)
 
 void TextInputBox::tick()
 {
-	if (!m_lastFlashed)
-		m_lastFlashed = getTimeMs();
-
-	if (m_bFocused)
-	{
-		if (getTimeMs() > m_lastFlashed + 500)
-		{
-			m_lastFlashed += 500;
-			m_bCursorOn ^= 1;
-		}
-	}
-	else
-	{
-		m_bCursorOn = false;
-	}
+	++m_ticks;
 }
 
 void TextInputBox::setFocused(bool b)
@@ -242,8 +227,6 @@ void TextInputBox::setFocused(bool b)
 	m_bFocused = b;
 	if (b)
 	{
-		m_lastFlashed = getTimeMs();
-		m_bCursorOn = true;
 		m_insertHead = int(m_text.size());
 		recalculateScroll();
 	}
@@ -301,8 +284,8 @@ void TextInputBox::render()
 {
 	if (m_bBordered)
 	{
-		fill(m_xPos, m_yPos, m_xPos + m_width, m_yPos + m_height, 0xFFAAAAAA);
-		fill(m_xPos + 1, m_yPos + 1, m_xPos + m_width - 1, m_yPos + m_height - 1, 0xFF000000);
+		fill(m_xPos - 1, m_yPos - 1, m_xPos + m_width + 1, m_yPos + m_height + 1, 0xFFA0A0A0);
+		fill(m_xPos, m_yPos, m_xPos + m_width, m_yPos + m_height, 0xFF000000);
 	}
 
 	int text_color;
@@ -325,7 +308,7 @@ void TextInputBox::render()
 	int textYPos = (m_height - 8) / 2;
 	drawString(m_pFont, rendered_text, m_xPos + PADDING, m_yPos + textYPos, text_color);
 
-	if (m_bCursorOn)
+	if (m_bFocused && m_ticks / 6 % 2 == 0)
 	{
 		int cursor_pos = m_insertHead - m_scrollPos;
 		if (cursor_pos >= 0 && cursor_pos <= int(rendered_text.length()))

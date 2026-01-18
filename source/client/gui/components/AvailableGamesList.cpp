@@ -13,7 +13,7 @@ AvailableGamesList::AvailableGamesList(Minecraft* a, int b, int c, int d, int e,
 {
 }
 
-int AvailableGamesList::getNumberOfItems()
+int AvailableGamesList::getItemCount()
 {
     return int(m_games.size());
 }

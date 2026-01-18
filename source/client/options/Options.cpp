@@ -69,7 +69,7 @@ Options::Options(Minecraft* mc) :
 	add(m_playerName);
 	add(m_lang);
 	field_244 = 1.0f;
-	m_bDontRenderGui = false;
+	m_bHideGui = false;
 	field_248 = 1.0f;
 	m_bThirdPerson = false;
 	m_bFlyCheat = false;
@@ -113,7 +113,7 @@ void Options::_load()
 		else if (key == "gfx_biomecolors")
 			m_bBiomeColors = readBool(value);
 		else if (key == "gfx_hidegui")
-			m_bDontRenderGui = readBool(value);
+			m_bHideGui = readBool(value);
 		else if (key == "gfx_thirdperson")
 			m_bThirdPerson = readBool(value);
 		else if (key == "misc_oldtitle")
@@ -246,7 +246,7 @@ std::vector<std::string> Options::getOptionStrings()
 #define SO(optname, value) do { vec.push_back(optname); vec.push_back(value); } while (0)
 
 	SO("mp_server_visible_default", saveBool(m_bServerVisibleDefault));
-	SO("gfx_hidegui",               saveBool(m_bDontRenderGui));
+	SO("gfx_hidegui",               saveBool(m_bHideGui));
 	SO("gfx_thirdperson",           saveBool(m_bThirdPerson));
 	SO("gfx_fancygrass", 			saveBool(m_bFancyGrass));
 	SO("gfx_biomecolors",           saveBool(m_bBiomeColors));

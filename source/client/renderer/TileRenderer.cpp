@@ -128,7 +128,7 @@ bool TileRenderer::canRender(int renderShape)
 	return renderShape == SHAPE_SOLID || renderShape == SHAPE_STAIRS || renderShape == SHAPE_FENCE || renderShape == SHAPE_CACTUS || renderShape == SHAPE_PISTON;
 }
 
-void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b, int rot)
+void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, const Color& color, int rot)
 {
 	int renderShape = tile->getRenderShape();
 	if (renderShape == SHAPE_CACTUS) {
@@ -216,11 +216,11 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 
 	Tesselator& t = Tesselator::instance;
 
-	if (!m_bAmbientOcclusion) t.color(r, g, b);
+	if (!m_bAmbientOcclusion) t.color(color);
 
 	for (int i = 0; i < 4; ++i) {
 		const auto vertex = Facing::CORNERS[Facing::VERTICES[face][i]];
-		if (m_bAmbientOcclusion) t.color(m_vtxRed[i] * r, m_vtxGreen[i] * g, m_vtxBlue[i] * b);
+		if (m_bAmbientOcclusion) t.color(m_vtxRed[i] * color.r, m_vtxGreen[i] * color.g, m_vtxBlue[i] * color.b, color.a);
 		int rotIndex = rotatedIndex[i];
 		bool useU2 = baseUVs[rotIndex][0];
 		if (flip) useU2 = !useU2;
@@ -232,39 +232,39 @@ void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::
 	}
 }
 
-void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b)
+void TileRenderer::renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, const Color& color)
 {
-	renderFace(tile, pos, texture, face, r, g, b, m_faceRotation[face]);
+	renderFace(tile, pos, texture, face, color, m_faceRotation[face]);
 }
 
-void TileRenderer::renderEast(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
+void TileRenderer::renderEast(Tile* tile, const Vec3& pos, int texture, const Color& color)
 {
-	renderFace(tile, pos, texture, Facing::EAST, r, g, b);
+	renderFace(tile, pos, texture, Facing::EAST, color);
 }
 
-void TileRenderer::renderWest(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
+void TileRenderer::renderWest(Tile* tile, const Vec3& pos, int texture, const Color& color)
 {
-	renderFace(tile, pos, texture, Facing::WEST, r, g, b);
+	renderFace(tile, pos, texture, Facing::WEST, color);
 }
 
-void TileRenderer::renderSouth(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
+void TileRenderer::renderSouth(Tile* tile, const Vec3& pos, int texture, const Color& color)
 {
-	renderFace(tile, pos, texture, Facing::SOUTH, r, g, b);
+	renderFace(tile, pos, texture, Facing::SOUTH, color);
 }
 
-void TileRenderer::renderNorth(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
+void TileRenderer::renderNorth(Tile* tile, const Vec3& pos, int texture, const Color& color)
 {
-	renderFace(tile, pos, texture, Facing::NORTH, r, g, b);
+	renderFace(tile, pos, texture, Facing::NORTH, color);
 }
 
-void TileRenderer::renderDown(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
+void TileRenderer::renderDown(Tile* tile, const Vec3& pos, int texture, const Color& color)
 {
-	renderFace(tile, pos, texture, Facing::DOWN, r, g, b);
+	renderFace(tile, pos, texture, Facing::DOWN, color);
 }
 
-void TileRenderer::renderUp(Tile* tile, const Vec3& pos, int texture, float r, float g, float b)
+void TileRenderer::renderUp(Tile* tile, const Vec3& pos, int texture, const Color& color)
 {
-	renderFace(tile, pos, texture, Facing::UP, r, g, b);
+	renderFace(tile, pos, texture, Facing::UP, color);
 }
 
 void TileRenderer::renderPistonFace(real minX, real minY, real minZ, real maxX, real maxY, real maxZ, float bright, real offY, Facing::Name dir)
@@ -419,13 +419,7 @@ void TileRenderer::tesselateRowTexture(Tile* tile, int data, const Vec3& pos)
 	t.vertexUV(x1, pos.y + 1.0, z1, u1, v0);
 }
 
-inline void computeColor(int color, float& red, float& grn, float& blu, float bright) {
-	red = float(GET_RED(color)) / 255.0f * bright;
-	grn = float(GET_GREEN(color)) / 255.0f * bright;
-	blu = float(GET_BLUE(color)) / 255.0f * bright;
-}
-
-bool TileRenderer::tesselateBlockInWorld(Tile* tile, const TilePos& pos, float r, float g, float b)
+bool TileRenderer::tesselateBlockInWorld(Tile* tile, const TilePos& pos, const Color& color)
 {
 	Tesselator& t = Tesselator::instance;
 	float fLightHere = tile->getBrightness(m_pLevelSource, pos);
@@ -468,15 +462,13 @@ bool TileRenderer::tesselateBlockInWorld(Tile* tile, const TilePos& pos, float r
 		}
 
 		int texture = tile->getTexture(m_pLevelSource, pos, face);
-		float red, grn, blue;
-		computeColor(tile->getColor(m_pLevelSource, pos, face, texture), red, grn, blue, Facing::LIGHT[face] * light);
+		Color brightColor = Color(color).mulRGB(Facing::LIGHT[face] * light);
 
-		renderFace(tile, pos, texture, face, red * r, grn * g, blue * b);
+		renderFace(tile, pos, texture, face, brightColor * Color(tile->getColor(m_pLevelSource, pos, face, texture), 1.0f));
 
 		if (m_bFancyGrass && this->m_textureOverride < 0 && texture == TEXTURE_GRASS_SIDE && Facing::isHorizontal(face))
 		{
-			computeColor(tile->getColor(m_pLevelSource, pos, face, TEXTURE_GRASS_SIDE_OVERLAY), red, grn, blue, Facing::LIGHT[face] * light);
-			renderFace(tile, pos, TEXTURE_GRASS_SIDE_OVERLAY, face, red * r, grn * g, blue * b);
+			renderFace(tile, pos, TEXTURE_GRASS_SIDE_OVERLAY, face, brightColor * Color(tile->getColor(m_pLevelSource, pos, face, TEXTURE_GRASS_SIDE_OVERLAY), 1.0f));
 		}
 	}
 
@@ -487,35 +479,28 @@ bool TileRenderer::tesselateBlockInWorld(Tile* tile, const TilePos& pos)
 {
 	if (useAmbientOcclusion())
 	{
-		return tesselateBlockInWorldWithAmbienceOcclusionV2(tile, pos, 1.0f, 1.0f, 1.0f);
+		return tesselateBlockInWorldWithAmbienceOcclusionV2(tile, pos);
 	}
 
-	return tesselateBlockInWorld(tile, pos, 1.0f, 1.0f, 1.0f);
+	return tesselateBlockInWorld(tile, pos, Color::WHITE);
 }
 
-bool TileRenderer::tesselateCrossInWorld(Tile* tile, const TilePos& pos)
+bool TileRenderer::tesselateCrossInWorld(Tile* tile, const TilePos& pos, const Color& color)
 {
-
-	float r, g, b;
-	computeColor(getTileColor(tile, pos), r, g, b, tile->getBrightness(m_pLevelSource, pos));
-
 	Tesselator& t = Tesselator::instance;
 
-	t.color(r, g, b);
+	t.color((color * Color(getTileColor(tile, pos), 1.0f)).mulRGB(tile->getBrightness(m_pLevelSource, pos)));
 
 	tesselateCrossTexture(tile, m_pLevelSource->getData(pos), pos);
 
 	return true;
 }
 
-bool TileRenderer::tesselateRowInWorld(Tile* tile, const TilePos& pos)
+bool TileRenderer::tesselateRowInWorld(Tile* tile, const TilePos& pos, const Color& color)
 {
-	float r, g, b;
-	computeColor(getTileColor(tile, pos), r, g, b, tile->getBrightness(m_pLevelSource, pos));
-
 	Tesselator& t = Tesselator::instance;
 
-	t.color(r, g, b);
+	t.color((color * Color(getTileColor(tile, pos), 1.0f)).mulRGB(tile->getBrightness(m_pLevelSource, pos)));
 
 	tesselateRowTexture(tile, m_pLevelSource->getData(pos), pos);
 
@@ -625,8 +610,7 @@ bool TileRenderer::tesselateWaterInWorld(Tile* tile1, const TilePos& pos)
 	{
 	label_6:
 	label_7:
-		float bright = tile->getBrightness(m_pLevelSource, pos.below());
-		renderDown(tile1, pos, tile->getTexture(Facing::DOWN), bright * 0.5f, bright * 0.5f, bright * 0.5f);
+		renderDown(tile1, pos, tile->getTexture(Facing::DOWN), Color(Color::WHITE).mulRGB(tile->getBrightness(m_pLevelSource, pos.below()) * 0.5));
 		bFlag1 = true;
 	}
 
@@ -1413,10 +1397,9 @@ bool TileRenderer::tesselateBedInWorld(Tile* tile, const TilePos& pos)
 		if (flippedFace == face)
 			faceTexture = -faceTexture;
 
-		float red, green, blue;
-		computeColor(tile->getColor(m_pLevelSource, pos, face, faceTexture), red, green, blue, Facing::LIGHT[face] * faceBrightness);
-
-		renderFace(tile, pos, faceTexture, face, red, green, blue, face == Facing::UP ? upRotation : 0);
+		renderFace(tile, pos, faceTexture, face,
+			Color::WHITE * Color(tile->getColor(m_pLevelSource, pos, face, faceTexture), 1.0f).mulRGB(Facing::LIGHT[face] * faceBrightness),
+			face == Facing::UP ? upRotation : 0);
 	}
 
 	return drewAnything;
@@ -2006,7 +1989,7 @@ bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos)
 		case SHAPE_DOOR:
 		{
 			m_bDisableCulling = true;
-			bool b = tesselateBlockInWorld(tile, pos, 1.0f, 1.0f, 1.0f);
+			bool b = tesselateBlockInWorld(tile, pos, Color::WHITE);
 			m_bDisableCulling = false;
 			return b;
 		}
@@ -2017,7 +2000,7 @@ bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos)
 		case SHAPE_LEVER:
 			return tesselateLeverInWorld(tile, pos);
 		case SHAPE_CACTUS:
-			return tesselateBlockInWorld(tile, pos, 1.0f, 1.0f, 1.0f);
+			return tesselateBlockInWorld(tile, pos, Color::WHITE);
 		case SHAPE_BED:
 			return tesselateBedInWorld(tile, pos);
 		case SHAPE_REPEATER:
@@ -2047,18 +2030,12 @@ bool TileRenderer::tesselateInWorld(Tile* tile, const TilePos& pos, int a)
 	return r;
 }
 
-inline void computeTileColor(Tile* tile, int data, Facing::Name facing, int texture, float& red, float& grn, float& blu, float bright) {
-	computeColor(tile->getColor(data, facing, texture), red, grn, blu, bright);
-}
-
-inline void shadeIfNeeded(Tesselator& t, bool preshade, float red, float grn, float blu, float col) {
-	if (preshade)
-		t.color(col * red, col * grn, col * blu);
-	else
-		t.color(red, grn, blu);
-}
-
 void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
+{
+	renderTile(tile, data, Color::WHITE * bright, preshade);
+}
+
+void TileRenderer::renderTile(Tile* tile, int data, const Color& color, bool preshade)
 {
 	Tesselator& t = Tesselator::instance;
 
@@ -2079,14 +2056,15 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 		glTranslatef(-0.5f, -0.5f, -0.5f);
 		t.begin();
 
-		float red, grn, blu;
-		for (int dir = Facing::DOWN; dir <= Facing::EAST; dir++)
+		for (Facing::Name dir : Facing::ALL)
 		{
 			const auto normal = Facing::NORMALS[dir];
-			int texture = tile->getTexture((Facing::Name)dir, data);
-			computeTileColor(tile, data, (Facing::Name)dir, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
+			int texture = tile->getTexture(dir, data);
+			Color faceColor = color * Color(tile->getColor(data, dir, texture), 1.0f);
+			if (preshade)
+				faceColor.mulRGB(Facing::LIGHT[dir]);
 			t.normal(normal[0], normal[1], normal[2]);
-			renderFace(tile, Vec3::ZERO, tile->getTexture((Facing::Name)dir, data), (Facing::Name)dir, red, grn, blu);
+			renderFace(tile, Vec3::ZERO, tile->getTexture(dir, data), dir, faceColor);
 		}
 		t.draw();
 		glTranslatef(0.5f, 0.5f, 0.5f);
@@ -2121,17 +2099,16 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 
 			t.begin();
 
-			float red, grn, blu;
-			for (int dir = Facing::DOWN; dir <= Facing::EAST; dir++)
+			for (Facing::Name dir : Facing::ALL)
 			{
 				const auto normal = Facing::NORMALS[dir];
-				int texture = tile->getTexture((Facing::Name)dir, data);
-				computeTileColor(tile, data, (Facing::Name)dir, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
+				int texture = tile->getTexture(dir, data);
+				Color faceColor = color * Color(tile->getColor(data, dir, texture), 1.0f);
+				if (preshade)
+					faceColor.mulRGB(Facing::LIGHT[dir]);
 				t.normal(normal[0], normal[1], normal[2]);
-				renderFace(tile, Vec3::ZERO, tile->getTexture((Facing::Name)dir, data), (Facing::Name)dir, red, grn, blu);
+				renderFace(tile, Vec3::ZERO, tile->getTexture(dir, data), dir, faceColor);
 			}
-
-			shadeIfNeeded(t, preshade, red, grn, blu, 1.0f);
 			t.draw();
 		}
 		t.addOffset(0.5f, 0.5f, 0.5f);
@@ -2151,17 +2128,16 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 
 			t.begin();
 
-			float red, grn, blu;
-			for (int dir = Facing::DOWN; dir <= Facing::EAST; dir++)
+			for (Facing::Name dir : Facing::ALL)
 			{
 				const auto normal = Facing::NORMALS[dir];
-				int texture = tile->getTexture((Facing::Name)dir, data);
-				computeTileColor(tile, data, (Facing::Name)dir, texture, red, grn, blu, preshade ? bright * Facing::LIGHT[dir] : bright);
+				int texture = tile->getTexture(dir, data);
+				Color faceColor = color * Color(tile->getColor(data, dir, texture), 1.0f);
+				if (preshade)
+					faceColor.mulRGB(Facing::LIGHT[dir]);
 				t.normal(normal[0], normal[1], normal[2]);
-				renderFace(tile, Vec3::ZERO, tile->getTexture((Facing::Name)dir, data), (Facing::Name)dir, red, grn, blu);
+				renderFace(tile, Vec3::ZERO, tile->getTexture(dir, data), dir, faceColor);
 			}
-
-			shadeIfNeeded(t, preshade, red, grn, blu, 1.0f);
 			t.draw();
 		}
 		t.addOffset(0.5f, 0.5f, 0.5f);
@@ -2172,7 +2148,7 @@ void TileRenderer::renderTile(Tile* tile, int data, float bright, bool preshade)
 }
 
 #ifdef ENH_USE_OWN_AO
-bool TileRenderer::tesselateBlockInWorldWithAmbienceOcclusionV2(Tile* tile, const TilePos& pos, float r, float g, float b)
+bool TileRenderer::tesselateBlockInWorldWithAmbienceOcclusionV2(Tile* tile, const TilePos& pos, const Color& color)
 {
 	// START OF AUXILIARY DATA FOR AO
 
@@ -2277,10 +2253,7 @@ bool TileRenderer::tesselateBlockInWorldWithAmbienceOcclusionV2(Tile* tile, cons
 			continue;
 		}
 
-		float fR, fG, fB;
 		int tex = tile->getTexture(m_pLevelSource, pos, dir);
-
-		computeColor(tile->getColor(m_pLevelSource, pos, dir, tex), fR, fG, fB, Facing::LIGHT[dir]);
 
 		for (int i = 0; i < 4; i++)
 			m_vtxRed[i] = m_vtxGreen[i] = m_vtxBlue[i] = 1.0f;
@@ -2304,12 +2277,13 @@ bool TileRenderer::tesselateBlockInWorldWithAmbienceOcclusionV2(Tile* tile, cons
 
 		m_bAmbientOcclusion = true;
 
-		renderFace(tile, pos, tex, dir, fR * r, fG * g, fB * b);
+		Color faceColor = (color * Color(tile->getColor(m_pLevelSource, pos, dir, tex), 1.0f)).mulRGB(Facing::LIGHT[dir]);
+
+		renderFace(tile, pos, tex, dir, faceColor);
 
 		if (TileRenderer::m_bFancyGrass && tex == TEXTURE_GRASS_SIDE && Facing::isHorizontal(dir))
 		{
-			computeColor(tile->getColor(m_pLevelSource, pos, dir, TEXTURE_GRASS_SIDE_OVERLAY), fR, fG, fB, Facing::LIGHT[dir]);
-			renderFace(tile, pos, TEXTURE_GRASS_SIDE_OVERLAY, dir, fR * r, fG * g, fB * b);
+			renderFace(tile, pos, TEXTURE_GRASS_SIDE_OVERLAY, dir, (color * Color(tile->getColor(m_pLevelSource, pos, dir, TEXTURE_GRASS_SIDE_OVERLAY), 1.0f)).mulRGB(Facing::LIGHT[dir]));
 		}
 
 		m_bAmbientOcclusion = false;

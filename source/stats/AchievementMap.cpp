@@ -24,6 +24,9 @@ void AchievementMap::init()
         if (line.empty())
             continue;
 
+        if (line[line.size() - 1] == '\r')
+            line.erase(line.size() - 1);
+
         std::istringstream lineStream = std::istringstream(line);
         std::vector<std::string> entry;
         std::string part;

@@ -19,7 +19,7 @@ public:
 
 	bool isChallenge() const
 	{
-		return true;
+		return m_bChallenge;
 	}
 
 	std::string getDescription()
@@ -46,9 +46,10 @@ public:
 		return this;
 	}
 
-	Achievement* setFormatter(std::function<std::string(const std::string&)> formatter)
+	Achievement* descriptionFormatter(std::function<std::string(const std::string&)> formatter)
 	{
 		m_descriptionFormatter = formatter;
+		return this;
 	}
 
 public:

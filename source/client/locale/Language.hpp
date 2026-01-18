@@ -11,6 +11,7 @@ class Language
 public:
     void init(Options*);
     bool loadLanguageFile(const std::string& path);
+    bool loadOriginalLanguageFile(const std::string& path);
     bool contains(const std::string& key) const;
     const std::string& get(const std::string& key) const;
     template<typename... Args>

@@ -30,7 +30,7 @@ void Achievements::initAchievements()
 	mineWood = (new Achievement(1, "mineWood", 2, 1, Tile::treeTrunk, openInventory))->registerAchievement();
 	buildWorkBench = (new Achievement(2, "buildWorkBench", 4, -1, Tile::craftingTable, mineWood))->registerAchievement();
 	buildPickaxe = (new Achievement(3, "buildPickaxe", 4, 2, Item::woodPickaxe, buildWorkBench))->registerAchievement();
-	buildFurnace = (new Achievement(4, "buildFurnace", 3, 4, Tile::furnaceLit, buildPickaxe))->registerAchievement();
+	buildFurnace = (new Achievement(4, "buildFurnace", 3, 4, Tile::furnace, buildPickaxe))->registerAchievement();
 	acquireIron = (new Achievement(5, "acquireIron", 1, 4, Item::ironIngot, buildFurnace))->registerAchievement();
 	buildHoe = (new Achievement(6, "buildHoe", 2, -3, Item::woodHoe, buildWorkBench))->registerAchievement();
 	makeBread = (new Achievement(7, "makeBread", -1, -3, Item::bread, buildHoe))->registerAchievement();

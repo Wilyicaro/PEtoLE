@@ -77,6 +77,7 @@ public:
 	int m_width;
 	int m_height;
 	bool field_10;
+	bool m_bDeletePrevious;
 	Minecraft* m_pMinecraft;
 	std::vector<Button*> m_buttons;
 	std::vector<Button*> m_buttonTabList; 

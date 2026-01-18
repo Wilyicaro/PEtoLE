@@ -10,9 +10,13 @@
 #include "StartMenuScreen.hpp"
 #include "PauseScreen.hpp"
 #include "VideoSettingsScreen.hpp"
+#include "network/ServerSideNetworkHandler.hpp"
 
-OptionsScreen::OptionsScreen(Options* o)
-	: m_BackButton(1, 0, 0, 200, 20, "Done"), m_videoButton(2, 0, 0, 200, 20, "Video Settings..."), m_title("Options")
+OptionsScreen::OptionsScreen(Options* o) :
+	m_BackButton(1, 0, 0, 200, 20, "Done"),
+	m_videoButton(2, 0, 0, 200, 20, "Video Settings..."),
+	m_serverVisibleButton(4, 0, 0, 150, 20, ""),
+	m_title("Options")
 {
 	Options::OptionEntry* entries[] = { &o->m_fMusicVolume, &o->m_fMasterVolume, &o->m_bInvertMouse, &o->m_fSensitivity, &o->m_difficulty, &o->m_moreWorldOptions };
 	for (auto e : entries)
@@ -40,14 +44,24 @@ void OptionsScreen::init()
 
 	Options* o = m_pMinecraft->getOptions();
 
+	bool isHost = m_pMinecraft->m_pRakNetInstance && m_pMinecraft->m_pRakNetInstance->m_bIsHost;
 
-	for (int i = 0; i < m_configButtons.size(); i++)
+	if (isHost)
+		m_configButtons.push_back(&m_serverVisibleButton);
+
+	for (int i = 0; i < m_configButtons.size(); ++i)
 	{
-		m_buttons.push_back(m_configButtons[i]);
-		m_buttonTabList.push_back(m_configButtons[i]);
-		m_configButtons[i]->m_xPos = m_width / 2 - 155 + i % 2 * 160;
-		m_configButtons[i]->m_yPos = m_height / 6 + 24 * (i >> 1);
+		Button* button = m_configButtons[i];
+		m_buttons.push_back(button);
+		m_buttonTabList.push_back(button);
+		button->m_xPos = m_width / 2 - 155 + i % 2 * 160;
+		button->m_yPos = m_height / 6 + 24 * (i >> 1);
 	}
+
+	if (isHost)
+		Util::remove(m_configButtons, &m_serverVisibleButton);
+
+	updateServerVisibilityText();
 
 	m_buttonTabList.push_back(&m_BackButton);
 }
@@ -68,16 +82,39 @@ void OptionsScreen::render(int a, int b, float c)
 
 void OptionsScreen::buttonClicked(Button* pButton)
 {
-	if (pButton->m_buttonId == 1)
+	if (pButton->m_buttonId == m_BackButton.m_buttonId)
 	{
 		if (m_pMinecraft->isLevelReady())
 			m_pMinecraft->setScreen(new PauseScreen);
 		else
 			m_pMinecraft->setScreen(new StartMenuScreen);
 	}
-	else if (pButton->m_buttonId == 2)
+	else if (pButton->m_buttonId == m_videoButton.m_buttonId)
 	{
 		m_pMinecraft->setScreen(new VideoSettingsScreen(m_pMinecraft->getOptions()));
 	}
+	else if (pButton->m_buttonId == m_serverVisibleButton.m_buttonId)
+	{
+		if (m_pMinecraft->m_pRakNetInstance && m_pMinecraft->m_pRakNetInstance->m_bIsHost)
+		{
+			ServerSideNetworkHandler* pSSNH = (ServerSideNetworkHandler*)m_pMinecraft->m_pNetEventCallback;
+			pSSNH->allowIncomingConnections(!pSSNH->m_bAllowIncoming);
 
+			updateServerVisibilityText();
+		}
+	}
+
+}
+
+void OptionsScreen::updateServerVisibilityText()
+{
+	if (!m_pMinecraft->m_pRakNetInstance) return;
+	if (!m_pMinecraft->m_pRakNetInstance->m_bIsHost) return;
+
+	ServerSideNetworkHandler* pSSNH = (ServerSideNetworkHandler*)m_pMinecraft->m_pNetEventCallback;
+
+	if (pSSNH->m_bAllowIncoming)
+		m_serverVisibleButton.m_text = "Server is visible";
+	else
+		m_serverVisibleButton.m_text = "Server is invisible";
 }

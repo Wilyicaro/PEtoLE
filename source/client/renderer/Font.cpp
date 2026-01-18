@@ -82,15 +82,33 @@ void Font::buildChar(unsigned char chr, float x, float y)
 #undef CO
 }
 
-void Font::draw(const std::string& str, int x, int y, int color)
-{
-	draw(str, x, y, color, false);
-}
-
 void Font::drawShadow(const std::string& str, int x, int y, int color)
 {
 	draw(str, x + 1, y + 1, color, true);
 	draw(str, x, y, color, false);
+}
+
+void Font::drawString(const std::string& str, int x, int y, int color, bool hasShadow)
+{
+	if (hasShadow)
+		drawShadow(str, x, y, color);
+	else
+		draw(str, x, y, color);
+		
+}
+
+void Font::drawWordWrap(const std::string& str, int x, int y, int color, int width, int lineHeight, bool shadow)
+{
+	drawWordWrap(split(str, width), x, y, color, lineHeight, shadow);
+}
+
+void Font::drawWordWrap(const std::vector<std::string>& lines, int x, int y, int color, int lineHeight, bool shadow)
+{
+	for (const std::string& line : lines)
+	{
+		drawString(line, x, y, color, shadow);
+		y += lineHeight;
+	}
 }
 
 void Font::draw(const std::string& str, int x, int y, int colorI, bool bShadow)
@@ -197,17 +215,9 @@ void Font::onGraphicsReset()
 	init(m_pOptions);
 }
 
-int Font::height(const std::string& str)
+int Font::height(const std::string& str, int maxWidth)
 {
-	if (str.empty()) return 0;
-
-	int res = 0; // note: starting at 0 looks wrong
-	
-	for (int i = 0; i < int(str.size()); i++)
-		if (str[i] == '\n')
-			res += 12;
-
-	return res;
+	return split(str, maxWidth).size() * 8;
 }
 
 int Font::width(const std::string& str)
@@ -238,4 +248,79 @@ int Font::width(const std::string& str)
 		maxLineWidth = currentLineWidth;
 
 	return maxLineWidth;
+}
+
+std::vector<std::string> Font::split(const std::string& text, int maxWidth)
+{
+	std::vector<std::string> lines;
+
+	std::vector<std::string> paragraphs;
+	size_t start = 0;
+	size_t newlinePos = text.find('\n');
+	while (newlinePos != std::string::npos)
+	{
+		paragraphs.push_back(text.substr(start, newlinePos - start));
+		start = newlinePos + 1;
+		newlinePos = text.find('\n', start);
+	}
+	paragraphs.push_back(text.substr(start));
+
+	for (const auto& paragraph : paragraphs)
+	{
+		if (paragraph.empty())
+		{
+			lines.emplace_back("");
+			continue;
+		}
+
+		std::string currentLine;
+		std::istringstream iss(paragraph);
+		std::string word;
+
+		while (iss >> word) {
+			std::string testLine = currentLine.empty() ? word : currentLine + " " + word;
+
+			if (width(testLine) <= maxWidth)
+				currentLine = testLine;
+			else
+			{
+				if (!currentLine.empty())
+				{
+					lines.push_back(currentLine);
+					currentLine.clear();
+				}
+
+				while (!word.empty() && width(word) > maxWidth)
+				{
+					size_t breakPos = 0;
+					for (size_t j = 1; j <= word.length(); ++j)
+					{
+						if (width(word.substr(0, j)) <= maxWidth)
+							breakPos = j;
+						else
+							break;
+					}
+
+					if (breakPos == 0) breakPos = 1;
+
+					std::string chunk = word.substr(0, breakPos);
+					lines.push_back(chunk);
+					word = word.substr(breakPos);
+				}
+
+				currentLine = word;
+			}
+		}
+
+		if (!currentLine.empty())
+			lines.push_back(currentLine);
+	}
+
+	while (!lines.empty() && lines.back().empty())
+		lines.pop_back();
+
+	if (lines.empty())
+		lines.emplace_back("");
+
+	return lines;
 }

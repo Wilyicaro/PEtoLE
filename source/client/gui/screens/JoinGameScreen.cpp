@@ -166,7 +166,7 @@ bool JoinGameScreen::isIndexValid(int idx)
 
 	if (idx < 0)
 		return false;
-	if (idx >= m_pAvailableGamesList->getNumberOfItems())
+	if (idx >= m_pAvailableGamesList->getItemCount())
 		return false;
 
 	return true;

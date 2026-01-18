@@ -254,7 +254,7 @@ public:
 	uint8_t field_19; // use Mouse as input for breaking
 	std::string field_1C;
 	ValuesOption m_difficulty;
-	bool m_bDontRenderGui;
+	bool m_bHideGui;
 	bool m_bThirdPerson;
 	ValuesOption m_guiScale;
 	StringOption m_lang;

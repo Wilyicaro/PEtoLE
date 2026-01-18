@@ -9,12 +9,13 @@ Achievement::Achievement(int id, const std::string name, int x, int y, Tile* til
 {
 }
 
-Achievement::Achievement(int id, const std::string name, int x, int y, std::shared_ptr<ItemInstance> icon, Achievement* parent) : Stat(5242880 + id, name),
+Achievement::Achievement(int id, const std::string name, int x, int y, std::shared_ptr<ItemInstance> icon, Achievement* parent) : Stat(5242880 + id, "achievement." + name),
 	m_x(x),
 	m_y(y),
 	m_icon(icon),
 	m_pParent(parent),
 	m_bChallenge(false),
+	m_description("achievement." + name + ".desc"),
 	m_descriptionFormatter([](const std::string& desc) { return Language::getInstance()->get(desc); })
 {
 	if (x < Achievements::minX)

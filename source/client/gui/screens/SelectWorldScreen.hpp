@@ -15,26 +15,26 @@ class SelectWorldScreen : public Screen
 {
 public:
 	SelectWorldScreen();
+	~SelectWorldScreen();
 
 	void init() override;
 	bool isInGameScreen() override;
 	void keyPressed(int code) override;
-	void tick() override;
 	void render(int mouseX, int mouseY, float f) override;
 	void buttonClicked(Button* pButton) override;
 
-	bool isIndexValid(int);
-	std::string getUniqueLevelName(const std::string& in);
+	virtual void confirmResult(bool b, int i) override;
 	void loadLevelSource();
 
 public:
 	Button m_btnDelete;
+	Button m_btnRename;
 	Button m_btnCreateNew;
-	Button m_btnBack;
-	Button m_btnUnknown;
+	Button m_btnCancel;
+	Button m_btnSelect;
 	WorldSelectionList* m_pWorldSelectionList;
 	std::vector<LevelSummary> m_levels;
-	bool field_12C;
-	int field_130;
+	int m_selectedIndex;
+	std::string m_title;
 };
 

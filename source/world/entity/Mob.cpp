@@ -551,8 +551,8 @@ void Mob::travel(const Vec2& pos)
 
 void Mob::die(Entity* pCulprit)
 {
-	if (pCulprit && m_deathScore > 0)
-		pCulprit->awardKillScore(pCulprit, m_deathScore);
+	if (pCulprit && m_deathScore >= 0)
+		pCulprit->awardKillScore(this, m_deathScore);
 
 	if (pCulprit)
 		pCulprit->killed(this);

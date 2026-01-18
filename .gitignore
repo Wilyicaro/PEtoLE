@@ -138,7 +138,10 @@ xcuserdata/
 /game/assets/gui/*
 !/game/assets/gui/touchscreen.png
 !/game/assets/lang/
-!/game/assets/lang/*
+/game/assets/lang/*
+!/game/assets/lang/*.json
+
+/game/stats/*
 
 # Ignore keep directory - where you can keep files for later use
 /keep

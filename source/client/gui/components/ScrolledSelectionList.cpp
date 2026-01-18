@@ -14,22 +14,21 @@
 
 ScrolledSelectionList::ScrolledSelectionList(Minecraft* minecraft, int a3, int a4, int a5, int a6, int a7) :
 	m_pMinecraft(minecraft),
-	field_C(float(a5)),
-	field_10(float(a6)),
+	m_y0(float(a5)),
+	m_y1(float(a6)),
 	m_itemHeight(a7),
-	field_18(a3),
+	m_width(a3),
 	field_1C(a4),
-	field_20(float(a3)),
-	field_24(0.0f),
-	field_2C(-2),
-	m_noNeighborUpdate(0.0f),
-	field_34(0.0f),
-	field_38(0.0f),
-	field_3C(-1),
-	field_40(0),
+	m_x1(float(a3)),
+	m_x0(0.0f),
+	m_scrollAmount(0.0f),
+	m_mouseYWhenPressed(-2.0f),
+	m_scrollBarGrabOffset(1.0F),
+	m_lastClickedIndex(-1),
+	m_lastClickTime(0),
 	m_bRenderSelection(true),
-	field_45(false),
-	field_48(0)
+	m_bRenderHeader(false),
+	m_headerHeight(0)
 {	
 }
 
@@ -40,7 +39,7 @@ void ScrolledSelectionList::setRenderSelection(bool b)
 
 int ScrolledSelectionList::getMaxPosition()
 {
-	return field_48 + m_itemHeight * getNumberOfItems();
+	return m_headerHeight + m_itemHeight * getItemCount();
 }
 
 void ScrolledSelectionList::renderHeader(int a, int b, Tesselator& t)
@@ -57,10 +56,10 @@ void ScrolledSelectionList::clickedHeader(int x, int y)
 
 int ScrolledSelectionList::getItemAtPosition(int x, int y)
 {
-	if (x < field_18 / 2 - C_ITEM_WIDTH / 2)
+	if (x < m_width / 2 - C_ITEM_WIDTH / 2)
 		return -1;
 
-	if (x > field_18 / 2 + C_ITEM_WIDTH / 2)
+	if (x > m_width / 2 + C_ITEM_WIDTH / 2)
 		return -1;
 
 	return getItemAtYPositionRaw(transformY(y));
@@ -68,19 +67,23 @@ int ScrolledSelectionList::getItemAtPosition(int x, int y)
 
 void ScrolledSelectionList::capYPosition()
 {
-	float maxY = float(getMaxPosition()) - (float(field_10 - field_C) - 4.0f);
+	float maxY = float(getMaxPosition()) - (float(m_y1 - m_y0) - 4.0f);
 	if (maxY < 0.0f)
 		maxY *= 0.5f;
 
-	if (field_34 < 0.0f)
-		field_34 = 0.0f;
-	if (field_34 > maxY)
-		field_34 = maxY;
+	if (m_scrollAmount < 0.0f)
+		m_scrollAmount = 0.0f;
+	if (m_scrollAmount > maxY)
+		m_scrollAmount = maxY;
 }
 
-void ScrolledSelectionList::onClickItem(int index, int mouseX, int mouseY)
+void ScrolledSelectionList::onClickItem(int index, int mouseX, int mouseY, bool selected)
 {
-	selectItem(index, false);
+	selectItem(index, selected);
+}
+
+void ScrolledSelectionList::mouseClicked(int mouseX, int mouseY)
+{
 }
 
 void ScrolledSelectionList::renderScrollBackground()
@@ -88,63 +91,87 @@ void ScrolledSelectionList::renderScrollBackground()
 	Tesselator& t = Tesselator::instance;
 	t.begin();
 	t.color(0x202020);
-	t.vertexUV(field_24, field_10, 0.0f, field_24 / 32.0f, (field_10 + float(int(field_34))) / 32.0f);
-	t.vertexUV(field_20, field_10, 0.0f, field_20 / 32.0f, (field_10 + float(int(field_34))) / 32.0f);
-	t.vertexUV(field_20, field_C,  0.0f, field_20 / 32.0f, (field_C  + float(int(field_34))) / 32.0f);
-	t.vertexUV(field_24, field_C,  0.0f, field_24 / 32.0f, (field_C  + float(int(field_34))) / 32.0f);
+	t.vertexUV(m_x0, m_y1, 0.0f, m_x0 / 32.0f, (m_y1 + float(int(m_scrollAmount))) / 32.0f);
+	t.vertexUV(m_x1, m_y1, 0.0f, m_x1 / 32.0f, (m_y1 + float(int(m_scrollAmount))) / 32.0f);
+	t.vertexUV(m_x1, m_y0,  0.0f, m_x1 / 32.0f, (m_y0  + float(int(m_scrollAmount))) / 32.0f);
+	t.vertexUV(m_x0, m_y0,  0.0f, m_x0 / 32.0f, (m_y0  + float(int(m_scrollAmount))) / 32.0f);
 	t.draw();
 }
 
 void ScrolledSelectionList::checkInput(int mouseX, int mouseY)
 {
-	int nItems = getNumberOfItems();
 	if (Mouse::isButtonDown(BUTTON_LEFT))
 	{
-		if (float(mouseY) >= field_C && float(mouseY) <= field_10 && abs(mouseY - field_28) > 5)
+		if (m_mouseYWhenPressed == -1.0f)
 		{
-			int field_2C_old = field_2C;
+			bool isValidClickArea = true;
 
-			if (field_2C == -1)
+			if (mouseY >= m_y0 && mouseY <= m_y1)
 			{
-				field_2C = 1;
-			}
-			else if (field_2C == 1)
-			{
-				field_3C = mouseY;
-				field_40 = getTimeMs();
-			}
-			else if (field_2C == 0)
-			{
-				float diff = float(mouseY) - m_noNeighborUpdate;
-				field_34 -= diff;
-				field_38 += diff;
-			}
+				int scrollLeft = m_width / 2 + 124;
+				int scrollRight = scrollLeft + 6;
+				int listLeft = m_width / 2 - 110;
+				int listRight = m_width / 2 + 110;
+				int relativeY = transformY(mouseY);
+				int hoveredItemIndex = relativeY / m_itemHeight;
 
-			if (field_2C_old >= 0)
-				field_2C = 0;
+				if (mouseX >= listLeft && mouseX <= listRight &&
+					hoveredItemIndex >= 0 && relativeY >= 0 && hoveredItemIndex < getItemCount())
+				{
+					bool isDoubleClick = (hoveredItemIndex == m_lastClickedIndex &&
+						getMillis() - m_lastClickTime < 250);
 
-			field_28 = -1;
+					onClickItem(hoveredItemIndex, mouseX - listLeft, mouseY - m_y0 + (int)m_scrollAmount - 4, isDoubleClick);
+					m_lastClickedIndex = hoveredItemIndex;
+					m_lastClickTime = getMillis();
+				}
+				else if (mouseX >= listLeft && mouseX <= listRight && relativeY < 0)
+				{
+					mouseClicked(mouseX - listLeft, mouseY - m_y0 + (int)m_scrollAmount - 4);
+					isValidClickArea = false;
+				}
+
+				if (mouseX >= scrollLeft && mouseX <= scrollRight)
+				{
+					m_scrollBarGrabOffset = -1.0f;
+
+					int totalContentHeight = getMaxPosition() - (m_y1 - m_y0 - 4);
+					if (totalContentHeight < 1) totalContentHeight = 1;
+
+					int thumbHeight = (int)((float)(m_y1 - m_y0) * (m_y1 - m_y0) / (float)getMaxPosition());
+					if (thumbHeight < 32) thumbHeight = 32;
+					if (thumbHeight > m_y1 - m_y0 - 8) thumbHeight = m_y1 - m_y0 - 8;
+
+					m_scrollBarGrabOffset /= float(m_y1 - m_y0 - thumbHeight) / totalContentHeight;
+				}
+				else
+				{
+					m_scrollBarGrabOffset = 1.0f;
+				}
+
+				if (isValidClickArea)
+				{
+					m_mouseYWhenPressed = (float)mouseY;
+				}
+				else
+				{
+					m_mouseYWhenPressed = -2.0f;
+				}
+			}
+			else
+			{
+				m_mouseYWhenPressed = -2.0f;
+			}
+		}
+		else if (m_mouseYWhenPressed >= 0.0f)
+		{
+			m_scrollAmount -= (mouseY - m_mouseYWhenPressed) * m_scrollBarGrabOffset;
+			m_mouseYWhenPressed = mouseY;
 		}
 	}
 	else
 	{
-		if (field_2C >= 0)
-		{
-			if (fabsf(field_38) < 2.0f)
-				field_38 = 0.0f;
-
-			if (getTimeMs() - field_40 < 300)
-			{
-				if (transformY(mouseY) / m_itemHeight >= 0 && m_itemHeight > abs(field_3C - mouseY))
-				{
-					onClickItem(transformY(mouseY) / m_itemHeight, mouseX, mouseY);
-					field_38 = 0.0f;
-				}
-			}
-		}
-
-		field_2C = -1;
-		field_34 -= field_38;
+		m_mouseYWhenPressed = -1.0f;
 	}
 }
 
@@ -152,13 +179,11 @@ void ScrolledSelectionList::render(int mouseX, int mouseY, float f)
 {
 	renderBackground(f);
 
-	int nItems = getNumberOfItems();
+	int nItems = getItemCount();
 	Tesselator& t = Tesselator::instance;
 
 	checkInput(mouseX, mouseY);
 
-	m_noNeighborUpdate = float(mouseY);
-	field_38 *= 0.75f;
 	capYPosition();
 
 	glDisable(GL_LIGHTING);
@@ -169,26 +194,26 @@ void ScrolledSelectionList::render(int mouseX, int mouseY, float f)
 
 	renderScrollBackground();
 
-	int itemX = field_18 / 2 - (C_ITEM_WIDTH - 4) / 2;
-	int scrollY = int(field_C + 4 - float(int(field_34)));
+	int itemX = m_width / 2 - (C_ITEM_WIDTH - 4) / 2;
+	int scrollY = int(m_y0 + 4 - float(int(m_scrollAmount)));
 
-	if (field_45)
+	if (m_bRenderHeader)
 		renderHeader(itemX, scrollY, t);
 
 	// Note, X/Y are the lower left's X/Y coordinates, not the upper left's.
-	int lowerY = Minecraft::height - int(field_10 / Gui::InvGuiScale);
-	int upperY = Minecraft::height - int(field_C  / Gui::InvGuiScale);
+	int lowerY = Minecraft::height - int(m_y1 / Gui::InvGuiScale);
+	int upperY = Minecraft::height - int(m_y0  / Gui::InvGuiScale);
 	glScissor(0, lowerY, Minecraft::width, upperY - lowerY);
 	glEnable(GL_SCISSOR_TEST);
 
 	for (int i = 0; i < nItems; i++)
 	{
-		float itemY = float(field_48 + scrollY + i * m_itemHeight);
-		if (field_10 < itemY)
+		float itemY = float(m_headerHeight + scrollY + i * m_itemHeight);
+		if (m_y1 < itemY)
 			continue;
 
 		float lowerY = itemY + m_itemHeight - 4;
-		if (lowerY < field_C)
+		if (lowerY < m_y0)
 			continue;
 
 		if (m_bRenderSelection && isSelectedItem(i))
@@ -197,15 +222,15 @@ void ScrolledSelectionList::render(int mouseX, int mouseY, float f)
 			glDisable(GL_TEXTURE_2D);
 			t.begin();
 			t.color(0x808080);
-			t.vertexUV(float(field_18) / 2.0f - C_ITEM_WIDTH / 2.0f, lowerY + 2.0f, 0.0f, 0.0f, 1.0f);
-			t.vertexUV(float(field_18) / 2.0f + C_ITEM_WIDTH / 2.0f, lowerY + 2.0f, 0.0f, 1.0f, 1.0f);
-			t.vertexUV(float(field_18) / 2.0f + C_ITEM_WIDTH / 2.0f, itemY  - 2.0f, 0.0f, 1.0f, 0.0f);
-			t.vertexUV(float(field_18) / 2.0f - C_ITEM_WIDTH / 2.0f, itemY  - 2.0f, 0.0f, 0.0f, 0.0f);
+			t.vertexUV(float(m_width) / 2.0f - C_ITEM_WIDTH / 2.0f, lowerY + 2.0f, 0.0f, 0.0f, 1.0f);
+			t.vertexUV(float(m_width) / 2.0f + C_ITEM_WIDTH / 2.0f, lowerY + 2.0f, 0.0f, 1.0f, 1.0f);
+			t.vertexUV(float(m_width) / 2.0f + C_ITEM_WIDTH / 2.0f, itemY  - 2.0f, 0.0f, 1.0f, 0.0f);
+			t.vertexUV(float(m_width) / 2.0f - C_ITEM_WIDTH / 2.0f, itemY  - 2.0f, 0.0f, 0.0f, 0.0f);
 			t.color(0x000000);
-			t.vertexUV(float(field_18) / 2.0f - C_ITEM_WIDTH / 2.0f + 1, lowerY + 1.0f, 0.0f, 0.0f, 1.0f);
-			t.vertexUV(float(field_18) / 2.0f + C_ITEM_WIDTH / 2.0f - 1, lowerY + 1.0f, 0.0f, 1.0f, 1.0f);
-			t.vertexUV(float(field_18) / 2.0f + C_ITEM_WIDTH / 2.0f - 1, itemY  - 1.0f, 0.0f, 1.0f, 0.0f);
-			t.vertexUV(float(field_18) / 2.0f - C_ITEM_WIDTH / 2.0f + 1, itemY  - 1.0f, 0.0f, 0.0f, 0.0f);
+			t.vertexUV(float(m_width) / 2.0f - C_ITEM_WIDTH / 2.0f + 1, lowerY + 1.0f, 0.0f, 0.0f, 1.0f);
+			t.vertexUV(float(m_width) / 2.0f + C_ITEM_WIDTH / 2.0f - 1, lowerY + 1.0f, 0.0f, 1.0f, 1.0f);
+			t.vertexUV(float(m_width) / 2.0f + C_ITEM_WIDTH / 2.0f - 1, itemY  - 1.0f, 0.0f, 1.0f, 0.0f);
+			t.vertexUV(float(m_width) / 2.0f - C_ITEM_WIDTH / 2.0f + 1, itemY  - 1.0f, 0.0f, 0.0f, 0.0f);
 			t.draw();
 			glEnable(GL_TEXTURE_2D);
 		}
@@ -216,8 +241,8 @@ void ScrolledSelectionList::render(int mouseX, int mouseY, float f)
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_DEPTH_TEST);
 
-	renderHoleBackground(0.0f, field_C, 255, 255);
-	renderHoleBackground(field_10, float(field_1C), 255, 255);
+	renderHoleBackground(0.0f, m_y0, 255, 255);
+	renderHoleBackground(m_y1, float(field_1C), 255, 255);
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -227,21 +252,66 @@ void ScrolledSelectionList::render(int mouseX, int mouseY, float f)
 
 	t.begin();
 	t.color(0, 0);
-	t.vertexUV(field_24, field_C + 4.0f, 0.0f, 0.0f, 1.0f);
-	t.vertexUV(field_20, field_C + 4.0f, 0.0f, 1.0f, 1.0f);
+	t.vertexUV(m_x0, m_y0 + 4.0f, 0.0f, 0.0f, 1.0f);
+	t.vertexUV(m_x1, m_y0 + 4.0f, 0.0f, 1.0f, 1.0f);
 	t.color(0, 255);
-	t.vertexUV(field_20, field_C, 0.0f, 1.0f, 0.0f);
-	t.vertexUV(field_24, field_C, 0.0f, 0.0f, 0.0f);
+	t.vertexUV(m_x1, m_y0, 0.0f, 1.0f, 0.0f);
+	t.vertexUV(m_x0, m_y0, 0.0f, 0.0f, 0.0f);
 	t.draw();
 
 	t.begin();
 	t.color(0, 255);
-	t.vertexUV(field_24, field_10, 0.0f, 0.0f, 1.0f);
-	t.vertexUV(field_20, field_10, 0.0f, 1.0f, 1.0f);
+	t.vertexUV(m_x0, m_y1, 0.0f, 0.0f, 1.0f);
+	t.vertexUV(m_x1, m_y1, 0.0f, 1.0f, 1.0f);
 	t.color(0, 0);
-	t.vertexUV(field_20, field_10 - 4.0f, 0.0f, 1.0f, 0.0f);
-	t.vertexUV(field_24, field_10 - 4.0f, 0.0f, 0.0f, 0.0f);
+	t.vertexUV(m_x1, m_y1 - 4.0f, 0.0f, 1.0f, 0.0f);
+	t.vertexUV(m_x0, m_y1 - 4.0f, 0.0f, 0.0f, 0.0f);
 	t.draw();
+
+
+
+	int var19 = getMaxPosition() - (m_y1 - m_y0 - 4);
+	if (var19 > 0)
+	{
+		int var13 = (m_y1 - m_y0) * (m_y1 - m_y0) / getMaxPosition();
+		if (var13 < 32) {
+			var13 = 32;
+		}
+
+		if (var13 > m_y1 - m_y0 - 8) {
+			var13 = m_y1 - m_y0 - 8;
+		}
+
+		int var14 = (int)m_scrollAmount * (m_y1 - m_y0 - var13) / var19 + m_y0;
+		if (var14 < m_y0) {
+			var14 = m_y0;
+		}
+
+		int var5 = m_width / 2 + 124;
+		int var6 = var5 + 6;
+
+		t.begin();
+		t.color(0, 255);
+		t.vertexUV(var5, m_y1, 0.0, 0.0, 1.0);
+		t.vertexUV(var6, m_y1, 0.0, 1.0, 1.0);
+		t.vertexUV(var6, m_y0, 0.0, 1.0, 0.0);
+		t.vertexUV(var5, m_y0, 0.0, 0.0, 0.0);
+		t.draw();
+		t.begin();
+		t.color(8421504, 255);
+		t.vertexUV(var5, (var14 + var13), 0.0, 0.0, 1.0);
+		t.vertexUV(var6, (var14 + var13), 0.0, 1.0, 1.0);
+		t.vertexUV(var6, var14, 0.0, 1.0, 0.0);
+		t.vertexUV(var5, var14, 0.0, 0.0, 0.0);
+		t.draw();
+		t.begin();
+		t.color(12632256, 255);
+		t.vertexUV(var5, (var14 + var13 - 1), 0.0, 0.0, 1.0);
+		t.vertexUV((var6 - 1), (var14 + var13 - 1), 0.0, 1.0, 1.0);
+		t.vertexUV((var6 - 1), var14, 0.0, 1.0, 0.0);
+		t.vertexUV(var5, var14, 0.0, 0.0, 0.0);
+		t.draw();
+	}
 
 	renderDecorations(mouseX, mouseY);
 
@@ -260,19 +330,19 @@ void ScrolledSelectionList::renderHoleBackground(float a, float b, int c, int d)
 
 	Tesselator& t = Tesselator::instance;
 	t.begin();
-	t.color(0x505050, d);
+	t.color(0x404040, d);
 	t.vertexUV(0.0f,            b, 0.0f, 0.0f,             b / 32.0f);
-	t.vertexUV(float(field_18), b, 0.0f, field_18 / 32.0f, b / 32.0f);
-	t.color(0x505050, c);
-	t.vertexUV(float(field_18), a, 0.0f, field_18 / 32.0f, a / 32.0f);
+	t.vertexUV(float(m_width), b, 0.0f, m_width / 32.0f, b / 32.0f);
+	t.color(0x404040, c);
+	t.vertexUV(float(m_width), a, 0.0f, m_width / 32.0f, a / 32.0f);
 	t.vertexUV(0.0f,            a, 0.0f, 0.0f,             a / 32.0f);
 	t.draw();
 }
 
 void ScrolledSelectionList::setRenderHeader(bool b, int i)
 {
-	field_45 = b;
+	m_bRenderHeader = b;
 	if (!b)
 		i = 0;
-	field_48 = i;
+	m_headerHeight = i;
 }

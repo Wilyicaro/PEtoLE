@@ -19,6 +19,26 @@ enum eSDLVirtualKeys
 	#undef  CODE
 };
 
+static int getSDLVirtualKeyCode(int key)
+{
+	switch (key) {
+#define CODE(x) case SDLK_ ## x: return SDLVK_ ## x;
+#include "compat/SDLKeyCodes.h"
+#undef  CODE
+	}
+	return SDLVK_UNKNOWN;
+}
+
+static int getSDLKeyCode(int key)
+{
+	switch (key) {
+#define CODE(x) case SDLVK_ ## x: return SDLK_ ## x;
+#include "compat/SDLKeyCodes.h"
+#undef  CODE
+	}
+	return SDLK_UNKNOWN;
+}
+
 #endif
 
 #ifdef _WIN32

@@ -137,6 +137,12 @@ void Tesselator::color(float r, float g, float b)
 	color(r, g, b, 1.0f);
 }
 
+void Tesselator::color(const Color& col)
+{
+	if (col != Color::WHITE)
+		color(col.r, col.g, col.b, col.a);
+}
+
 void Tesselator::color(float r, float g, float b, float a)
 {
 	color(int(r * 255), int(g * 255), int(b * 255), int(a * 255));

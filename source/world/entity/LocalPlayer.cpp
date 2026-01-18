@@ -63,6 +63,9 @@ LocalPlayer::~LocalPlayer()
 
 void LocalPlayer::aiStep()
 {
+	if (!m_pMinecraft->m_pStatsCounter->hasAchievement(Achievements::openInventory))
+		m_pMinecraft->m_toastComponent.awardAchievement(Achievements::openInventory, true);
+
 	if (m_bIsInsidePortal)
 	{
 		if (m_portalTime == 0.0F)
@@ -197,10 +200,7 @@ void LocalPlayer::awardClientStat(Stat* stat, int amount, bool root)
 			if ((!achievement->m_pParent || m_pMinecraft->m_pStatsCounter->hasAchievement(achievement->m_pParent)) && (!m_pLevel->m_bIsOnline || achievement->m_bRoot == root))
 			{
 				if (!m_pMinecraft->m_pStatsCounter->hasAchievement(achievement))
-				{
-					//@TODO: Toast Component, for the achievement toasts rendering
-					//m_pMinecraft->m_pToastComponent->awardAchievement(achievement);
-				}
+					m_pMinecraft->m_toastComponent.awardAchievement(achievement);
 
 				m_pMinecraft->m_pStatsCounter->addStat(stat, amount);
 			}

@@ -51,10 +51,13 @@ void BlockRegionUpdatePacket::read(RakNet::BitStream* bs)
 	bs->ReadAlignedBytes(compressed, m_size);
 
 	uint8_t* decompressed = ZlibInflateToMemory(compressed, m_size, m_xs * m_ys * m_zs * 5 / 2);
-	m_data.Reset();
-	m_data.WriteAlignedBytes(decompressed, m_xs * m_ys * m_zs * 5 / 2);
-	m_data.ResetReadPointer();
+	if (decompressed)
+	{
+		m_data.Reset();
+		m_data.WriteAlignedBytes(decompressed, m_xs * m_ys * m_zs * 5 / 2);
+		m_data.ResetReadPointer();
+	}
 
 	delete[] compressed;
-	delete[] decompressed;
+	SAFE_DELETE_ARRAY(decompressed);
 }

@@ -19,9 +19,9 @@ public:
 	GuiComponent();
 	virtual ~GuiComponent() {}
 
-	static void blit(int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight);
-	void blit(int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) const {
-		blit(x, y, zLevel, u, v, width, height, textureWidth, textureHeight);
+	static void blit(int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight, const Color& color = Color::WHITE);
+	void blit(int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, const Color& color = Color::WHITE) const {
+		blit(x, y, zLevel, u, v, width, height, textureWidth, textureHeight, color);
 	}
 	void blit(int x, int y, float u, float v, int width, int height) const {
 		blit(x, y, u, v, width, height, width, height);
@@ -37,6 +37,10 @@ public:
 	void fillGradient(int left, int top, int right, int bottom, int colorUp, int colorDown) const {
 		fillGradient(left, top, right, bottom, colorUp, colorDown, zLevel);
 	}
+
+	void hLine(int x0, int x1, int y, int color);
+
+	void vLine(int x, int y0, int y1, int color);
 
 public:
 	float zLevel;

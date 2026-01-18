@@ -93,6 +93,12 @@
     <Filter Include="Header Files\GUI\Screens\Inventory">
       <UniqueIdentifier>{7399c75d-551e-48c7-87d5-d500191cdc2c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GUI\Components\Toasts">
+      <UniqueIdentifier>{bace6224-83fc-4d77-8a82-60b9565f0d05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GUI\Components\Toasts">
+      <UniqueIdentifier>{b499d710-5f1f-4851-962d-68ab0fbd59f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.hpp">
@@ -584,6 +590,24 @@
     <ClInclude Include="..\..\..\..\source\client\gui\screens\ChangeProfileScreen.hpp">
       <Filter>Header Files\GUI\Screens</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\components\toasts\ToastComponent.hpp">
+      <Filter>Header Files\GUI\Components\Toasts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\components\toasts\Toast.hpp">
+      <Filter>Header Files\GUI\Components\Toasts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\components\toasts\ToastInstance.hpp">
+      <Filter>Header Files\GUI\Components\Toasts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\AchievementsScreen.hpp">
+      <Filter>Header Files\GUI\Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\StatsScreen.hpp">
+      <Filter>Header Files\GUI\Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\EditWorldScreen.hpp">
+      <Filter>Header Files\GUI\Screens</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\client\gui\components\AvailableGamesList.cpp">
@@ -1073,6 +1097,24 @@
       <Filter>Source Files\GUI\Screens</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\client\gui\screens\ChangeProfileScreen.cpp">
+      <Filter>Source Files\GUI\Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\components\toasts\ToastComponent.cpp">
+      <Filter>Source Files\GUI\Components\Toasts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\components\toasts\Toast.cpp">
+      <Filter>Source Files\GUI\Components\Toasts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\components\toasts\ToastInstance.cpp">
+      <Filter>Source Files\GUI\Components\Toasts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\AchievementsScreen.cpp">
+      <Filter>Source Files\GUI\Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\StatsScreen.cpp">
+      <Filter>Source Files\GUI\Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\EditWorldScreen.cpp">
       <Filter>Source Files\GUI\Screens</Filter>
     </ClCompile>
   </ItemGroup>

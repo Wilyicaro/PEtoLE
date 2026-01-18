@@ -18,7 +18,7 @@ GuiComponent::GuiComponent() : zLevel (0)
 
 
 
-void GuiComponent::blit(int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight)
+void GuiComponent::blit(int x, int y, int z, float u, float v, int width, int height, int textureWidth, int textureHeight, const Color& color)
 {
 	Tesselator& t = Tesselator::instance;
 
@@ -26,6 +26,7 @@ void GuiComponent::blit(int x, int y, int z, float u, float v, int width, int he
 	if (!textureWidth) textureWidth = width;
 
 	t.begin();
+	t.color(color);
 	t.vertexUV(x, y + height, z, u / textureWidth, (v + height) / textureHeight);
 	t.vertexUV(x + width, y + height, z, (u + width) / textureWidth, (v + height) / textureHeight);
 	t.vertexUV(x + width, y, z, (u + width) / textureWidth, v / textureHeight);
@@ -36,8 +37,7 @@ void GuiComponent::blit(int x, int y, int z, float u, float v, int width, int he
 void GuiComponent::drawCenteredString(Font* pFont, const std::string& str, int cx, int cy, int color)
 {
 	int width = pFont->width(str);
-	int height = pFont->height(str);
-	pFont->drawShadow(str, cx - width / 2, cy - height / 2, color);
+	pFont->drawShadow(str, cx - width / 2, cy, color);
 }
 
 void GuiComponent::drawString(Font* pFont, const std::string& str, int cx, int cy, int color)
@@ -108,4 +108,20 @@ void GuiComponent::fillGradient(int a2, int a3, int a4, int a5, int a6, int a7, 
 	glDisable(GL_BLEND);
 	glEnable(GL_ALPHA_TEST);
 	glEnable(GL_TEXTURE_2D);
+}
+
+void GuiComponent::hLine(int x0, int x1, int y, int color)
+{
+	if (x1 < x0)
+		std::swap(x0, x1);
+
+	fill(x0, y, x1 + 1, y + 1, color);
+}
+
+void GuiComponent::vLine(int x, int y0, int y1, int color)
+{
+	if (y1 < y0)
+		std::swap(y0, y1);
+
+	fill(x, y0 + 1, x + 1, y1, color);
 }

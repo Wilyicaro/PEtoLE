@@ -35,11 +35,11 @@ public:
     static const NumberFormatter INSTANCE;
 };
 
-class DecimalFormatter : public StatFormatter
+class DecimalFormatter
 {
 public:   
     DecimalFormatter(int precision = 2);        
-    std::string format(int) const override;
+    std::string format(double) const;
 
 public:
     int m_precision;

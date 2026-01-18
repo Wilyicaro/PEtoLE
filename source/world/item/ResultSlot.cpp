@@ -34,7 +34,7 @@ void ResultSlot::onTake(std::shared_ptr<ItemInstance> item)
 		m_pPlayer->awardStat(Achievements::bakeCake);
 	else if (item->m_itemID == Item::stonePickaxe->m_itemID)
 		m_pPlayer->awardStat(Achievements::buildBetterPickaxe);
-	else if (item->m_itemID == Item::woodPickaxe->m_itemID)
+	else if (item->m_itemID == Item::woodSword->m_itemID)
 		m_pPlayer->awardStat(Achievements::buildSword);
 
     for (int i = 0; i < craftSlots->getContainerSize(); ++i)

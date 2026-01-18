@@ -9,12 +9,12 @@
 std::unordered_map<int, Stat*> Stats::statById;
 std::vector<Stat*> Stats::stats;
 std::vector<Stat*> Stats::customStats;
-std::vector<Stat*> Stats::tileStats;
-std::vector<Stat*> Stats::itemStats;
-std::vector<Stat*> Stats::statItemUsed;
-std::vector<Stat*> Stats::statItemBreak;
-std::vector<Stat*> Stats::statMineBlock;
-std::vector<Stat*> Stats::itemCrafted;
+std::vector<IdStat*> Stats::tileStats;
+std::vector<IdStat*> Stats::itemStats;
+std::vector<IdStat*> Stats::statItemUsed;
+std::vector<IdStat*> Stats::statItemBreak;
+std::vector<IdStat*> Stats::statMineBlock;
+std::vector<IdStat*> Stats::itemCrafted;
 
 Stat* Stats::startGame;
 Stat* Stats::createWorld;
@@ -101,6 +101,7 @@ void Stats::finalizeStats()
 
     std::unordered_set<int> craftableIds;
 
+    //This will cause issues with custom recipes
     for (const auto& recipe : Recipes::getInstance().m_recipes)
         craftableIds.insert(recipe->assemble(nullptr)->m_itemID);
 
@@ -113,7 +114,7 @@ void Stats::finalizeStats()
     {
         if (Item::items[id])
         {
-            itemCrafted[id] = (new IdStat(16842752 + id, "stat.craftItem", id))
+            itemCrafted[id] = (IdStat*)(new IdStat(16842752 + id, "stat.craftItem", id))
                 ->setNameFormatter([id](const std::string& str) {return Language::getInstance()->get(str, Item::items[id]->getName()); })
                 ->registerStat();
         }
@@ -122,13 +123,13 @@ void Stats::finalizeStats()
     finalizeStatArray(itemCrafted);
 }
 
-std::vector<Stat*>& Stats::createMineBlockStats(std::vector<Stat*>& statsArray, const std::string& statName, int baseId)
+std::vector<IdStat*>& Stats::createMineBlockStats(std::vector<IdStat*>& statsArray, const std::string& statName, int baseId)
 {
     statsArray.resize(C_MAX_TILES);
     for (int i = 0; i < C_MAX_TILES; ++i) {
         if (Tile::tiles[i] && Tile::tiles[i]->shouldTrack())
         {
-            statsArray[i] = (new IdStat(baseId + i, statName, i))
+            statsArray[i] = (IdStat*)(new IdStat(baseId + i, statName, i))
                 ->setNameFormatter([i](const std::string& str) {return Language::getInstance()->get(str, Tile::tiles[i]->getName()); })
                 ->registerStat();
             tileStats.push_back(statsArray[i]);
@@ -139,7 +140,7 @@ std::vector<Stat*>& Stats::createMineBlockStats(std::vector<Stat*>& statsArray, 
     return statsArray;
 }
 
-std::vector<Stat*>& Stats::createItemStats(std::vector<Stat*>& statsArray, const std::string& statName, int baseId, int start, int end)
+std::vector<IdStat*>& Stats::createItemStats(std::vector<IdStat*>& statsArray, const std::string& statName, int baseId, int start, int end)
 {
     if (statsArray.empty()) statsArray.resize(C_MAX_ITEMS);
 
@@ -147,11 +148,11 @@ std::vector<Stat*>& Stats::createItemStats(std::vector<Stat*>& statsArray, const
     {
         if (Item::items[i])
         {
-            statsArray[i] = (new IdStat(baseId + i, statName, i))
+            statsArray[i] = (IdStat*)(new IdStat(baseId + i, statName, i))
                 ->setNameFormatter([i](const std::string& str) {return Language::getInstance()->get(str, Item::items[i]->getName()); })
                 ->registerStat();
 
-            if (i >= C_MAX_ITEMS)
+            if (i >= C_MAX_TILES)
                 itemStats.push_back(statsArray[i]);
         }
     }
@@ -160,7 +161,7 @@ std::vector<Stat*>& Stats::createItemStats(std::vector<Stat*>& statsArray, const
     return statsArray;
 }
 
-std::vector<Stat*> Stats::createBreakItemStats(std::vector<Stat*>& statsArray, const std::string& statName, int baseId, int start, int end)
+std::vector<IdStat*> Stats::createBreakItemStats(std::vector<IdStat*>& statsArray, const std::string& statName, int baseId, int start, int end)
 {
     if (statsArray.empty()) statsArray.resize(C_MAX_ITEMS);
 
@@ -168,7 +169,7 @@ std::vector<Stat*> Stats::createBreakItemStats(std::vector<Stat*>& statsArray, c
     {
         if (Item::items[i] && Item::items[i]->isDamageable())
         {
-            statsArray[i] = (new IdStat(baseId + i, statName, i))
+            statsArray[i] = (IdStat*)(new IdStat(baseId + i, statName, i))
                 ->setNameFormatter([i](const std::string& str) {return Language::getInstance()->get(str, Item::items[i]->getName()); })
                 ->registerStat();
         }
@@ -178,7 +179,7 @@ std::vector<Stat*> Stats::createBreakItemStats(std::vector<Stat*>& statsArray, c
     return statsArray;
 }
 
-void Stats::finalizeStatArray(std::vector<Stat*>& statsArray)
+void Stats::finalizeStatArray(std::vector<IdStat*>& statsArray)
 {
     mapDuplicateIds(statsArray, Tile::calmWater->m_ID, Tile::water->m_ID);
     mapDuplicateIds(statsArray, Tile::calmLava->m_ID, Tile::lava->m_ID);
@@ -193,7 +194,7 @@ void Stats::finalizeStatArray(std::vector<Stat*>& statsArray)
     mapDuplicateIds(statsArray, Tile::farmland->m_ID, Tile::dirt->m_ID);
 }
 
-void Stats::mapDuplicateIds(std::vector<Stat*>& statsArray, int fromId, int toId)
+void Stats::mapDuplicateIds(std::vector<IdStat*>& statsArray, int fromId, int toId)
 {
     if (statsArray[fromId] && !statsArray[toId])
         statsArray[toId] = statsArray[fromId];

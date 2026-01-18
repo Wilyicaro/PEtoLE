@@ -19,6 +19,7 @@ public:
 	void render(int, int, float) override;
 
 	void buttonClicked(Button* pButton) override;
+	void updateServerVisibilityText();
 
 protected:
 	std::string m_title;
@@ -26,5 +27,6 @@ protected:
 private:
 	Button m_BackButton;
 	Button m_videoButton;
+	Button m_serverVisibleButton;
 	std::vector<Button*> m_configButtons;
 };

@@ -15,6 +15,12 @@
     <Filter Include="Source Files\Tag">
       <UniqueIdentifier>{26afbdb0-42d5-4e26-a51f-fc6d4994b9e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Math">
+      <UniqueIdentifier>{1a2207e2-a88a-40a8-931c-e823785e7e1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Math">
+      <UniqueIdentifier>{5541234e-499f-4033-8fa2-e470506459b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MC_ROOT)\source\common\CThread.cpp">
@@ -98,6 +104,9 @@
     <ClCompile Include="..\..\..\..\source\common\md5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\common\math\Color.cpp">
+      <Filter>Source Files\Math</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="$(MC_ROOT)\source\common\CThread.hpp">
@@ -180,6 +189,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\source\common\md5.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\common\math\Color.hpp">
+      <Filter>Header Files\Math</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

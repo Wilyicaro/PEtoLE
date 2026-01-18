@@ -280,6 +280,39 @@ const char* GetGUIBlocksName()
 	return "gui/gui_blocks.png";
 }
 
+std::string getKeyboardKeyName(int key)
+{
+#ifdef USE_SDL
+	const char* keyName = SDL_GetKeyName(getSDLKeyCode(key));
+	return keyName ? keyName : "Unknown";
+#elif _WIN32
+	char name[128] = { 0 };
+
+	LONG lScan = MapVirtualKey(key, MAPVK_VK_TO_VSC) << 16;
+	if (key >= VK_F1 && key <= VK_F24) {
+		lScan |= 0x01000000;
+	}
+
+	int len = GetKeyNameTextA(lScan, name, sizeof(name));
+	if (len > 0) {
+		return std::string(name);
+	}
+
+	switch (key) {
+	case VK_RETURN: return "Return";
+	case VK_ESCAPE: return "Escape";
+	case VK_BACK:   return "Backspace";
+	case VK_TAB:    return "Tab";
+	case VK_SPACE:  return "Space";
+	case VK_LSHIFT: return "Left Shift";
+	case VK_RSHIFT: return "Right Shift";
+	default:        return "Unknown";
+	}
+#endif
+
+	return std::to_string(key);
+}
+
 #ifdef _WIN32
 int gettimeofday(struct timeval* tp, struct timezone* tzp)
 {

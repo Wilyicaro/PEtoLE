@@ -12,6 +12,7 @@
 #include "client/gui/screens/ChatScreen.hpp"
 #include "client/renderer/entity/ItemRenderer.hpp"
 #include "world/tile/PortalTile.hpp"
+#include "client/renderer/Lighting.hpp"
 
 #ifdef _WIN32
 #pragma warning(disable : 4244)
@@ -188,7 +189,7 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 	auto& player = mc->m_pPlayer;
 
-	if (!mc->m_pLevel || !player || mc->getOptions()->m_bDontRenderGui)
+	if (!mc->m_pLevel || !player || mc->getOptions()->m_bHideGui)
 		return;
 
 	glEnable(GL_BLEND);
@@ -398,6 +399,12 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 	int diff = mc->isTouchscreen();
 
+	glDisable(GL_BLEND);
+	glEnable(GL_RESCALE_NORMAL);
+	glPushMatrix();
+	glRotatef(120.0F, 1.0F, 0.0F, 0.0F);
+	Lighting::turnOn();
+	glPopMatrix();
 	int slotX = cenX - hotbarWidth / 2 + 3;
 	for (int i = 0; i < nSlots - diff; i++)
 	{
@@ -405,15 +412,31 @@ void Gui::render(float f, bool bHaveScreen, int mouseX, int mouseY)
 
 		slotX += 20;
 	}
+	Lighting::turnOff();
+
+	glDisable(GL_RESCALE_NORMAL);
+	if (m_pMinecraft->m_pPlayer->getSleepTimer() > 0)
+	{
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_ALPHA_TEST);
+		int sleepTimer = m_pMinecraft->m_pPlayer->getSleepTimer();
+		float fading = sleepTimer / 100.0F;
+		if (fading > 1.0F)
+			fading = 1.0F - (sleepTimer - 100) / 10.0F;
+
+		fill(0, 0, width, height, int(220.0F * fading) << 24 | 1052704);
+		glEnable(GL_ALPHA_TEST);
+		glEnable(GL_DEPTH_TEST);
+	}
 
 	if (m_overlayMessageDuration > 0 && m_bHasOverlayMessage) {
 		float var25 = m_overlayMessageDuration - f;
 		int var16 = (int)(var25 * 256.0F / 20.0F);
-		if (var16 > 255) {
+		if (var16 > 255)
 			var16 = 255;
-		}
 
-		if (var16 > 0) {
+		if (var16 > 0)
+		{
 			glPushMatrix();
 			glTranslatef(cenX, (float)(height - 48), 0.0F);
 			glEnable(3042);

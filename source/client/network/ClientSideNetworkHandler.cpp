@@ -150,6 +150,7 @@ void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, StartGa
 
 	m_pMinecraft->setScreen(new ProgressScreen);
 	m_pMinecraft->m_delayed.emplace_back(std::bind(&Minecraft::setLevel, m_pMinecraft, m_pLevel, "Downloading terrain", pLocalPlayer));
+	m_pMinecraft->m_pStatsCounter->addStat(Stats::joinMultiplayer, 1);
 }
 
 void ClientSideNetworkHandler::handle(const RakNet::RakNetGUID& rakGuid, AddPlayerPacket* pAddPlayerPkt)

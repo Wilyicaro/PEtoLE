@@ -20,9 +20,15 @@ void Recipes::addArmour(std::shared_ptr<ItemInstance> material, Item* helmet, It
     add(ShapedRecipeBuilder({ "X X", "X X" }, std::make_shared<ItemInstance>(boots)).add('X', material));
 }
 
+void Recipes::addOre(std::shared_ptr<ItemInstance> material, Tile* block)
+{
+    add(ShapedRecipeBuilder({ "X" }, material->copyWithAcount(9)).add('X', block));
+    add(ShapedRecipeBuilder({ "XXX", "XXX", "XXX" }, std::make_shared<ItemInstance>(block)).add('X', material));
+}
+
 Recipes::Recipes()
 {
-    //Weapon/ToolRecipes
+    //WeaponRecipes & ToolRecipes
     addTools(std::make_shared<ItemInstance>(Tile::wood), Item::woodSword, Item::woodPickaxe, Item::woodAxe, Item::woodShovel, Item::woodHoe);
     addTools(std::make_shared<ItemInstance>(Tile::cobblestone), Item::stoneSword, Item::stonePickaxe, Item::stoneAxe, Item::stoneShovel, Item::stoneHoe);
     addTools(std::make_shared<ItemInstance>(Item::ironIngot), Item::ironSword, Item::ironPickaxe, Item::ironAxe, Item::ironShovel, Item::ironHoe);
@@ -37,6 +43,12 @@ Recipes::Recipes()
     addArmour(std::make_shared<ItemInstance>(Item::ironIngot), Item::ironHelmet, Item::ironChestplate, Item::ironLeggings, Item::ironBoots);
     addArmour(std::make_shared<ItemInstance>(Item::goldIngot), Item::goldHelmet, Item::goldChestplate, Item::goldLeggings, Item::goldBoots);
     addArmour(std::make_shared<ItemInstance>(Item::diamond), Item::diamondHelmet, Item::diamondChestplate, Item::diamondLeggings, Item::diamondBoots);
+
+    //OreRecipes
+    addOre(std::make_shared<ItemInstance>(Item::ironIngot), Tile::ironBlock);
+    addOre(std::make_shared<ItemInstance>(Item::goldIngot), Tile::goldBlock);
+    addOre(std::make_shared<ItemInstance>(Item::diamond), Tile::diamondBlock);
+    addOre(std::make_shared<ItemInstance>(Item::dyePowder, 1, 4), Tile::lapisBlock);
 
     //StructureRecipes
     add(ShapedRecipeBuilder({ "###", "# #", "###" }, std::make_shared<ItemInstance>(Tile::chest)).add('#', Tile::wood));
@@ -264,6 +276,7 @@ Recipes::Recipes()
         .add('#', Tile::piston));
 #endif
 
+    //ClothDyeRecipes
     for (int i = 0; i < 16; ++i)
     {
         add(ShapelessRecipeBuilder(std::make_shared<ItemInstance>(Tile::cloth, 1, ClothTile::getColorFromData(i)))

@@ -8,43 +8,23 @@
 
 #pragma once
 
-#include "RolledSelectionList.hpp"
+#include "ScrolledSelectionList.hpp"
 
-class WorldSelectionList : public RolledSelectionList
+class SelectWorldScreen;
+
+class WorldSelectionList : public ScrolledSelectionList
 {
 public:
-	WorldSelectionList(Minecraft*, int, int);
+	WorldSelectionList(SelectWorldScreen*);
 
-	bool capXPosition() override;
-	void tick() override;
-	int getNumberOfItems() override;
+	int getItemCount() override;
 	void selectItem(int, bool) override;
 	bool isSelectedItem(int) override;
-	float getPos(float) override;
-	void touched() override;
-	void renderItem(int, int, int, int, Tesselator&) override;
-	void renderBackground() override;
 
-	void commit();
-	void stepLeft();
-	void stepRight();
-	void tweenInited();
+	void renderBackground(float) override;
+	void renderItem(int i, int j, int k, int l, Tesselator& tes) override;
 
-public:
-	float field_54;
-	float field_58;
-	float field_5C;
-	float field_60;
-	int m_selectedIndex;
-	int field_68;
-	std::vector<LevelSummary> m_items;
-	std::vector<std::vector<std::string> > m_vvs;
-	std::vector<std::string> m_previewImages;
-	bool field_90;
-	LevelSummary m_levelSummary;
-	int field_CC;
-	int field_D0;
-	int field_D4;
-	int field_D8;
+private:
+	SelectWorldScreen* m_pParent;
 };
 

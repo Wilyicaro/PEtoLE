@@ -19,20 +19,19 @@ public:
 
 	void init(Options* pOpts);
 	void buildChar(unsigned char chr, float x, float y);
-	void draw(const std::string&, int x, int y, int color);
-	void draw(const std::string&, int x, int y, int color, bool bShadow);
+	void draw(const std::string&, int x, int y, int color, bool bShadow = false);
 	void drawSlow(const std::string&, int x, int y, int color, bool bShadow);
 	void drawShadow(const std::string&, int x, int y, int color);
+	void drawString(const std::string&, int x, int y, int color, bool hasShadow);
 
-	//int Font::drawWordWrap(Font *this, const StlString *a2, int a3, int a4, int a5, int a6).
-	// +- I probably won't actually implement this because
-	// +- 1. It does not seem to have any cross references
-	// +- 2. It appears to even be broken
+	void drawWordWrap(const std::string&, int x, int y, int color, int width, int lineHeight = 8, bool shadow = false);
+	void drawWordWrap(const std::vector<std::string>&, int x, int y, int color, int lineHeight = 8, bool shadow = false);
 
 	void onGraphicsReset();
 
 	int width(const std::string& str);
-	int height(const std::string& str);
+	std::vector<std::string> split(const std::string& str, int width);
+	int height(const std::string& str, int maxWidth = 0);
 
 private:
 	int m_charWidthInt[256];

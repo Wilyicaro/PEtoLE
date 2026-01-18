@@ -37,7 +37,7 @@ public:
 		return this;
 	}
 
-	Stat* registerStat()
+	virtual Stat* registerStat()
 	{
 		Stats::stats.push_back(this);
 		Stats::statById[m_id] = this;

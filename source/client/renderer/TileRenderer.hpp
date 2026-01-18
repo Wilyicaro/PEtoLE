@@ -22,6 +22,7 @@ public:
 	TileRenderer(LevelSource*);
 	float getWaterHeight(const TilePos& pos, const Material*);
 	void renderTile(Tile*, int data, float bright = 1.0f, bool preshade = false);
+	void renderTile(Tile*, int data, const Color& color, bool preshade = false);
 
 	// TODO
 
@@ -29,23 +30,23 @@ public:
 	bool tesselateInWorldNoCulling(Tile*, const TilePos& pos);
 	bool tesselateInWorld(Tile*, const TilePos& pos, int textureOverride);
 
-	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b, int rot);
-	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, float r, float g, float b);
-	void renderEast(Tile*, const Vec3& pos, int texture, float r, float g, float b);
-	void renderWest(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
-	void renderSouth(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
-	void renderNorth(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
-	void renderDown(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
-	void renderUp(Tile * tile, const Vec3& pos, int texture, float r, float g, float b);
+	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, const Color& color, int rot);
+	void renderFace(Tile* tile, const Vec3& pos, int texture, Facing::Name face, const Color& color = Color::WHITE);
+	void renderEast(Tile*, const Vec3& pos, int texture, const Color& color = Color::WHITE);
+	void renderWest(Tile * tile, const Vec3& pos, int texture, const Color& color = Color::WHITE);
+	void renderSouth(Tile * tile, const Vec3& pos, int texture, const Color& color = Color::WHITE);
+	void renderNorth(Tile * tile, const Vec3& pos, int texture, const Color& color = Color::WHITE);
+	void renderDown(Tile * tile, const Vec3& pos, int texture, const Color& color = Color::WHITE);
+	void renderUp(Tile * tile, const Vec3& pos, int texture, const Color& color = Color::WHITE);
 	void renderPistonFace(real, real, real, real, real, real, float, real, Facing::Name dir);
 	void tesselateCrossTexture(Tile* tile, int data, const Vec3& pos);
 	void tesselateRowTexture(Tile* tile, int data, const Vec3& pos);
 	void tesselateTorch(Tile*, const Vec3& pos, float a, float b);
 	
-	bool tesselateBlockInWorld(Tile*, const TilePos& pos, float r, float g, float b);
+	bool tesselateBlockInWorld(Tile*, const TilePos& pos, const Color& color);
 	bool tesselateBlockInWorld(Tile*, const TilePos& pos);
-	bool tesselateCrossInWorld(Tile*, const TilePos& pos);
-	bool tesselateRowInWorld(Tile*, const TilePos& pos);
+	bool tesselateCrossInWorld(Tile*, const TilePos& pos, const Color& color = Color::WHITE);
+	bool tesselateRowInWorld(Tile*, const TilePos& pos, const Color& color = Color::WHITE);
 	bool tesselateWaterInWorld(Tile*, const TilePos& pos);
 	bool tesselateStairsInWorld(Tile*, const TilePos& pos);
 	bool tesselateFenceInWorld(Tile*, const TilePos& pos);
@@ -61,7 +62,7 @@ public:
 	bool tesselatePistonInWorld(Tile* tile, const TilePos& pos, bool head);
 	void tesselateHeadPistonInWorldNoCulling(Tile* tile, const TilePos& pos, bool extended);
 	bool tesselateHeadPistonInWorld(Tile* tile, const TilePos& pos, bool extended);
-	bool tesselateBlockInWorldWithAmbienceOcclusionV2(Tile*, const TilePos& pos, float r, float g, float b);
+	bool tesselateBlockInWorldWithAmbienceOcclusionV2(Tile*, const TilePos& pos, const Color& color = Color::WHITE);
 
 	int getTileColor(Tile*, const TilePos& pos);
 	bool useAmbientOcclusion() const;

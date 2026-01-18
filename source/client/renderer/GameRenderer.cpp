@@ -749,6 +749,9 @@ void GameRenderer::render(float f)
 
 	}
 
+	//This doesn't seem to cause issues, and fixes the debug text and the sky when on container and achievements screen (original bug)
+	glDisable(GL_LIGHTING);
+
 	// @TODO: Move to its own function
 
 	if (m_pMinecraft->getOptions()->m_bDebugText)
@@ -848,6 +851,8 @@ void GameRenderer::render(float f)
 		m_shownChunkUpdates = Chunk::updates;
 		Chunk::updates = 0;
 	}
+
+	m_pMinecraft->m_toastComponent.render(ceilf(Minecraft::width * Gui::InvGuiScale));
 }
 
 void GameRenderer::tick()
@@ -900,7 +905,7 @@ void GameRenderer::tick()
 		pMob = m_pMinecraft->m_pCameraEntity = m_pMinecraft->m_pPlayer;
 	}
 
-	float bright = m_pMinecraft->m_pLevel->getBrightness(pMob->m_pos);
+	float bright = m_pMinecraft->m_pLevel->getBrightness(pMob->m_pos.add(0, pMob->m_heightOffset, 0));
 	float x3 = float(3 - m_pMinecraft->getOptions()->m_iViewDistance.get());
 
 	m_ticks++;
@@ -927,7 +932,7 @@ void GameRenderer::renderItemInHand(float f, int i)
 	if (m_pMinecraft->getOptions()->m_bViewBobbing.get())
 		bobView(f);
 
-	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pCameraEntity->isSleeping() && !m_pMinecraft->getOptions()->m_bDontRenderGui)
+	if (!m_pMinecraft->getOptions()->m_bThirdPerson && !m_pMinecraft->m_pCameraEntity->isSleeping() && !m_pMinecraft->getOptions()->m_bHideGui)
 		m_pItemInHandRenderer->render(f);
 
 	glPopMatrix();

@@ -31,6 +31,7 @@
 #include "world/particle/ParticleEngine.hpp"
 #include <stdint.h>
 #include "stats/StatsCounter.hpp"
+#include "client/gui/components/toasts/ToastComponent.hpp"
 
 class Screen; // in case we're included from Screen.hpp
 
@@ -114,6 +115,7 @@ public:
 	virtual void update() override;
 	virtual void init() override;
 	virtual void initAssets();
+	virtual void initStatsCounter();
 	virtual void onGraphicsReset();
 	virtual void sizeUpdate(int newWidth, int newHeight) override;
 	virtual void resizeDisplay(int guiScale, int newWidth = Minecraft::width, int newHeight = Minecraft::height);
@@ -173,6 +175,7 @@ public:
 	std::shared_ptr<LocalPlayer> m_pPlayer;
 	std::shared_ptr<Mob> m_pCameraEntity;
 	Gui m_gui;
+	ToastComponent m_toastComponent;
 	int field_D0C;
 	std::vector<std::function<void()>> m_delayed;
 	std::vector<AsyncTask> m_async;

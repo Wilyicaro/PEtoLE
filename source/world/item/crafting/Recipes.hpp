@@ -129,6 +129,8 @@ public:
 
     void addArmour(std::shared_ptr<ItemInstance> material, Item* helmet, Item* chestplate, Item* leggings, Item* boots);
 
+    void addOre(std::shared_ptr<ItemInstance> material, Tile* block);
+
     std::shared_ptr<ItemInstance> getItemFor(CraftingContainer* container) {
         for (auto& recipe : m_recipes) {
             if (recipe->matches(container)) {

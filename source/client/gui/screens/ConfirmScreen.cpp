@@ -16,6 +16,7 @@ ConfirmScreen::ConfirmScreen(Screen* pScreen, const std::string& line1, const st
 	m_btnOK    (0, 0, 0, "Ok"),
 	m_btnCancel(1, 0, 0, "Cancel")
 {
+	m_bDeletePrevious = false;
 }
 
 ConfirmScreen::ConfirmScreen(Screen* pScreen, const std::string& line1, const std::string& line2, const std::string& ok, const std::string& cancel, int x) :
@@ -26,6 +27,7 @@ ConfirmScreen::ConfirmScreen(Screen* pScreen, const std::string& line1, const st
 	m_btnOK    (0, 0, 0, ok),
 	m_btnCancel(1, 0, 0, cancel)
 {
+	m_bDeletePrevious = false;
 }
 
 // @NOTE: potential memory leak if pScreen is set and not destroyed!
@@ -45,7 +47,7 @@ void ConfirmScreen::init()
 	m_btnOK.m_xPos = m_width / 2 - 4 - 120;
 	m_btnCancel.m_xPos = m_width / 2 + 4;
 
-	m_btnCancel.m_yPos = m_btnOK.m_yPos = m_height / 6 + 72;
+	m_btnCancel.m_yPos = m_btnOK.m_yPos = m_height / 6 + 96;
 
 	m_btnOK.m_width  = m_btnCancel.m_width = 120;
 
@@ -58,8 +60,8 @@ void ConfirmScreen::init()
 void ConfirmScreen::render(int mouseX, int mouseY, float f)
 {
 	renderBackground();
-	drawCenteredString(m_pFont, m_textLine1, m_width / 2, 50, 0xFFFFFF);
-	drawCenteredString(m_pFont, m_textLine2, m_width / 2, 70, 0xFFFFFF);
+	drawCenteredString(m_pFont, m_textLine1, m_width / 2, 70, 0xFFFFFF);
+	drawCenteredString(m_pFont, m_textLine2, m_width / 2, 90, 0xFFFFFF);
 	Screen::render(mouseX, mouseY, f);
 }
 

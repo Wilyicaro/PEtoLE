@@ -203,7 +203,12 @@
     <ClInclude Include="$(MC_ROOT)\source\client\renderer\Lighting.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\player\input\BuildActionIntention.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\components\SliderButton.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\components\toasts\Toast.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\components\toasts\ToastComponent.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\components\toasts\ToastInstance.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\AchievementsScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\ChangeProfileScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\EditWorldScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\InBedChatScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\IntroScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.hpp" />
@@ -214,6 +219,7 @@
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\StatsScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\gui\screens\VideoSettingsScreen.hpp" />
     <ClInclude Include="..\..\..\..\source\client\locale\Language.hpp" />
     <ClInclude Include="..\..\..\..\source\client\model\BoatModel.hpp" />
@@ -366,7 +372,12 @@
     <ClCompile Include="$(MC_ROOT)\source\client\player\input\MouseBuildInput.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\renderer\Lighting.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\components\SliderButton.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\components\toasts\Toast.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\components\toasts\ToastComponent.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\components\toasts\ToastInstance.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\AchievementsScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\ChangeProfileScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\EditWorldScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\InBedChatScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\IntroScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\ChestScreen.cpp" />
@@ -377,6 +388,7 @@
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\InventoryScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TextEditScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\inventory\TrapScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\StatsScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\gui\screens\VideoSettingsScreen.cpp" />
     <ClCompile Include="..\..\..\..\source\client\locale\Language.cpp" />
     <ClCompile Include="..\..\..\..\source\client\model\BoatModel.cpp" />

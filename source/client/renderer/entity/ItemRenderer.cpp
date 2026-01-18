@@ -146,10 +146,10 @@ void ItemRenderer::renderGuiItemDecorations(Font* font, Textures* textures, std:
 
 	if (item->m_count > 1) {
 		std::string amount = std::to_string(item->m_count);
-		//glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 		font->drawShadow(amount, x + 19 - 2 - font->width(amount), y + 6 + 3, 0xFFFFFF);
-		//glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);
 		glEnable(GL_DEPTH_TEST);
 	}
 
@@ -157,7 +157,7 @@ void ItemRenderer::renderGuiItemDecorations(Font* font, Textures* textures, std:
 		int p = Mth::round(13.0 - (double)item->getDamageValue() * 13.0 / (double)item->getMaxDamage());
 		int cc = Mth::round(255.0 - (double)item->getDamageValue() * 255.0 / (double)item->getMaxDamage());
 
-		//glDisable(GL_LIGHTING);
+		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 
 		int ca = ((255 - cc) << 16) | (cc << 8);
@@ -167,13 +167,19 @@ void ItemRenderer::renderGuiItemDecorations(Font* font, Textures* textures, std:
 		GuiComponent::drawRect(x + 2, y + 13, 12, 1, cb);
 		GuiComponent::drawRect(x + 2, y + 13, p, 1, ca);
 
-		//glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);
 		glEnable(GL_DEPTH_TEST);
 		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 	}
 }
 
-void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstance> instance, int x, int y)
+void ItemRenderer::renderGuiItemAndDecorate(Font* font, Textures* textures, std::shared_ptr<ItemInstance> item, int x, int y)
+{
+	renderGuiItem(textures, item, x, y);
+	renderGuiItemDecorations(font, textures, item, x, y);
+}
+
+void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstance> instance, int x, int y, const Color& color)
 {
 	// As if that actually works due to us blocking t.begin() and t.draw() calls...
 	if (!instance)
@@ -219,7 +225,7 @@ void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstanc
 		glRotatef(45.0F, 0.0F, 1.0F, 0.0F);
 		
 		glRotatef(-90.0F, 0.0F, 1.0F, 0.0F);
-		tileRenderer->renderTile(Tile::tiles[itemID], instance->getAuxValue(), 1.0f, true);
+		tileRenderer->renderTile(Tile::tiles[itemID], instance->getAuxValue(), color);
 		#undef PARM_HACK
 
 		glPopMatrix();
@@ -227,6 +233,7 @@ void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstanc
 	}
 	else if (instance->getIcon() >= 0)
 	{
+		glDisable(GL_LIGHTING);
 		// @BUG: The last bound texture will be the texture that ALL items will take. This is because begin and end calls
 		// have been void'ed by a  t.voidBeginAndEndCalls call in Gui::render.
 		if (instance->m_itemID <= 255)
@@ -234,6 +241,8 @@ void ItemRenderer::renderGuiItem(Textures* textures, std::shared_ptr<ItemInstanc
 		else
 			textures->loadAndBindTexture(C_ITEMS_NAME);
 
-		GuiComponent::blit(x, y, 0, 16 * (instance->getIcon() % 16), 16 * (instance->getIcon() / 16), 16, 16, 256, 256);
+		GuiComponent::blit(x, y, 0, 16 * (instance->getIcon() % 16), 16 * (instance->getIcon() / 16), 16, 16, 256, 256, color);
+		glEnable(GL_LIGHTING);
 	}
+	glEnable(GL_CULL_FACE);
 }

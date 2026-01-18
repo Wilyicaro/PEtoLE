@@ -39,7 +39,7 @@ DecimalFormatter::DecimalFormatter(int precision) : m_precision(precision)
 {
 }
 
-std::string DecimalFormatter::format(int value) const
+std::string DecimalFormatter::format(double value) const
 {
 	std::stringstream ss;
 	ss.imbue(std::locale(""));

@@ -6,8 +6,7 @@ My thanks to the contributors of ReMinecraftPE, without them this project would 
 ## TO-DO List
 * Make screens accurate, like Options and Select World screens
 * Texture Packs System
-* Stats and Achievements
-* Completely functional integrated servers
+* Completely functional integrated servers (half done, needs stability)
 * Optimization in general, mainly RAM Usage
 
 ## FAQ

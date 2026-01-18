@@ -21,10 +21,10 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks)
     renderBackground();
     renderBg(mouseX, mouseY, partialTicks);
 
-    //glPushMatrix();
-    //glRotatef(120.0F, 1.0F, 0.0F, 0.0F);
-    //Lighting::turnOn();
-    //glPopMatrix();
+    glPushMatrix();
+    glRotatef(120.0F, 1.0F, 0.0F, 0.0F);
+    Lighting::turnOn();
+    glPopMatrix();
 
     glPushMatrix();
     glTranslatef(m_leftPos, m_topPos, 0.0F);
@@ -39,12 +39,12 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks)
         if (isHovering(slot.get(), mouseX, mouseY))
         {
             hoveredSlot = slot.get();
-            //glDisable(GL_LIGHTING);
+            glDisable(GL_LIGHTING);
             glDisable(GL_DEPTH_TEST);
             int slotX = slot->x;
             int slotY = slot->y;
             fillGradient(slotX, slotY, slotX + 16, slotY + 16, -2130706433, -2130706433);
-            //glEnable(GL_LIGHTING);
+            glEnable(GL_LIGHTING);
             glEnable(GL_DEPTH_TEST);
         }
     }
@@ -58,7 +58,7 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks)
 
     glDisable(GL_RESCALE_NORMAL);
     Lighting::turnOff();
-    //glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
     renderLabels();
 
@@ -78,7 +78,7 @@ void ContainerScreen::render(int mouseX, int mouseY, float partialTicks)
 
     glPopMatrix();
     Screen::render(mouseX, mouseY, partialTicks);
-    //glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -178,13 +178,12 @@ void ContainerScreen::renderSlot(Slot* slot)
         int icon = slot->getNoItemIcon();
         if (icon >= 0)
         {
-            //glDisable(GL_LIGHTING);
+            glDisable(GL_LIGHTING);
             m_pMinecraft->m_pTextures->loadAndBindTexture("gui/items.png");
             blit(x, y, (icon % 16) * 16, (icon / 16) * 16, 16, 16, 256, 256);
-            //glEnable(GL_LIGHTING);
+            glEnable(GL_LIGHTING);
             return;
         }
     }
-    ItemRenderer::renderGuiItem(m_pMinecraft->m_pTextures, item, x, y);
-    ItemRenderer::renderGuiItemDecorations(m_pFont, m_pMinecraft->m_pTextures, item, x, y);
+    ItemRenderer::renderGuiItemAndDecorate(m_pFont, m_pMinecraft->m_pTextures, item, x, y);
 }

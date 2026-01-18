@@ -77,6 +77,11 @@ std::shared_ptr<ItemInstance> ItemInstance::copy() const
 	return std::make_shared<ItemInstance>(m_itemID, m_count, m_auxValue);
 }
 
+std::shared_ptr<ItemInstance> ItemInstance::copyWithAcount(int count) const
+{
+	return std::make_shared<ItemInstance>(m_itemID, count, m_auxValue);
+}
+
 bool ItemInstance::canDestroySpecial(const Tile* tile)
 {
 	return getItem()->canDestroySpecial(tile);

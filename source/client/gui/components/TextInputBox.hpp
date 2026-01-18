@@ -64,9 +64,8 @@ public:
 	std::string m_placeholder;
 	bool m_bFocused;
 	bool m_bEnabled;
-	bool m_bCursorOn;
 	int m_insertHead;
-	int m_lastFlashed;
+	int m_ticks;
 	Font* m_pFont;
 	Screen* m_pParent;
 	int m_maxLength;

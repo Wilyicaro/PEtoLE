@@ -130,6 +130,8 @@ const char* GetTerrainName();
 const char* GetItemsName();
 const char* GetGUIBlocksName();
 
+std::string getKeyboardKeyName(int);
+
 #ifdef ORIGINAL_CODE
 #define C_TERRAIN_NAME "terrain.png"
 #define C_ITEMS_NAME   "gui/items.png"

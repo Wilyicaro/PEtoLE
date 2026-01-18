@@ -1070,7 +1070,7 @@ extern int t_keepPic;
 void LevelRenderer::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* pOwner)
 {
 	auto pOldMob = m_pMinecraft->m_pCameraEntity;
-	bool bOldDontRenderGui = m_pMinecraft->getOptions()->m_bDontRenderGui;
+	bool bOldDontRenderGui = m_pMinecraft->getOptions()->m_bHideGui;
 	bool bOldThirdPerson = m_pMinecraft->getOptions()->m_bThirdPerson;
 
 #ifdef ENH_CAMERA_NO_PARTICLES
@@ -1079,11 +1079,11 @@ void LevelRenderer::takePicture(std::shared_ptr<TripodCamera> pCamera, Entity* p
 #endif
 
 	m_pMinecraft->m_pCameraEntity = pCamera;
-	m_pMinecraft->getOptions()->m_bDontRenderGui = true;
+	m_pMinecraft->getOptions()->m_bHideGui = true;
 	m_pMinecraft->getOptions()->m_bThirdPerson = false; // really from the perspective of the camera
 	m_pMinecraft->m_pGameRenderer->render(0.0f);
 	m_pMinecraft->m_pCameraEntity = pOldMob;
-	m_pMinecraft->getOptions()->m_bDontRenderGui = bOldDontRenderGui;
+	m_pMinecraft->getOptions()->m_bHideGui = bOldDontRenderGui;
 	m_pMinecraft->getOptions()->m_bThirdPerson = bOldThirdPerson;
 
 #ifdef ENH_CAMERA_NO_PARTICLES

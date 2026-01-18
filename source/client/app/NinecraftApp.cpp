@@ -14,7 +14,7 @@
 #include "world/entity/EntityType.hpp"
 #include "world/tile/entity/TileEntityType.hpp"
 #include "stats/Stats.hpp"
-#include "stats/Achievements.hpp"
+#include "stats/Achievement.hpp"
 
 #ifdef DEMO
 #include "world/level/storage/MemoryLevelStorageSource.hpp"
@@ -84,6 +84,7 @@ void NinecraftApp::init()
 		//@TODO: Check if the initializing order will matter for the achievements
 		Stats::initStats();
 		Achievements::initAchievements();
+		Achievements::openInventory->descriptionFormatter([this](const std::string& key) { return Language::getInstance()->get(key, getKeyboardKeyName(getOptions()->getKey(KM_INVENTORY))); });
 	}
 
 	initGLStates();

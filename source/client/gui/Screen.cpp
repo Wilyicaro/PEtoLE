@@ -15,6 +15,7 @@ Screen::Screen()
 	m_width = 1;
 	m_height = 1;
 	field_10 = false;
+	m_bDeletePrevious = true;
 	m_tabButtonIndex = 0;
 	m_pClickedButton = 0;
 	m_yOffset = 0;
@@ -34,6 +35,9 @@ void Screen::init(Minecraft* pMinecraft, int a3, int a4)
 	m_height = a4;
 	m_pMinecraft = pMinecraft;
 	m_pFont = pMinecraft->m_pFont;
+	m_buttons.clear();
+	m_buttonTabList.clear();
+	m_textInputs.clear();
 	init();
 	updateTabButtonSelection();
 }
@@ -356,7 +360,7 @@ void Screen::render(int xPos, int yPos, float unused)
 	for (int i = 0; i < int(m_textInputs.size()); i++)
 	{
 		TextInputBox* textInput = m_textInputs[i];
-		textInput->tick();
+		
 		textInput->render();
 	}
 #endif
@@ -369,19 +373,16 @@ void Screen::onClose()
 
 void Screen::tick()
 {
+	for (TextInputBox* textInput : m_textInputs)
+	{
+		textInput->tick();
+	}
 	g_panoramaAngle++;
 }
 
 void Screen::setSize(int width, int height)
 {
-	m_width = width;
-	m_height = height;
-
-	// not original code. Will need to re-init again
-	m_buttons.clear();
-	m_buttonTabList.clear();
-	m_textInputs.clear();
-	init();
+	init(m_pMinecraft, width, height);
 }
 
 void Screen::onRender(int mouseX, int mouseY, float f)
@@ -445,12 +446,14 @@ void Screen::updateEvents()
 {
 	if (field_10) return;
 
+	int dx, dy;
+	m_pMinecraft->platform()->getMouseDiff(dx, dy);
+	m_pMinecraft->platform()->clearDiff();
+
 	for (int i = 1; i < MouseButtonType::BUTTON_COUNT; i++)
 	{
 		if (Mouse::getButtonState((MouseButtonType)i)) 
 		{
-			int dx, dy;
-			m_pMinecraft->m_pPlatform->getMouseDiff(dx, dy);
 			mouseDragged((double) m_width * Mouse::getX() / Minecraft::width, (double) m_height * Mouse::getY() / Minecraft::height + getYOffset(), i, (double)m_width * dx / Minecraft::width, (double)m_height * dy / Minecraft::height);
 		}
 	}
@@ -506,13 +509,11 @@ void Screen::renderBackground()
 
 void Screen::renderDirtBackground(int unk)
 {
+	glDisable(GL_LIGHTING);
 	glDisable(GL_FOG);
 
 	m_pMinecraft->m_pTextures->loadAndBindTexture("gui/background.png");
-	glColor4f(0.25f, 0.25f, 0.25f, 1);
-	blit(0, 0, 0, 0, m_width, m_height, 32, 32);
-
-	glColor4f(1, 1, 1, 1);
+	blit(0, 0, 0, 0, m_width, m_height, 32, 32, Color(0xFF404040));
 }
 
 

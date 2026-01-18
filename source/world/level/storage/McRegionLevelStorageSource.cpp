@@ -98,41 +98,12 @@ void McRegionLevelStorageSource::deleteLevel(const std::string& levelName)
 		LOG_I("Failed to delete level %s: %s", levelName.c_str(), _Ec.message().c_str());
 }
 
-void McRegionLevelStorageSource::renameLevel(const std::string& oldName, const std::string& newName)
+void McRegionLevelStorageSource::renameLevel(const std::string& levelId, const std::string& newName)
 {
-	int accessResult = XPL_ACCESS((m_worldsPath + "/" + oldName).c_str(), 0);
-	if (accessResult)
-		return;
-
-	std::string levelName = Util::stringTrim(newName);
-	for (int i = 0; i < sizeof(g_EFLSSFilterArray); i++)
-	{
-		std::string str;
-		str.push_back(g_EFLSSFilterArray[i]);
-		Util::stringReplace(levelName, str, "");
-	}
-
-	std::vector<LevelSummary> vls;
-	getLevelList(vls);
-
-	std::set<std::string> maps;
-
-	const size_t size = vls.size();
-	for (int i = 0; i < size; i++)
-		maps.insert(vls.at(i).m_fileName);
-
-	std::string levelUniqueName = levelName;
-	while (maps.find(levelUniqueName) != maps.end())
-		levelUniqueName += "-";
-
-	int renameResult = rename((m_worldsPath + "/" + oldName).c_str(), (m_worldsPath + "/" + levelUniqueName).c_str());
-	if (renameResult != 0)
-		levelUniqueName = oldName;
-
 	LevelData ld;
-	MinecraftServer::readLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
-	ld.setLevelName(levelName);
-	MinecraftServer::writeLevelData(m_worldsPath + "/" + levelUniqueName + "/" + "level.dat", ld);
+	MinecraftServer::readLevelData(m_worldsPath + "/" + levelId + "/" + "level.dat", ld);
+	ld.setLevelName(newName);
+	MinecraftServer::writeLevelData(m_worldsPath + "/" + levelId + "/" + "level.dat", ld);
 }
 
 bool McRegionLevelStorageSource::isConvertible(const std::string&)

@@ -5,6 +5,7 @@
 #include <string>
 
 class Stat;
+class IdStat;
 
 class Stats
 {
@@ -12,12 +13,12 @@ public:
     static std::unordered_map<int, Stat*> statById;
     static std::vector<Stat*> stats;
     static std::vector<Stat*> customStats;
-    static std::vector<Stat*> tileStats;
-    static std::vector<Stat*> itemStats;
-    static std::vector<Stat*> statItemUsed;
-    static std::vector<Stat*> statItemBreak;
-    static std::vector<Stat*> statMineBlock;
-    static std::vector<Stat*> itemCrafted;
+    static std::vector<IdStat*> tileStats;
+    static std::vector<IdStat*> itemStats;
+    static std::vector<IdStat*> statItemUsed;
+    static std::vector<IdStat*> statItemBreak;
+    static std::vector<IdStat*> statMineBlock;
+    static std::vector<IdStat*> itemCrafted;
 
     static Stat* startGame;
     static Stat* createWorld;
@@ -57,15 +58,15 @@ public:
     static void finalizeStats();
 
 private:
-    static std::vector<Stat*>& createMineBlockStats(std::vector<Stat*>& statsArray, const std::string& statName, int baseId);
+    static std::vector<IdStat*>& createMineBlockStats(std::vector<IdStat*>& statsArray, const std::string& statName, int baseId);
 
-    static std::vector<Stat*>& createItemStats(std::vector<Stat*>& statsArray, const std::string& statName, int baseId, int start, int end);
+    static std::vector<IdStat*>& createItemStats(std::vector<IdStat*>& statsArray, const std::string& statName, int baseId, int start, int end);
 
-    static std::vector<Stat*> createBreakItemStats(std::vector<Stat*>& statsArray, const std::string& statName, int baseId, int start, int end);
+    static std::vector<IdStat*> createBreakItemStats(std::vector<IdStat*>& statsArray, const std::string& statName, int baseId, int start, int end);
 
-    static void finalizeStatArray(std::vector<Stat*>& statsArray);
+    static void finalizeStatArray(std::vector<IdStat*>& statsArray);
 
-    static void mapDuplicateIds(std::vector<Stat*>& statsArray, int fromId, int toId);
+    static void mapDuplicateIds(std::vector<IdStat*>& statsArray, int fromId, int toId);
 
 public:
     static Stat* byId(int id)

@@ -69,6 +69,7 @@ public:
 
 	Item* getItem() const;
 	std::shared_ptr<ItemInstance> copy() const;
+	std::shared_ptr<ItemInstance> copyWithAcount(int) const;
 
 	static bool matches(const std::shared_ptr<ItemInstance>& a1, const std::shared_ptr<ItemInstance>& a2);
 

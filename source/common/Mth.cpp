@@ -229,7 +229,8 @@ float Mth::random()
 }
 
 
-int Mth::HSBtoRGB(float hue, float saturation, float brightness) {
+int Mth::HSBtoRGB(float hue, float saturation, float brightness)
+{
 	int r = 0, g = 0, b = 0;
 	if (saturation == 0) {
 		r = g = b = (int)(brightness * 255.0f + 0.5f);

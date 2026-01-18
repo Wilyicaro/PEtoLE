@@ -15,6 +15,7 @@
 #include <vector>
 #include <stdint.h>
 #include <stdexcept>
+#include <iomanip>
 
 class Util
 {
@@ -44,56 +45,125 @@ public:
 		return oss.str();
 	}
 
-	template<typename... Args>
-	static std::string format(const std::string& fmt, Args&&... arguments)
-	{
-		std::vector<std::string> args = { toString(std::forward<Args>(arguments))... };
-		std::string result;
-		size_t pos = 0;
-		size_t seqIndex = 0;
+    template<typename... Args>
+    static std::string format(const std::string& fmt, Args&&... args) {
+        std::vector<std::string> argStrings = { toString(std::forward<Args>(args))... };
 
-		while (pos < fmt.size())
-		{
-			size_t pct = fmt.find('%', pos);
-			if (pct == std::string::npos)
-			{
-				result += fmt.substr(pos);
-				break;
-			}
+        std::string result;
+        size_t pos = 0;
+        size_t argIndex = 0;
 
-			result += fmt.substr(pos, pct - pos);
-			pos = pct + 1;
+        while (pos < fmt.size()) {
+            if (fmt[pos] == '%') {
+                size_t start = pos;
+                ++pos;
 
-			if (pos >= fmt.size())
-			{
-				result += '%';
-				break;
-			}
+                if (pos >= fmt.size()) {
+                    result += '%';
+                    break;
+                }
 
-			char c = fmt[pos];
-			if (c == 's')
-			{
-				if (seqIndex < args.size())
-					result += args[seqIndex++];
-				else
-					result += "%s";
-				++pos;
-			}
-			else if (c >= '0' && c <= '9')
-			{
-				int index = c - '0';
-				if (index < (int)args.size())
-					result += args[index];
-				else
-					result += "%" + std::string(1, c);
-				++pos;
-			}
-			else
-				result += '%';
-		}
+                int argNum = -1;
+                if (std::isdigit(fmt[pos])) {
+                    argNum = 0;
+                    while (pos < fmt.size() && std::isdigit(fmt[pos])) {
+                        argNum = argNum * 10 + (fmt[pos] - '0');
+                        ++pos;
+                    }
+                    if (pos < fmt.size() && fmt[pos] == '$') ++pos;
+                    else argNum = -1;
+                }
 
-		return result;
-	}
+                bool leftAlign = false;
+                bool zeroPad = false;
+                int width = 0;
+                int precision = -1;
+
+                while (pos < fmt.size()) {
+                    char c = fmt[pos];
+                    if (c == '-') { leftAlign = true; ++pos; }
+                    else if (c == '0') { zeroPad = true; ++pos; }
+                    else break;
+                }
+
+                if (pos < fmt.size() && std::isdigit(fmt[pos])) {
+                    width = 0;
+                    while (pos < fmt.size() && std::isdigit(fmt[pos])) {
+                        width = width * 10 + (fmt[pos] - '0');
+                        ++pos;
+                    }
+                }
+
+                if (pos < fmt.size() && fmt[pos] == '.') {
+                    ++pos;
+                    precision = 0;
+                    while (pos < fmt.size() && std::isdigit(fmt[pos])) {
+                        precision = precision * 10 + (fmt[pos] - '0');
+                        ++pos;
+                    }
+                }
+
+                if (pos >= fmt.size()) {
+                    result += fmt.substr(start);
+                    break;
+                }
+
+                char type = fmt[pos];
+                ++pos;
+
+                std::string replacement;
+
+                size_t useIndex = (argNum >= 0) ? static_cast<size_t>(argNum - 1) : argIndex++;
+
+                if (useIndex >= argStrings.size()) {
+                    replacement = "%" + std::string(1, type);
+                }
+                else {
+                    const std::string& value = argStrings[useIndex];
+
+                    std::ostringstream oss;
+
+                    switch (type)
+                    {
+                    case 's':
+                        oss << value;
+                        break;
+                    case 'd':
+                        oss << std::stoi(value);
+                        break;
+                    case 'f':
+                        if (precision >= 0) oss << std::fixed << std::setprecision(precision);
+                        oss << std::stod(value);
+                        break;
+                    default:
+                        oss << "%" << type;
+                        break;
+                    }
+
+                    replacement = oss.str();
+
+                    if (width > 0) {
+                        if (leftAlign) {
+                            replacement += std::string(width - replacement.length(), ' ');
+                        }
+                        else if (zeroPad && type != 's') {
+                            replacement = std::string(width - replacement.length(), '0') + replacement;
+                        }
+                        else {
+                            replacement = std::string(width - replacement.length(), ' ') + replacement;
+                        }
+                    }
+                }
+
+                result += replacement;
+            }
+            else {
+                result += fmt[pos++];
+            }
+        }
+
+        return result;
+    }
 
 	template<typename T>
 	static bool remove(std::vector<T>& vec, const T& t)

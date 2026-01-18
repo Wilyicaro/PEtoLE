@@ -33,16 +33,6 @@ static void teardown()
 	}
 }
 
-static int TranslateSDLKeyCodeToVirtual(int sdlCode)
-{
-	switch (sdlCode) {
-		#define CODE(x) case SDLK_ ## x: return SDLVK_ ## x;
-		#include "compat/SDLKeyCodes.h"
-		#undef  CODE
-	}
-	return SDLVK_UNKNOWN;
-}
-
 // Touch
 #define TOUCH_IDS_SIZE (MAX_TOUCHES - 1) // ID 0 Is Reserved For The Mouse
 struct touch_id_data {
@@ -136,7 +126,7 @@ static void handle_events()
 					g_pApp->handleCharInput('\b');
 				}
 
-				g_pAppPlatform->handleKeyEvent(TranslateSDLKeyCodeToVirtual(event.key.keysym.sym), event.key.state);
+				g_pAppPlatform->handleKeyEvent(getSDLVirtualKeyCode(event.key.keysym.sym), event.key.state);
 				break;
 			}
 			case SDL_CONTROLLERBUTTONDOWN:

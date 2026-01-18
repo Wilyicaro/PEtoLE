@@ -99,6 +99,7 @@ public:
 	virtual void causeFallDamage(float level) override;
 	virtual void killed(Mob*) override;
 
+	int getSleepTimer() const { return m_sleepTimer; }
 	int addResource(int);
 	void animateRespawn(Player*, Level*);
 	void attack(Entity* pEnt);

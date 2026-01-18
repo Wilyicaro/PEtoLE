@@ -79,7 +79,7 @@ void ItemInHandRenderer::renderItem(Mob* mob, std::shared_ptr<ItemInstance> inst
         else
             toBind = C_ITEMS_NAME;
         m_pMinecraft->m_pTextures->loadAndBindTexture(toBind);
-        
+		glEnable(GL_RESCALE_NORMAL);
         constexpr float C_RATIO     = 1.0f / 256.0f;
         constexpr float C_RATIO_2   = 1.0f / 512.0f;
         constexpr float C_ONE_PIXEL = 1.0f / 16.0f;
@@ -94,6 +94,7 @@ void ItemInHandRenderer::renderItem(Mob* mob, std::shared_ptr<ItemInstance> inst
         float texV_2 = C_RATIO * float(textureY + 15.99f);
         
         Tesselator& t = Tesselator::instance;
+
         glTranslatef(-0.0f, -0.3f, 0.0f);
         glScalef(1.5f, 1.5f, 1.5f);
         glRotatef(50.0f, 0.0f, 1.0f, 0.0f);
@@ -149,6 +150,7 @@ void ItemInHandRenderer::renderItem(Mob* mob, std::shared_ptr<ItemInstance> inst
         }
         
         t.draw();
+		glDisable(GL_RESCALE_NORMAL);
     }
     
 	glPopMatrix();

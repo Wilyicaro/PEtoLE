@@ -62,7 +62,8 @@ const char* Minecraft::progressMessages[] =
 };
 
 Minecraft::Minecraft() :
-	m_gui(this)
+	m_gui(this),
+	m_toastComponent(this)
 {
 	m_options = nullptr;
 	m_bLocateMultiplayer = false;
@@ -177,7 +178,8 @@ void Minecraft::setScreen(Screen* pScreen)
 	if (m_pScreen)
 	{
 		m_pScreen->removed();
-		delete m_pScreen;
+		if (pScreen && pScreen->m_bDeletePrevious)
+			delete m_pScreen;
 	}
 
 	Mouse::reset();
@@ -468,7 +470,7 @@ void Minecraft::tickInput()
 			}
 			else if (getOptions()->isKey(KM_TOGGLEGUI, keyCode))
 			{
-				getOptions()->m_bDontRenderGui = !getOptions()->m_bDontRenderGui;
+				getOptions()->m_bHideGui = !getOptions()->m_bHideGui;
 			}
 			else if (getOptions()->isKey(KM_TOGGLEDEBUG, keyCode))
 			{
@@ -848,6 +850,11 @@ void Minecraft::initAssets()
 	FoliageColor::init(m_pPlatform->loadTexture("misc/foliagecolor.png", true));
 	Language::getInstance()->init(getOptions());
 	AchievementMap::getInstance()->init();
+	initStatsCounter();
+}
+
+void Minecraft::initStatsCounter()
+{
 	SAFE_DELETE(m_pStatsCounter);
 	m_pStatsCounter = new StatsCounter(m_pUser, m_externalStorageDir);
 }

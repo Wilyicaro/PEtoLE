@@ -48,6 +48,7 @@ void ChangeProfileScreen::buttonClicked(Button* pButton)
 
 		m_pMinecraft->getOptions()->m_playerName.set(m_nameBox.getText());
 		m_pMinecraft->m_pUser->m_username = m_nameBox.getText();
+		m_pMinecraft->initStatsCounter();
 		m_pMinecraft->getOptions()->save();
 		m_pMinecraft->setScreen(new StartMenuScreen);
 	}
