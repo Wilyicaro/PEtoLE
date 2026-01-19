@@ -1,5 +1,5 @@
 #include "ChangeProfileScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 
 ChangeProfileScreen::ChangeProfileScreen(const std::string& initialName) :
 	m_nameBox(this, 1, 0, 0, 200, 20, "", initialName),
@@ -50,7 +50,7 @@ void ChangeProfileScreen::buttonClicked(Button* pButton)
 		m_pMinecraft->m_pUser->m_username = m_nameBox.getText();
 		m_pMinecraft->initStatsCounter();
 		m_pMinecraft->getOptions()->save();
-		m_pMinecraft->setScreen(new StartMenuScreen);
+		m_pMinecraft->setScreen(new TitleScreen);
 	}
 }
 

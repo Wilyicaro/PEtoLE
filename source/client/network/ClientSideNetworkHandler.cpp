@@ -9,7 +9,7 @@
 #include <RakPeer.h>
 #include "ClientSideNetworkHandler.hpp"
 #include "common/Utils.hpp"
-#include "client/gui/screens/StartMenuScreen.hpp"
+#include "client/gui/screens/TitleScreen.hpp"
 #include "client/gui/screens/ProgressScreen.hpp"
 #include "client/gui/screens/DisconnectionScreen.hpp"
 #include "world/tile/entity/SignTileEntity.hpp"

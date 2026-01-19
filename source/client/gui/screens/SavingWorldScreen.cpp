@@ -8,7 +8,7 @@
 
 #include "SavingWorldScreen.hpp"
 #include "RenameMPLevelScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 
 
 SavingWorldScreen::SavingWorldScreen(bool bCopyMap/*, Entity* pEnt*/)
@@ -63,7 +63,7 @@ void SavingWorldScreen::tick()
 		if (m_bCopyMapAtEnd)
 			m_pMinecraft->setScreen(new RenameMPLevelScreen("_LastJoinedServer"));
 		else
-			m_pMinecraft->setScreen(new StartMenuScreen);
+			m_pMinecraft->setScreen(new TitleScreen);
 
 		m_pMinecraft->m_bUsingScreen = false;
 

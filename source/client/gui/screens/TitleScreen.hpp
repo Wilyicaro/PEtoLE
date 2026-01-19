@@ -9,69 +9,37 @@
 #pragma once
 
 #include "../Screen.hpp"
-#include "client/renderer/TileRenderer.hpp"
 
-class StartMenuScreen;
-
-class TitleTile
+class TitleScreen : public Screen
 {
 public:
-	TitleTile(StartMenuScreen*, int x, int y);
-	void tick();
-
-	static Tile* getTileFromChar(char c);
-	static void regenerate();
-
-protected:
-	friend class StartMenuScreen;
-	float height;
-	float lastHeight;
-	float dropVel;
-
-private:
-	static Tile* _tiles[3];
-	static bool _firstTimeInit;
-	static Random _random;
-	static Tile* getRandomTile(Tile* except1, Tile* except2);
-};
-
-class StartMenuScreen : public Screen
-{
-public:
-	StartMenuScreen();
-	~StartMenuScreen();
-
-	void _updateLicense();
+	TitleScreen();
 
 	void init() override;
 	void buttonClicked(Button*) override;
 	bool isInGameScreen() override;
 	void render(int, int, float) override;
-	void tick() override;
 
 	void drawSplash();
-	void drawLegacyTitle();
+	void drawTitle();
 
 	std::string getSplashString();
 
 	void onClose() override;
 
 protected:
-	friend class TitleTile;
-
 	Button m_startButton;
 	Button m_joinButton;
 	Button m_optionsButton;
 	Button m_exitButton;
-	std::string field_154;
-	int field_16C;
-	std::string field_170;
-	int field_188;
+	std::string m_mojangText;
+	int m_mojangTextWidth;
+	std::string m_versionText;
+	int m_versionTextWidth;
 
 	int m_chosenSplash;
 
 	TileRenderer m_tileRenderer;
 	Random m_random;
-	TitleTile** m_pTiles;
 };
 

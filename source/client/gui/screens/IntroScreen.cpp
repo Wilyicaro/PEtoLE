@@ -1,5 +1,5 @@
 #include "IntroScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 #include "ChangeProfileScreen.hpp"
 
 bool IntroScreen::isInGameScreen()
@@ -21,6 +21,6 @@ void IntroScreen::updateEvents()
 		if (m_pMinecraft->getOptions()->m_playerName.get() == "Steve")
 			m_pMinecraft->setScreen(new ChangeProfileScreen(m_pMinecraft->getOptions()->m_playerName.get()));
 		else
-			m_pMinecraft->setScreen(new StartMenuScreen);
+			m_pMinecraft->setScreen(new TitleScreen);
 	}
 }

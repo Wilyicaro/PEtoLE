@@ -111,7 +111,7 @@
     <ClInclude Include="$(MC_ROOT)\source\client\gui\screens\RenameMPLevelScreen.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\gui\screens\SavingWorldScreen.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\gui\screens\SelectWorldScreen.hpp" />
-    <ClInclude Include="$(MC_ROOT)\source\client\gui\screens\StartMenuScreen.hpp" />
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\TitleScreen.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\model\Cube.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\model\ModelPart.hpp" />
     <ClInclude Include="$(MC_ROOT)\source\client\model\HumanoidModel.hpp" />
@@ -281,7 +281,7 @@
     <ClCompile Include="$(MC_ROOT)\source\client\gui\screens\RenameMPLevelScreen.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\gui\screens\SavingWorldScreen.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\gui\screens\SelectWorldScreen.cpp" />
-    <ClCompile Include="$(MC_ROOT)\source\client\gui\screens\StartMenuScreen.cpp" />
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\TitleScreen.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\model\Cube.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\model\ModelPart.cpp" />
     <ClCompile Include="$(MC_ROOT)\source\client\model\HumanoidModel.cpp" />

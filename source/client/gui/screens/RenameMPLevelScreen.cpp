@@ -7,7 +7,7 @@
  ********************************************************************/
 
 #include "RenameMPLevelScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 
 RenameMPLevelScreen::RenameMPLevelScreen(const std::string& levelName) : m_levelName(levelName)
 {
@@ -34,5 +34,5 @@ void RenameMPLevelScreen::render(int mouseX, int mouseY, float f)
 		}
 	}
 
-	m_pMinecraft->setScreen(new StartMenuScreen);
+	m_pMinecraft->setScreen(new TitleScreen);
 }

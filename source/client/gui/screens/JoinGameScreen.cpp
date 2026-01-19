@@ -9,7 +9,7 @@
 #include "JoinGameScreen.hpp"
 #include "DirectConnectScreen.hpp"
 #include "ProgressScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 
 JoinGameScreen::JoinGameScreen() :
 	m_btnJoin(2, "Join Game"),
@@ -45,7 +45,7 @@ void JoinGameScreen::buttonClicked(Button* pButton)
 
 	if (pButton->m_buttonId == m_btnBack.m_buttonId)
 	{
-		m_pMinecraft->setScreen(new StartMenuScreen);
+		m_pMinecraft->setScreen(new TitleScreen);
 	}
 }
 

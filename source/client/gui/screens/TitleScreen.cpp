@@ -6,10 +6,8 @@
 	SPDX-License-Identifier: BSD-1-Clause
  ********************************************************************/
 
-#include "StartMenuScreen.hpp"
-#include "InvalidLicenseScreen.hpp"
+#include "TitleScreen.hpp"
 #include "OptionsScreen.hpp"
-#include "ProgressScreen.hpp"
 #include "SelectWorldScreen.hpp"
 #include "JoinGameScreen.hpp"
 #include "client/locale/Language.hpp"
@@ -17,23 +15,6 @@
 #if defined(_WIN32) || (defined(TARGET_OS_MAC) && TARGET_OS_IPHONE == 0)
 #define CAN_QUIT
 #endif
-
-// special mode so that we can crop out the title:
-//#define TITLE_CROP_MODE
-
-const char gLogoLine1[] = "??? ??? #   # # #   # ### ### ### ### ### ### $$$ $$$";
-const char gLogoLine2[] = "? ? ?   ## ## # ##  # #   #   # # # # #    #  $ $ $  ";
-const char gLogoLine3[] = "??  ??  # # # # # # # ##  #   ##  ### ##   #  $$  $$ ";
-const char gLogoLine4[] = "? ? ?   #   # # #  ## #   #   # # # # #    #  $   $  ";
-const char gLogoLine5[] = "? ? ??? #   # # #   # ### ### # # # # #    #  $   $$$";
-
-const char* gLogoLines[] = {
-	gLogoLine1,
-	gLogoLine2,
-	gLogoLine3,
-	gLogoLine4,
-	gLogoLine5,
-};
 
 // actual name
 const char* gSplashes[] =
@@ -355,51 +336,16 @@ const char* gSplashes[] =
 	"Also try Noita!"
 };
 
-StartMenuScreen::StartMenuScreen() :
+TitleScreen::TitleScreen() :
 	m_startButton  (2,   0, 0, 200, 20, Language::getInstance()->get("menu.singleplayer")),
 	m_joinButton   (3,   0, 0, 200, 20, Language::getInstance()->get("menu.multiplayer")),
 	m_optionsButton(4,   0, 0, 200, 20, Language::getInstance()->get("menu.options")),
 	m_exitButton    (5,   0, 0, 200, 20, Language::getInstance()->get("menu.quit"))
 {
-	m_pTiles = nullptr;
 	m_chosenSplash = -1;
-
-	// note: do it here because we don't want the title to
-	// show up differently when you resize
-	TitleTile::regenerate();
 }
 
-StartMenuScreen::~StartMenuScreen()
-{
-	SAFE_DELETE(m_pTiles);
-}
-
-void StartMenuScreen::_updateLicense()
-{
-	int licenseID = m_pMinecraft->getLicenseId();
-	if (licenseID < 0)
-	{
-		m_optionsButton.m_bEnabled = false;
-		m_startButton.m_bEnabled = false;
-		m_joinButton.m_bEnabled = false;
-	}
-	else if (licenseID <= 1)
-	{
-		m_optionsButton.m_bEnabled = true;
-		m_startButton.m_bEnabled = true;
-#ifdef __EMSCRIPTEN__
-		m_joinButton.m_bEnabled = false;
-#else
-		m_joinButton.m_bEnabled = true;
-#endif
-	}
-	else
-	{
-		m_pMinecraft->setScreen(new InvalidLicenseScreen(licenseID, m_pMinecraft->platform()->hasBuyButtonWhenInvalidLicense()));
-	}
-}
-
-void StartMenuScreen::buttonClicked(Button* pButton)
+void TitleScreen::buttonClicked(Button* pButton)
 {
 	if (pButton->m_buttonId == m_startButton.m_buttonId)
 	{
@@ -424,7 +370,7 @@ void StartMenuScreen::buttonClicked(Button* pButton)
 	}
 }
 
-void StartMenuScreen::init()
+void TitleScreen::init()
 {
 	int yPos = m_height / 4 + 48;
 
@@ -452,82 +398,59 @@ void StartMenuScreen::init()
 	for (int i = 0; i < int(m_buttons.size()); i++)
 		m_buttonTabList.push_back(m_buttons[i]);
 
-	field_154 = "\xFFMojang AB";
-	field_16C = m_width - 1 - m_pFont->width(field_154);
+	m_mojangText = "\xFFMojang AB";
+	m_mojangTextWidth = m_width - 1 - m_pFont->width(m_mojangText);
 
-	field_170 = "v0.1.0 alpha"
-#ifdef DEMO
-		" (Demo)"
-#endif
-		;
+	m_versionText = "Minecraft " + m_pMinecraft->getVersionString();
 
-	field_188 = (m_width - m_pFont->width(field_170)) / 2;
-
-
-	_updateLicense();
+	m_versionTextWidth = (m_width - m_pFont->width(m_versionText)) / 2;
 }
 
-bool StartMenuScreen::isInGameScreen()
+bool TitleScreen::isInGameScreen()
 {
 	return false;
 }
 
-void StartMenuScreen::drawLegacyTitle()
+void TitleScreen::drawTitle()
 {
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 	Textures* tx = m_pMinecraft->m_pTextures;
-
 	const int titleYPos = 30;
 	short width = 274;
 	int leftPos = m_width / 2 - width / 2;
 	tx->loadAndBindTexture("title/mclogo.png");
 	blit(leftPos, titleYPos, 0, 0, 155, 44, 256, 256);
 	blit(leftPos + 155, titleYPos, 0, 45, 155, 44, 256, 256);
-
 }
 
-void StartMenuScreen::render(int a, int b, float c)
+void TitleScreen::render(int a, int b, float c)
 {
 #ifdef TITLE_CROP_MODE
 	fill(0, 0, m_width, m_height, 0xFF00FF00);
 #else
-	//renderBackground();
 	renderMenuBackground(c);
 #endif
 
-	//int titleYPos = 4;
-	//int titleYPos = 30; // -- MC Java position.
-
-
-	drawLegacyTitle();
-
-	drawString(m_pFont, field_154, field_16C, m_height - 10, 0x00FFFFFF);
+	drawTitle();
 
 	drawSplash();
+
+	if (isMenuPanoramaAvailable())
+		drawString(m_pFont, m_versionText, 2, m_height - 10, 0xFFFFFF);
+	else 
+		drawString(m_pFont, m_versionText, 2, 2, 0x505050);
+
+	drawString(m_pFont, m_mojangText, m_mojangTextWidth, m_height - 10, 0x00FFFFFF);
 
 	Screen::render(a, b, c);
 }
 
-void StartMenuScreen::tick()
-{
-	Screen::tick();
-	_updateLicense();
-
-	if (m_pTiles)
-	{
-		int Width = int(sizeof gLogoLine1 - 1);
-		int Height = int(sizeof gLogoLines / sizeof * gLogoLines);
-		for (int i = 0; i < Width * Height; i++)
-			m_pTiles[i]->tick();
-	}
-}
-
-void StartMenuScreen::drawSplash()
+void TitleScreen::drawSplash()
 {
 	glPushMatrix();
 
 	std::string splashText = getSplashString();
 	int textWidth = m_pFont->width(splashText);
-	//int textHeight = m_pFont->height(splashText);
 
 	glTranslatef(float(m_width) / 2.0f + 90.0f, 70.0f, 0.0f);
 	glRotatef(-20.0f, 0.0f, 0.0f, 1.0f);
@@ -542,7 +465,7 @@ void StartMenuScreen::drawSplash()
 	glPopMatrix();
 }
 
-std::string StartMenuScreen::getSplashString()
+std::string TitleScreen::getSplashString()
 {
 	if (m_chosenSplash == -1)
 	{
@@ -553,99 +476,6 @@ std::string StartMenuScreen::getSplashString()
 	return std::string(gSplashes[m_chosenSplash]);
 }
 
-void StartMenuScreen::onClose()
+void TitleScreen::onClose()
 {
-}
-
-Tile* TitleTile::_tiles[3];
-Random TitleTile::_random;
-bool TitleTile::_firstTimeInit = true;
-
-TitleTile::TitleTile(StartMenuScreen* pScreen, int x, int y)
-{
-	height = float(10 + y) + 32.0f * pScreen->m_random.nextFloat() + float(y);
-	lastHeight = height;
-	dropVel = 0;
-}
-
-void TitleTile::tick()
-{
-	lastHeight = height;
-
-	if (height > 0.0f)
-		dropVel -= 0.6f;
-	
-	height += dropVel;
-	dropVel *= 0.9f;
-
-	if (height < 0.0f)
-	{
-		height = 0.0f;
-		dropVel = 0.0f;
-	}
-}
-
-Tile* TitleTile::getTileFromChar(char c)
-{
-	switch (c)
-	{
-		case '?': return _tiles[1];
-		case '$': return _tiles[2];
-		default:  return _tiles[0];
-	}
-}
-
-// NOTE: Using the tile enum instead of Tile::tileName->id, may want to.. not?
-static const int _tileBlockList[] = {
-	TILE_BOOKSHELF,
-	TILE_STAIRS_WOOD,
-	TILE_STAIRS_STONE,
-	TILE_TOPSNOW,
-	TILE_GRASS,
-	TILE_INFO_UPDATEGAME1,
-	TILE_INFO_UPDATEGAME2,
-	TILE_STONESLAB_HALF,
-};
-static const int _tileBlockListSize = sizeof _tileBlockList / sizeof(int);
-
-Tile* TitleTile::getRandomTile(Tile* except1, Tile* except2)
-{
-	TileID id;
-	for (;;)
-	{
-		id = _random.nextInt(256);
-		for (int i = 0; i < _tileBlockListSize; i++) {
-			if (_tileBlockList[i] == id) {
-				// N.B. Air does not have a tile
-				id = TILE_AIR;
-				break;
-			}
-		}
-
-		if (!Tile::tiles[id])
-			continue;
-
-		// If found a tile, check if it can be rendered
-		Tile* pTile = Tile::tiles[id];
-		if (!TileRenderer::canRender(pTile->getRenderShape()))
-			continue;
-
-		if (pTile == except1 || pTile == except2)
-			continue;
-
-		return pTile;
-	}
-}
-
-void TitleTile::regenerate()
-{
-	if (_firstTimeInit)
-	{
-		_firstTimeInit = false;
-		_random.setSeed(getTimeMs());
-	}
-
-	_tiles[0] = getRandomTile(nullptr,   nullptr);
-	_tiles[1] = getRandomTile(_tiles[0], nullptr);
-	_tiles[2] = getRandomTile(_tiles[0], _tiles[1]);
 }

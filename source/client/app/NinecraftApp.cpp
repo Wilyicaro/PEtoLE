@@ -10,7 +10,7 @@
 #include "world/item/Item.hpp"
 #include "world/entity/MobCategory.hpp"
 #include "client/player/input/Multitouch.hpp"
-#include "client/gui/screens/StartMenuScreen.hpp"
+#include "client/gui/screens/TitleScreen.hpp"
 #include "world/entity/EntityType.hpp"
 #include "world/tile/entity/TileEntityType.hpp"
 #include "stats/Stats.hpp"

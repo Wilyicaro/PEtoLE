@@ -10,7 +10,7 @@
 #include "DeleteWorldScreen.hpp"
 #include "EditWorldScreen.hpp"
 #include "CreateWorldScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 #include "common/Util.hpp"
 #include <set>
 
@@ -112,7 +112,7 @@ void SelectWorldScreen::buttonClicked(Button* pButton)
 
 	if (pButton->m_buttonId == m_btnCancel.m_buttonId)
 	{
-		m_pMinecraft->setScreen(new StartMenuScreen);
+		m_pMinecraft->setScreen(new TitleScreen);
 	}
 
 	if (pButton->m_buttonId == m_btnSelect.m_buttonId)

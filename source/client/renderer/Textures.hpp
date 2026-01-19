@@ -122,6 +122,6 @@ protected:
 	std::vector<DynamicTexture*> m_dynamicTextures;
 	std::unordered_map<std::string, HttpTexture*> m_httpTextures;
 
-	friend class StartMenuScreen;
+	friend class TitleScreen;
 };
 

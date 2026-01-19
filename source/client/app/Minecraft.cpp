@@ -8,7 +8,7 @@
 
 #include "client/app/Minecraft.hpp"
 #include "client/gui/screens/PauseScreen.hpp"
-#include "client/gui/screens/StartMenuScreen.hpp"
+#include "client/gui/screens/TitleScreen.hpp"
 #include "client/gui/screens/RenameMPLevelScreen.hpp"
 #include "client/gui/screens/SavingWorldScreen.hpp"
 #include "client/gui/screens/DeathScreen.hpp"
@@ -153,7 +153,7 @@ void Minecraft::setScreen(Screen* pScreen)
 	if (pScreen == nullptr && !isLevelReady())
 	{
 		delete pScreen;
-		pScreen = new StartMenuScreen;
+		pScreen = new TitleScreen;
 	}
 	else if (pScreen == nullptr && m_pPlayer->m_health <= 0)
 	{

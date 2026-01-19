@@ -7,7 +7,7 @@
  ********************************************************************/
 
 #include "DisconnectionScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 
 DisconnectionScreen::DisconnectionScreen(const std::string& text) :
 	m_text(text),
@@ -17,7 +17,7 @@ DisconnectionScreen::DisconnectionScreen(const std::string& text) :
 
 void DisconnectionScreen::buttonClicked(Button* pButton)
 {
-	m_pMinecraft->setScreen(new StartMenuScreen);
+	m_pMinecraft->setScreen(new TitleScreen);
 }
 
 void DisconnectionScreen::init()

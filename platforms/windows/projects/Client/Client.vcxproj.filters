@@ -170,7 +170,7 @@
     <ClInclude Include="$(MC_ROOT)\source\client\gui\screens\SelectWorldScreen.hpp">
       <Filter>Header Files\GUI\Screens</Filter>
     </ClInclude>
-    <ClInclude Include="$(MC_ROOT)\source\client\gui\screens\StartMenuScreen.hpp">
+    <ClInclude Include="..\..\..\..\source\client\gui\screens\TitleScreen.hpp">
       <Filter>Header Files\GUI\Screens</Filter>
     </ClInclude>
     <ClInclude Include="$(MC_ROOT)\source\client\gui\Gui.hpp">
@@ -679,7 +679,7 @@
     <ClCompile Include="$(MC_ROOT)\source\client\gui\screens\SelectWorldScreen.cpp">
       <Filter>Source Files\GUI\Screens</Filter>
     </ClCompile>
-    <ClCompile Include="$(MC_ROOT)\source\client\gui\screens\StartMenuScreen.cpp">
+    <ClCompile Include="..\..\..\..\source\client\gui\screens\TitleScreen.cpp">
       <Filter>Source Files\GUI\Screens</Filter>
     </ClCompile>
     <ClCompile Include="$(MC_ROOT)\source\client\gui\Screen.cpp">

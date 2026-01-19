@@ -7,7 +7,7 @@
  ********************************************************************/
 
 #include "OptionsScreen.hpp"
-#include "StartMenuScreen.hpp"
+#include "TitleScreen.hpp"
 #include "PauseScreen.hpp"
 #include "VideoSettingsScreen.hpp"
 #include "network/ServerSideNetworkHandler.hpp"
@@ -72,7 +72,7 @@ void OptionsScreen::render(int a, int b, float c)
 
 	if (m_pMinecraft->m_pPlatform->getUserInputStatus() >= 0)
 	{
-		m_pMinecraft->setScreen(new StartMenuScreen);
+		m_pMinecraft->setScreen(new TitleScreen);
 	}
 
 	drawCenteredString(m_pFont, m_title, m_width / 2, 20, 0xFFFFFF);
@@ -87,7 +87,7 @@ void OptionsScreen::buttonClicked(Button* pButton)
 		if (m_pMinecraft->isLevelReady())
 			m_pMinecraft->setScreen(new PauseScreen);
 		else
-			m_pMinecraft->setScreen(new StartMenuScreen);
+			m_pMinecraft->setScreen(new TitleScreen);
 	}
 	else if (pButton->m_buttonId == m_videoButton.m_buttonId)
 	{
