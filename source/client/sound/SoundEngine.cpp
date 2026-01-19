@@ -35,20 +35,20 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	this->m_pPlatform = plat;
 
 
-	addSound("step.grass", "sound/step/grass1.ogg");
-	addSound("step.grass", "sound/step/grass2.ogg");
-	addSound("step.grass", "sound/step/grass3.ogg");
-	addSound("step.grass", "sound/step/grass4.ogg");
+	addSound("step.grass", "newsound/step/grass1.ogg");
+	addSound("step.grass", "newsound/step/grass2.ogg");
+	addSound("step.grass", "newsound/step/grass3.ogg");
+	addSound("step.grass", "newsound/step/grass4.ogg");
 
-	addSound("step.stone", "sound/step/stone1.ogg");
-	addSound("step.stone", "sound/step/stone2.ogg");
-	addSound("step.stone", "sound/step/stone3.ogg");
-	addSound("step.stone", "sound/step/stone4.ogg");
+	addSound("step.stone", "newsound/step/stone1.ogg");
+	addSound("step.stone", "newsound/step/stone2.ogg");
+	addSound("step.stone", "newsound/step/stone3.ogg");
+	addSound("step.stone", "newsound/step/stone4.ogg");
 
-	addSound("step.gravel", "sound/step/gravel1.ogg");
-	addSound("step.gravel", "sound/step/gravel2.ogg");
-	addSound("step.gravel", "sound/step/gravel3.ogg");
-	addSound("step.gravel", "sound/step/gravel4.ogg");
+	addSound("step.gravel", "newsound/step/gravel1.ogg");
+	addSound("step.gravel", "newsound/step/gravel2.ogg");
+	addSound("step.gravel", "newsound/step/gravel3.ogg");
+	addSound("step.gravel", "newsound/step/gravel4.ogg");
 
 	addSound("step.sand", "newsound/step/sand1.ogg");
 	addSound("step.sand", "newsound/step/sand2.ogg");
@@ -60,10 +60,10 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addSound("step.cloth", "newsound/step/cloth3.ogg");
 	addSound("step.cloth", "newsound/step/cloth4.ogg");
 
-	addSound("step.wood", "sound/step/wood1.ogg");
-	addSound("step.wood", "sound/step/wood2.ogg");
-	addSound("step.wood", "sound/step/wood3.ogg");
-	addSound("step.wood", "sound/step/wood4.ogg");
+	addSound("step.wood", "newsound/step/wood1.ogg");
+	addSound("step.wood", "newsound/step/wood2.ogg");
+	addSound("step.wood", "newsound/step/wood3.ogg");
+	addSound("step.wood", "newsound/step/wood4.ogg");
 
 	addSound("random.glass", "newsound/random/glass1.ogg");
 	addSound("random.glass", "newsound/random/glass2.ogg");

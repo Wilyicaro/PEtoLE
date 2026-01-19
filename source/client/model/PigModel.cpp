@@ -11,7 +11,7 @@ PigModel::PigModel(float f) :
 	QuadrupedModel(6, f)
 {
 	m_head.texOffs(16, 16);
-	m_head.addBox(-2, 0, -9, 4, 3, 1, f);
+	//m_head.addBox(-2, 0, -9, 4, 3, 1, f); // b1.8
 	field_28C = 4.0f;
 }
 
