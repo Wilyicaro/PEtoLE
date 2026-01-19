@@ -84,7 +84,7 @@ void SelectWorldScreen::render(int mouseX, int mouseY, float f)
 
 	Screen::render(mouseX, mouseY, f);
 
-	drawCenteredString(m_pMinecraft->m_pFont, m_title, m_width / 2, 8, 0xFFFFFFFF);
+	drawCenteredString(m_pMinecraft->m_pFont, m_title, m_width / 2, 20, 0xFFFFFFFF);
 }
 
 void SelectWorldScreen::buttonClicked(Button* pButton)

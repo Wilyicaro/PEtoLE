@@ -325,13 +325,14 @@ const char* gSplashes[] =
 	"Pretty scary!",
 	"I have a suggestion.",
 	"Now with extra hugs!",
-	"Almost C++03!", // "Almost C++11!",
+	"Almost C++11!", // "Almost C++17!",
 	"Woah.",
 	"HURNERJSGER?",
 	"What's up, Doc?",
 
 	// custom:
 	"https://github.com/ReMinecraftPE/mcpe",
+	"https://github.com/Wilyicaro/PEtoLE",
 	"Also try Minecraft!",
 	"Also try Noita!"
 };
@@ -435,7 +436,7 @@ void TitleScreen::render(int a, int b, float c)
 
 	drawSplash();
 
-	if (isMenuPanoramaAvailable())
+	if (m_pMinecraft->getOptions()->m_bMenuPanorama.get() && isMenuPanoramaAvailable())
 		drawString(m_pFont, m_versionText, 2, m_height - 10, 0xFFFFFF);
 	else 
 		drawString(m_pFont, m_versionText, 2, 2, 0x505050);

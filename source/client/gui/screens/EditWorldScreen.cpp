@@ -35,7 +35,7 @@ void EditWorldScreen::render(int x, int y, float f)
 	renderBackground();
 	Screen::render(x, y, f);
 
-	drawCenteredString(m_pFont, Language::getInstance()->get("selectWorld.renameTitle"), m_width / 2, 30, 0xFFFFFF);
+	drawCenteredString(m_pFont, Language::getInstance()->get("selectWorld.renameTitle"), m_width / 2, 20, 0xFFFFFF);
 	drawString(m_pFont, Language::getInstance()->get("selectWorld.enterName"), m_nameBox.m_xPos, m_nameBox.m_yPos - 13, 0x999999);
 }
 
