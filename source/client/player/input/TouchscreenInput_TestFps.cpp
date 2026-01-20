@@ -91,7 +91,7 @@ void TouchscreenInput_TestFps::setScreenSize(int width, int height)
 	int scaledHeight = ceilf(height * Gui::InvGuiScale);
 	m_touchAreaModel.clear();
 
-	float widthM = Mth::min(64, scaledWidth / 10);
+	float widthM = Mth::min(64, scaledWidth / 11);
 	float heightM = widthM;
 
 	float x1[4], y1[4], x2[4], y2[4];
@@ -244,8 +244,11 @@ void TouchscreenInput_TestFps::tick(Player* pPlayer)
 
 	if (bJumpPressed)
 	{
-		// Allow endless jumping while the button is held
-		m_bJumping = true;
+		// Don't allow the player to hold jump to repeatedly jump.
+		// Only let them jump once - have them jump again
+		if (!m_bJumpBeingHeld)
+			m_bJumping = true;
+
 		m_bJumpBeingHeld = true;
 	}
 	else
