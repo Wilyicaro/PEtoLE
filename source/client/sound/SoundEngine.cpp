@@ -85,10 +85,6 @@ void SoundEngine::init(Options* options, AppPlatform* plat)
 	addSound("random.hurt", "newsound/random/hurt.ogg");
 	addSound("random.fizz", "newsound/random/fizz.ogg");
 
-	addSound("damage.fallbig", "newsound/damage/fallbig1.ogg");
-	addSound("damage.fallbig", "newsound/damage/fallbig2.ogg");
-	addSound("damage.fallsmall", "newsound/damage/fallsmall.ogg");
-
 	addSound("liquid.water", "newsound/liquid/water.ogg");
 
 	addSound("ambient.weather.rain", "newsound/ambient/weather/rain1.ogg");

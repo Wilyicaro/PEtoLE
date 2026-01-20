@@ -394,9 +394,14 @@ void Mob::causeFallDamage(float level)
 
 		hurt(nullptr, x);
 
-		//@HUH: useless call to getTile? or could this be a return value of some sort
-		//Entity::causeFallDamage returns nothing though, so....
-		m_pLevel->getTile(TilePos(m_pos.x, m_pos.y - 0.2f, m_pos.z));
+		// Currently bugged, doesn't play sound
+		TileID tileId = m_pLevel->getTile(TilePos(m_pos.x, m_pos.y - 0.2f - m_heightOffset, m_pos.z));
+		if (tileId > 0)
+		{
+			const Tile::SoundType* pSound = Tile::tiles[tileId]->m_pSound;
+
+			m_pLevel->playSound(this, "step." + pSound->m_name, pSound->volume * 0.5f, pSound->pitch * 0.75f);
+		}
 	}
 }
 
